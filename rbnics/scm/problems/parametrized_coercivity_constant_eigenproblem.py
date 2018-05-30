@@ -21,9 +21,8 @@ import hashlib
 from numpy import isclose
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.backends import adjoint, AffineExpansionStorage, assign, copy, EigenSolver, export, Function, import_, product, sum
-from rbnics.utils.config import config
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
-from rbnics.utils.mpi import log, PROGRESS
 
 class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
 
@@ -51,11 +50,41 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         
         # Avoid useless computations
         self._eigenvalue = 0.
-        self._eigenvalue_cache = dict()
         self._eigenvector = Function(truth_problem.V)
-        self._eigenvector_cache = dict()
+        # I/O
         self.folder["cache"] = os.path.join(folder_prefix, "cache")
-        self.cache_config = config.get("problems", "cache")
+        def _eigenvalue_cache_key_generator(*args, **kwargs):
+            return args
+        def _eigenvalue_cache_import(filename):
+            self.import_eigenvalue(self.folder["cache"], filename)
+            return self._eigenvalue
+        def _eigenvalue_cache_export(filename):
+            self.export_eigenvalue(self.folder["cache"], filename)
+        def _eigenvalue_cache_filename_generator(*args, **kwargs):
+            return self._cache_file(args)
+        self._eigenvalue_cache = Cache(
+            "problems",
+            key_generator=_eigenvalue_cache_key_generator,
+            import_=_eigenvalue_cache_import,
+            export=_eigenvalue_cache_export,
+            filename_generator=_eigenvalue_cache_filename_generator
+        )
+        def _eigenvector_cache_key_generator(*args, **kwargs):
+            return args
+        def _eigenvector_cache_import(filename):
+            self.import_eigenvector(self.folder["cache"], filename)
+            return self._eigenvector
+        def _eigenvector_cache_export(filename):
+            self.export_eigenvector(self.folder["cache"], filename)
+        def _eigenvector_cache_filename_generator(*args, **kwargs):
+            return self._cache_file(args)
+        self._eigenvector_cache = Cache(
+            "problems",
+            key_generator=_eigenvector_cache_key_generator,
+            import_=_eigenvector_cache_import,
+            export=_eigenvector_cache_export,
+            filename_generator=_eigenvector_cache_filename_generator
+        )
     
     def init(self):
         # Store the symmetric part of the required term
@@ -75,28 +104,14 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         self.folder.create()
     
     def solve(self):
-        (cache_key, cache_file) = self._cache_key_and_file()
-        assert (
-            (cache_key in self._eigenvalue_cache)
-                ==
-            (cache_key in self._eigenvector_cache)
-        )
-        if "RAM" in self.cache_config and cache_key in self._eigenvalue_cache:
-            log(PROGRESS, "Loading coercivity constant from cache")
+        cache_key = self._cache_key()
+        try:
             self._eigenvalue = self._eigenvalue_cache[cache_key]
             assign(self._eigenvector, self._eigenvector_cache[cache_key])
-        elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
-            log(PROGRESS, "Loading coercivity constant from file")
-            if "RAM" in self.cache_config:
-                self._eigenvalue_cache[cache_key] = self._eigenvalue
-                self._eigenvector_cache[cache_key] = copy(self._eigenvector)
-        else: # No precomputed solution available. Truth solve is performed.
-            log(PROGRESS, "Solving coercivity constant eigenproblem")
+        except KeyError:
             self._solve()
-            if "RAM" in self.cache_config:
-                self._eigenvalue_cache[cache_key] = self._eigenvalue
-                self._eigenvector_cache[cache_key] = copy(self._eigenvector)
-            self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
+            self._eigenvalue_cache[cache_key] = self._eigenvalue
+            self._eigenvector_cache[cache_key] = copy(self._eigenvector)
         return (self._eigenvalue, self._eigenvector)
         
     def _solve(self):
@@ -133,26 +148,27 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         
         self._eigenvalue = r
         assign(self._eigenvector, r_vector)
-            
-    def _cache_key_and_file(self):
-        if self.multiply_by_theta:
-            cache_key = (self.mu, self.term, self.spectrum)
-        else:
-            cache_key = (self.term, self.spectrum)
-        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-        return (cache_key, cache_file)
         
-    # Export solution to file
-    def export_solution(self, folder, filename):
+    def _cache_key(self):
+        if self.multiply_by_theta:
+            return (self.mu, self.term, self.spectrum)
+        else:
+            return (self.term, self.spectrum)
+            
+    def _cache_file(self, cache_key):
+        return hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
+        
+    def export_eigenvalue(self, folder, filename):
         export([self._eigenvalue], folder, filename + "_eigenvalue")
+        
+    def export_eigenvector(self, folder, filename):
         export(self._eigenvector, folder, filename + "_eigenvector")
         
-    # Import solution from file
-    def import_solution(self, folder, filename):
+    def import_eigenvalue(self, folder, filename):
         eigenvalue_storage = [0.]
-        import_successful = import_(eigenvalue_storage, folder, filename + "_eigenvalue")
-        if import_successful:
-            assert len(eigenvalue_storage) == 1
-            self._eigenvalue = eigenvalue_storage[0]
-            import_successful = import_(self._eigenvector, folder, filename + "_eigenvector")
-        return import_successful
+        import_(eigenvalue_storage, folder, filename + "_eigenvalue")
+        assert len(eigenvalue_storage) == 1
+        self._eigenvalue = eigenvalue_storage[0]
+        
+    def import_eigenvector(self, folder, filename):
+        import_(self._eigenvector, folder, filename + "_eigenvector")

@@ -23,10 +23,9 @@ from numpy import isclose
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import assign, BasisFunctionsMatrix, copy, product, sum, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
-from rbnics.utils.config import config
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 from rbnics.utils.io import OnlineSizeDict
-from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.test import PatchInstanceMethod
 
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
@@ -66,10 +65,24 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self._combined_projection_inner_product = None
         # Solution
         self._solution = None # OnlineFunction
-        self._solution_cache = dict() # of Functions
-        self._output = 0
-        self._output_cache = dict() # of Numbers
-        self._output_cache__current_cache_key = None
+        self._output = 0.
+        # I/O
+        def _solution_cache_key_generator(*args, **kwargs):
+            assert len(args) is 2
+            assert args[0] == self.mu
+            return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+        self._solution_cache = Cache(
+            "reduced problems",
+            key_generator=_solution_cache_key_generator
+        )
+        def _output_cache_key_generator(*args, **kwargs):
+            assert len(args) is 2
+            assert args[0] == self.mu
+            return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+        self._output_cache = Cache(
+            "reduced problems",
+            key_generator=_output_cache_key_generator
+        )
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
@@ -79,8 +92,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # I/O
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
-        self.cache_config = config.get("reduced problems", "cache")
-    
+
     def init(self, current_stage="online"):
         """
         Initialize data structures required during the online phase.
@@ -300,19 +312,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
         N += self.N_bc
-        cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
+        self._latest_solve_kwargs = kwargs
         self._solution = OnlineFunction(N)
-        if "RAM" in self.cache_config and cache_key in self._solution_cache:
-            log(PROGRESS, "Loading reduced solution from cache")
-            assign(self._solution, self._solution_cache[cache_key])
-        else:
-            log(PROGRESS, "Solving reduced problem")
+        try:
+            assign(self._solution, self._solution_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
+        except KeyError:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             self._solve(N, **kwargs)
             delattr(self, "_is_solving")
-            if "RAM" in self.cache_config:
-                self._solution_cache[cache_key] = copy(self._solution)
+            self._solution_cache[self.mu, N, kwargs] = copy(self._solution)
         return self._solution
         
     class ProblemSolver(object, metaclass=ABCMeta):
@@ -373,19 +382,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         
         :return: reduced output
         """
-        cache_key = self._output_cache__current_cache_key
-        if "RAM" in self.cache_config and cache_key in self._output_cache:
-            log(PROGRESS, "Loading reduced output from cache")
-            self._output = self._output_cache[cache_key]
-        else:
-            log(PROGRESS, "Computing reduced output")
-            N = self._solution.N
+        N = self._solution.N
+        kwargs = self._latest_solve_kwargs
+        try:
+            self._output = self._output_cache[self.mu, N, kwargs] # **kwargs is not supported by __getitem__
+        except KeyError:
             try:
                 self._compute_output(N)
             except ValueError: # raised by compute_theta if output computation is optional
                 self._output = NotImplemented
-            if "RAM" in self.cache_config:
-                self._output_cache[cache_key] = self._output
+            self._output_cache[self.mu, N, kwargs] = self._output
         return self._output
         
     def _compute_output(self, N):
@@ -407,14 +413,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             if blacklist in kwargs:
                 del kwargs[blacklist]
         if isinstance(N, dict):
-            cache_key = (self.mu, tuple(sorted(N.items())), tuple(sorted(kwargs.items())))
+            return (self.mu, tuple(sorted(N.items())), tuple(sorted(kwargs.items())))
         else:
             assert isinstance(N, int)
-            cache_key = (self.mu, N, tuple(sorted(kwargs.items())))
-        # Store current cache_key to be used when computing output
-        self._output_cache__current_cache_key = cache_key
-        # Return
-        return cache_key
+            return (self.mu, N, tuple(sorted(kwargs.items())))
         
     def build_reduced_operators(self, current_stage="offline"):
         """

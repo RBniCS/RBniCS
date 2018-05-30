@@ -186,8 +186,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                 # Append current stage to cache key
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
                 cache_key = cache_key + (OfflineOnlineSwitch.get_current_stage(), )
-                # Update current cache_key to be used when computing output
-                self._output_cache__current_cache_key = cache_key
                 # Return
                 return cache_key
             else:

@@ -332,7 +332,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def _init_speedup_analysis(self, **kwargs):
         # Make sure to clean up snapshot cache to ensure that parametrized
         # expression evaluation is actually carried out
-        self.EIM_approximation.snapshot_cache.clear()
+        self.EIM_approximation._snapshot_cache.clear()
         # ... and also disable the capability of importing/exporting truth solutions
         def disable_import_solution_method(self_, folder, filename, solution=None):
             raise OSError

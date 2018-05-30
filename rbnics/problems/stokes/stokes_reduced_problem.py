@@ -19,8 +19,8 @@
 from rbnics.problems.base import LinearReducedProblem
 from rbnics.backends import assign, copy, product, sum, transpose
 from rbnics.backends.online import OnlineFunction, OnlineLinearSolver
+from rbnics.utils.cache import Cache
 from rbnics.utils.io import OnlineSizeDict
-from rbnics.utils.mpi import log, PROGRESS
 
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -34,7 +34,15 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             StokesReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Auxiliary storage for solution of reduced order supremizer problem (if requested through solve_supremizer)
             self._supremizer = None # OnlineFunction
-            self._supremizer_cache = dict() # of Functions
+            # I/O
+            def _supremizer_cache_key_generator(*args, **kwargs):
+                assert len(args) is 2
+                assert args[0] == self.mu
+                return self._supremizer_cache_key_from_N_and_kwargs(args[1], **kwargs)
+            self._supremizer_cache = Cache(
+                "reduced problems",
+                key_generator=_supremizer_cache_key_generator
+            )
             
         class ProblemSolver(StokesReducedProblem_Base.ProblemSolver):
             def matrix_eval(self):
@@ -68,16 +76,13 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         def solve_supremizer(self, solution):
             N_us = OnlineSizeDict(solution.N) # create a copy
             del N_us["p"]
-            cache_key = self._supremizer_cache_key_from_N_and_kwargs(N_us)
+            kwargs = self._latest_solve_kwargs
             self._supremizer = OnlineFunction(N_us)
-            if "RAM" in self.cache_config and cache_key in self._supremizer_cache:
-                log(PROGRESS, "Loading reduced supremizer from cache")
-                assign(self._supremizer, self._supremizer_cache[cache_key])
-            else:
-                log(PROGRESS, "Solving supremizer reduced problem")
+            try:
+                assign(self._supremizer, self._supremizer_cache[self.mu, N_us, kwargs]) # **kwargs is not supported by __getitem__
+            except KeyError:
                 self._solve_supremizer(solution)
-                if "RAM" in self.cache_config:
-                    self._supremizer_cache[cache_key] = copy(self._supremizer)
+                self._supremizer_cache[self.mu, N_us, kwargs] = copy(self._supremizer)
             return self._supremizer
             
         def _solve_supremizer(self, solution):
@@ -105,7 +110,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             
         def _supremizer_cache_key_from_N_and_kwargs(self, N, **kwargs):
             return self._cache_key_from_N_and_kwargs(N, **kwargs)
-        
+            
         # Internal method for error computation
         def _compute_error(self, **kwargs):
             components = ["u", "p"] # but not "s"

@@ -22,8 +22,7 @@ import hashlib
 from numbers import Number
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
-from rbnics.utils.config import config
-from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.cache import Cache
 from rbnics.utils.test import PatchInstanceMethod
 
 # Base class containing the definition of elliptic coercive problems
@@ -60,13 +59,49 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self._combined_and_homogenized_dirichlet_bc = None
         # Solution
         self._solution = Function(self.V)
-        self._solution_cache = dict() # of Functions
-        self._output = 0
-        self._output_cache = dict() # of Numbers
-        self._output_cache__current_cache_key = None
+        self._output = 0.
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
-        self.cache_config = config.get("problems", "cache")
+        def _solution_cache_key_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._cache_key_from_kwargs(**kwargs)
+        def _solution_cache_import(filename):
+            self.import_solution(self.folder["cache"], filename)
+            return self._solution
+        def _solution_cache_export(filename):
+            self.export_solution(self.folder["cache"], filename)
+        def _solution_cache_filename_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._cache_file_from_kwargs(**kwargs)
+        self._solution_cache = Cache(
+            "problems",
+            key_generator=_solution_cache_key_generator,
+            import_=_solution_cache_import,
+            export=_solution_cache_export,
+            filename_generator=_solution_cache_filename_generator
+        )
+        def _output_cache_key_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._cache_key_from_kwargs(**kwargs)
+        def _output_cache_import(filename):
+            self.import_output(self.folder["cache"], filename)
+            return self._output
+        def _output_cache_export(filename):
+            self.export_output(self.folder["cache"], filename)
+        def _output_cache_filename_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._cache_file_from_kwargs(**kwargs)
+        self._output_cache = Cache(
+            "problems",
+            key_generator=_output_cache_key_generator,
+            import_=_output_cache_import,
+            export=_output_cache_export,
+            filename_generator=_output_cache_filename_generator
+        )
         
     def name(self):
         return type(self).__name__
@@ -238,26 +273,18 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         Perform a truth solve in case no precomputed solution is imported.
         """
-        (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
-        if "RAM" in self.cache_config and cache_key in self._solution_cache:
-            log(PROGRESS, "Loading truth solution from cache")
-            assign(self._solution, self._solution_cache[cache_key])
-        elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
-            log(PROGRESS, "Loading truth solution from file")
-            if "RAM" in self.cache_config:
-                self._solution_cache[cache_key] = copy(self._solution)
-        else: # No precomputed solution available. Truth solve is performed.
-            log(PROGRESS, "Solving truth problem")
+        self._latest_solve_kwargs = kwargs
+        try:
+            assign(self._solution, self._solution_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+        except KeyError:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             assign(self._solution, Function(self.V))
             self._solve(**kwargs)
             delattr(self, "_is_solving")
-            if "RAM" in self.cache_config:
-                self._solution_cache[cache_key] = copy(self._solution)
-            self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
+            self._solution_cache[self.mu, kwargs] = copy(self._solution)
         return self._solution
-    
+            
     class ProblemSolver(object, metaclass=ABCMeta):
         def __init__(self, problem):
             self.problem = problem
@@ -305,18 +332,15 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         
         :return: output evaluation.
         """
-        cache_key = self._output_cache__current_cache_key
-        if "RAM" in self.cache_config and cache_key in self._output_cache:
-            log(PROGRESS, "Loading truth output from cache")
-            self._output = self._output_cache[cache_key]
-        else: # No precomputed output available. Truth output is performed.
-            log(PROGRESS, "Computing truth output")
+        kwargs = self._latest_solve_kwargs
+        try:
+            self._output = self._output_cache[self.mu, kwargs] # **kwargs is not supported by __getitem__
+        except KeyError:
             try:
                 self._compute_output()
             except ValueError: # raised by compute_theta if output computation is optional
                 self._output = NotImplemented
-            if "RAM" in self.cache_config:
-                self._output_cache[cache_key] = self._output
+            self._output_cache[self.mu, kwargs] = self._output
         return self._output
         
     def _compute_output(self):
@@ -325,19 +349,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         self._output = NotImplemented
         
-    def _cache_key_and_file_from_kwargs(self, **kwargs):
-        """
-        
-        """
+    def _cache_key_from_kwargs(self, **kwargs):
         for blacklist in ("components", "inner_product"):
             if blacklist in kwargs:
                 del kwargs[blacklist]
-        cache_key = (self.mu, tuple(sorted(kwargs.items())))
-        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-        # Store current cache_key to be used when computing output
-        self._output_cache__current_cache_key = cache_key
-        # Return
-        return (cache_key, cache_file)
+        return (self.mu, tuple(sorted(kwargs.items())))
+        
+    def _cache_file_from_kwargs(self, **kwargs):
+        return hashlib.sha1(str(self._cache_key_from_kwargs(**kwargs)).encode("utf-8")).hexdigest()
     
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """

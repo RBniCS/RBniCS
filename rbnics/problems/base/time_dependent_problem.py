@@ -18,8 +18,8 @@
 
 from numbers import Number
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeStepping
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
-from rbnics.utils.mpi import log, PROGRESS
 from rbnics.utils.test import PatchInstanceMethod
 
 @RequiredBaseDecorators(None)
@@ -44,15 +44,61 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self.initial_condition_is_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
             # Time derivative of the solution, at the current time
             self._solution_dot = Function(self.V)
-            self._solution_dot_cache = dict() # of Functions
             # Solution and output over time
             self._solution_over_time = list() # of Functions
             self._solution_dot_over_time = list() # of Functions
-            self._solution_over_time_cache = dict() # of list of Functions
-            self._solution_dot_over_time_cache = dict() # of list of Functions
             self._output_over_time = list() # of numbers
-            self._output_over_time_cache = dict() # of list of numbers
-
+            # I/O
+            def _solution_cache_key_generator(*args, **kwargs):
+                assert len(args) is 1
+                assert args[0] == self.mu
+                return self._cache_key_from_kwargs(**kwargs)
+            def _solution_cache_import(filename):
+                self.import_solution(self.folder["cache"], filename)
+                return self._solution_over_time
+            def _solution_cache_export(filename):
+                self.export_solution(self.folder["cache"], filename)
+            def _solution_cache_filename_generator(*args, **kwargs):
+                assert len(args) is 1
+                assert args[0] == self.mu
+                return self._cache_file_from_kwargs(**kwargs)
+            self._solution_over_time_cache = Cache(
+                "problems",
+                key_generator=_solution_cache_key_generator,
+                import_=_solution_cache_import,
+                export=_solution_cache_export,
+                filename_generator=_solution_cache_filename_generator
+            )
+            self._solution_dot_over_time_cache = Cache(
+                "problems",
+                key_generator=_solution_cache_key_generator,
+                import_=_solution_cache_import,
+                export=_solution_cache_export,
+                filename_generator=_solution_cache_filename_generator
+            )
+            del self._solution_cache
+            def _output_cache_key_generator(*args, **kwargs):
+                assert len(args) is 1
+                assert args[0] == self.mu
+                return self._cache_key_from_kwargs(**kwargs)
+            def _output_cache_import(filename):
+                self.import_output(self.folder["cache"], filename)
+                return self._output_over_time
+            def _output_cache_export(filename):
+                self.export_output(self.folder["cache"], filename)
+            def _output_cache_filename_generator(*args, **kwargs):
+                assert len(args) is 1
+                assert args[0] == self.mu
+                return self._cache_file_from_kwargs(**kwargs)
+            self._output_over_time_cache = Cache(
+                "problems",
+                key_generator=_output_cache_key_generator,
+                import_=_output_cache_import,
+                export=_output_cache_export,
+                filename_generator=_output_cache_filename_generator
+            )
+            del self._output_cache
+            
         # Set current time
         def set_time(self, t):
             assert isinstance(t, Number)
@@ -221,51 +267,22 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                         raise RuntimeError("Impossible to arrive here.")
         
         def solve(self, **kwargs):
-            (cache_key, cache_file) = self._cache_key_and_file_from_kwargs(**kwargs)
-            assert (
-                (cache_key in self._solution_cache)
-                    ==
-                (cache_key in self._solution_dot_cache)
-                    ==
-                (cache_key in self._solution_over_time_cache)
-                    ==
-                (cache_key in self._solution_dot_over_time_cache)
-            )
-            if "RAM" in self.cache_config and cache_key in self._solution_cache:
-                log(PROGRESS, "Loading truth solution from cache")
-                assign(self._solution, self._solution_cache[cache_key])
-                assign(self._solution_dot, self._solution_dot_cache[cache_key])
-                assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
-                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
-            elif "Disk" in self.cache_config and (
-                self.import_solution(self.folder["cache"], cache_file + "_solution", self._solution_over_time)
-                    and
-                self.import_solution(self.folder["cache"], cache_file + "_solution_dot", self._solution_dot_over_time)
-            ):
-                log(PROGRESS, "Loading truth solution from file")
-                assign(self._solution, self._solution_over_time[-1])
-                assign(self._solution_dot, self._solution_dot_over_time[-1])
-                if "RAM" in self.cache_config:
-                    self._solution_cache[cache_key] = copy(self._solution)
-                    self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                    self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                    self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
-            else:
-                log(PROGRESS, "Solving truth problem")
+            self._latest_solve_kwargs = kwargs
+            try:
+                assign(self._solution_over_time, self._solution_over_time_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[self.mu, kwargs])
+            except KeyError:
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
                 assign(self._solution, Function(self.V))
                 assign(self._solution_dot, Function(self.V))
                 self._solve(**kwargs)
                 delattr(self, "_is_solving")
-                if "RAM" in self.cache_config:
-                    self._solution_cache[cache_key] = copy(self._solution)
-                    self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                    self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                    self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
-                # Note that we export to file regardless of config options, because they may change across different runs
-                self.export_solution(self.folder["cache"], cache_file + "_solution", self._solution_over_time)
-                self.export_solution(self.folder["cache"], cache_file + "_solution_dot", self._solution_dot_over_time)
+                self._solution_over_time_cache[self.mu, kwargs] = copy(self._solution_over_time)
+                self._solution_dot_over_time_cache[self.mu, kwargs] = copy(self._solution_dot_over_time)
+            else:
+                assign(self._solution, self._solution_over_time[-1])
+                assign(self._solution_dot, self._solution_dot_over_time[-1])
             return self._solution_over_time
             
         class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
@@ -320,22 +337,18 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             
             :return: output evaluation.
             """
-            cache_key = self._output_cache__current_cache_key
-            assert (
-                (cache_key in self._output_cache)
-                    ==
-                (cache_key in self._output_over_time_cache)
-            )
-            if "RAM" in self.cache_config and cache_key in self._output_cache:
-                log(PROGRESS, "Loading truth output from cache")
-                self._output = self._output_cache[cache_key]
-                self._output_over_time = self._output_over_time_cache[cache_key]
-            else: # No precomputed output available. Truth output is performed.
-                log(PROGRESS, "Computing truth output")
-                self._compute_output()
-                if "RAM" in self.cache_config:
-                    self._output_cache[cache_key] = self._output
-                    self._output_over_time_cache[cache_key] = self._output_over_time
+            kwargs = self._latest_solve_kwargs
+            try:
+                self._output_over_time = self._output_over_time_cache[self.mu, kwargs] # **kwargs is not supported by __getitem__
+            except KeyError:
+                try:
+                    self._compute_output()
+                except ValueError: # raised by compute_theta if output computation is optional
+                    self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+                    self._output = NotImplemented
+                self._output_over_time_cache[self.mu, kwargs] = self._output_over_time
+            else:
+                self._output = self._output_over_time[-1]
             return self._output_over_time
             
         # Perform a truth evaluation of the output

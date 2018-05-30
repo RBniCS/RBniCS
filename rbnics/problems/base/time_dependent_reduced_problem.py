@@ -19,8 +19,8 @@
 from numbers import Number
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, sync_setters
-from rbnics.utils.mpi import log, PROGRESS
 
 @RequiredBaseDecorators(None)
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -56,14 +56,33 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self.Q_ic = None # integer (for problems with one component) or dict of integers (for problem with several components)
             # Time derivative of the solution, at the current time
             self._solution_dot = None # OnlineFunction
-            self._solution_dot_cache = dict() # of Functions
             # Solution and output over time
             self._solution_over_time = list() # of Functions
             self._solution_dot_over_time = list() # of Functions
-            self._solution_over_time_cache = dict() # of list of Functions
-            self._solution_dot_over_time_cache = dict() # of list of Functions
             self._output_over_time = list() # of numbers
-            self._output_over_time_cache = dict() # of list of numbers
+            # I/O
+            def _solution_cache_key_generator(*args, **kwargs):
+                assert len(args) is 2
+                assert args[0] == self.mu
+                return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+            self._solution_over_time_cache = Cache(
+                "reduced problems",
+                key_generator=_solution_cache_key_generator
+            )
+            self._solution_dot_over_time_cache = Cache(
+                "reduced problems",
+                key_generator=_solution_cache_key_generator
+            )
+            del self._solution_cache
+            def _output_cache_key_generator(*args, **kwargs):
+                assert len(args) is 2
+                assert args[0] == self.mu
+                return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+            self._output_over_time_cache = Cache(
+                "reduced problems",
+                key_generator=_output_cache_key_generator
+            )
+            del self._output_cache
             
         # Set current time
         def set_time(self, t):
@@ -198,35 +217,22 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def solve(self, N=None, **kwargs):
             N, kwargs = self._online_size_from_kwargs(N, **kwargs)
             N += self.N_bc
+            self._latest_solve_kwargs = kwargs
             self._solution = OnlineFunction(N)
             self._solution_dot = OnlineFunction(N)
-            cache_key = self._cache_key_from_N_and_kwargs(N, **kwargs)
-            assert (
-                (cache_key in self._solution_cache)
-                    ==
-                (cache_key in self._solution_dot_cache)
-                    ==
-                (cache_key in self._solution_over_time_cache)
-                    ==
-                (cache_key in self._solution_dot_over_time_cache)
-            )
-            if "RAM" in self.cache_config and cache_key in self._solution_cache:
-                log(PROGRESS, "Loading reduced solution from cache")
-                assign(self._solution, self._solution_cache[cache_key])
-                assign(self._solution_dot, self._solution_dot_cache[cache_key])
-                assign(self._solution_over_time, self._solution_over_time_cache[cache_key])
-                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[cache_key])
-            else:
-                log(PROGRESS, "Solving reduced problem")
+            try:
+                assign(self._solution_over_time, self._solution_over_time_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
+                assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[self.mu, N, kwargs])
+            except KeyError:
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
                 self._solve(N, **kwargs)
                 delattr(self, "_is_solving")
-                if "RAM" in self.cache_config:
-                    self._solution_cache[cache_key] = copy(self._solution)
-                    self._solution_dot_cache[cache_key] = copy(self._solution_dot)
-                    self._solution_over_time_cache[cache_key] = copy(self._solution_over_time)
-                    self._solution_dot_over_time_cache[cache_key] = copy(self._solution_dot_over_time)
+                self._solution_over_time_cache[self.mu, N, kwargs] = copy(self._solution_over_time)
+                self._solution_dot_over_time_cache[self.mu, N, kwargs] = copy(self._solution_dot_over_time)
+            else:
+                assign(self._solution, self._solution_over_time[-1])
+                assign(self._solution_dot, self._solution_dot_over_time[-1])
             return self._solution_over_time
             
         class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
@@ -283,23 +289,19 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 
         # Perform an online evaluation of the output
         def compute_output(self):
-            cache_key = self._output_cache__current_cache_key
-            assert (
-                (cache_key in self._output_cache)
-                    ==
-                (cache_key in self._output_over_time_cache)
-            )
-            if "RAM" in self.cache_config and cache_key in self._output_cache:
-                log(PROGRESS, "Loading reduced output from cache")
-                self._output = self._output_cache[cache_key]
-                self._output_over_time = self._output_over_time_cache[cache_key]
-            else: # No precomputed output available. Truth output is performed.
-                log(PROGRESS, "Computing reduced output")
-                N = self._solution.N
-                self._compute_output(N)
-                if "RAM" in self.cache_config:
-                    self._output_cache[cache_key] = self._output
-                    self._output_over_time_cache[cache_key] = self._output_over_time
+            N = self._solution.N
+            kwargs = self._latest_solve_kwargs
+            try:
+                self._output_over_time = self._output_over_time_cache[self.mu, N, kwargs] # **kwargs is not supported by __getitem__
+            except KeyError:
+                try:
+                    self._compute_output(N)
+                except ValueError: # raised by compute_theta if output computation is optional
+                    self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+                    self._output = NotImplemented
+                self._output_over_time_cache[self.mu, N, kwargs] = self._output_over_time
+            else:
+                self._output = self._output_over_time[-1]
             return self._output_over_time
             
         # Perform an online evaluation of the output. Internal method

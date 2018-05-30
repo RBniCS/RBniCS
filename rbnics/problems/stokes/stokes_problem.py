@@ -16,9 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import hashlib
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum
-from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.cache import Cache
 
 StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
@@ -45,7 +46,27 @@ class StokesProblem(StokesProblem_Base):
         
         # Auxiliary storage for supremizer enrichment, using a subspace of V
         self._supremizer = Function(V, "s")
-        self._supremizer_cache = dict() # of Functions
+        # I/O
+        def _supremizer_cache_key_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._supremizer_cache_key_from_kwargs(**kwargs)
+        def _supremizer_cache_import(filename):
+            self.import_supremizer(self.folder["cache"], filename)
+            return self._supremizer
+        def _supremizer_cache_export(filename):
+            self.export_supremizer(self.folder["cache"], filename)
+        def _supremizer_cache_filename_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._supremizer_cache_file_from_kwargs(**kwargs)
+        self._supremizer_cache = Cache(
+            "problems",
+            key_generator=_supremizer_cache_key_generator,
+            import_=_supremizer_cache_import,
+            export=_supremizer_cache_export,
+            filename_generator=_supremizer_cache_filename_generator
+        )
         
     class ProblemSolver(StokesProblem_Base.ProblemSolver):
         def matrix_eval(self):
@@ -75,20 +96,12 @@ class StokesProblem(StokesProblem_Base):
             return bcs
     
     def solve_supremizer(self, solution):
-        (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self._supremizer_cache:
-            log(PROGRESS, "Loading supremizer from cache")
-            assign(self._supremizer, self._supremizer_cache[cache_key])
-        elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file):
-            log(PROGRESS, "Loading supremizer from file")
-            if "RAM" in self.cache_config:
-                self._supremizer_cache[cache_key] = copy(self._supremizer)
-        else: # No precomputed supremizer available. Truth supremizer solve is performed.
-            log(PROGRESS, "Solving supremizer problem")
+        kwargs = self._latest_solve_kwargs
+        try:
+            assign(self._supremizer, self._supremizer_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+        except KeyError:
             self._solve_supremizer(solution)
-            if "RAM" in self.cache_config:
-                self._supremizer_cache[cache_key] = copy(self._supremizer)
-            self.export_supremizer(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
+            self._supremizer_cache[self.mu, kwargs] = copy(self._supremizer)
         return self._supremizer
     
     def _solve_supremizer(self, solution):
@@ -109,8 +122,11 @@ class StokesProblem(StokesProblem_Base):
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
         
-    def _supremizer_cache_key_and_file(self):
-        return self._cache_key_and_file_from_kwargs()
+    def _supremizer_cache_key_from_kwargs(self, **kwargs):
+        return self._cache_key_from_kwargs(**kwargs)
+        
+    def _supremizer_cache_file_from_kwargs(self, **kwargs):
+        return hashlib.sha1(str(self._supremizer_cache_key_from_kwargs(**kwargs)).encode("utf-8")).hexdigest()
         
     def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         if folder is None:

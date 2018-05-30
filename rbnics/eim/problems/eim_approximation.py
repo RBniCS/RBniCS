@@ -19,9 +19,9 @@
 import os
 import hashlib
 from rbnics.problems.base import ParametrizedProblem
-from rbnics.backends import abs, copy, evaluate, export, import_, max
+from rbnics.backends import abs, assign, copy, evaluate, export, import_, max
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver
-from rbnics.utils.config import config
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToProblem
 
@@ -52,14 +52,32 @@ class EIMApproximation(ParametrizedProblem):
         
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.snapshot = None # will be filled in by Function, Vector or Matrix as appropriate in the EIM preprocessing
-        self.snapshot_cache = dict() # of Function, Vector or Matrix
         # Basis functions container
         self.basis_functions = parametrized_expression.create_basis_container()
         # I/O
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
-        self.cache_config = config.get("EIM", "cache")
+        def _snapshot_cache_key_generator(*args, **kwargs):
+            assert args == self.mu
+            assert len(kwargs) is 0
+            return self._cache_key()
+        def _snapshot_cache_import(filename):
+            self.import_solution(self.folder["cache"], filename)
+            return self.snapshot
+        def _snapshot_cache_export(filename):
+            self.export_solution(self.folder["cache"], filename)
+        def _snapshot_cache_filename_generator(*args, **kwargs):
+            assert args == self.mu
+            assert len(kwargs) is 0
+            return self._cache_file()
+        self._snapshot_cache = Cache(
+            "EIM",
+            key_generator=_snapshot_cache_key_generator,
+            import_=_snapshot_cache_import,
+            export=_snapshot_cache_export,
+            filename_generator=_snapshot_cache_filename_generator
+        )
         
     # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
@@ -77,22 +95,17 @@ class EIMApproximation(ParametrizedProblem):
             raise ValueError("Invalid stage in init().")
 
     def evaluate_parametrized_expression(self):
-        (cache_key, cache_file) = self._cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self.snapshot_cache:
-            self.snapshot = self.snapshot_cache[cache_key]
-        elif "Disk" in self.cache_config and self.import_solution(self.folder["cache"], cache_file):
-            if "RAM" in self.cache_config:
-                self.snapshot_cache[cache_key] = copy(self.snapshot)
-        else:
+        try:
+            assign(self.snapshot, self._snapshot_cache[self.mu])
+        except KeyError:
             self.snapshot = evaluate(self.parametrized_expression)
-            if "RAM" in self.cache_config:
-                self.snapshot_cache[cache_key] = copy(self.snapshot)
-            self.export_solution(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
+            self._snapshot_cache[self.mu] = copy(self.snapshot)
         
-    def _cache_key_and_file(self):
-        cache_key = self.mu
-        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-        return (cache_key, cache_file)
+    def _cache_key(self):
+        return self.mu
+        
+    def _cache_file(self):
+        return hashlib.sha1(str(self._cache_key()).encode("utf-8")).hexdigest()
         
     # Perform an online solve.
     def solve(self, N=None):

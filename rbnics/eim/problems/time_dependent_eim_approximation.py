@@ -17,7 +17,6 @@
 #
 
 from numbers import Number
-import hashlib
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.utils.decorators import sync_setters
 
@@ -76,10 +75,8 @@ class TimeDependentEIMApproximation(EIMApproximation):
         assert isinstance(T, Number)
         self.T = T
             
-    def _cache_key_and_file(self):
-        cache_key = (self.mu, self.t)
-        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-        return (cache_key, cache_file)
+    def _cache_key(self):
+        return (self.mu, self.t)
 
 class EnlargedMu(dict):
     def __str__(self):

@@ -16,9 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
+import hashlib
 from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum, transpose
-from rbnics.utils.mpi import log, PROGRESS
+from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
+from rbnics.utils.cache import Cache
 
 StokesOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
@@ -75,10 +76,44 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         self.components = ["v", "s", "p", "u", "w", "r", "q"]
         
         # Auxiliary storage for supremizer enrichment, using a subspace of V
-        self._state_supremizer = Function(V, "s")
-        self._adjoint_supremizer = Function(V, "r")
-        self._state_supremizer_cache = dict() # of Functions
-        self._adjoint_supremizer_cache = dict() # of Functions
+        self._supremizer = {
+            "s": Function(V, "s"),
+            "r": Function(V, "r")
+        }
+        # I/O
+        def _supremizer_cache_key_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._supremizer_cache_key_from_kwargs(kwargs)
+        def _supremizer_cache_import(component):
+            def _supremizer_cache_import_impl(filename):
+                self.import_supremizer(self.folder["cache"], filename, component=component)
+                return self._supremizer[component]
+            return _supremizer_cache_import_impl
+        def _supremizer_cache_export(component):
+            def _supremizer_cache_export_impl(filename):
+                self.export_supremizer(self.folder["cache"], filename, component=component)
+            return _supremizer_cache_export_impl
+        def _supremizer_cache_filename_generator(*args, **kwargs):
+            assert len(args) is 1
+            assert args[0] == self.mu
+            return self._supremizer_cache_file_from_kwargs(kwargs)
+        self._supremizer_cache = {
+            "s": Cache(
+                "problems",
+                key_generator=_supremizer_cache_key_generator,
+                import_=_supremizer_cache_import("s"),
+                export=_supremizer_cache_export("s"),
+                filename_generator=_supremizer_cache_filename_generator
+            ),
+            "r": Cache(
+                "problems",
+                key_generator=_supremizer_cache_key_generator,
+                import_=_supremizer_cache_import("r"),
+                export=_supremizer_cache_export("r"),
+                filename_generator=_supremizer_cache_filename_generator
+            )
+        }
         
     class ProblemSolver(StokesOptimalControlProblem_Base.ProblemSolver):
         def matrix_eval(self):
@@ -120,21 +155,13 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             return bcs
             
     def solve_state_supremizer(self, solution):
-        (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self._state_supremizer_cache:
-            log(PROGRESS, "Loading state supremizer from cache")
-            assign(self._state_supremizer, self._state_supremizer_cache[cache_key])
-        elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s"):
-            log(PROGRESS, "Loading state supremizer from file")
-            if "RAM" in self.cache_config:
-                self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
-        else: # No precomputed state supremizer available. Truth state supremizer solve is performed.
-            log(PROGRESS, "Solving state supremizer problem")
+        kwargs = self._latest_solve_kwargs
+        try:
+            assign(self._supremizer["s"], self._supremizer_cache["s"][self.mu, kwargs]) # **kwargs is not supported by __getitem__
+        except KeyError:
             self._solve_state_supremizer(solution)
-            if "RAM" in self.cache_config:
-                self._state_supremizer_cache[cache_key] = copy(self._state_supremizer)
-            self.export_supremizer(self.folder["cache"], cache_file, self._state_supremizer, component="s") # Note that we export to file regardless of config options, because they may change across different runs
-        return self._state_supremizer
+            self._supremizer_cache["s"][self.mu, kwargs] = copy(self._supremizer["s"])
+        return self._supremizer["s"]
         
     def _solve_state_supremizer(self, solution):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
@@ -147,7 +174,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             assembled_dirichlet_bc = None
         solver = LinearSolver(
             assembled_operator_lhs,
-            self._state_supremizer,
+            self._supremizer["s"],
             assembled_operator_rhs,
             assembled_dirichlet_bc
         )
@@ -155,21 +182,13 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         solver.solve()
         
     def solve_adjoint_supremizer(self, solution):
-        (cache_key, cache_file) = self._supremizer_cache_key_and_file()
-        if "RAM" in self.cache_config and cache_key in self._adjoint_supremizer_cache:
-            log(PROGRESS, "Loading adjoint supremizer from cache")
-            assign(self._adjoint_supremizer, self._adjoint_supremizer_cache[cache_key])
-        elif "Disk" in self.cache_config and self.import_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r"):
-            log(PROGRESS, "Loading adjoint supremizer from file")
-            if "RAM" in self.cache_config:
-                self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
-        else: # No precomputed adjoint supremizer available. Truth adjoint supremizer solve is performed.
-            log(PROGRESS, "Solving adjoint supremizer problem")
+        kwargs = self._latest_solve_kwargs
+        try:
+            assign(self._supremizer["r"], self._supremizer_cache["r"][self.mu, kwargs]) # **kwargs is not supported by __getitem__
+        except KeyError:
             self._solve_adjoint_supremizer(solution)
-            if "RAM" in self.cache_config:
-                self._adjoint_supremizer_cache[cache_key] = copy(self._adjoint_supremizer)
-            self.export_supremizer(self.folder["cache"], cache_file, self._adjoint_supremizer, component="r") # Note that we export to file regardless of config options, because they may change across different runs
-        return self._adjoint_supremizer
+            self._supremizer_cache["r"][self.mu, kwargs] = copy(self._supremizer["r"])
+        return self._supremizer["r"]
         
     def _solve_adjoint_supremizer(self, solution):
         assert len(self.inner_product["r"]) == 1 # the affine expansion storage contains only the inner product matrix
@@ -182,15 +201,18 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             assembled_dirichlet_bc = None
         solver = LinearSolver(
             assembled_operator_lhs,
-            self._adjoint_supremizer,
+            self._supremizer["r"],
             assembled_operator_rhs,
             assembled_dirichlet_bc
         )
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
         
-    def _supremizer_cache_key_and_file(self):
-        return self._cache_key_and_file_from_kwargs()
+    def _supremizer_cache_key_from_kwargs(self, **kwargs):
+        return self._cache_key_from_kwargs(**kwargs)
+        
+    def _supremizer_cache_file_from_kwargs(self, **kwargs):
+        return hashlib.sha1(str(self._supremizer_cache_key_from_kwargs(**kwargs)).encode("utf-8")).hexdigest()
         
     # Perform a truth evaluation of the cost functional
     def _compute_output(self):
@@ -207,18 +229,20 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         assert folder is not None
         assert filename is not None
-        assert supremizer is not None
         assert component is not None
         assert isinstance(component, str)
+        if supremizer is None:
+            supremizer = self._supremizer[component]
         export(supremizer, folder, filename + "_" + component, suffix, component)
         
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         assert folder is not None
         assert filename is not None
-        assert supremizer is not None
         assert component is not None
         assert isinstance(component, str)
-        return import_(supremizer, folder, filename + "_" + component, suffix, component)
+        if supremizer is None:
+            supremizer = self._supremizer[component]
+        import_(supremizer, folder, filename + "_" + component, suffix, component)
         
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:

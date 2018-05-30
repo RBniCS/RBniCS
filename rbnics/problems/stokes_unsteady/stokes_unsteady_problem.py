@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
+import hashlib
 from rbnics.problems.base import LinearTimeDependentProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import copy, product, sum
@@ -33,20 +33,20 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             self.terms.append("m")
             self.terms_order.update({"m": 2})
             
-            # Auxiliary storage for supremizer enrichment, using a subspace of V
-            self._supremizer_over_time = list() # of Functions
-            
         def solve_supremizer(self, solution):
             return copy(AbstractCFDUnsteadyProblem_Base.solve_supremizer(self, solution))
             
         def _solve_supremizer(self, solution):
             print("# t = {0:g}".format(self.t))
             AbstractCFDUnsteadyProblem_Base._solve_supremizer(self, solution)
-        
-        def _supremizer_cache_key_and_file(self):
-            (cache_key, cache_file) = AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_and_file(self)
+            
+        def _supremizer_cache_key_from_kwargs(self, **kwargs):
+            cache_key = AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_from_kwargs(self, **kwargs)
             cache_key += (int(round(self.t/self.dt)), )
-            return (cache_key, cache_file)
+            return cache_key
+            
+        def _supremizer_cache_file_from_kwargs(self, **kwargs):
+            return hashlib.sha1(str(AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_from_kwargs(self, **kwargs)).encode("utf-8")).hexdigest()
             
         def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None

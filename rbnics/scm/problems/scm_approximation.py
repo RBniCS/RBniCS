@@ -21,10 +21,9 @@ import hashlib
 from rbnics.backends import export, import_, LinearProgramSolver
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
-from rbnics.utils.config import config
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 from rbnics.utils.io import GreedySelectedParametersList
-from rbnics.utils.mpi import log, PROGRESS
 from rbnics.scm.utils.io import BoundingBoxSideList, UpperBoundsList
 from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
@@ -51,10 +50,47 @@ class SCMApproximation(ParametrizedProblem):
         self.M_e = kwargs["M_e"] # integer denoting the number of constraints based on the exact eigenvalues, or None
         self.M_p = kwargs["M_p"] # integer denoting the number of constraints based on the previous lower bounds, or None
         
+        # Storage for online computations
+        self._alpha_LB = 0.
+        self._alpha_UB = 0.
+        
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "reduced_cache")
-        self.cache_config = config.get("SCM", "cache")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
+        def _alpha_cache_key_generator(*args, **kwargs):
+            assert len(args) is 2
+            assert args[0] == self.mu
+            assert len(kwargs) is 0
+            return self._cache_key(args[1])
+        def _alpha_cache_filename_generator(*args, **kwargs):
+            assert len(args) is 2
+            assert args[0] == self.mu
+            assert len(kwargs) is 0
+            return self._cache_file(args[1])
+        def _alpha_LB_cache_import(filename):
+            self.import_stability_factor_lower_bound(self.folder["cache"], filename)
+            return self._alpha_LB
+        def _alpha_LB_cache_export(filename):
+            self.export_stability_factor_lower_bound(self.folder["cache"], filename)
+        self._alpha_LB_cache = Cache(
+            "SCM",
+            key_generator=_alpha_cache_key_generator,
+            import_=_alpha_LB_cache_import,
+            export=_alpha_LB_cache_export,
+            filename_generator=_alpha_cache_filename_generator
+        )
+        def _alpha_UB_cache_import(filename):
+            self.import_stability_factor_upper_bound(self.folder["cache"], filename)
+            return self._alpha_UB
+        def _alpha_UB_cache_export(filename):
+            self.export_stability_factor_upper_bound(self.folder["cache"], filename)
+        self._alpha_UB_cache = Cache(
+            "SCM",
+            key_generator=_alpha_cache_key_generator,
+            import_=_alpha_UB_cache_import,
+            export=_alpha_UB_cache_export,
+            filename_generator=_alpha_cache_filename_generator
+        )
         
         # Coercivity constant eigen problem
         self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(truth_problem, "a", True, "smallest", kwargs["coercivity_eigensolver_parameters"], self.folder_prefix)
@@ -64,12 +100,6 @@ class SCMApproximation(ParametrizedProblem):
         self._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"] = kwargs["bounding_box_minimum_eigensolver_parameters"]
         self._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"] = kwargs["bounding_box_maximum_eigensolver_parameters"]
         
-        # Avoid useless linear programming solves
-        self._alpha_LB = 0.
-        self._alpha_LB_cache = dict()
-        self._alpha_UB = 0.
-        self._alpha_UB_cache = dict()
-    
     # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         assert current_stage in ("online", "offline")
@@ -106,148 +136,137 @@ class SCMApproximation(ParametrizedProblem):
     def get_stability_factor_lower_bound(self, N=None):
         if N is None:
             N = self.N
+        try:
+            self._alpha_LB = self._alpha_LB_cache[self.mu, N]
+        except KeyError:
+            self._get_stability_factor_lower_bound(N)
+            self._alpha_LB_cache[self.mu, N] = self._alpha_LB
+        return self._alpha_LB
+        
+    def _get_stability_factor_lower_bound(self, N):
         assert N <= len(self.greedy_selected_parameters)
-        (cache_key, cache_file) = self._cache_key_and_file(N)
-        if "RAM" in self.cache_config and cache_key in self._alpha_LB_cache:
-            log(PROGRESS, "Loading stability factor lower bound from cache")
-            self._alpha_LB = self._alpha_LB_cache[cache_key]
-        elif "Disk" in self.cache_config and self.import_stability_factor_lower_bound(self.folder["cache"], cache_file):
-            log(PROGRESS, "Loading stability factor lower bound from file")
-            if "RAM" in self.cache_config:
-                self._alpha_LB_cache[cache_key] = self._alpha_LB
-        else:
-            log(PROGRESS, "Solving stability factor lower bound reduced problem")
-            Q = self.truth_problem.Q["a"]
-            M_e = min(self.M_e if self.M_e is not None else N, N, len(self.greedy_selected_parameters))
-            M_p = min(self.M_p if self.M_p is not None else N, N, len(self.training_set) - len(self.greedy_selected_parameters))
+        Q = self.truth_problem.Q["a"]
+        M_e = min(self.M_e if self.M_e is not None else N, N, len(self.greedy_selected_parameters))
+        M_p = min(self.M_p if self.M_p is not None else N, N, len(self.training_set) - len(self.greedy_selected_parameters))
+        
+        # 1. Constrain the Q variables to be in the bounding box
+        bounds = list() # of Q pairs
+        for q in range(Q):
+            assert self.B_min[q] <= self.B_max[q]
+            bounds.append((self.B_min[q], self.B_max[q]))
             
-            # 1. Constrain the Q variables to be in the bounding box
-            bounds = list() # of Q pairs
-            for q in range(Q):
-                assert self.B_min[q] <= self.B_max[q]
-                bounds.append((self.B_min[q], self.B_max[q]))
-                
-            # 2. Add three different sets of constraints.
-            #    Our constrains are of the form
-            #       a^T * x >= b
-            constraints_matrix = Matrix(M_e + M_p + 1, Q)
-            constraints_vector = Vector(M_e + M_p + 1)
+        # 2. Add three different sets of constraints.
+        #    Our constrains are of the form
+        #       a^T * x >= b
+        constraints_matrix = Matrix(M_e + M_p + 1, Q)
+        constraints_vector = Vector(M_e + M_p + 1)
+        
+        # 2a. Add constraints: a constraint is added for the closest samples to mu among the selected parameters
+        mu_bak = self.mu
+        closest_selected_parameters = self._closest_selected_parameters(M_e, N, self.mu)
+        for (j, omega) in enumerate(closest_selected_parameters):
+            # Overwrite parameter values
+            self.set_mu(omega)
             
-            # 2a. Add constraints: a constraint is added for the closest samples to mu among the selected parameters
-            mu_bak = self.mu
-            closest_selected_parameters = self._closest_selected_parameters(M_e, N, self.mu)
-            for (j, omega) in enumerate(closest_selected_parameters):
-                # Overwrite parameter values
-                self.set_mu(omega)
-                
-                # Compute theta
-                current_theta_a = self.truth_problem.compute_theta("a")
-                
-                # Assemble the LHS of the constraint
-                for q in range(Q):
-                    constraints_matrix[j, q] = current_theta_a[q]
-                
-                # Assemble the RHS of the constraint
-                (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call may be already cached
-            self.set_mu(mu_bak)
-            
-            # 2b. Add constraints: also constrain the closest point in the complement of selected parameters,
-            #                      with RHS depending on previously computed lower bounds
-            mu_bak = self.mu
-            closest_selected_parameters_complement = self._closest_unselected_parameters(M_p, N, self.mu)
-            for (j, nu) in enumerate(closest_selected_parameters_complement):
-                # Overwrite parameter values
-                self.set_mu(nu)
-                
-                # Compute theta
-                current_theta_a = self.truth_problem.compute_theta("a")
-                
-                # Assemble the LHS of the constraint
-                for q in range(Q):
-                    constraints_matrix[M_e + j, q] = current_theta_a[q]
-                    
-                # Assemble the RHS of the constraint
-                if N > 1:
-                    constraints_vector[M_e + j] = self.get_stability_factor_lower_bound(N - 1) # note that computations for this call may be already cached
-                else:
-                    constraints_vector[M_e + j] = 0.
-            self.set_mu(mu_bak)
-            
-            # 2c. Add constraints: also constrain the coercivity constant for mu to be positive
             # Compute theta
             current_theta_a = self.truth_problem.compute_theta("a")
             
             # Assemble the LHS of the constraint
             for q in range(Q):
-                constraints_matrix[M_e + M_p, q] = current_theta_a[q]
+                constraints_matrix[j, q] = current_theta_a[q]
+            
+            # Assemble the RHS of the constraint
+            (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call may be already cached
+        self.set_mu(mu_bak)
+        
+        # 2b. Add constraints: also constrain the closest point in the complement of selected parameters,
+        #                      with RHS depending on previously computed lower bounds
+        mu_bak = self.mu
+        closest_selected_parameters_complement = self._closest_unselected_parameters(M_p, N, self.mu)
+        for (j, nu) in enumerate(closest_selected_parameters_complement):
+            # Overwrite parameter values
+            self.set_mu(nu)
+            
+            # Compute theta
+            current_theta_a = self.truth_problem.compute_theta("a")
+            
+            # Assemble the LHS of the constraint
+            for q in range(Q):
+                constraints_matrix[M_e + j, q] = current_theta_a[q]
                 
             # Assemble the RHS of the constraint
-            constraints_vector[M_e + M_p] = 0.
+            if N > 1:
+                constraints_vector[M_e + j] = self.get_stability_factor_lower_bound(N - 1) # note that computations for this call may be already cached
+            else:
+                constraints_vector[M_e + j] = 0.
+        self.set_mu(mu_bak)
+        
+        # 2c. Add constraints: also constrain the coercivity constant for mu to be positive
+        # Compute theta
+        current_theta_a = self.truth_problem.compute_theta("a")
+        
+        # Assemble the LHS of the constraint
+        for q in range(Q):
+            constraints_matrix[M_e + M_p, q] = current_theta_a[q]
             
-            # 3. Add cost function coefficients
-            cost = Vector(Q)
-            for q in range(Q):
-                cost[q] = current_theta_a[q]
+        # Assemble the RHS of the constraint
+        constraints_vector[M_e + M_p] = 0.
+        
+        # 3. Add cost function coefficients
+        cost = Vector(Q)
+        for q in range(Q):
+            cost[q] = current_theta_a[q]
+        
+        # 4. Solve the linear programming problem
+        linear_program = LinearProgramSolver(cost, constraints_matrix, constraints_vector, bounds)
+        try:
+            alpha_LB = linear_program.solve()
+        except LinearProgramSolverError:
+            print("SCM warning at mu = " + str(self.mu) + ": error occured while solving linear program.")
+            print("Please consider switching to a different solver. A truth eigensolve will be performed.")
             
-            # 4. Solve the linear programming problem
-            linear_program = LinearProgramSolver(cost, constraints_matrix, constraints_vector, bounds)
-            try:
-                alpha_LB = linear_program.solve()
-            except LinearProgramSolverError:
-                print("SCM warning at mu = " + str(self.mu) + ": error occured while solving linear program.")
-                print("Please consider switching to a different solver. A truth eigensolve will be performed.")
-                
-                (alpha_LB, _) = self.evaluate_stability_factor()
-            
-            self._alpha_LB = alpha_LB
-            if "RAM" in self.cache_config:
-                self._alpha_LB_cache[cache_key] = alpha_LB
-            self.export_stability_factor_lower_bound(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
-        return self._alpha_LB
-
+            (alpha_LB, _) = self.evaluate_stability_factor()
+        
+        self._alpha_LB = alpha_LB
+        
     # Get an upper bound for alpha
     def get_stability_factor_upper_bound(self, N=None):
         if N is None:
             N = self.N
-        (cache_key, cache_file) = self._cache_key_and_file(N)
-        if "RAM" in self.cache_config and cache_key in self._alpha_UB_cache:
-            log(PROGRESS, "Loading stability factor upper bound from cache")
-            self._alpha_UB = self._alpha_UB_cache[cache_key]
-        elif "Disk" in self.cache_config and self.import_stability_factor_upper_bound(self.folder["cache"], cache_file):
-            log(PROGRESS, "Loading stability factor upper bound from file")
-            if "RAM" in self.cache_config:
-                self._alpha_UB_cache[cache_key] = self._alpha_UB
-        else:
-            log(PROGRESS, "Solving stability factor upper bound reduced problem")
-            Q = self.truth_problem.Q["a"]
-            UB_vectors = self.UB_vectors
-            
-            alpha_UB = None
-            current_theta_a = self.truth_problem.compute_theta("a")
-            
-            for j in range(N):
-                UB_vector = UB_vectors[j]
-                
-                # Compute the cost function for fixed omega
-                obj = 0.
-                for q in range(Q):
-                    obj += UB_vector[q]*current_theta_a[q]
-                
-                if alpha_UB is None or obj < alpha_UB:
-                    alpha_UB = obj
-            
-            assert alpha_UB is not None
-            self._alpha_UB = alpha_UB
-            if "RAM" in self.cache_config:
-                self._alpha_UB_cache[cache_key] = alpha_UB
-            self.export_stability_factor_upper_bound(self.folder["cache"], cache_file) # Note that we export to file regardless of config options, because they may change across different runs
+        try:
+            self._alpha_UB = self._alpha_UB_cache[self.mu, N]
+        except KeyError:
+            self._get_stability_factor_upper_bound(N)
+            self._alpha_UB_cache[self.mu, N] = self._alpha_UB
         return self._alpha_UB
+        
+    def _get_stability_factor_upper_bound(self, N):
+        Q = self.truth_problem.Q["a"]
+        UB_vectors = self.UB_vectors
+        
+        alpha_UB = None
+        current_theta_a = self.truth_problem.compute_theta("a")
+        
+        for j in range(N):
+            UB_vector = UB_vectors[j]
             
-    def _cache_key_and_file(self, N):
-        cache_key = (self.mu, N)
-        cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-        return (cache_key, cache_file)
-
+            # Compute the cost function for fixed omega
+            obj = 0.
+            for q in range(Q):
+                obj += UB_vector[q]*current_theta_a[q]
+            
+            if alpha_UB is None or obj < alpha_UB:
+                alpha_UB = obj
+        
+        assert alpha_UB is not None
+        self._alpha_UB = alpha_UB
+                    
+    def _cache_key(self, N):
+        return (self.mu, N)
+        
+    def _cache_file(self, N):
+        return hashlib.sha1(str(self._cache_key(N)).encode("utf-8")).hexdigest()
+        
     def _closest_selected_parameters(self, M, N, mu):
         return self.greedy_selected_parameters[:N].closest(M, mu)
         

@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import hashlib
 import inspect
 from rbnics.backends import SymbolicParameters
 from rbnics.eim.backends import OfflineOnlineBackend
@@ -166,18 +165,15 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 # Return
                 return output
                 
-            def _cache_key_and_file_from_kwargs(self, **kwargs):
-                (cache_key, cache_file) = ParametrizedDifferentialProblem_DerivedClass._cache_key_and_file_from_kwargs(self, **kwargs)
+            def _cache_key_from_kwargs(self, **kwargs):
+                cache_key = ParametrizedDifferentialProblem_DerivedClass._cache_key_from_kwargs(self, **kwargs)
                 # Change cache key depending on current stage
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
                 if OfflineOnlineSwitch.get_current_stage() in self._apply_exact_evaluation_at_stages:
                     # Append current stage to cache key
                     cache_key = cache_key + ("exact_evaluation", )
-                    cache_file = hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-                    # Update current cache_key to be used when computing output
-                    self._output_cache__current_cache_key = cache_key
                 # Return
-                return (cache_key, cache_file)
+                return cache_key
                 
         # return value (a class) for the decorator
         return ExactParametrizedFunctionsDecoratedProblem_Class

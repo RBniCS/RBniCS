@@ -94,17 +94,11 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if force:
                 # Make sure to clean up problem and reduced problem solution cache to ensure that
                 # solution and reduced solution are actually computed
-                other_truth_problem._solution_cache.clear()
-                other_truth_problem._solution_dot_cache.clear()
                 other_truth_problem._solution_over_time_cache.clear()
                 other_truth_problem._solution_dot_over_time_cache.clear()
-                other_truth_problem._output_cache.clear()
                 other_truth_problem._output_over_time_cache.clear()
-                self.reduced_problem._solution_cache.clear()
-                self.reduced_problem._solution_dot_cache.clear()
                 self.reduced_problem._solution_over_time_cache.clear()
                 self.reduced_problem._solution_dot_over_time_cache.clear()
-                self.reduced_problem._output_cache.clear()
                 self.reduced_problem._output_over_time_cache.clear()
                 
                 # Disable the capability of importing/exporting truth solutions
