@@ -439,10 +439,6 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         
         # Export solution to file
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
-            if folder is None:
-                folder = self.folder_prefix
-            if filename is None:
-                filename = "solution"
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             solution_over_time_as_truth_function = list()
@@ -457,6 +453,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
                 error_function_over_time.append(truth_solution - self.basis_functions[:reduced_solution.N]*reduced_solution)
             self.truth_problem.export_solution(folder, filename, error_function_over_time, component, suffix)
+            
+        def export_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
+            self.truth_problem.export_output(folder, filename, output_over_time, suffix)
             
     # return value (a class) for the decorator
     return TimeDependentReducedProblem_Class

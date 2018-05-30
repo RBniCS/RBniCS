@@ -107,6 +107,36 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 k += 1
                 self.t += self.dt
                 
+        def export_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
+            if folder is None:
+                folder = self.folder_prefix
+            if filename is None:
+                filename = "solution"
+            if output_over_time is None:
+                output_over_time = self._output_over_time
+            assert suffix is None
+            for (k, output) in enumerate(output_over_time):
+                ParametrizedDifferentialProblem_DerivedClass.export_output(self, folder, filename, [output], suffix=k)
+                
+        def import_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
+            if folder is None:
+                folder = self.folder_prefix
+            if filename is None:
+                filename = "solution"
+            output = [0.]
+            if output_over_time is None:
+                output_over_time = self._output_over_time
+            assert suffix is None
+            k = 0
+            self.t = 0
+            del output_over_time[:]
+            while self.t <= self.T:
+                ParametrizedDifferentialProblem_DerivedClass.import_output(self, folder, filename, output, suffix=k)
+                assert len(output) is 1
+                output_over_time.append(output[0])
+                k += 1
+                self.t += self.dt
+                
         # Initialize data structures required for the offline phase
         def init(self):
             ParametrizedDifferentialProblem_DerivedClass.init(self)

@@ -625,6 +625,9 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         truth_solution = self.truth_problem._solution
         error_function = truth_solution - reduced_solution
         self.truth_problem.export_solution(folder, filename, error_function, component, suffix)
+        
+    def export_output(self, folder=None, filename=None, output=None, suffix=None):
+        self.truth_problem.export_output(folder, filename, output, suffix)
 
     def compute_theta(self, term):
         """

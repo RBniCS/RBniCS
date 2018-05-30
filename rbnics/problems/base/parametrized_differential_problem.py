@@ -19,6 +19,7 @@
 from abc import ABCMeta, abstractmethod
 import os
 import hashlib
+from numbers import Number
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.config import config
@@ -385,6 +386,41 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 import_(solution, folder, filename + "_" + c, suffix, c)
         else:
             raise TypeError("Invalid component in import_solution()")
+            
+    def export_output(self, folder=None, filename=None, output=None, suffix=None):
+        """
+        Export solution to file.
+        """
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "solution"
+        if output is None:
+            output = [self._output]
+        else:
+            assert isinstance(output, list)
+            assert len(output) is 1
+        export(output, folder, filename + "_output", suffix)
+            
+    def import_output(self, folder=None, filename=None, output=None, suffix=None):
+        """
+        Import solution from file.
+        """
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "solution"
+        if output is None:
+            output = [0.]
+            import_(output, folder, filename + "_output", suffix)
+            assert len(output) is 1
+            assert isinstance(output[0], Number)
+            self._output = output[0]
+        else:
+            assert isinstance(output, list)
+            assert len(output) is 1
+            assert isinstance(output[0], Number)
+            import_(output, folder, filename + "_output", suffix)
     
     @abstractmethod
     def compute_theta(self, term):
