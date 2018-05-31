@@ -19,7 +19,9 @@
 from math import log
 from numpy import linspace, random
 import scipy.stats as stats
+import matplotlib
 import matplotlib.pyplot as plt
+from distutils.version import LooseVersion
 from rbnics.sampling import ParameterSpaceSubset
 from rbnics.sampling.distributions import DrawFrom, EquispacedDistribution, LogUniformDistribution, UniformDistribution
 
@@ -39,7 +41,15 @@ def plot(p, box, set_, bins, generator=None, *args, **kwargs):
         distribution = generator(*args, **kwargs)
         x = linspace(sub_box_p[0], sub_box_p[1], bins**2)
         ax.plot(x, distribution.pdf(x), 'r-', lw=2)
-    ax.hist(sub_set_p, bins=bins, normed=True, histtype='stepfilled', alpha=0.2)
+    hist_kwargs = dict()
+    hist_kwargs["bins"] = bins
+    if LooseVersion(matplotlib.__version__) < LooseVersion("2.2"):
+        hist_kwargs["normed"] = True
+    else:
+        hist_kwargs["density"] = True
+    hist_kwargs["histtype"] = "stepfilled"
+    hist_kwargs["alpha"] = 0.2
+    ax.hist(sub_set_p, **hist_kwargs)
     
 class stats_equispaced(object):
     def __init__(self, *args, **kwargs):
