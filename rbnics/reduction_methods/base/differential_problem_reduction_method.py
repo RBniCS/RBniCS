@@ -67,7 +67,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         optional_folders["error_analysis"] = required_folders.pop("error_analysis") # this is required only in the error analysis
         optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis") # this is required only in the speedup analysis
         at_least_one_required_folder_created = required_folders.create()
-        at_least_one_optional_folder_created = optional_folders.create()
+        at_least_one_optional_folder_created = optional_folders.create()  # noqa
         if not at_least_one_required_folder_created:
             return False # offline construction should be skipped, since data are already available
         else:
