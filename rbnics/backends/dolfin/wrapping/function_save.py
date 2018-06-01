@@ -46,16 +46,16 @@ class SolutionFile_Base(object):
             os.remove(full_filename + "_index.sfx")
         
     def write(self, function, name, index):
-        # Update function container
-        if self._last_index == -1:
-            assert self._function_container is None
-            self._function_container = function.copy()
-        else:
-            assert self._last_index == index - 1
-            assign(self._function_container, function)
+        pass
         
     def read(self, function, name, index):
         pass
+        
+    def _update_function_container(self, function):
+        if self._function_container is None:
+            self._function_container = function.copy()
+        else:
+            assign(self._function_container, function)
         
     def _init_last_index(self):
         if IndexIO.exists_file(self._directory, self._filename + "_index.sfx"):
@@ -80,12 +80,21 @@ if not has_hdf5() or not has_hdf5_parallel():
             # No need to remove further files, PVD and XML will get automatically truncated
             
         def write(self, function, name, index):
-            SolutionFile_Base.write(self, function, name, index)
-            self._visualization_file << self._function_container
-            restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
-            restart_file << self._function_container
-            # Once solutions have been written to file, update last written index
-            self._write_last_index(index)
+            assert index in (self._last_index, self._last_index + 1)
+            if index == self._last_index + 1: # writing out solutions after time stepping
+                self._update_function_container(function)
+                self._visualization_file << self._function_container
+                restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
+                restart_file << self._function_container
+                # Once solutions have been written to file, update last written index
+                self._write_last_index(index)
+            elif index == self._last_index:
+                # corner case for problems with two (or more) unknowns which are written separately to file;
+                # one unknown was written to file, while the other was not: since the problem might be coupled,
+                # a recomputation of both is required, but there is no need to update storage
+                pass
+            else:
+                raise ValueError("Invalid index")
             
         def read(self, function, name, index):
             if index <= self._last_index:
@@ -119,24 +128,34 @@ else:
                 os.remove(full_filename + "_checkpoint.h5")
             
         def write(self, function, name, index):
-            SolutionFile_Base.write(self, function, name, index)
-            time = float(index)
-            self._visualization_file.write(self._function_container, time)
-            bak_log_level = get_log_level()
-            set_log_level(int(WARNING) + 1) # disable xdmf logs)
-            if self.append_attribute:
-                self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
+            assert index in (self._last_index, self._last_index + 1)
+            if index == self._last_index + 1: # writing out solutions after time stepping
+                self._update_function_container(function)
+                time = float(index)
+                self._visualization_file.write(self._function_container, time)
+                bak_log_level = get_log_level()
+                set_log_level(int(WARNING) + 1) # disable xdmf logs)
+                if self.append_attribute:
+                    self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
+                else:
+                    self._restart_file.write_checkpoint(self._function_container, name, time)
+                set_log_level(bak_log_level)
+                # Once solutions have been written to file, update last written index
+                self._write_last_index(index)
+            elif index == self._last_index:
+                # corner case for problems with two (or more) unknowns which are written separately to file;
+                # one unknown was written to file, while the other was not: since the problem might be coupled,
+                # a recomputation of both is required, but there is no need to update storage
+                pass
             else:
-                self._restart_file.write_checkpoint(self._function_container, name, time)
-            set_log_level(bak_log_level)
-            # Once solutions have been written to file, update last written index
-            self._write_last_index(index)
+                raise ValueError("Invalid index")
             
         def read(self, function, name, index):
             if index <= self._last_index:
                 time = float(index)
                 self._restart_file.read_checkpoint(function, name, index)
-                self._visualization_file.write(function, time)
+                self._update_function_container(function)
+                self._visualization_file.write(self._function_container, time)
             else:
                 raise OSError
 
