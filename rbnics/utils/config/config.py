@@ -34,22 +34,21 @@ class Config(object):
         "EIM": {
             "cache": {"disk", "RAM"},
             "disk cache limit": "unlimited",
-            "RAM cache limit": "unlimited"
+            "RAM cache limit": "1"
         },
         "problems": {
             "cache": {"disk", "RAM"},
             "disk cache limit": "unlimited",
-            "RAM cache limit": "unlimited"
+            "RAM cache limit": "1"
         },
         "reduced problems": {
             "cache": {"RAM"},
-            "disk cache limit": "unlimited",
             "RAM cache limit": "unlimited"
         },
         "SCM": {
             "cache": {"disk", "RAM"},
             "disk cache limit": "unlimited",
-            "RAM cache limit": "unlimited"
+            "RAM cache limit": "1"
         }
     }
     
