@@ -27,9 +27,6 @@ except ImportError:
     linear_programming_backends["cvxopt"] = False
 else:
     linear_programming_backends["cvxopt"] = True
-    # Set global options
-    cvxopt.solvers.options["show_progress"] = False
-    cvxopt.solvers.options["glpk"] = {"msg_lev": "GLP_MSG_OFF"}
 
 try:
     from scipy.optimize import linprog
@@ -69,7 +66,7 @@ if linear_programming_backends["cvxopt"]:
             self.inequality_constraints_vector = cvxopt.matrix(hstack((- inequality_constraints_vector, bounds_lower, bounds_upper)))
             
         def solve(self):
-            result = cvxopt.solvers.lp(self.cost, self.inequality_constraints_matrix, self.inequality_constraints_vector, solver="glpk")
+            result = cvxopt.solvers.lp(self.cost, self.inequality_constraints_matrix, self.inequality_constraints_vector, solver="glpk", options={"glpk": {"msg_lev": "GLP_MSG_OFF"}})
             if result["status"] != "optimal":
                 raise Error("Linear program solver reports convergence failure with reason", result["status"])
             else:

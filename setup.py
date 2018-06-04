@@ -96,7 +96,7 @@ setup(name="RBniCS",
       packages=find_packages(),
       include_package_data=True,
       install_requires=[
-          "cvxopt",
+          "cvxopt>=1.2.0",
           "mpi4py",
           "multipledispatch>=0.5.0",
           "pytest-runner",
