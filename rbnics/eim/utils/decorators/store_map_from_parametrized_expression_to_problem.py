@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
@@ -37,13 +36,11 @@ def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
 def add_to_map_from_parametrized_expression_to_problem(parametrized_expression, problem):
     if hasattr(type(problem), "__is_exact__"):
         problem = problem.__decorated_problem__
-    if parametrized_expression not in _parametrized_expression_to_problem_map:
-        _parametrized_expression_to_problem_map[parametrized_expression] = problem
+    if not hasattr(parametrized_expression, "_problem"):
+        setattr(parametrized_expression, "_problem", problem)
     else:
-        assert _parametrized_expression_to_problem_map[parametrized_expression] is problem
+        assert parametrized_expression._problem is problem
     
 def get_problem_from_parametrized_expression(parametrized_expression):
-    assert parametrized_expression in _parametrized_expression_to_problem_map
-    return _parametrized_expression_to_problem_map[parametrized_expression]
-    
-_parametrized_expression_to_problem_map = Cache()
+    assert hasattr(parametrized_expression, "_problem")
+    return parametrized_expression._problem
