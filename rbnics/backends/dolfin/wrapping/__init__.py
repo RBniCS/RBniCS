@@ -59,6 +59,7 @@ from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_s
 from rbnics.backends.dolfin.wrapping.get_global_dof_component import get_global_dof_component
 from rbnics.backends.dolfin.wrapping.get_global_dof_coordinates import get_global_dof_coordinates
 from rbnics.backends.dolfin.wrapping.get_global_dof_to_local_dof_map import get_global_dof_to_local_dof_map
+from rbnics.backends.dolfin.wrapping.get_local_dof_to_component_map import get_local_dof_to_component_map
 from rbnics.backends.dolfin.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.dolfin.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from rbnics.backends.dolfin.wrapping.is_parametrized import is_parametrized
@@ -125,6 +126,7 @@ __all__ = [
     'get_global_dof_component',
     'get_global_dof_coordinates',
     'get_global_dof_to_local_dof_map',
+    'get_local_dof_to_component_map',
     'get_mpi_comm',
     'gram_schmidt_projection_step',
     'is_parametrized',
