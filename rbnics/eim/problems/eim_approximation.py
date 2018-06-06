@@ -51,7 +51,7 @@ class EIMApproximation(ParametrizedProblem):
         self._interpolation_coefficients = None # OnlineFunction
         
         # $$ OFFLINE DATA STRUCTURES $$ #
-        self.snapshot = None # will be filled in by Function, Vector or Matrix as appropriate in the EIM preprocessing
+        self.snapshot = parametrized_expression.create_empty_snapshot()
         # Basis functions container
         self.basis_functions = parametrized_expression.create_basis_container()
         # I/O
@@ -184,7 +184,5 @@ class EIMApproximation(ParametrizedProblem):
     # Import solution from file
     def import_solution(self, folder, filename, solution=None):
         if solution is None:
-            if self.snapshot is None:
-                self.snapshot = self.parametrized_expression.create_empty_snapshot()
             solution = self.snapshot
         import_(solution, folder, filename)
