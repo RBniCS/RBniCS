@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import hashlib
 from numbers import Number
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
@@ -82,9 +83,17 @@ def ParametrizedTensorFactory(backend, wrapping):
             form_sum = self._form + other._form
             output = _ParametrizedTensorFactory.__new__(type(self), form_sum)
             output.__init__(form_sum)
+            # Set corresponding problem
             problems = [get_problem_from_parametrized_operator(operator) for operator in (self, other)]
             assert all([problem is problems[0] for problem in problems])
             add_to_map_from_parametrized_operator_to_problem(output, problems[0])
+            # Automatically compute name starting from names of addends
+            output._name = _ParametrizedTensorFactory._hash_name(self.name() + " + " + other.name())
+            # This method is only used by exact parametrized operator evaluations, and not by DEIM.
+            # Thus, description (which is called by DEIM during the offline phase) must never be used,
+            # and the code should give an error if it is used by mistake.
+            del output._description
+            # Return
             return output
             
         @overload(lambda cls: cls)
@@ -96,7 +105,21 @@ def ParametrizedTensorFactory(backend, wrapping):
             form_mul = self._form*other
             output = _ParametrizedTensorFactory.__new__(type(self), form_mul)
             output.__init__(form_mul)
+            # Set corresponding problem
             add_to_map_from_parametrized_operator_to_problem(output, get_problem_from_parametrized_operator(self))
+            # Do not recompute name, as the computed name would:
+            # * account that other is a solution (or its derivative) while called from an high fidelity solve, because of
+            #   known mapping from truth solution to truth problem.
+            # * not be able account that other is the high fidelity representation of a reduced solution, because mapping
+            #   from (high fidelity representation of) reduced solution to truth problem is not known, as a new
+            #   reduced solution (and corresponding representation) is generated at every reduced solve
+            # Simply re-use the existing name with a custom suffix.
+            output._name = _ParametrizedTensorFactory._hash_name(self.name() + "_mul_function")
+            # This method is only used by exact parametrized operator evaluations, and not by DEIM.
+            # Thus, description (which is called by DEIM during the offline phase) must never be used,
+            # and the code should give an error if it is used by mistake.
+            del output._description
+            # Return
             return output
             
         @overload(Number)
@@ -108,11 +131,23 @@ def ParametrizedTensorFactory(backend, wrapping):
             form_mul = other*self._form
             output = _ParametrizedTensorFactory.__new__(type(self), form_mul)
             output.__init__(form_mul)
+            # Set corresponding problem
             add_to_map_from_parametrized_operator_to_problem(output, get_problem_from_parametrized_operator(self))
+            # Automatically compute name starting from current name.
+            output._name = _ParametrizedTensorFactory._hash_name(str(other) + " * " + self.name())
+            # This method is only used by exact parametrized operator evaluations, and not by DEIM.
+            # Thus, description (which is called by DEIM during the offline phase) must never be used,
+            # and the code should give an error if it is used by mistake.
+            del output._description
+            # Return
             return output
             
         def __neg__(self):
             return -1.*self
+            
+        @staticmethod
+        def _hash_name(string):
+            return hashlib.sha1(string.encode("utf-8")).hexdigest()
         
     return _ParametrizedTensorFactory
         
