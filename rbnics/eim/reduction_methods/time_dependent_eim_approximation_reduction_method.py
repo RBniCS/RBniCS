@@ -44,7 +44,7 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         # Combine both sets into one
         self._combine_sets(self.training_set, time_training_set)
         # Also initialize the map from parameter values to snapshots container index
-        self._training_set_parameters_to_snapshots_container_index = dict(((mu["mu"], mu["t"]), mu_index) for (mu_index, mu) in enumerate(self.training_set))
+        self._training_set_parameters_to_snapshots_container_index = {(mu["mu"], mu["t"]): mu_index for (mu_index, mu) in enumerate(self.training_set)}
         # Return
         assert time_import_successful == import_successful
         return import_successful

@@ -17,7 +17,9 @@
 #
 
 from numbers import Number
+from rbnics.backends import assign, copy, evaluate
 from rbnics.eim.problems.eim_approximation import EIMApproximation
+from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 
 def set_mu_decorator(set_mu):
@@ -55,6 +57,32 @@ class TimeDependentEIMApproximation(EIMApproximation):
         self.dt = None
         self.T = None
         
+        # I/O
+        def _snapshot_cache_key_generator(*args, **kwargs):
+            assert len(args) is 2
+            assert args[0] == self.mu
+            assert args[1] == self.t
+            assert len(kwargs) is 0
+            return self._cache_key()
+        def _snapshot_cache_import(filename):
+            self.import_solution(self.folder["cache"], filename)
+            return self.snapshot
+        def _snapshot_cache_export(filename):
+            self.export_solution(self.folder["cache"], filename)
+        def _snapshot_cache_filename_generator(*args, **kwargs):
+            assert len(args) is 2
+            assert args[0] == self.mu
+            assert args[1] == self.t
+            assert len(kwargs) is 0
+            return self._cache_file()
+        self._snapshot_cache = Cache(
+            "EIM",
+            key_generator=_snapshot_cache_key_generator,
+            import_=_snapshot_cache_import,
+            export=_snapshot_cache_export,
+            filename_generator=_snapshot_cache_filename_generator
+        )
+        
     # Set initial time
     def set_initial_time(self, t0):
         assert isinstance(t0, Number)
@@ -74,6 +102,13 @@ class TimeDependentEIMApproximation(EIMApproximation):
     def set_final_time(self, T):
         assert isinstance(T, Number)
         self.T = T
+        
+    def evaluate_parametrized_expression(self):
+        try:
+            assign(self.snapshot, self._snapshot_cache[self.mu, self.t])
+        except KeyError:
+            self.snapshot = evaluate(self.parametrized_expression)
+            self._snapshot_cache[self.mu, self.t] = copy(self.snapshot)
             
     def _cache_key(self):
         return (self.mu, self.t)
