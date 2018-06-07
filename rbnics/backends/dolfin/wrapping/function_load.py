@@ -18,22 +18,17 @@
 
 from ufl import product
 from dolfin import assign, Function
-from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
+from rbnics.backends.dolfin.wrapping.function_save import _all_solution_files, SolutionFile
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
-from rbnics.backends.dolfin.wrapping.function_save import _all_solution_files
-from rbnics.backends.dolfin.wrapping.function_save import SolutionFile
 
 def function_load(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
     if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
-        fun.vector().zero()
         for (index, components) in fun_V._index_to_components.items():
             sub_fun_V = get_function_subspace(fun_V, components)
             sub_fun = Function(sub_fun_V)
             _read_from_file(sub_fun, directory, filename, suffix, components)
-            extended_sub_fun = function_extend_or_restrict(sub_fun, None, fun_V, components[0], weight=None, copy=True)
-            fun.vector().add_local(extended_sub_fun.vector().get_local())
-            fun.vector().apply("add")
+            assign(fun.sub(index), sub_fun)
     else:
         _read_from_file(fun, directory, filename, suffix)
     

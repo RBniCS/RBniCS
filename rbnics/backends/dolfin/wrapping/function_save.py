@@ -24,8 +24,6 @@ if has_pybind11():
     WARNING = LogLevel.WARNING
 else:
     from dolfin import get_log_level, set_log_level, WARNING
-from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import function_extend_or_restrict
-from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
 from rbnics.utils.mpi import is_io_process
@@ -163,8 +161,7 @@ def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
     if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
         for (index, components) in fun_V._index_to_components.items():
-            sub_fun = function_extend_or_restrict(fun, components[0], get_function_subspace(fun_V, components[0]), None, weight=None, copy=True)
-            _write_to_file(sub_fun, directory, filename, suffix, components)
+            _write_to_file(fun.sub(index, deepcopy=True), directory, filename, suffix, components)
     else:
         _write_to_file(fun, directory, filename, suffix)
     
