@@ -72,6 +72,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         required_folders.update(self.folder)
         required_folders.update(self.EIM_approximation.folder)
         optional_folders = Folders()
+        optional_folders["cache"] = required_folders.pop("cache") # this does not affect the availability of offline data
         optional_folders["testing_set"] = required_folders.pop("testing_set") # this is required only in the error/speedup analysis
         optional_folders["error_analysis"] = required_folders.pop("error_analysis") # this is required only in the error analysis
         optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis") # this is required only in the speedup analysis
