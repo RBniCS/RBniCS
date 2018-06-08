@@ -17,6 +17,7 @@
 #
 
 from numbers import Number
+from numpy import linspace
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
 from rbnics.utils.cache import Cache
@@ -220,6 +221,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._latest_solve_kwargs = kwargs
             self._solution = OnlineFunction(N)
             self._solution_dot = OnlineFunction(N)
+            if N == 0: # trivial case
+                time_interval = linspace(self.t0, self.T, (self.T - self.t0)/self.dt)
+                self._solution_over_time = [self._solution for _ in time_interval]
+                self._solution_dot_over_time = [self._solution_dot for _ in time_interval]
+                return self._solution_over_time
             try:
                 assign(self._solution_over_time, self._solution_over_time_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[self.mu, N, kwargs])

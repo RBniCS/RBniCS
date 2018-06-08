@@ -72,7 +72,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
             + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
             + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
         )
-    
+
 # Add dual reduced problem if an output is provided in the term "s"
 def _problem_has_output(truth_problem, reduction_method, **kwargs):
     try:

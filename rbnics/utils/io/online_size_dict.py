@@ -16,11 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from functools import total_ordering
 from collections import OrderedDict
 from rbnics.utils.decorators import dict_of, overload
 
-@total_ordering
 class OnlineSizeDict(OrderedDict):
     __slots__ = ()
     
@@ -113,6 +111,12 @@ class OnlineSizeDict(OrderedDict):
             self[key] += other
         return self
         
+    # Override N + N_bc as well
+    def __add__(self, other):
+        output = OnlineSizeDict(self)
+        output += other
+        return output
+        
     # Override __eq__ so that it is possible to check equality of dictionary with an int
     @overload(int)
     def __eq__(self, other):
@@ -148,6 +152,18 @@ class OnlineSizeDict(OrderedDict):
     @overload((lambda cls: cls, dict_of(str, int)))
     def __lt__(self, other):
         return super(OnlineSizeDict, self).__lt__(other)
+        
+    # Override __gt__ so that it is possible to check if dictionary is greater than an int
+    @overload(int)
+    def __gt__(self, other):
+        for (key, value) in self.items():
+            if value <= other:
+                return False
+        return True
+        
+    @overload((lambda cls: cls, dict_of(str, int)))
+    def __gt__(self, other):
+        return super(OnlineSizeDict, self).__gt__(other)
         
     # Override __str__ to print an integer if all values are the same
     def __str__(self):

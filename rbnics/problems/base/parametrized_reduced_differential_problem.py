@@ -314,6 +314,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         N += self.N_bc
         self._latest_solve_kwargs = kwargs
         self._solution = OnlineFunction(N)
+        if N == 0: # trivial case
+            return self._solution
         try:
             assign(self._solution, self._solution_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
         except KeyError:
