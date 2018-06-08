@@ -165,7 +165,11 @@ class PerformanceTable(object):
                             if operation == "min":
                                 current_table_content = min(self._columns[column][n - self._Nmin, :])
                             elif operation == "mean":
-                                current_table_content = exp(mean(log(self._columns[column][n - self._Nmin, :])))
+                                data = self._columns[column][n - self._Nmin, :]
+                                if not data.any(): # all zeros
+                                    current_table_content = 0.
+                                else:
+                                    current_table_content = exp(mean(log(data)))
                             elif operation == "max":
                                 current_table_content = max(self._columns[column][n - self._Nmin, :])
                             else:

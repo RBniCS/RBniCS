@@ -119,11 +119,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("")
         
         if self.EIM_approximation.basis_generation == "Greedy":
-            # Arbitrarily start from the first parameter in the training set
-            self.EIM_approximation.set_mu(self.training_set[0])
+            # Initialize first parameter to be used
+            (error_max, relative_error_max) = self.greedy()
+            print("initial maximum interpolation error =", error_max)
+            print("initial maximum interpolation relative error =", relative_error_max)
+            
+            print("")
             
             # Carry out greedy selection
-            relative_error_max = 2.*self.tol
             while self.EIM_approximation.N < self.Nmax and relative_error_max >= self.tol:
                 print(TextLine(interpolation_method_name + " N = " + str(self.EIM_approximation.N), fill=":"))
                 
@@ -229,14 +232,15 @@ class EIMApproximationReductionMethod(ReductionMethod):
         assert self.EIM_approximation.basis_generation == "Greedy"
         
         # Print some additional information on the consistency of the reduced basis
-        self.EIM_approximation.solve()
-        self.EIM_approximation.snapshot = self.load_snapshot()
-        error = self.EIM_approximation.snapshot - self.EIM_approximation.basis_functions*self.EIM_approximation._interpolation_coefficients
-        error_on_interpolation_locations = evaluate(error, self.EIM_approximation.interpolation_locations)
-        (maximum_error, _) = max(abs(error))
-        (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations)) # for consistency check, should be zero
-        print("interpolation error for current mu =", abs(maximum_error))
-        print("interpolation error on interpolation locations for current mu =", abs(maximum_error_on_interpolation_locations))
+        if self.EIM_approximation.N > 0: # skip during initialization
+            self.EIM_approximation.solve()
+            self.EIM_approximation.snapshot = self.load_snapshot()
+            error = self.EIM_approximation.snapshot - self.EIM_approximation.basis_functions*self.EIM_approximation._interpolation_coefficients
+            error_on_interpolation_locations = evaluate(error, self.EIM_approximation.interpolation_locations)
+            (maximum_error, _) = max(abs(error))
+            (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations)) # for consistency check, should be zero
+            print("interpolation error for current mu =", abs(maximum_error))
+            print("interpolation error on interpolation locations for current mu =", abs(maximum_error_on_interpolation_locations))
         
         # Carry out the actual greedy search
         def solve_and_computer_error(mu):
@@ -247,7 +251,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
             (_, maximum_error, _) = self.EIM_approximation.compute_maximum_interpolation_error()
             return abs(maximum_error)
             
-        print("find next mu")
+        if self.EIM_approximation.N == 0:
+            print("find initial mu")
+        else:
+            print("find next mu")
         (error_max, error_argmax) = self.training_set.max(solve_and_computer_error)
         self.EIM_approximation.set_mu(self.training_set[error_argmax])
         self.greedy_selected_parameters.append(self.training_set[error_argmax])
@@ -257,9 +264,18 @@ class EIMApproximationReductionMethod(ReductionMethod):
         if abs(self.greedy_errors[0]) > 0.:
             return (abs(error_max), abs(error_max/self.greedy_errors[0]))
         else:
-            # Trivial case, greedy will stop at the first iteration
-            assert len(self.greedy_errors) == 1
-            assert self.EIM_approximation.N == 1
+            # Trivial case, greedy should stop after one iteration after having store a zero basis function
+            assert len(self.greedy_errors) in (1, 2)
+            if len(self.greedy_errors) is 1:
+                assert self.EIM_approximation.N == 0
+                # Tweak the tolerance to force getting in the greedy loop
+                self.tol = -1.
+            elif len(self.greedy_errors) is 2:
+                assert error_max == 0.
+                assert self.EIM_approximation.N == 1
+                # Tweak back the tolerance to force getting out of the greedy loop
+                assert self.tol == -1.
+                self.tol = 1.
             return (0., 0.)
     
     # Compute the error of the empirical interpolation approximation with respect to the
