@@ -220,8 +220,8 @@ advection_diffusion_pod_galerkin_method = PODGalerkin(advection_diffusion_proble
 advection_diffusion_pod_galerkin_method.set_Nmax(25)
 
 # 5b. Perform the offline phase
-first_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
-advection_diffusion_problem.set_mu(first_mu)
+lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
+advection_diffusion_problem.set_mu(lifting_mu)
 advection_diffusion_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
 reduced_advection_diffusion_problem = advection_diffusion_pod_galerkin_method.offline()
 

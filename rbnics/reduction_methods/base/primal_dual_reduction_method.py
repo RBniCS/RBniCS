@@ -84,10 +84,8 @@ def PrimalDualReductionMethod(DualProblem):
             # Perform the offline phase of the reduced order model
             def offline(self):
                 # Carry out primal offline stage ...
-                bak_first_mu = self.truth_problem.mu
                 primal_reduced_problem = DifferentialProblemReductionMethod_DerivedClass.offline(self)
                 # ... and then dual offline stage
-                self.truth_problem.set_mu(bak_first_mu)
                 self.dual_reduced_problem = self.dual_reduction_method.offline()
                 # Attach reduced dual problem to reduced primal problem, and viceversa
                 primal_reduced_problem.dual_reduced_problem = self.dual_reduced_problem

@@ -173,8 +173,8 @@ pod_galerkin_method = PODGalerkin(elliptic_optimal_control)
 pod_galerkin_method.set_Nmax(10)
 
 # 5. Perform the offline phase
-first_mu = (1.0, 1.0)
-elliptic_optimal_control.set_mu(first_mu)
+lifting_mu = (1.0, 1.0)
+elliptic_optimal_control.set_mu(lifting_mu)
 pod_galerkin_method.initialize_training_set(100)
 reduced_elliptic_optimal_control = pod_galerkin_method.offline()
 

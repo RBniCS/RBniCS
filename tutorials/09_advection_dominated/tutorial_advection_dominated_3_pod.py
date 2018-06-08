@@ -135,8 +135,8 @@ pod_galerkin_method.set_Nmax(50)
 pod_galerkin_method.set_tolerance(1e-7)
 
 # 5. Perform the offline phase
-first_mu = (1.0, 1.0)
-advection_dominated_problem.set_mu(first_mu)
+lifting_mu = (1.0, 1.0)
+advection_dominated_problem.set_mu(lifting_mu)
 pod_galerkin_method.initialize_training_set(200)
 reduced_advection_dominated_problem = pod_galerkin_method.offline()
 

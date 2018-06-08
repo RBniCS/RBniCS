@@ -117,10 +117,10 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             if "offline" not in self.truth_problem._apply_EIM_at_stages:
                 assert hasattr(self.truth_problem, "_apply_exact_evaluation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
                 assert "offline" in self.truth_problem._apply_exact_evaluation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
-            bak_first_mu = self.truth_problem.mu
+            lifting_mu = self.truth_problem.mu
             for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                 EIM_reduction_coeff.offline()
-            self.truth_problem.set_mu(bak_first_mu)
+            self.truth_problem.set_mu(lifting_mu)
             return DifferentialProblemReductionMethod_DerivedClass.offline(self)
             
         # Compute the error of the reduced order approximation with respect to the full order one

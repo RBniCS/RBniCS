@@ -129,8 +129,6 @@ reduced_basis_method = ReducedBasis(advection_dominated_problem)
 reduced_basis_method.set_Nmax(15)
 
 # 5. Perform the offline phase
-first_mu = (0.0, )
-advection_dominated_problem.set_mu(first_mu)
 reduced_basis_method.initialize_training_set(100)
 reduced_advection_dominated_problem = reduced_basis_method.offline()
 

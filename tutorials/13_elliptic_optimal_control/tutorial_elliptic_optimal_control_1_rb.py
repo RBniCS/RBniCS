@@ -177,8 +177,8 @@ reduced_basis_method = ReducedBasis(elliptic_optimal_control)
 reduced_basis_method.set_Nmax(20)
 
 # 5. Perform the offline phase
-first_mu = (1.0, 1.0)
-elliptic_optimal_control.set_mu(first_mu)
+lifting_mu = (1.0, 1.0)
+elliptic_optimal_control.set_mu(lifting_mu)
 reduced_basis_method.initialize_training_set(100)
 reduced_elliptic_optimal_control = reduced_basis_method.offline()
 

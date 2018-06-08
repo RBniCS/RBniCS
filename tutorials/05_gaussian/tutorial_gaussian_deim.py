@@ -96,8 +96,6 @@ reduced_basis_method.set_Nmax(20, DEIM=21)
 reduced_basis_method.set_tolerance(1e-4, DEIM=1e-8)
 
 # 5. Perform the offline phase
-first_mu = (0.5, 1.0)
-gaussian_problem.set_mu(first_mu)
 reduced_basis_method.initialize_training_set(50, DEIM=60)
 reduced_gaussian_problem = reduced_basis_method.offline()
 

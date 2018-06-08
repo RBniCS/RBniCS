@@ -113,8 +113,6 @@ pod_galerkin_method.set_Nmax(15)
 pod_galerkin_method.set_tolerance(1e-5)
 
 # 5. Perform the offline phase
-first_mu = tuple([2.0 for _ in range(9)])
-thermal_block_problem.set_mu(first_mu)
 pod_galerkin_method.initialize_training_set(100, sampling=BetaDistribution(beta_a, beta_b), weight=BetaWeight(beta_a, beta_b))
 reduced_thermal_block_problem = pod_galerkin_method.offline()
 

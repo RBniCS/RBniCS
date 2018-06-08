@@ -110,8 +110,8 @@ reduced_basis_method.set_Nmax(30, SCM=50)
 reduced_basis_method.set_tolerance(1e-5, SCM=1e-3)
 
 # 5. Perform the offline phase
-first_mu = (1.0, 1.0)
-graetz_problem.set_mu(first_mu)
+lifting_mu = (1.0, 1.0)
+graetz_problem.set_mu(lifting_mu)
 reduced_basis_method.initialize_training_set(200, SCM=250)
 reduced_graetz_problem = reduced_basis_method.offline()
 

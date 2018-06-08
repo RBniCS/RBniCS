@@ -110,8 +110,6 @@ reduced_basis_method.set_Nmax(20, POD_Greedy=4)
 reduced_basis_method.set_tolerance(1e-5, POD_Greedy=1e-2)
 
 # 5. Perform the offline phase
-first_mu = (0.5, 1.0)
-unsteady_thermal_block_problem.set_mu(first_mu)
 reduced_basis_method.initialize_training_set(100)
 reduced_unsteady_thermal_block_problem = reduced_basis_method.offline()
 

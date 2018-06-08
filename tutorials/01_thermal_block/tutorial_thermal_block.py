@@ -93,8 +93,6 @@ reduced_basis_method.set_Nmax(4)
 reduced_basis_method.set_tolerance(1e-5)
 
 # 5. Perform the offline phase
-first_mu = (0.5, 1.0)
-thermal_block_problem.set_mu(first_mu)
 reduced_basis_method.initialize_training_set(100)
 reduced_thermal_block_problem = reduced_basis_method.offline()
 

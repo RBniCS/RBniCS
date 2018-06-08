@@ -106,8 +106,6 @@ pod_galerkin_method.set_Nmax(20, nested_POD=4)
 pod_galerkin_method.set_tolerance(1e-8, nested_POD=1e-4)
 
 # 5. Perform the offline phase
-first_mu = (0.5, 1.0)
-unsteady_thermal_block_problem.set_mu(first_mu)
 pod_galerkin_method.initialize_training_set(100)
 reduced_unsteady_thermal_block_problem = pod_galerkin_method.offline()
 
