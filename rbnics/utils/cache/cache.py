@@ -127,7 +127,7 @@ class Cache(object):
         
     def _compute_storage_key(self, key):
         if isinstance(key, tuple):
-            if isinstance(key[-1], dict) and not isinstance(key[-1], OrderedDict):
+            if len(key) > 0 and isinstance(key[-1], dict) and not isinstance(key[-1], OrderedDict):
                 kwargs = key[-1]
                 args = key[:-1]
             else:
@@ -140,8 +140,9 @@ class Cache(object):
             storage_key = self._key_generator(*args, **kwargs)
         else:
             assert len(kwargs) is 0
-            assert len(args) >= 1
-            if len(args) is 1:
+            if len(args) is 0:
+                storage_key = args
+            elif len(args) is 1:
                 storage_key = args[0]
             else:
                 storage_key = args
