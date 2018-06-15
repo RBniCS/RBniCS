@@ -28,7 +28,7 @@ try:
     from dolfin import has_pybind11
 except ImportError:
     from dolfin import __version__ as dolfin_version
-    if dolfin_version.startswith("2018.1.0"):
+    if dolfin_version.startswith("2018"):
         def has_pybind11():
             return True
     else:
