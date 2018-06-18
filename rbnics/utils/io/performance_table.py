@@ -17,6 +17,7 @@
 #
 
 import os
+import sys
 import collections
 from numpy import exp, isnan, log, max, mean, min, nan, zeros as Content
 from rbnics.utils.io.csv_io import CSVIO
@@ -169,6 +170,7 @@ class PerformanceTable(object):
                                 if not data.any(): # all zeros
                                     current_table_content = 0.
                                 else:
+                                    data[data == 0.] = sys.float_info.epsilon
                                     current_table_content = exp(mean(log(data)))
                             elif operation == "max":
                                 current_table_content = max(self._columns[column][n - self._Nmin, :])
