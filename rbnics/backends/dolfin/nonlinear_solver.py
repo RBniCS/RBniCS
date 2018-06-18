@@ -56,6 +56,8 @@ class _NonlinearProblem(object):
         self.solution = solution
         self.bcs = bcs
         self.jacobian_eval = jacobian_eval
+        # Apply boundary conditions to solution
+        self._solution_bcs_apply(self.bcs)
         # Prepare storage for residual and jacobian
         self.residual_vector = self._residual_vector_assemble(residual_eval(solution))
         self.jacobian_matrix = self._jacobian_matrix_assemble(jacobian_eval(solution))
@@ -101,13 +103,13 @@ class _NonlinearProblem(object):
         
     @overload
     def _residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
-        for bc in self.bcs:
+        for bc in bcs:
             bc.apply(self.residual_vector, self.solution.vector())
         
     @overload
     def _residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
-        for key in self.bcs:
-            for bc in self.bcs[key]:
+        for key in bcs:
+            for bc in bcs[key]:
                 bc.apply(self.residual_vector, self.solution.vector())
         
     def jacobian_matrix_eval(self, snes, petsc_solution, petsc_jacobian, petsc_preconditioner):
@@ -155,13 +157,13 @@ class _NonlinearProblem(object):
     
     @overload
     def _jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
-        for bc in self.bcs:
+        for bc in bcs:
             bc.apply(self.jacobian_matrix)
     
     @overload
     def _jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
-        for key in self.bcs:
-            for bc in self.bcs[key]:
+        for key in bcs:
+            for bc in bcs[key]:
                 bc.apply(self.jacobian_matrix)
                 
     def update_solution(self, petsc_solution):
@@ -169,3 +171,18 @@ class _NonlinearProblem(object):
         self.solution.vector().zero()
         self.solution.vector().add_local(petsc_solution.getArray())
         self.solution.vector().apply("add")
+        
+    @overload
+    def _solution_bcs_apply(self, bcs: None):
+        pass
+        
+    @overload
+    def _solution_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+        for bc in bcs:
+            bc.apply(self.solution.vector())
+        
+    @overload
+    def _solution_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+        for key in bcs:
+            for bc in bcs[key]:
+                bc.apply(self.solution.vector())
