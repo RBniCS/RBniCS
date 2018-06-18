@@ -20,8 +20,6 @@ from ufl import transpose
 from dolfin import *
 from rbnics import *
 
-PETScOptions.set("snes_linesearch_type", "basic")
-
 @ExactParametrizedFunctions()
 class NavierStokes(NavierStokesProblem):
     

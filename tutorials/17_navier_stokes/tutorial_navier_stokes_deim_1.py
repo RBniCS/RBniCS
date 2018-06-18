@@ -20,8 +20,6 @@ from ufl import transpose
 from dolfin import *
 from rbnics import *
 
-PETScOptions.set("snes_linesearch_type", "basic")
-
 @DEIM("online", basis_generation="Greedy")
 @ExactParametrizedFunctions("offline")
 class NavierStokes(NavierStokesProblem):
