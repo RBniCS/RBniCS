@@ -46,9 +46,10 @@ def basic_form_on_truth_function_space(backend, wrapping):
                     if wrapping.is_problem_solution_or_problem_solution_component(node):
                         (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                         truth_problem = get_problem_from_solution(truth_solution)
-                        truth_problems.append(truth_problem)
-                        # Store the solution
-                        truth_problem_to_truth_solution[truth_problem] = truth_solution
+                        if truth_problem not in truth_problems:
+                            truth_problems.append(truth_problem)
+                            # Store the solution
+                            truth_problem_to_truth_solution[truth_problem] = truth_solution
                         # Store the component
                         if truth_problem not in truth_problem_to_components:
                             truth_problem_to_components[truth_problem] = list()
