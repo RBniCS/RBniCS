@@ -17,6 +17,8 @@
 #
 
 from numpy import zeros
+from ufl.core.multiindex import Index as MuteIndex, MultiIndex
+from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import __version__ as dolfin_version, Constant, has_pybind11
 import hashlib
 from rbnics.eim.utils.decorators import get_problem_from_solution
@@ -24,8 +26,22 @@ from rbnics.eim.utils.decorators import get_problem_from_solution
 def basic_expression_name(backend, wrapping):
     def _basic_expression_name(expression):
         str_repr = ""
-        visited = set()
         coefficients_replacement = dict()
+        # Preprocess indices first, as their numeric value might change from run to run, but they
+        # are always sorted the same way
+        indices = set()
+        min_index = None
+        for t in traverse_unique_terminals(expression):
+            if isinstance(t, MultiIndex):
+                for i in t.indices():
+                    if isinstance(i, MuteIndex):
+                        if min_index is None or i.count() < min_index:
+                            min_index = i.count()
+                        indices.add(i)
+        for i in indices:
+            coefficients_replacement[repr(i)] = "MuteIndexRBniCS(" + str(i.count() - min_index) + ")"
+        # Process the expression
+        visited = set()
         for n in wrapping.expression_iterator(expression):
             if n in visited:
                 continue
