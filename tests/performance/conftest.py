@@ -16,8 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa
+from dolfin import MPI
 from rbnics.utils.test import add_performance_options, patch_benchmark_plugin
+from dolfin import has_pybind11 # added back to dolfin as a side effect of rbnics import
+if not has_pybind11():
+    from dolfin import mpi_comm_world
 
 def pytest_addoption(parser):
     add_performance_options(parser)
@@ -25,3 +28,12 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     assert config.pluginmanager.hasplugin("benchmark")
     patch_benchmark_plugin(config.pluginmanager.getplugin("benchmark"))
+    
+def pytest_runtest_teardown(item, nextitem):
+    # Do the normal teardown
+    item.teardown()
+    # Add a MPI barrier in parallel
+    if has_pybind11():
+        MPI.barrier(MPI.comm_world)
+    else:
+        MPI.barrier(mpi_comm_world())
