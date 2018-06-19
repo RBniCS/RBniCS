@@ -356,7 +356,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         problem_solver = self.ProblemSolver(self, N)
         problem_solver.solve()
         
-    def project(self, snapshot, on_dirichlet_bc=True, N=None, **kwargs):
+    def project(self, snapshot, N=None, on_dirichlet_bc=True, **kwargs):
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
         N += self.N_bc
         
