@@ -53,8 +53,8 @@ if not has_hdf5() or not has_hdf5_parallel():
             ASCIIFile(self.filename) << mesh
     
     class MeshFunctionFile(XMLFile):
-        def read(self, mesh, subdomain_dim):
-            return MeshFunction("size_t", mesh, self.filename)
+        def read(self, value_type, mesh, subdomain_dim):
+            return MeshFunction(value_type, mesh, self.filename)
             
         def write(self, mesh_function):
             ASCIIFile(self.filename) << mesh_function
@@ -86,8 +86,8 @@ else:
             self.xdmf_file.write(mesh)
     
     class MeshFunctionFile(BinaryFile):
-        def read(self, mesh, subdomain_dim):
-            reduced_subdomain = MeshFunction("size_t", mesh, subdomain_dim)
+        def read(self, value_type, mesh, subdomain_dim):
+            reduced_subdomain = MeshFunction(value_type, mesh, subdomain_dim)
             self.h5_file.read(reduced_subdomain, "/mesh_function")
             return reduced_subdomain
             
@@ -274,7 +274,7 @@ def BasicReducedMesh(backend, wrapping):
                 self.dof_to_cells = tuple(self.dof_to_cells)
             # Initialize cells marker
             N = self._get_next_index()
-            reduced_mesh_markers = MeshFunction("bool", self.mesh, self.mesh.topology().dim())
+            reduced_mesh_markers = MeshFunction("bool", self.mesh, self.mesh.geometry().dim())
             reduced_mesh_markers.set_all(False)
             if N > 0:
                 reduced_mesh_markers.array()[:] = self.reduced_mesh_markers[N - 1].array()
@@ -439,7 +439,7 @@ def BasicReducedMesh(backend, wrapping):
                         for (subdomain_index, subdomain) in enumerate(self.subdomain_data):
                             subdomain_filename = os.path.join(str(directory), filename, "reduced_mesh_" + str(index) + "_subdomain_" + str(subdomain_index))
                             with MeshFunctionFile(self.mesh.mpi_comm(), self.mesh.geometry().dim(), subdomain_filename, "r") as input_file:
-                                reduced_subdomain = input_file.read(self.reduced_mesh[index], subdomain.dim())
+                                reduced_subdomain = input_file.read("size_t", self.reduced_mesh[index], subdomain.dim())
                             reduced_subdomain_data[subdomain] = reduced_subdomain
                         self.reduced_subdomain_data[index] = reduced_subdomain_data
                     else:
