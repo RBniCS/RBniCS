@@ -20,7 +20,7 @@ import hashlib
 from numbers import Number
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
-from rbnics.utils.decorators import overload
+from rbnics.utils.decorators import get_problem_from_solution, overload
 
 def ParametrizedTensorFactory(backend, wrapping):
     class _ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
@@ -46,6 +46,28 @@ def ParametrizedTensorFactory(backend, wrapping):
             return hash((self._form, self._spaces))
         
         def create_interpolation_locations_container(self, **kwargs):
+            # Populate auxiliary_problems_and_components
+            visited = set()
+            auxiliary_problems_and_components = list() # of (problem, component)
+            for node in wrapping.form_iterator(self._form, "nodes"):
+                if node in visited:
+                    continue
+                # ... problem solutions related to nonlinear terms
+                elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
+                    if wrapping.is_problem_solution_or_problem_solution_component(node):
+                        (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
+                        truth_problem = get_problem_from_solution(truth_solution)
+                        auxiliary_problems_and_components.append((truth_problem, component))
+                    # Make sure to skip any parent solution related to this one
+                    visited.add(node)
+                    visited.add(preprocessed_node)
+                    for parent_node in wrapping.solution_iterator(preprocessed_node):
+                        visited.add(parent_node)
+            if len(auxiliary_problems_and_components) is 0:
+                auxiliary_problems_and_components = None
+            # Create reduced mesh
+            assert "auxiliary_problems_and_components" not in kwargs
+            kwargs["auxiliary_problems_and_components"] = auxiliary_problems_and_components
             return backend.ReducedMesh(self._spaces, **kwargs)
             
         def create_snapshots_container(self):

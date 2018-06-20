@@ -26,9 +26,10 @@ from rbnics.utils.io import Folders
 
 def BasicReducedVertices(backend, wrapping):
     class _BasicReducedVertices(AbstractReducedVertices):
-        def __init__(self, V, **kwargs):
+        def __init__(self, V, auxiliary_problems_and_components=None, **kwargs):
             AbstractReducedVertices.__init__(self, V)
             self._V = V
+            self._auxiliary_problems_and_components = auxiliary_problems_and_components
             
             # Detect if **kwargs are provided by the copy constructor in __getitem__
             if "copy_from" in kwargs:
@@ -44,9 +45,9 @@ def BasicReducedVertices(backend, wrapping):
                 
             # Storage for reduced mesh
             if copy_from is None:
-                self._reduced_mesh = backend.ReducedMesh((V, ))
+                self._reduced_mesh = backend.ReducedMesh((V, ), auxiliary_problems_and_components=auxiliary_problems_and_components)
             else:
-                self._reduced_mesh = backend.ReducedMesh((V, ), copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
+                self._reduced_mesh = backend.ReducedMesh((V, ), auxiliary_problems_and_components=auxiliary_problems_and_components, copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
             
         def append(self, vertex_and_component_and_dof):
             assert isinstance(vertex_and_component_and_dof, tuple)
@@ -73,8 +74,8 @@ def BasicReducedVertices(backend, wrapping):
             assert isinstance(key, slice)
             assert key.start is None
             assert key.step is None
-            output = _BasicReducedVertices.__new__(type(self), self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
-            output.__init__(self._V, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
+            output = _BasicReducedVertices.__new__(type(self), self._V, self._auxiliary_problems_and_components, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
+            output.__init__(self._V, self._auxiliary_problems_and_components, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
             return output
             
         def get_reduced_mesh(self, index=None):
@@ -98,8 +99,8 @@ def BasicReducedVertices(backend, wrapping):
         def get_auxiliary_reduced_function_space(self, auxiliary_problem, component, index=None):
             return self._reduced_mesh.get_auxiliary_reduced_function_space(auxiliary_problem, component, index)
             
-        def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, auxiliary_reduced_problem, component, index=None):
-            return self._reduced_mesh.get_auxiliary_basis_functions_matrix(auxiliary_problem, auxiliary_reduced_problem, component, index)
+        def get_auxiliary_basis_functions_matrix(self, auxiliary_problem, component, index=None):
+            return self._reduced_mesh.get_auxiliary_basis_functions_matrix(auxiliary_problem, component, index)
             
         def get_auxiliary_function_interpolator(self, auxiliary_problem, component, index=None):
             return self._reduced_mesh.get_auxiliary_function_interpolator(auxiliary_problem, component, index)

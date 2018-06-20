@@ -137,7 +137,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                     if reduced_problem not in reduced_problem_to_reduced_basis_functions:
                         reduced_problem_to_reduced_basis_functions[reduced_problem] = list()
                         for component in reduced_problem_to_components[reduced_problem]:
-                            reduced_problem_to_reduced_basis_functions[reduced_problem].append(at.get_auxiliary_basis_functions_matrix(truth_problem, reduced_problem, component))
+                            reduced_problem_to_reduced_basis_functions[reduced_problem].append(at.get_auxiliary_basis_functions_matrix(truth_problem, component))
                     # Append to list of required reduced problems
                     required_reduced_problems.append((reduced_problem, reduced_problem_is_solving))
                 else:
@@ -169,9 +169,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                             truth_problem_to_reduced_mesh_solution[exact_truth_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
                         # Get interpolator on reduced mesh
                         if exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator:
-                            truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = list()
-                            for component in truth_problem_to_components[exact_truth_problem]:
-                                truth_problem_to_reduced_mesh_interpolator[exact_truth_problem].append(at.get_auxiliary_function_interpolator(exact_truth_problem, component))
+                            truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[truth_problem]
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((exact_truth_problem, False, reduced_problem_is_solving))
             else:

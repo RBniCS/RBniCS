@@ -17,6 +17,7 @@
 #
 
 from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
+from rbnics.utils.decorators import get_problem_from_solution
 
 def ParametrizedExpressionFactory(backend, wrapping):
     class _ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
@@ -43,7 +44,27 @@ def ParametrizedExpressionFactory(backend, wrapping):
             return hash((self._expression, self._space, self._inner_product))
                 
         def create_interpolation_locations_container(self):
-            return backend.ReducedVertices(self._space)
+            # Populate auxiliary_problems_and_components
+            visited = set()
+            auxiliary_problems_and_components = list() # of (problem, component)
+            for node in wrapping.expression_iterator(self._expression):
+                if node in visited:
+                    continue
+                # ... problem solutions related to nonlinear terms
+                elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
+                    if wrapping.is_problem_solution_or_problem_solution_component(node):
+                        (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
+                        truth_problem = get_problem_from_solution(truth_solution)
+                        auxiliary_problems_and_components.append((truth_problem, component))
+                    # Make sure to skip any parent solution related to this one
+                    visited.add(node)
+                    visited.add(preprocessed_node)
+                    for parent_node in wrapping.solution_iterator(preprocessed_node):
+                        visited.add(parent_node)
+            if len(auxiliary_problems_and_components) is 0:
+                auxiliary_problems_and_components = None
+            # Create reduced vertices container
+            return backend.ReducedVertices(self._space, auxiliary_problems_and_components=auxiliary_problems_and_components)
             
         def create_snapshots_container(self):
             return backend.SnapshotsMatrix(self._space)

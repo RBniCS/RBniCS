@@ -26,11 +26,11 @@ from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
-from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, is_parametrized, is_time_dependent
+from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, is_parametrized, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, is_time_dependent, solution_identify_component, solution_iterator
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(copy, Function, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
-wrapping = ModuleWrapper(form_iterator, form_description=form_description, form_name=form_name, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
+wrapping = ModuleWrapper(form_iterator, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator, form_description=form_description, form_name=form_name, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
 ParametrizedTensorFactory_Base = BasicParametrizedTensorFactory(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(Form, ))
@@ -70,15 +70,14 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
         
     def __hash__(self):
         return hash((self._form, self._spaces))
-    
+        
     def create_interpolation_locations_container(self):
         # Populate subdomain data
         subdomain_data = list()
-        for integral in self._form.integrals():
+        for integral in form_iterator(self._form, "integrals"):
             if integral.subdomain_data() is not None and integral.subdomain_data() not in subdomain_data:
                 subdomain_data.append(integral.subdomain_data())
+        if len(subdomain_data) is 0:
+            subdomain_data = None
         # Create reduced mesh
-        if len(subdomain_data) > 0:
-            return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
-        else:
-            return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self)
+        return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)
