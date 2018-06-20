@@ -63,6 +63,8 @@ def basic_expression_description(backend, wrapping):
                 else:
                     coefficients_repr[n] = str(vals.reshape(n.ufl_shape))
                 visited.add(n)
+            else:
+                visited.add(n)
         return coefficients_repr
     return _basic_expression_description
 

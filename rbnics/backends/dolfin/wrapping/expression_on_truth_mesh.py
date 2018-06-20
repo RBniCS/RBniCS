@@ -62,6 +62,8 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                     visited.add(preprocessed_node)
                     for parent_node in wrapping.solution_iterator(preprocessed_node):
                         visited.add(parent_node)
+                else:
+                    visited.add(node)
                         
             # Cache the resulting dicts
             expression_on_truth_mesh__truth_problems_cache[expression_name] = truth_problems

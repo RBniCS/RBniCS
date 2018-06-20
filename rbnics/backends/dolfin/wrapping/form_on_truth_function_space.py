@@ -61,6 +61,8 @@ def basic_form_on_truth_function_space(backend, wrapping):
                     visited.add(preprocessed_node)
                     for parent_node in wrapping.solution_iterator(preprocessed_node):
                         visited.add(parent_node)
+                else:
+                    visited.add(node)
             
             # Cache the resulting dicts
             form_on_truth_function_space__truth_problems_cache[form_name] = truth_problems

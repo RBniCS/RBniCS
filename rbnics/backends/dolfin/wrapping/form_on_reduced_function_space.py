@@ -99,6 +99,8 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         assert reduced_V[0].mesh().ufl_domain() == reduced_V[1].mesh().ufl_domain()
                     replacements[node] = type(node)(reduced_V[0].mesh())
                     visited.add(node)
+                else:
+                    visited.add(node)
             # ... and replace them
             replaced_form = wrapping.form_replace(form, replacements, "nodes")
             

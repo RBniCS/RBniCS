@@ -53,6 +53,8 @@ def basic_is_time_dependent(backend, wrapping):
                 visited.add(preprocessed_node)
                 for parent_node in wrapping.solution_iterator(preprocessed_node):
                     visited.add(parent_node)
+            else:
+                visited.add(node)
         return False
     return _basic_is_time_dependent
     

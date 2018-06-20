@@ -87,6 +87,8 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 elif isinstance(node, GeometricQuantity):
                     replacements[node] = type(node)(reduced_mesh)
                     visited.add(node)
+                else:
+                    visited.add(node)
             # ... and replace them
             replaced_expression = wrapping.expression_replace(expression, replacements)
             
