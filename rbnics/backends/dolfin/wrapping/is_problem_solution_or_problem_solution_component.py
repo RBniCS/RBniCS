@@ -29,9 +29,9 @@ if has_pybind11():
 else:
     from dolfin import Expression as BaseExpression
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _get_sub_elements__recursive
-from rbnics.eim.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
-from rbnics.utils.decorators import overload
 from rbnics.utils.cache import Cache
+from rbnics.utils.decorators import overload
+from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
 
 def is_problem_solution_or_problem_solution_component(node):
     _prepare_solution_split_storage()

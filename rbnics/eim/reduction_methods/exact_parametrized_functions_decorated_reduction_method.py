@@ -18,12 +18,10 @@
 
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.eim.problems import ExactParametrizedFunctions
-from rbnics.eim.utils.decorators import UpdateMapFromProblemToTrainingStatus
 
 @ReductionMethodDecoratorFor(ExactParametrizedFunctions)
 def ExactParametrizedFunctionsDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @UpdateMapFromProblemToTrainingStatus
     @PreserveClassName
     class ExactParametrizedFunctionsDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):

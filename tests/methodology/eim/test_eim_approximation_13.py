@@ -24,10 +24,9 @@ from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpre
 from rbnics.backends.online import OnlineFunction
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
-from rbnics.eim.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, UpdateMapFromProblemToTrainingStatus
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
-from rbnics.utils.decorators import sync_setters
+from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])

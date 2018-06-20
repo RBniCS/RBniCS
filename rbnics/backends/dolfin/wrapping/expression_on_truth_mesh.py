@@ -17,9 +17,9 @@
 #
 
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
-from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 from rbnics.utils.cache import Cache
-from rbnics.utils.decorators import exact_problem
+from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
 from rbnics.utils.mpi import log, PROGRESS
 
 def basic_expression_on_truth_mesh(backend, wrapping):

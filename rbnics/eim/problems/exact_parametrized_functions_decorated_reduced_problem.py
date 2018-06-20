@@ -18,7 +18,7 @@
 
 import inspect
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-from rbnics.eim.utils.decorators import StoreMapFromBasisFunctionsToReducedProblem, StoreMapFromEachBasisFunctionToComponentAndIndex, StoreMapFromProblemToReducedProblem, StoreMapFromRieszStorageToReducedProblem
+from rbnics.eim.utils.decorators import StoreMapFromBasisFunctionsToReducedProblem, StoreMapFromEachBasisFunctionToComponentAndIndex, StoreMapFromRieszStorageToReducedProblem
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -107,7 +107,6 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             
     @_AlsoDecorateErrorEstimationOperators
     @StoreMapFromBasisFunctionsToReducedProblem
-    @StoreMapFromProblemToReducedProblem
     @PreserveClassName
     class ExactParametrizedFunctionsDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         

@@ -21,7 +21,6 @@ from rbnics.backends import ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.backends import OfflineOnlineBackend
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
-from rbnics.eim.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -41,9 +40,6 @@ def DEIMDecoratedProblem(
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
-        @StoreMapFromProblemNameToProblem
-        @StoreMapFromProblemToTrainingStatus
-        @StoreMapFromSolutionToProblem
         @PreserveClassName
         class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             

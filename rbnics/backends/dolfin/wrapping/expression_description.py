@@ -18,7 +18,7 @@
 
 from numpy import zeros
 from dolfin import Constant, has_pybind11
-from rbnics.eim.utils.decorators import get_problem_from_solution
+from rbnics.utils.decorators import get_problem_from_solution
 
 def basic_expression_description(backend, wrapping):
     def _basic_expression_description(expression):

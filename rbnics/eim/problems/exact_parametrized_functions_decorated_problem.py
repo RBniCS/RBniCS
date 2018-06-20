@@ -19,7 +19,7 @@
 import inspect
 from rbnics.backends import SymbolicParameters
 from rbnics.eim.backends import OfflineOnlineBackend
-from rbnics.eim.utils.decorators import StoreMapFromParametrizedOperatorsToProblem, StoreMapFromParametrizedOperatorsToTermAndIndex, StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.eim.utils.decorators import StoreMapFromParametrizedOperatorsToProblem, StoreMapFromParametrizedOperatorsToTermAndIndex
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -49,9 +49,6 @@ def ExactParametrizedFunctionsDecoratedProblem(
         
         @StoreMapFromParametrizedOperatorsToProblem
         @StoreMapFromParametrizedOperatorsToTermAndIndex
-        @StoreMapFromProblemNameToProblem
-        @StoreMapFromProblemToTrainingStatus
-        @StoreMapFromSolutionToProblem
         @PreserveClassName
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             

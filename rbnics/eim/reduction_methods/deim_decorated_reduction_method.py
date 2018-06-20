@@ -22,13 +22,11 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApprox
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod as DEIMApproximationReductionMethod
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod as TimeDependentDEIMApproximationReductionMethod
-from rbnics.eim.utils.decorators import is_training_finished, set_map_from_problem_to_training_status_off, set_map_from_problem_to_training_status_on, UpdateMapFromProblemToTrainingStatus
-from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
+from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReductionMethodDecoratorFor, set_map_from_problem_to_training_status_off, set_map_from_problem_to_training_status_on
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
-    @UpdateMapFromProblemToTrainingStatus
     @PreserveClassName
     class DEIMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
