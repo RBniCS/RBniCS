@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import inspect
 from rbnics.backends import ParametrizedTensorFactory, SymbolicParameters
 from rbnics.eim.backends import OfflineOnlineBackend
@@ -118,7 +119,7 @@ def DEIMDecoratedProblem(
                                         DEIMApproximationType = TimeDependentDEIMApproximation
                                     else:
                                         DEIMApproximationType = DEIMApproximation
-                                    self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, self.name() + "/deim/" + factory_form_q.name(), basis_generation)
+                                    self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, os.path.join(self.name(), "deim", factory_form_q.name()), basis_generation)
                                 else:
                                     self.non_DEIM_forms[term][q] = form_q
                     # Restore float parameters

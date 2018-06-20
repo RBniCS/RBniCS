@@ -17,6 +17,7 @@
 #
 
 from numbers import Number
+import os
 import inspect
 from rbnics.scm.problems import SCM
 from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMApproximationReductionMethod
@@ -33,7 +34,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             
             # Storage for SCM reduction method
-            self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, self.truth_problem.name() + "/scm")
+            self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, os.path.join(self.truth_problem.name(), "scm"))
             
         # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):

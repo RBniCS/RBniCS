@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 
@@ -62,7 +63,7 @@ def SCMDecoratedProblem(
                 decorator_inputs["bounding_box_maximum_eigensolver_parameters"] = bounding_box_maximum_eigensolver_parameters
                 decorator_inputs["coercivity_eigensolver_parameters"] = coercivity_eigensolver_parameters
                 # Storage for SCM reduced problems
-                self.SCM_approximation = SCMApproximation(self, self.name() + "/scm", **decorator_inputs)
+                self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"), **decorator_inputs)
                 
             # Return the alpha_lower bound.
             def get_stability_factor(self):

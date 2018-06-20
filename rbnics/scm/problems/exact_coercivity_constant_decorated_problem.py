@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
 
@@ -38,7 +39,7 @@ def ExactCoercivityConstantDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 
-                self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(self, "a", True, "smallest", eigensolver_parameters, self.name() + "/exact_coercivity_constant")
+                self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(self, "a", True, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_coercivity_constant"))
                 
             # Initialize data structures required for the online phase
             def init(self):

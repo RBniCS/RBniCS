@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import inspect
 from itertools import product as cartesian_product
 from rbnics.backends import ParametrizedExpressionFactory, SeparatedParametrizedForm, SymbolicParameters
@@ -125,7 +126,7 @@ def EIMDecoratedProblem(
                                                 EIMApproximationType = TimeDependentEIMApproximation
                                             else:
                                                 EIMApproximationType = EIMApproximation
-                                            self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, self.name() + "/eim/" + factor_name, basis_generation)
+                                            self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, os.path.join(self.name(), "eim", factor_name), basis_generation)
                     # Restore float parameters
                     self.mu = mu_float
                     
