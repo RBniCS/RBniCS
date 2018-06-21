@@ -26,7 +26,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
-from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
+from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToReductionMethod, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -71,6 +71,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             delattr(self, "_is_solving")
             return self._solution
 
+    @StoreMapFromProblemToReductionMethod
     @UpdateMapFromProblemToTrainingStatus
     class MockReductionMethod(ReductionMethod):
         def __init__(self, truth_problem, **kwargs):
@@ -97,13 +98,16 @@ def test_eim_approximation_11(expression_type, basis_generation):
                     self.truth_problem.set_mu(mu)
                     print("solving mock problem at mu =", self.truth_problem.mu)
                     f = self.truth_problem.solve()
-                    self.reduced_problem.basis_functions.enrich(f)
-                    self.GS.apply(self.reduced_problem.basis_functions, 0)
+                    self.update_basis_matrix(f)
                 self.reduced_problem.basis_functions.save(self.folder["basis"], "basis")
             else:
                 self.reduced_problem.basis_functions.load(self.folder["basis"], "basis")
             self._finalize_offline()
             return self.reduced_problem
+            
+        def update_basis_matrix(self, snapshot):
+            self.reduced_problem.basis_functions.enrich(snapshot)
+            self.GS.apply(self.reduced_problem.basis_functions, 0)
             
         def error_analysis(self, N=None, **kwargs):
             pass

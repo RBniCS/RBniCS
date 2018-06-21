@@ -24,7 +24,8 @@ from rbnics.backends import ParametrizedExpressionFactory, ParametrizedTensorFac
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
-from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.reduction_methods.base import ReductionMethod
+from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReductionMethod, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -75,6 +76,33 @@ def test_eim_approximation_20(expression_type, basis_generation):
             delattr(self, "_is_solving")
             return self._solution
             
+    @StoreMapFromProblemToReductionMethod
+    class MockReductionMethod(ReductionMethod):
+        def __init__(self, truth_problem, **kwargs):
+            # Call parent
+            ReductionMethod.__init__(self, os.path.join("test_eim_approximation_20_tempdir", expression_type, basis_generation, "mock_problem"))
+            # Minimal subset of a DifferentialProblemReductionMethod
+            self.truth_problem = truth_problem
+            self.reduced_problem = None
+            
+        def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
+            return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
+            
+        def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
+            return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
+            
+        def offline(self):
+            pass
+            
+        def update_basis_matrix(self, snapshot):
+            pass
+            
+        def error_analysis(self, N=None, **kwargs):
+            pass
+            
+        def speedup_analysis(self, N=None, **kwargs):
+            pass
+            
     class ParametrizedFunctionApproximation(EIMApproximation):
         def __init__(self, truth_problem, expression_type, basis_generation):
             self.V = truth_problem.V0
@@ -113,7 +141,8 @@ def test_eim_approximation_20(expression_type, basis_generation):
     mu_range = [(-1., -0.01), (-1., -0.01)]
     problem.set_mu_range(mu_range)
 
-    # 4. Postpone generation of the reduced problem
+    # 4. Create a reduction method, but postpone generation of the reduced problem
+    MockReductionMethod(problem)
 
     # 5. Allocate an object of the ParametrizedFunctionApproximation class
     parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation)
