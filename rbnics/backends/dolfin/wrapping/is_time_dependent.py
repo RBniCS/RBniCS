@@ -26,7 +26,6 @@ from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pul
 
 def basic_is_time_dependent(backend, wrapping):
     def _basic_is_time_dependent(expression_or_form, iterator):
-        visited = set()
         for node in iterator(expression_or_form):
             # ... parametrized expressions
             if isinstance(node, BaseExpression):
@@ -46,15 +45,6 @@ def basic_is_time_dependent(backend, wrapping):
                     truth_problem = get_problem_from_solution(truth_solution)
                     if hasattr(truth_problem, "set_time"):
                         return True
-                else:
-                    preprocessed_node = node
-                # Make sure to skip any parent solution related to this one
-                visited.add(node)
-                visited.add(preprocessed_node)
-                for parent_node in wrapping.solution_iterator(preprocessed_node):
-                    visited.add(parent_node)
-            else:
-                visited.add(node)
         return False
     return _basic_is_time_dependent
     

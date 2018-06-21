@@ -56,6 +56,9 @@ def ParametrizedExpressionFactory(backend, wrapping):
                         (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                         truth_problem = get_problem_from_solution(truth_solution)
                         auxiliary_problems_and_components.append((truth_problem, component))
+                    else:
+                        (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
+                        auxiliary_problems_and_components.append((auxiliary_problem, component))
                     # Make sure to skip any parent solution related to this one
                     visited.add(node)
                     visited.add(preprocessed_node)

@@ -58,8 +58,7 @@ def basic_expression_name(backend, wrapping):
                     (preprocessed_n, component, truth_solution) = wrapping.solution_identify_component(n)
                     problem = get_problem_from_solution(truth_solution)
                 else:
-                    (problem, component) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
-                    preprocessed_n = n
+                    (preprocessed_n, component, problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
                 coefficients_replacement[repr(preprocessed_n)] = str(problem.name()) + str(component)
                 str_repr += repr(problem.name()) + str(component)
                 # Make sure to skip any parent solution related to this one

@@ -39,8 +39,7 @@ def basic_expression_description(backend, wrapping):
                     (preprocessed_n, component, truth_solution) = wrapping.solution_identify_component(n)
                     problem = get_problem_from_solution(truth_solution)
                 else:
-                    (problem, component) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
-                    preprocessed_n = n
+                    (preprocessed_n, component, problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
                 coefficients_repr[preprocessed_n] = "solution of " + str(problem.name())
                 if len(component) is 1 and component[0] is not None:
                     coefficients_repr[preprocessed_n] += ", component " + str(component[0])

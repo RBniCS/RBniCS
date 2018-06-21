@@ -70,8 +70,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                             truth_problem_to_reduced_mesh_interpolator[truth_problem] = list()
                         truth_problem_to_reduced_mesh_interpolator[truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
-                        (auxiliary_problem, component) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
-                        preprocessed_node = node
+                        (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
                         # Get the function space corresponding to preprocessed_node on the reduced mesh
                         auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(auxiliary_problem, component)
                         # Get interpolator on reduced mesh
