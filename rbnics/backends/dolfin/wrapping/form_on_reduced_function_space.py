@@ -81,8 +81,6 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         truth_problem_to_reduced_mesh_interpolator[truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
                         (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
-                        # Get the function space corresponding to preprocessed_node on the reduced mesh
-                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(auxiliary_problem, component)
                         # Get interpolator on reduced mesh
                         auxiliary_truth_problem_to_reduced_mesh_interpolator = at.get_auxiliary_function_interpolator(auxiliary_problem, component)
                         # Define and store the replacement

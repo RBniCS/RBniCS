@@ -307,10 +307,11 @@ def BasicReducedMesh(backend, wrapping):
                     (auxiliary_problem, component) = key
                     self._update_auxiliary_reduced_function_space(auxiliary_problem, component)
                     self._update_auxiliary_function_interpolator(auxiliary_problem, component)
-                    if is_training_finished(auxiliary_problem):
-                        self._update_auxiliary_basis_functions_matrix(auxiliary_problem, component)
-                    else:
-                        pass # will be computed when training is finished (see _save_auxiliary)
+                    if not isinstance(auxiliary_problem, wrapping.AuxiliaryProblemForNonParametrizedFunction):
+                        if is_training_finished(auxiliary_problem):
+                            self._update_auxiliary_basis_functions_matrix(auxiliary_problem, component)
+                        else:
+                            pass # will be computed when training is finished (see _save_auxiliary)
             
         @abstractmethod
         def _compute_dof_to_cells(self, V_component):
@@ -443,10 +444,11 @@ def BasicReducedMesh(backend, wrapping):
                     (auxiliary_problem, component) = key
                     for index in range(len(self.reduced_mesh)):
                         self._save_auxiliary_reduced_function_space(directory, filename, auxiliary_problem, component, index)
-                        if is_training_finished(auxiliary_problem):
-                            self._save_auxiliary_basis_functions_matrix(directory, filename, auxiliary_problem, component, index)
-                        else:
-                            self._patch_auxiliary_basis_functions_matrix_save(directory, filename, auxiliary_problem, component)
+                        if not isinstance(auxiliary_problem, wrapping.AuxiliaryProblemForNonParametrizedFunction):
+                            if is_training_finished(auxiliary_problem):
+                                self._save_auxiliary_basis_functions_matrix(directory, filename, auxiliary_problem, component, index)
+                            else:
+                                self._patch_auxiliary_basis_functions_matrix_save(directory, filename, auxiliary_problem, component)
             
         def _save_auxiliary_reduced_function_space(self, directory, filename, auxiliary_problem, component, index):
             # Get full directory name
@@ -629,10 +631,11 @@ def BasicReducedMesh(backend, wrapping):
                     (auxiliary_problem, component) = key
                     for index in range(len(self.reduced_mesh)):
                         self._load_auxiliary_reduced_function_space(directory, filename, auxiliary_problem, component, index)
-                        if is_training_finished(auxiliary_problem):
-                            self._load_auxiliary_basis_functions_matrix(directory, filename, auxiliary_problem, component, index)
-                        else:
-                            self._patch_auxiliary_basis_functions_matrix_load(directory, filename, auxiliary_problem, component)
+                        if not isinstance(auxiliary_problem, wrapping.AuxiliaryProblemForNonParametrizedFunction):
+                            if is_training_finished(auxiliary_problem):
+                                self._load_auxiliary_basis_functions_matrix(directory, filename, auxiliary_problem, component, index)
+                            else:
+                                self._patch_auxiliary_basis_functions_matrix_load(directory, filename, auxiliary_problem, component)
                         # Re-create interpolator, as it was not saved to file
                         self._update_auxiliary_function_interpolator(auxiliary_problem, component, index)
                 
@@ -797,8 +800,9 @@ def BasicReducedMesh(backend, wrapping):
 
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.wrapping import build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, convert_meshfunctions_to_submesh, convert_functionspace_to_submesh, evaluate_basis_functions_matrix_at_dofs, evaluate_sparse_function_at_dofs, map_functionspaces_between_mesh_and_submesh
+from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import AuxiliaryProblemForNonParametrizedFunction
 backend = ModuleWrapper(BasisFunctionsMatrix)
-wrapping = ModuleWrapper(build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, convert_meshfunctions_to_submesh, convert_functionspace_to_submesh, evaluate_sparse_function_at_dofs, map_functionspaces_between_mesh_and_submesh, evaluate_basis_functions_matrix_at_dofs=evaluate_basis_functions_matrix_at_dofs)
+wrapping = ModuleWrapper(AuxiliaryProblemForNonParametrizedFunction, build_dof_map_reader_mapping, build_dof_map_writer_mapping, create_submesh, convert_meshfunctions_to_submesh, convert_functionspace_to_submesh, evaluate_sparse_function_at_dofs, map_functionspaces_between_mesh_and_submesh, evaluate_basis_functions_matrix_at_dofs=evaluate_basis_functions_matrix_at_dofs)
 ReducedMesh_Base = BasicReducedMesh(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
