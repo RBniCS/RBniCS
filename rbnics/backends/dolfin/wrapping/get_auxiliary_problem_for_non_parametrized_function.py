@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import hashlib
+from abc import ABCMeta, abstractmethod
 from ufl.core.multiindex import MultiIndex
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
@@ -26,12 +26,13 @@ from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_
 from rbnics.utils.cache import Cache, cache
 
 # Only a V attribute and a name method are required
-class AuxiliaryProblemForNonParametrizedFunction(object):
+class AuxiliaryProblemForNonParametrizedFunction(object, metaclass=ABCMeta):
     def __init__(self, V):
         self.V = V
         
+    @abstractmethod
     def name(self):
-        return type(self).__name__
+        pass
     
 def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping):
     @cache # to skip preprocessing if node is queried multiple time
@@ -74,8 +75,15 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
             auxiliary_problem_for_non_parametrized_function = _auxiliary_problem_for_non_parametrized_function_cache[V]
         except KeyError:
             # Change the name of the (local) class to uniquely identify the function.
-            AuxiliaryProblemForNonParametrizedFunction.__name__ += "_" + str(len(_auxiliary_problem_for_non_parametrized_function_cache))
-            auxiliary_problem_for_non_parametrized_function = AuxiliaryProblemForNonParametrizedFunction(V)
+            auxiliary_problem_for_non_parametrized_function_name = (
+                AuxiliaryProblemForNonParametrizedFunction.__name__ + "_" +
+                str(len(_auxiliary_problem_for_non_parametrized_function_cache))
+            )
+            class AuxiliaryProblemForNonParametrizedFunction_Local(AuxiliaryProblemForNonParametrizedFunction):
+                def name(self):
+                    return auxiliary_problem_for_non_parametrized_function_name
+            AuxiliaryProblemForNonParametrizedFunction_Local.__name__ = auxiliary_problem_for_non_parametrized_function_name
+            auxiliary_problem_for_non_parametrized_function = AuxiliaryProblemForNonParametrizedFunction_Local(V)
             _auxiliary_problem_for_non_parametrized_function_cache[V] = auxiliary_problem_for_non_parametrized_function
             
         return (preprocessed_node, component, auxiliary_problem_for_non_parametrized_function)
