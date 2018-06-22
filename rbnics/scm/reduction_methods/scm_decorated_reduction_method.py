@@ -61,8 +61,8 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             import_successful_SCM = self.SCM_reduction.initialize_training_set(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
             # If an exception is raised we will fall back to exact evaluation,
             # and thus we cannot use a distributed training set
-            self.training_set.distributed_max = False
-            self.SCM_reduction.training_set.distributed_max = False
+            self.training_set.serialize_maximum_computations()
+            self.SCM_reduction.training_set.serialize_maximum_computations()
             # Return
             return import_successful and import_successful_SCM
             

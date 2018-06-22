@@ -49,7 +49,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = ReductionMethod.initialize_training_set(self, self.EIM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
         # Since exact evaluation is required, we cannot use a distributed training set
-        self.training_set.distributed_max = False
+        self.training_set.serialize_maximum_computations()
         # Also initialize the map from parameter values to snapshots container index
         self._training_set_parameters_to_snapshots_container_index = dict((mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
         return import_successful

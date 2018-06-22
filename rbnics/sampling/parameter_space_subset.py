@@ -82,6 +82,10 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             global_i_max = argmax(values_with_postprocessing)
             global_value_max = values[global_i_max]
         return (global_value_max, global_i_max)
+        
+    def serialize_maximum_computations(self):
+        assert self.distributed_max is True
+        self.distributed_max = False
     
     def diff(self, other_set):
         output = ParameterSpaceSubset()
