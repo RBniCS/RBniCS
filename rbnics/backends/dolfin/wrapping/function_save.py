@@ -26,7 +26,7 @@ else:
     from dolfin import get_log_level, set_log_level, WARNING
 from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 class SolutionFile_Base(object):
     def __init__(self, directory, filename):
@@ -40,8 +40,10 @@ class SolutionFile_Base(object):
     @staticmethod
     def remove_files(directory, filename):
         full_filename = os.path.join(str(directory), filename)
-        if is_io_process() and os.path.exists(full_filename + "_index.sfx"):
-            os.remove(full_filename + "_index.sfx")
+        def remove_files_task():
+            if os.path.exists(full_filename + "_index.sfx"):
+                os.remove(full_filename + "_index.sfx")
+        parallel_io(remove_files_task)
         
     def write(self, function, name, index):
         pass
@@ -119,11 +121,13 @@ else:
             SolutionFile_Base.remove_files(directory, filename)
             #
             full_filename = os.path.join(str(directory), filename)
-            if is_io_process() and os.path.exists(full_filename + ".xdmf"):
-                os.remove(full_filename + ".xdmf")
-                os.remove(full_filename + ".h5")
-                os.remove(full_filename + "_checkpoint.xdmf")
-                os.remove(full_filename + "_checkpoint.h5")
+            def remove_files_task():
+                if os.path.exists(full_filename + ".xdmf"):
+                    os.remove(full_filename + ".xdmf")
+                    os.remove(full_filename + ".h5")
+                    os.remove(full_filename + "_checkpoint.xdmf")
+                    os.remove(full_filename + "_checkpoint.h5")
+            parallel_io(remove_files_task)
             
         def write(self, function, name, index):
             assert index in (self._last_index, self._last_index + 1)

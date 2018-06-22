@@ -21,7 +21,7 @@ from numbers import Number
 from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple_of
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 def FunctionsList(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
     if AdditionalIsFunction is None:
@@ -105,9 +105,10 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
                 wrapping.function_save(function, directory, filename + "_" + str(index))
                     
         def _save_Nmax(self, directory, filename):
-            if is_io_process(self.mpi_comm):
+            def save_Nmax_task():
                 with open(os.path.join(str(directory), filename + ".length"), "w") as length:
                     length.write(str(len(self._list)))
+            parallel_io(save_Nmax_task, self.mpi_comm)
             
         def load(self, directory, filename):
             if len(self._list) > 0: # avoid loading multiple times
@@ -120,12 +121,10 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
             return True
             
         def _load_Nmax(self, directory, filename):
-            Nmax = None
-            if is_io_process(self.mpi_comm):
+            def load_Nmax_task():
                 with open(os.path.join(str(directory), filename + ".length"), "r") as length:
-                    Nmax = int(length.readline())
-            Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
-            return Nmax
+                    return int(length.readline())
+            return parallel_io(load_Nmax_task, self.mpi_comm)
         
         @overload(online_backend.OnlineMatrix.Type(), )
         def __mul__(self, other):

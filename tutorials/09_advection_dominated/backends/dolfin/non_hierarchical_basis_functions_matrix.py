@@ -16,10 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from rbnics.backends.dolfin import BasisFunctionsMatrix as DolfinBasisFunctionsMatrix
 from rbnics.backends.dolfin.wrapping import get_mpi_comm
 from rbnics.utils.decorators import overload
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 class NonHierarchicalBasisFunctionsMatrix(object):
     def __init__(self, V):
@@ -60,9 +61,10 @@ class NonHierarchicalBasisFunctionsMatrix(object):
             basis_N.save(directory, filename + "_N=" + str(N))
             
     def _save_Nmax(self, directory, filename):
-        if is_io_process(self.mpi_comm):
-            with open(str(directory) + "/" + filename + ".length", "w") as length:
+        def save_Nmax_task():
+            with open(os.path.join(str(directory), filename + ".length"), "w") as length:
                 length.write(str(len(self)))
+        parallel_io(save_Nmax_task)
         
     def load(self, directory, filename):
         if len(self._content) > 0: # avoid loading multiple times
@@ -77,12 +79,10 @@ class NonHierarchicalBasisFunctionsMatrix(object):
             return True
         
     def _load_Nmax(self, directory, filename):
-        Nmax = None
-        if is_io_process(self.mpi_comm):
-            with open(str(directory) + "/" + filename + ".length", "r") as length:
-                Nmax = int(length.readline())
-        Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
-        return Nmax
+        def load_Nmax_task():
+            with open(os.path.join(str(directory), filename + ".length"), "r") as length:
+                return int(length.readline())
+        return parallel_io(load_Nmax_task)
         
     def __len__(self):
         if len(self._content) > 0:

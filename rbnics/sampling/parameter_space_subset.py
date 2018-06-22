@@ -18,17 +18,18 @@
 
 import operator # to find closest parameters
 from math import sqrt
+from mpi4py.MPI import COMM_WORLD
 from numpy import zeros as array
 from numpy import argmax
 from rbnics.sampling.distributions import CompositeDistribution, UniformDistribution
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import ExportableList
-from rbnics.utils.mpi import is_io_process, parallel_max
+from rbnics.utils.mpi import parallel_io as parallel_generate, parallel_max
 
 class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     def __init__(self):
         ExportableList.__init__(self, "text")
-        self.mpi_comm = is_io_process.mpi_comm # default communicator
+        self.mpi_comm = COMM_WORLD
         self.distributed_max = True
         
     @overload
@@ -38,7 +39,6 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     @overload
     def __getitem__(self, key: slice):
         output = ParameterSpaceSubset()
-        output.mpi_comm = self.mpi_comm
         output.distributed_max = self.distributed_max
         output._list = self._list[key]
         return output
@@ -46,14 +46,14 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     # Method for generation of parameter space subsets
     def generate(self, box, n, sampling=None):
         if len(box) > 0:
-            if is_io_process():
-                if sampling is None:
-                    sampling = UniformDistribution()
-                elif isinstance(sampling, tuple):
-                    assert len(sampling) == len(box)
-                    sampling = CompositeDistribution(sampling)
-                self._list = sampling.sample(box, n)
-            self._list = is_io_process.mpi_comm.bcast(self._list, root=0)
+            if sampling is None:
+                sampling = UniformDistribution()
+            elif isinstance(sampling, tuple):
+                assert len(sampling) == len(box)
+                sampling = CompositeDistribution(sampling)
+            def run_sampling():
+                return sampling.sample(box, n)
+            self._list = parallel_generate(run_sampling, self.mpi_comm)
         else:
             for i in range(n):
                 self._list.append(tuple())
@@ -74,7 +74,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if self.distributed_max:
             local_i_max = argmax(values_with_postprocessing)
             local_value_max = values[local_i_max]
-            (global_value_max, global_i_max) = parallel_max(self.mpi_comm, local_value_max, local_list_indices[local_i_max], postprocessor)
+            (global_value_max, global_i_max) = parallel_max(local_value_max, local_list_indices[local_i_max], postprocessor, self.mpi_comm)
             assert isinstance(global_i_max, tuple)
             assert len(global_i_max) == 1
             global_i_max = global_i_max[0]
@@ -89,7 +89,6 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
     
     def diff(self, other_set):
         output = ParameterSpaceSubset()
-        output.mpi_comm = self.mpi_comm
         output.distributed_max = self.distributed_max
         output._list = [mu for mu in self._list if mu not in other_set]
         return output
@@ -103,7 +102,6 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             return self
             
         output = ParameterSpaceSubset()
-        output.mpi_comm = self.mpi_comm
         output.distributed_max = self.distributed_max
             
         # Trivial case 2:

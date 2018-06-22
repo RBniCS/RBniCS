@@ -50,7 +50,7 @@ def _abs(matrix: Matrix.Type()):
     assert value_max is not None
     #
     mpi_comm = mat.comm.tompi4py()
-    (global_value_max, global_ij_max) = parallel_max(mpi_comm, value_max, (i_max, j_max), fabs)
+    (global_value_max, global_ij_max) = parallel_max(value_max, (i_max, j_max), fabs, mpi_comm)
     return AbsOutput(global_value_max, global_ij_max)
     
 @overload
@@ -69,7 +69,7 @@ def _abs(vector: Vector.Type()):
     assert value_max is not None
     #
     mpi_comm = vec.comm.tompi4py()
-    (global_value_max, global_i_max) = parallel_max(mpi_comm, value_max, (i_max, ), fabs)
+    (global_value_max, global_i_max) = parallel_max(value_max, (i_max, ), fabs, mpi_comm)
     return AbsOutput(global_value_max, global_i_max)
     
 @overload

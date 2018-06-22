@@ -16,28 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from mpi4py import MPI
-from mpi4py.MPI import MAX
-
-_default_io_mpi_comm = MPI.COMM_WORLD
-
-# I/O operations should be carried out only on processor 0
-def is_io_process(mpi_comm=None):
-    if mpi_comm is None:
-        is_io_process.mpi_comm = _default_io_mpi_comm
-        return _default_io_mpi_comm.rank == 0
-    else:
-        is_io_process.mpi_comm = None # the user already has the mpi_comm available
-        return mpi_comm.rank == 0
-        
-is_io_process.root = 0
-is_io_process.mpi_comm = _default_io_mpi_comm
+from mpi4py.MPI import COMM_WORLD, MAX
 
 # Get max in parallel
-def parallel_max(mpi_comm, local_value_max, local_args=None, postprocessor=None):
+def parallel_max(local_value_max, local_args=None, postprocessor=None, mpi_comm=None):
     if postprocessor is None:
         def postprocessor(value):
             return value
+    if mpi_comm is None:
+        mpi_comm = COMM_WORLD
     local_value_max_with_postprocessing = postprocessor(local_value_max)
     global_value_max_with_postprocessing = mpi_comm.allreduce(local_value_max_with_postprocessing, op=MAX)
     global_value_processor_argmax = -1

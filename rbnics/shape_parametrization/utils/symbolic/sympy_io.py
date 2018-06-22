@@ -19,7 +19,7 @@
 import os
 from sympy import python
 from rbnics.shape_parametrization.utils.symbolic.sympy_exec import sympy_exec
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 class SympyIO(object):
     # Save a variable to file
@@ -27,10 +27,10 @@ class SympyIO(object):
     def save_file(content, directory, filename):
         if not filename.endswith(".sym"):
             filename = filename + ".sym"
-        if is_io_process():
+        def save_file_task():
             with open(os.path.join(str(directory), filename), "w") as outfile:
                 outfile.write(python(content))
-        is_io_process.mpi_comm.barrier()
+        parallel_io(save_file_task)
     
     # Load a variable from file
     @staticmethod
@@ -46,8 +46,6 @@ class SympyIO(object):
     def exists_file(directory, filename):
         if not filename.endswith(".sym"):
             filename = filename + ".sym"
-        exists = None
-        if is_io_process():
-            exists = os.path.exists(os.path.join(str(directory), filename))
-        exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
-        return exists
+        def exists_file_task():
+            return os.path.exists(os.path.join(str(directory), filename))
+        return parallel_io(exists_file_task)

@@ -18,7 +18,7 @@
 
 import os
 import numpy
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 class NumpyIO(object):
     # Save a variable to file
@@ -26,9 +26,9 @@ class NumpyIO(object):
     def save_file(content, directory, filename):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
-        if is_io_process():
+        def save_file_task():
             numpy.save(os.path.join(str(directory), filename), content)
-        is_io_process.mpi_comm.barrier()
+        parallel_io(save_file_task)
     
     # Load a variable from file
     @staticmethod
@@ -42,8 +42,6 @@ class NumpyIO(object):
     def exists_file(directory, filename):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
-        exists = None
-        if is_io_process():
-            exists = os.path.exists(os.path.join(str(directory), filename))
-        exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
-        return exists
+        def exists_file_task():
+            return os.path.exists(os.path.join(str(directory), filename))
+        return parallel_io(exists_file_task)

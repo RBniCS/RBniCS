@@ -17,8 +17,8 @@
 #
 
 import os
-from rbnics.utils.mpi import is_io_process
 from rbnics.utils.decorators import overload
+from rbnics.utils.mpi import parallel_io
 
 class Folders(dict): # dict from string to string
     
@@ -36,20 +36,20 @@ class Folders(dict): # dict from string to string
         # or if the folder was already created before, but it is
         # empty. Returs False otherwise.
         def create(self):
-            return_value = False
-            if is_io_process() and os.path.exists(self.name) and len(os.listdir(self.name)) == 0: # already created, but empty
-                return_value = True
-            if is_io_process() and not os.path.exists(self.name): # to be created
-                return_value = True
-                os.makedirs(self.name)
-            return_value = is_io_process.mpi_comm.bcast(return_value, root=is_io_process.root)
-            return return_value
+            def create_task():
+                if os.path.exists(self.name) and len(os.listdir(self.name)) == 0: # already created, but empty
+                    return True
+                if not os.path.exists(self.name): # to be created
+                    os.makedirs(self.name)
+                    return True
+                return False
+            return parallel_io(create_task)
             
         def touch_file(self, filename):
-            if is_io_process():
+            def touch_file_task():
                 with open(os.path.join(self.name, filename), "a"):
                     os.utime(os.path.join(self.name, filename), None)
-            is_io_process.mpi_comm.barrier()
+            parallel_io(touch_file_task)
 
         def __str__(self):
             return self.name

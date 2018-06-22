@@ -17,7 +17,7 @@
 #
 
 import os
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 class TextIO(object):
     # Save a variable to file
@@ -25,10 +25,10 @@ class TextIO(object):
     def save_file(content, directory, filename):
         if os.path.splitext(filename)[1] == "":
             filename = filename + ".txt"
-        if is_io_process():
+        def save_file_task():
             with open(os.path.join(str(directory), filename), "w") as outfile:
                 outfile.write(repr(content))
-        is_io_process.mpi_comm.barrier()
+        parallel_io(save_file_task)
                 
     # Load a variable from file
     @staticmethod
@@ -46,8 +46,6 @@ class TextIO(object):
     def exists_file(directory, filename):
         if os.path.splitext(filename)[1] == "":
             filename = filename + ".txt"
-        exists = None
-        if is_io_process():
-            exists = os.path.exists(os.path.join(str(directory), filename))
-        exists = is_io_process.mpi_comm.bcast(exists, root=is_io_process.root)
-        return exists
+        def exists_file_task():
+            return os.path.exists(os.path.join(str(directory), filename))
+        return parallel_io(exists_file_task)

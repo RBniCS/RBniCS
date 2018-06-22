@@ -20,9 +20,9 @@ import os
 from petsc4py import PETSc
 from dolfin import has_pybind11
 from mpi4py.MPI import Op
-from rbnics.utils.mpi import is_io_process
-from rbnics.utils.io import Folders, PickleIO
 from rbnics.utils.decorators import overload
+from rbnics.utils.io import Folders, PickleIO
+from rbnics.utils.mpi import parallel_io
 
 def basic_tensor_save(backend, wrapping):
     def _basic_tensor_save(tensor, directory, filename):
@@ -34,18 +34,20 @@ def basic_tensor_save(backend, wrapping):
         assert hasattr(tensor, "generator")
         full_filename_generator = os.path.join(str(directory), filename + ".generator")
         form_name = wrapping.form_name(form)
-        if is_io_process(mpi_comm):
+        def save_generator():
             with open(full_filename_generator, "w") as generator_file:
                 generator_file.write(form_name)
+        parallel_io(save_generator, mpi_comm)
         # Write out generator mpi size
         full_filename_generator_mpi_size = os.path.join(str(directory), filename + ".generator_mpi_size")
-        if is_io_process(mpi_comm):
+        def save_generator_mpi_size():
             with open(full_filename_generator_mpi_size, "w") as generator_mpi_size_file:
                 generator_mpi_size_file.write(str(mpi_comm.size))
+        parallel_io(save_generator_mpi_size, mpi_comm)
         # Write out generator mapping from processor dependent indices to processor independent (global_cell_index, cell_dof) tuple
         _permutation_save(tensor, directory, form, form_name + "_" + str(mpi_comm.size), mpi_comm)
         # Write out content
-        _tensor_save(tensor, directory, filename)
+        _tensor_save(tensor, directory, filename, mpi_comm)
             
     @overload(backend.Matrix.Type(), (Folders.Folder, str), object, str, object)
     def _permutation_save(tensor, directory, form, form_name, mpi_comm):
@@ -64,8 +66,8 @@ def basic_tensor_save(backend, wrapping):
                 for col in cols:
                     if col not in matrix_col_mapping:
                         matrix_col_mapping[col] = V_1__dof_map_writer_mapping[col]
-            gathered_matrix_row_mapping = mpi_comm.reduce(matrix_row_mapping, root=is_io_process.root, op=_dict_update_op)
-            gathered_matrix_col_mapping = mpi_comm.reduce(matrix_col_mapping, root=is_io_process.root, op=_dict_update_op)
+            gathered_matrix_row_mapping = mpi_comm.reduce(matrix_row_mapping, root=0, op=_dict_update_op)
+            gathered_matrix_col_mapping = mpi_comm.reduce(matrix_col_mapping, root=0, op=_dict_update_op)
             gathered_matrix_mapping = (gathered_matrix_row_mapping, gathered_matrix_col_mapping)
             PickleIO.save_file(gathered_matrix_mapping, directory, "." + form_name)
                 
@@ -79,12 +81,12 @@ def basic_tensor_save(backend, wrapping):
             row_start, row_end = vec.getOwnershipRange()
             for row in range(row_start, row_end):
                 vector_mapping[row] = V_0__dof_map_writer_mapping[row]
-            gathered_vector_mapping = mpi_comm.reduce(vector_mapping, root=is_io_process.root, op=_dict_update_op)
+            gathered_vector_mapping = mpi_comm.reduce(vector_mapping, root=0, op=_dict_update_op)
             PickleIO.save_file(gathered_vector_mapping, directory, "." + form_name)
     
-    def _tensor_save(tensor, directory, filename):
+    def _tensor_save(tensor, directory, filename, mpi_comm):
         tensor = wrapping.to_petsc4py(tensor)
-        viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w")
+        viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w", mpi_comm)
         viewer.view(tensor)
         
     def _dict_update(dict1, dict2, datatype):

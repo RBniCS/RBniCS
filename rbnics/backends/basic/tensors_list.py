@@ -20,7 +20,7 @@ import os
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 
 def TensorsList(backend, wrapping, online_backend, online_wrapping):
     class _TensorsList(AbstractTensorsList):
@@ -59,9 +59,10 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
                 wrapping.tensor_save(tensor, directory, filename + "_" + str(index))
                     
         def _save_Nmax(self, directory, filename):
-            if is_io_process(self.mpi_comm):
+            def save_Nmax_task():
                 with open(os.path.join(str(directory), filename + ".length"), "w") as length:
                     length.write(str(len(self._list)))
+            parallel_io(save_Nmax_task, self.mpi_comm)
             
         def load(self, directory, filename):
             if len(self._list) > 0: # avoid loading multiple times
@@ -74,12 +75,10 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             return True
             
         def _load_Nmax(self, directory, filename):
-            Nmax = None
-            if is_io_process(self.mpi_comm):
+            def load_Nmax_task():
                 with open(os.path.join(str(directory), filename + ".length"), "r") as length:
-                    Nmax = int(length.readline())
-            Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
-            return Nmax
+                    return int(length.readline())
+            return parallel_io(load_Nmax_task, self.mpi_comm)
         
         @overload(online_backend.OnlineFunction.Type(), )
         def __mul__(self, other):

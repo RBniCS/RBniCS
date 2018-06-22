@@ -19,8 +19,8 @@
 import os
 import sys
 import configparser
-from rbnics.utils.mpi import is_io_process
 from rbnics.utils.decorators import overload, set_of
+from rbnics.utils.mpi import parallel_io
 
 class Config(object):
     rbnics_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
@@ -99,9 +99,9 @@ class Config(object):
         self._parser_to_dict()
         
     def write(self, file_):
-        if is_io_process():
+        def write_config_parser():
             self._config_as_parser.write(file_)
-        is_io_process.mpi_comm.barrier()
+        parallel_io(write_config_parser)
         
     def get(self, section, option):
         return self._config_as_dict[section][option]

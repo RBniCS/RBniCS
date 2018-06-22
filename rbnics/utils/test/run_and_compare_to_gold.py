@@ -26,7 +26,7 @@ except ImportError:
     # null action does not require any git support, while
     # compare action only requires to be able to do a git clone
     pass
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test.diff import diff
 
 def run_and_compare_to_gold(subdirectory=""):
@@ -54,22 +54,24 @@ def run_and_compare_to_gold(subdirectory=""):
                 reference_dir = os.path.join(reference_dir, subdirectory)
             else:
                 reference_dir = None
-            # Copy training and testing set
-            if action is not None and is_io_process():
-                for set_ in ("testing_set", "training_set"):
-                    set_directories = glob.glob(os.path.join(reference_dir, "**", set_), recursive=True)
-                    if action == "compare":
-                        assert len(set_directories) > 0
-                    for set_directory in set_directories:
-                        set_directory = os.path.relpath(set_directory, reference_dir)
-                        if os.path.exists(os.path.join(reference_dir, set_directory)):
-                            if os.path.exists(os.path.join(current_dir, set_directory)):
-                                shutil.rmtree(os.path.join(current_dir, set_directory))
-                            shutil.copytree(os.path.join(reference_dir, set_directory), os.path.join(current_dir, set_directory))
+            # Copy training and testing sets
+            if action is not None:
+                def copy_training_and_testing_sets():
+                    for set_ in ("testing_set", "training_set"):
+                        set_directories = glob.glob(os.path.join(reference_dir, "**", set_), recursive=True)
+                        if action == "compare":
+                            assert len(set_directories) > 0
+                        for set_directory in set_directories:
+                            set_directory = os.path.relpath(set_directory, reference_dir)
+                            if os.path.exists(os.path.join(reference_dir, set_directory)):
+                                if os.path.exists(os.path.join(current_dir, set_directory)):
+                                    shutil.rmtree(os.path.join(current_dir, set_directory))
+                                shutil.copytree(os.path.join(reference_dir, set_directory), os.path.join(current_dir, set_directory))
+                parallel_io(copy_training_and_testing_sets)
             # Run test/tutorial
             runtest(self)
             # Process results
-            if is_io_process():
+            def process_results():
                 if action == "compare":
                     failures = list()
                     filenames = glob.glob(os.path.join(reference_dir, "**", "*.*"), recursive=True)
@@ -104,5 +106,6 @@ def run_and_compare_to_gold(subdirectory=""):
                     data_dir_repo.git.commit(message=message)
                     # Clean repository
                     data_dir_repo.git.clean("-Xdf")
+            parallel_io(process_results)
         return run_and_compare_to_gold_function
     return run_and_compare_to_gold_decorator

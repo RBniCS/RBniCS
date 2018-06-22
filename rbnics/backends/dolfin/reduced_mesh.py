@@ -28,7 +28,7 @@ from rbnics.backends.dolfin.wrapping import FunctionSpace
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.decorators import abstractmethod, BackendFor, get_reduced_problem_from_problem, get_reduction_method_from_problem, is_training_finished, ModuleWrapper
 from rbnics.utils.io import ExportableList, Folders
-from rbnics.utils.mpi import is_io_process
+from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test import PatchInstanceMethod
 from mpi4py.MPI import MAX
 
@@ -418,10 +418,10 @@ def BasicReducedMesh(backend, wrapping):
             self._save_auxiliary(directory, filename)
             
         def _save_Nmax(self, directory, filename):
-            if is_io_process(self.mpi_comm):
+            def save_Nmax_task():
                 with open(os.path.join(str(directory), filename, "reduced_mesh.length"), "w") as length:
                     length.write(str(len(self.reduced_mesh)))
-            self.mpi_comm.barrier()
+            parallel_io(save_Nmax_task, self.mpi_comm)
             
         def _init_for_save_if_needed(self):
             # Initialize dof map mappings for output
@@ -603,12 +603,10 @@ def BasicReducedMesh(backend, wrapping):
                 return True
                 
         def _load_Nmax(self, directory, filename):
-            Nmax = None
-            if is_io_process(self.mpi_comm):
+            def load_Nmax_task():
                 with open(os.path.join(str(directory), filename, "reduced_mesh.length"), "r") as length:
-                    Nmax = int(length.readline())
-            Nmax = self.mpi_comm.bcast(Nmax, root=is_io_process.root)
-            return Nmax
+                    return int(length.readline())
+            return parallel_io(load_Nmax_task, self.mpi_comm)
             
         def _init_for_load_if_needed(self, Nmax):
             # Initialize dof map mappings for input
