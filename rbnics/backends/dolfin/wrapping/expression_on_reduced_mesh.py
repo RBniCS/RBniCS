@@ -57,24 +57,27 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                         # Store the component
                         if truth_problem not in truth_problem_to_components:
                             truth_problem_to_components[truth_problem] = list()
-                        truth_problem_to_components[truth_problem].append(component)
-                        # Get the function space corresponding to preprocessed_node on the reduced mesh
-                        auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem, component)
-                        # Define and store the replacement
-                        if truth_problem not in truth_problem_to_reduced_mesh_solution:
-                            truth_problem_to_reduced_mesh_solution[truth_problem] = list()
-                        replacements[preprocessed_node] = backend.Function(auxiliary_reduced_V)
-                        truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
-                        # Get interpolator on reduced mesh
-                        if truth_problem not in truth_problem_to_reduced_mesh_interpolator:
-                            truth_problem_to_reduced_mesh_interpolator[truth_problem] = list()
-                        truth_problem_to_reduced_mesh_interpolator[truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
+                        if component not in truth_problem_to_components[truth_problem]:
+                            truth_problem_to_components[truth_problem].append(component)
+                            # Get the function space corresponding to preprocessed_node on the reduced mesh
+                            auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem, component)
+                            # Define and store the replacement
+                            if truth_problem not in truth_problem_to_reduced_mesh_solution:
+                                truth_problem_to_reduced_mesh_solution[truth_problem] = list()
+                            assert preprocessed_node not in replacements # as it is related to a new truth solution component
+                            replacements[preprocessed_node] = backend.Function(auxiliary_reduced_V)
+                            truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
+                            # Get interpolator on reduced mesh
+                            if truth_problem not in truth_problem_to_reduced_mesh_interpolator:
+                                truth_problem_to_reduced_mesh_interpolator[truth_problem] = list()
+                            truth_problem_to_reduced_mesh_interpolator[truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
                         (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
-                        # Get interpolator on reduced mesh
-                        auxiliary_truth_problem_to_reduced_mesh_interpolator = at.get_auxiliary_function_interpolator(auxiliary_problem, component)
-                        # Define and store the replacement
-                        replacements[preprocessed_node] = auxiliary_truth_problem_to_reduced_mesh_interpolator(preprocessed_node)
+                        if preprocessed_node not in replacements:
+                            # Get interpolator on reduced mesh
+                            auxiliary_truth_problem_to_reduced_mesh_interpolator = at.get_auxiliary_function_interpolator(auxiliary_problem, component)
+                            # Define and store the replacement
+                            replacements[preprocessed_node] = auxiliary_truth_problem_to_reduced_mesh_interpolator(preprocessed_node)
                     # Make sure to skip any parent solution related to this one
                     visited.add(node)
                     visited.add(preprocessed_node)

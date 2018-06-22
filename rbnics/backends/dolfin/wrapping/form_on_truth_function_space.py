@@ -53,7 +53,8 @@ def basic_form_on_truth_function_space(backend, wrapping):
                         # Store the component
                         if truth_problem not in truth_problem_to_components:
                             truth_problem_to_components[truth_problem] = list()
-                        truth_problem_to_components[truth_problem].append(component)
+                        if component not in truth_problem_to_components[truth_problem]:
+                            truth_problem_to_components[truth_problem].append(component)
                     else:
                         (preprocessed_node, _, _) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
                     # Make sure to skip any parent solution related to this one

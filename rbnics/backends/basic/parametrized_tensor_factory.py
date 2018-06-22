@@ -48,7 +48,7 @@ def ParametrizedTensorFactory(backend, wrapping):
         def create_interpolation_locations_container(self, **kwargs):
             # Populate auxiliary_problems_and_components
             visited = set()
-            auxiliary_problems_and_components = list() # of (problem, component)
+            auxiliary_problems_and_components = set() # of (problem, component)
             for node in wrapping.form_iterator(self._form, "nodes"):
                 if node in visited:
                     continue
@@ -57,10 +57,10 @@ def ParametrizedTensorFactory(backend, wrapping):
                     if wrapping.is_problem_solution_or_problem_solution_component(node):
                         (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                         truth_problem = get_problem_from_solution(truth_solution)
-                        auxiliary_problems_and_components.append((truth_problem, component))
+                        auxiliary_problems_and_components.add((truth_problem, component))
                     else:
                         (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
-                        auxiliary_problems_and_components.append((auxiliary_problem, component))
+                        auxiliary_problems_and_components.add((auxiliary_problem, component))
                     # Make sure to skip any parent solution related to this one
                     visited.add(node)
                     visited.add(preprocessed_node)
