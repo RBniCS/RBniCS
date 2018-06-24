@@ -19,11 +19,12 @@
 import pytest
 from numpy import isclose
 from dolfin import assign, Constant, FiniteElement, MixedElement, project, UnitSquareMesh, VectorElement, VectorFunctionSpace
+from dolfin_utils.test import fixture as module_fixture
 from rbnics.backends.dolfin import Function
 from rbnics.backends.dolfin.wrapping import function_extend_or_restrict, FunctionSpace
 
 # Mesh
-@pytest.fixture(scope="module")
+@module_fixture
 def mesh():
     return UnitSquareMesh(10, 10)
 

@@ -29,6 +29,7 @@ if has_pybind11():
 else:
     from dolfin import log, PROGRESS, set_log_level
 set_log_level(PROGRESS)
+from dolfin_utils.test import fixture as module_fixture
 try:
     from fenicstools import DofMapPlotter as FEniCSToolsDofMapPlotter
 except ImportError:
@@ -40,7 +41,7 @@ from rbnics.backends.dolfin.wrapping import convert_functionspace_to_submesh, co
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_create_submesh")
 
 # Mesh
-@pytest.fixture(scope="module")
+@module_fixture
 def mesh():
     mesh = UnitSquareMesh(3, 3)
     assert MPI.size(mesh.mpi_comm()) in (1, 2, 3, 4)
@@ -50,7 +51,7 @@ def mesh():
     return mesh
 
 # Mesh subdomains
-@pytest.fixture(scope="module")
+@module_fixture
 def subdomains(mesh):
     subdomains = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
     for c in cells(mesh):
@@ -58,7 +59,7 @@ def subdomains(mesh):
     return subdomains
 
 # Mesh boundaries
-@pytest.fixture(scope="module")
+@module_fixture
 def boundaries(mesh):
     boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1, 0)
     for f in facets(mesh):
@@ -68,7 +69,7 @@ def boundaries(mesh):
     return boundaries
 
 # Submesh markers
-@pytest.fixture(scope="module")
+@module_fixture
 def submesh_markers(mesh):
     markers = MeshFunction("bool", mesh, mesh.topology().dim(), False)
     hdf = HDF5File(mesh.mpi_comm(), os.path.join(data_dir, "markers.h5"), "r")
@@ -76,22 +77,22 @@ def submesh_markers(mesh):
     return markers
     
 # Submesh
-@pytest.fixture(scope="module")
+@module_fixture
 def submesh(mesh, submesh_markers):
     return create_submesh(mesh, submesh_markers)
     
 # Internal: submesh subdomains and boundaries
-@pytest.fixture(scope="module")
+@module_fixture
 def _submesh_subdomains_boundaries(mesh, submesh, subdomains, boundaries):
     return convert_meshfunctions_to_submesh(mesh, submesh, [subdomains, boundaries])
     
 # Submesh subdomains
-@pytest.fixture(scope="module")
+@module_fixture
 def submesh_subdomains(_submesh_subdomains_boundaries):
     return _submesh_subdomains_boundaries[0]
     
 # Submesh boundaries
-@pytest.fixture(scope="module")
+@module_fixture
 def submesh_boundaries(_submesh_subdomains_boundaries):
     return _submesh_subdomains_boundaries[1]
     

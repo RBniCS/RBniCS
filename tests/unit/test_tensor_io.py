@@ -19,13 +19,14 @@
 import pytest
 from numpy import isclose
 from dolfin import assemble, dx, FiniteElement, FunctionSpace, inner, MixedElement, split, TestFunction, TrialFunction, UnitSquareMesh, VectorElement
+from dolfin_utils.test import fixture as module_fixture
 from rbnics.backends.dolfin import evaluate as _evaluate, ParametrizedTensorFactory
 from rbnics.backends.dolfin.export import tensor_save
 from rbnics.backends.dolfin.import_ import tensor_load
 from rbnics.eim.utils.decorators import add_to_map_from_parametrized_expression_to_problem
 
 # Meshes
-@pytest.fixture(scope="module")
+@module_fixture
 def mesh():
     return UnitSquareMesh(10, 10)
 
