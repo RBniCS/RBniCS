@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from collections import OrderedDict
 import ufl
 from dolfin import FunctionSpace
 from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
@@ -55,9 +56,10 @@ def _enable_string_components(components, function_space):
         else:
             output = self_.extract_sub_space(i_int)
         if isinstance(i, str):
-            components = {i: None}
+            components = OrderedDict()
+            components[i] = None
         else:
-            components = dict()
+            components = OrderedDict()
             if (
                 len(self_._index_to_components) is 1
                     and
@@ -79,9 +81,10 @@ def _enable_string_components(components, function_space):
         i_int = _convert_component_to_int(self_, i)
         output = original_extract_sub_space(i_int)
         if isinstance(i, str):
-            components = {i: None}
+            components = OrderedDict()
+            components[i] = None
         else:
-            components = dict()
+            components = OrderedDict()
             for c in self_.index_to_components(i):
                 components[c] = None
         _enable_string_components(components, output)
@@ -99,9 +102,9 @@ def _preserve_root_space_after_sub(function_space, root_space_after_sub):
     PatchInstanceMethod(function_space, "sub", custom_sub).patch()
     
 def _init_component_to_index(components, function_space):
-    assert isinstance(components, (list, dict))
+    assert isinstance(components, (list, OrderedDict))
     if isinstance(components, list):
-        function_space._component_to_index = dict()
+        function_space._component_to_index = OrderedDict()
         for (index, component) in enumerate(components):
             _init_component_to_index__recursive(component, function_space._component_to_index, index)
     else:
