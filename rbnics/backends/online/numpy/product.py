@@ -17,16 +17,15 @@
 #
 
 from rbnics.backends.online.basic import product as basic_product
-from rbnics.backends.online.basic.wrapping import DelayedTransposeWithArithmetic as BasicDelayedTransposeWithArithmetic
 from rbnics.backends.online.numpy.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.non_affine_expansion_storage import NonAffineExpansionStorage
+from rbnics.backends.online.numpy.transpose import DelayedTransposeWithArithmetic
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import backend_for, ModuleWrapper, ThetaType
 
 backend = ModuleWrapper(AffineExpansionStorage, Function, Matrix, NonAffineExpansionStorage, Vector)
-DelayedTransposeWithArithmetic = BasicDelayedTransposeWithArithmetic(backend)
 wrapping = ModuleWrapper(DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
 (product_base, ProductOutput) = basic_product(backend, wrapping)
 

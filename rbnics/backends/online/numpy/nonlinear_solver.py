@@ -23,7 +23,7 @@ from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver,
 from rbnics.backends.online.basic.nonlinear_solver import _NonlinearProblem as _BasicNonlinearProblem
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.backends.online.numpy.product import DelayedTransposeWithArithmetic
+from rbnics.backends.online.numpy.transpose import DelayedTransposeWithArithmetic
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 

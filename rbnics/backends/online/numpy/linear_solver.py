@@ -19,7 +19,7 @@
 from numpy.linalg import solve
 from rbnics.backends.online.basic import LinearSolver as BasicLinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix
-from rbnics.backends.online.numpy.product import DelayedTransposeWithArithmetic
+from rbnics.backends.online.numpy.transpose import DelayedTransposeWithArithmetic
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.function import Function
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, ModuleWrapper, ThetaType

@@ -25,6 +25,7 @@ from rbnics.backends.online.basic.non_affine_expansion_storage import NonAffineE
 from rbnics.backends.online.basic.matrix import Matrix
 from rbnics.backends.online.basic.product import product
 from rbnics.backends.online.basic.sum import sum
+from rbnics.backends.online.basic.transpose import transpose
 from rbnics.backends.online.basic.vector import Vector
 
 __all__ = [
@@ -37,5 +38,6 @@ __all__ = [
     'Matrix',
     'product',
     'sum',
+    'transpose',
     'Vector'
 ]
