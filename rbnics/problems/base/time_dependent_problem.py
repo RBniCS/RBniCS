@@ -54,10 +54,10 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _solution_cache_import(filename):
-                self.import_solution(self.folder["cache"], filename)
+                self.import_solution(self.folder["cache"], filename, self._solution_over_time)
                 return self._solution_over_time
             def _solution_cache_export(filename):
-                self.export_solution(self.folder["cache"], filename)
+                self.export_solution(self.folder["cache"], filename, self._solution_over_time)
             def _solution_cache_filename_generator(*args, **kwargs):
                 assert len(args) is 1
                 assert args[0] == self.mu
@@ -69,12 +69,25 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 export=_solution_cache_export,
                 filename_generator=_solution_cache_filename_generator
             )
+            def _solution_dot_cache_key_generator(*args, **kwargs):
+                assert len(args) is 1
+                assert args[0] == self.mu
+                return self._cache_key_from_kwargs(**kwargs)
+            def _solution_dot_cache_import(filename):
+                self.import_solution(self.folder["cache"], filename + "_dot", self._solution_dot_over_time)
+                return self._solution_over_time
+            def _solution_dot_cache_export(filename):
+                self.export_solution(self.folder["cache"], filename + "_dot", self._solution_dot_over_time)
+            def _solution_dot_cache_filename_generator(*args, **kwargs):
+                assert len(args) is 1
+                assert args[0] == self.mu
+                return self._cache_file_from_kwargs(**kwargs)
             self._solution_dot_over_time_cache = Cache(
                 "problems",
-                key_generator=_solution_cache_key_generator,
-                import_=_solution_cache_import,
-                export=_solution_cache_export,
-                filename_generator=_solution_cache_filename_generator
+                key_generator=_solution_dot_cache_key_generator,
+                import_=_solution_dot_cache_import,
+                export=_solution_dot_cache_export,
+                filename_generator=_solution_dot_cache_filename_generator
             )
             del self._solution_cache
             def _output_cache_key_generator(*args, **kwargs):
