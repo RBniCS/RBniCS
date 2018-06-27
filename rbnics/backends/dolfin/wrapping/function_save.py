@@ -53,7 +53,7 @@ class SolutionFile_Base(object):
         
     def _update_function_container(self, function):
         if self._function_container is None:
-            self._function_container = function.copy()
+            self._function_container = function.copy(deepcopy=True)
         else:
             assign(self._function_container, function)
         
