@@ -182,13 +182,21 @@ class EIMApproximation(ParametrizedProblem):
                 return (None, float("NaN"), maximum_location) # the first argument should be a NaN expression
                 
     # Export solution to file
-    def export_solution(self, folder, filename, solution=None):
+    def export_solution(self, folder=None, filename=None, solution=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "snapshot"
         if solution is None:
             solution = self.snapshot
         export(solution, folder, filename)
         
     # Import solution from file
-    def import_solution(self, folder, filename, solution=None):
+    def import_solution(self, folder=None, filename=None, solution=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "snapshot"
         if solution is None:
             solution = self.snapshot
         import_(solution, folder, filename)

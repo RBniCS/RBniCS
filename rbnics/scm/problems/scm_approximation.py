@@ -275,20 +275,36 @@ class SCMApproximation(ParametrizedProblem):
             self.greedy_selected_parameters_complement[N] = self.training_set.diff(self.greedy_selected_parameters[:N])
         return self.greedy_selected_parameters_complement[N].closest(M, mu)
 
-    def export_stability_factor_lower_bound(self, folder, filename):
+    def export_stability_factor_lower_bound(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "stability_factor"
         export([self._alpha_LB], folder, filename + "_LB")
         
-    def export_stability_factor_upper_bound(self, folder, filename):
+    def export_stability_factor_upper_bound(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "stability_factor"
         export([self._alpha_UB], folder, filename + "_UB")
         
-    def import_stability_factor_lower_bound(self, folder, filename):
-        eigenvalue_storage = [0.]
-        import_(eigenvalue_storage, folder, filename + "_LB")
-        assert len(eigenvalue_storage) == 1
-        self._alpha_LB = eigenvalue_storage[0]
+    def import_stability_factor_lower_bound(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "stability_factor"
+        alpha_LB_storage = [0.]
+        import_(alpha_LB_storage, folder, filename + "_LB")
+        assert len(alpha_LB_storage) == 1
+        self._alpha_LB = alpha_LB_storage[0]
         
-    def import_stability_factor_upper_bound(self, folder, filename):
-        eigenvalue_storage = [0.]
-        import_(eigenvalue_storage, folder, filename + "_UB")
-        assert len(eigenvalue_storage) == 1
-        self._alpha_UB = eigenvalue_storage[0]
+    def import_stability_factor_upper_bound(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "stability_factor"
+        alpha_UB_storage = [0.]
+        import_(alpha_UB_storage, folder, filename + "_UB")
+        assert len(alpha_UB_storage) == 1
+        self._alpha_UB = alpha_UB_storage[0]

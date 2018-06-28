@@ -351,10 +351,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # expression evaluation is actually carried out
         self.EIM_approximation._snapshot_cache.clear()
         # ... and also disable the capability of importing/exporting truth solutions
-        def disable_import_solution_method(self_, folder, filename, solution=None):
+        def disable_import_solution_method(self_, folder=None, filename=None, solution=None):
             raise OSError
         self.disable_import_solution = PatchInstanceMethod(self.EIM_approximation, "import_solution", disable_import_solution_method)
-        def disable_export_solution_method(self_, folder, filename, solution=None):
+        def disable_export_solution_method(self_, folder=None, filename=None, solution=None):
             pass
         self.disable_export_solution = PatchInstanceMethod(self.EIM_approximation, "export_solution", disable_export_solution_method)
         self.disable_import_solution.patch()

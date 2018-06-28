@@ -158,17 +158,33 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
     def _cache_file(self, cache_key):
         return hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
         
-    def export_eigenvalue(self, folder, filename):
+    def export_eigenvalue(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "coercivity_constant"
         export([self._eigenvalue], folder, filename + "_eigenvalue")
         
-    def export_eigenvector(self, folder, filename):
+    def export_eigenvector(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "coercivity_constant"
         export(self._eigenvector, folder, filename + "_eigenvector")
         
-    def import_eigenvalue(self, folder, filename):
+    def import_eigenvalue(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "coercivity_constant"
         eigenvalue_storage = [0.]
         import_(eigenvalue_storage, folder, filename + "_eigenvalue")
         assert len(eigenvalue_storage) == 1
         self._eigenvalue = eigenvalue_storage[0]
         
-    def import_eigenvector(self, folder, filename):
+    def import_eigenvector(self, folder=None, filename=None):
+        if folder is None:
+            folder = self.folder_prefix
+        if filename is None:
+            filename = "coercivity_constant"
         import_(self._eigenvector, folder, filename + "_eigenvector")
