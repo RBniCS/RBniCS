@@ -27,6 +27,7 @@ except ImportError:
 else:
     has_IDA = True
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
+from rbnics.backends.common import TimeSeries
 from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.assign import assign
 from rbnics.backends.online.numpy.copy import function_copy
@@ -190,14 +191,16 @@ class _ScipyImplicitEuler(object):
     def solve(self):
         assert self._max_time_steps is not None or self._time_step_size is not None
         if self._time_step_size is not None:
-            all_t = arange(self._initial_time, self._final_time + self._time_step_size, self._time_step_size)
+            all_t = arange(self._initial_time, self._final_time + self._time_step_size/2., self._time_step_size)
         elif self._max_time_steps is not None:
             all_t = linspace(self._initial_time, self._final_time, num=self._max_time_steps+1)
             self._time_step_size = float(all_t[2] - all_t[1])
+        else:
+            raise ValueError("Time step size and maximum time steps cannot be both None")
             
-        all_solutions = list()
+        all_solutions = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
         all_solutions.append(function_copy(self.solution))
-        all_solutions_dot = list()
+        all_solutions_dot = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
         all_solutions_dot.append(function_copy(self.solution_dot))
         self.solution_previous.vector()[:] = self.solution.vector()
         for t in all_t[1:]:
@@ -332,12 +335,14 @@ if has_IDA:
         def solve(self):
             assert self._max_time_steps is not None or self._time_step_size is not None
             if self._time_step_size is not None:
-                all_t = [0]
-                all_t_arange = self._time_step_size + arange(self._initial_time, self._final_time, self._time_step_size)
-                all_t.extend(all_t_arange.tolist())
+                all_t = arange(self._initial_time, self._final_time + self._time_step_size/2., self._time_step_size)
+                all_t = all_t.tolist()
             elif self._max_time_steps is not None:
                 all_t = linspace(self._initial_time, self._final_time, num=self._max_time_steps+1)
                 all_t = all_t.tolist()
+            else:
+                raise ValueError("Time step size and maximum time steps cannot be both None")
+                
             for ida_trial in range(5):
                 try:
                     all_times, all_solutions, all_solutions_dot = self.solver.simulate(self._final_time, ncp_list=all_t)
@@ -351,8 +356,8 @@ if has_IDA:
                 else:
                     break
             # Convert all_solutions to a list of Function
-            all_solutions_as_functions = list()
-            all_solutions_dot_as_functions = list()
+            all_solutions_as_functions = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
+            all_solutions_dot_as_functions = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
             for (t, solution) in zip(all_times, all_solutions):
                 self.solution.vector()[:] = solution
                 all_solutions_as_functions.append(function_copy(self.solution))

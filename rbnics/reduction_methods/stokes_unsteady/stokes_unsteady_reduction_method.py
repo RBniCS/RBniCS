@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends import TimeSeries
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 
 def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
@@ -33,10 +34,9 @@ def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
         def postprocess_snapshot(self, snapshot_over_time, snapshot_index):
             # Call parent: this will solve for supremizers at each time step
             snapshot_and_supremizer_over_time = AbstractCFDUnsteadyReductionMethod_Base.postprocess_snapshot(self, snapshot_over_time, snapshot_index)
-            # Convert from a list (over time) of tuple (snapshot, supremizer) to a tuple of two lists (snapshot over time, supremizer over time)
-            assert isinstance(snapshot_and_supremizer_over_time, list)
-            snapshot_over_time = list()
-            supremizer_over_time = list()
+            # Convert from a time series of tuple (snapshot, supremizer) to a tuple of two lists (snapshot over time, supremizer over time)
+            snapshot_over_time = TimeSeries((self.truth_problem.t0, self.truth_problem.T), self.truth_problem.dt)
+            supremizer_over_time = TimeSeries((self.truth_problem.t0, self.truth_problem.T), self.truth_problem.dt)
             for snapshot_and_supremizer in snapshot_and_supremizer_over_time:
                 assert isinstance(snapshot_and_supremizer, tuple)
                 assert len(snapshot_and_supremizer) is 2

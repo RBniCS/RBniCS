@@ -18,7 +18,7 @@
 
 from numbers import Number
 from numpy import linspace
-from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeQuadrature, transpose
+from rbnics.backends import assign, copy, product, sum, TimeDependentProblem1Wrapper, TimeSeries, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, sync_setters
@@ -58,9 +58,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Time derivative of the solution, at the current time
             self._solution_dot = None # OnlineFunction
             # Solution and output over time
-            self._solution_over_time = list() # of Functions
-            self._solution_dot_over_time = list() # of Functions
-            self._output_over_time = list() # of numbers
+            self._solution_over_time = None # TimeSeries of Functions
+            self._solution_dot_over_time = None # TimeSeries of Functions
+            self._output_over_time = None # TimeSeries of numbers
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
                 assert len(args) is 2
@@ -111,6 +111,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def init(self, current_stage="online"):
             # Initialize first data structures related to initial conditions
             self._init_initial_condition(current_stage)
+            self._init_time_series(current_stage)
             # ... since the Parent call may be overridden to need them!
             ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
             
@@ -160,6 +161,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     pass # Nothing else to be done
                 else:
                     raise ValueError("Invalid stage in _init_initial_condition().")
+                    
+        def _init_time_series(self, current_stage="online"):
+            self._solution_over_time = TimeSeries((self.t0, self.T), self.dt)
+            self._solution_dot_over_time = TimeSeries((self.t0, self.T), self.dt)
+            self._output_over_time = TimeSeries((self.t0, self.T), self.dt)
                 
         # Assemble the reduced order affine expansion.
         def build_reduced_operators(self, current_stage="offline"):
@@ -223,8 +229,10 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_dot = OnlineFunction(N)
             if N == 0: # trivial case
                 time_interval = linspace(self.t0, self.T, (self.T - self.t0)/self.dt)
-                self._solution_over_time = [self._solution for _ in time_interval]
-                self._solution_dot_over_time = [self._solution_dot for _ in time_interval]
+                del self._solution_over_time[:]
+                self._solution_over_time.extend([self._solution for _ in time_interval])
+                del self._solution_dot_over_time[:]
+                self._solution_dot_over_time.extend([self._solution_dot for _ in time_interval])
                 return self._solution_over_time
             try:
                 assign(self._solution_over_time, self._solution_over_time_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
@@ -298,12 +306,13 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             N = self._solution.N
             kwargs = self._latest_solve_kwargs
             try:
-                self._output_over_time = self._output_over_time_cache[self.mu, N, kwargs] # **kwargs is not supported by __getitem__
+                assign(self._output_over_time, self._output_over_time_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
             except KeyError:
                 try:
                     self._compute_output(N)
                 except ValueError: # raised by compute_theta if output computation is optional
-                    self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+                    del self._output_over_time[:]
+                    self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
                     self._output = NotImplemented
                 self._output_over_time_cache[self.mu, N, kwargs] = self._output_over_time
             else:
@@ -312,7 +321,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         # Perform an online evaluation of the output. Internal method
         def _compute_output(self, N):
-            self._output_over_time = [NotImplemented]*len(self._solution_over_time)
+            del self._output_over_time[:]
+            self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
             self._output = NotImplemented
             
         def _lifting_truth_solve(self, term, i):
@@ -336,9 +346,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 component = None
                 has_non_homogeneous_initial_condition = self.truth_problem.initial_condition and not self.truth_problem.initial_condition_is_homogeneous
             if has_non_homogeneous_initial_condition:
-                time_interval = (0., self.truth_problem.T)
+                time_interval = (self.truth_problem.t0, self.truth_problem.T)
             else:
-                time_interval = (self.truth_problem.dt, self.truth_problem.T)
+                time_interval = (self.truth_problem.t0 + self.truth_problem.dt, self.truth_problem.T)
                 lifting_over_time = lifting_over_time[1:]
                 theta_over_time = theta_over_time[1:]
             # Compute the average and return
@@ -349,7 +359,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             return lifting
             
         def project(self, snapshot_over_time, N=None, on_dirichlet_bc=True, **kwargs):
-            projected_snapshot_N_over_time = list()
+            projected_snapshot_N_over_time = TimeSeries((self.t0, self.T), self.dt)
             for snapshot in snapshot_over_time:
                 projected_snapshot_N = ParametrizedReducedDifferentialProblem_DerivedClass.project(self, snapshot, N, on_dirichlet_bc, **kwargs)
                 projected_snapshot_N_over_time.append(projected_snapshot_N)
@@ -357,7 +367,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         # Internal method for error computation
         def _compute_error(self, **kwargs):
-            error_over_time = list()
+            error_over_time = TimeSeries((self.t0, self.T), self.dt)
+            assert len(self.truth_problem._solution_over_time) == len(self._solution_over_time)
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
                 self.set_time(k*self.dt)
                 assign(self._solution, reduced_solution)
@@ -369,7 +380,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error_over_time, **kwargs):
-            relative_error_over_time = list()
+            relative_error_over_time = TimeSeries((self.t0, self.T), self.dt)
             for (k, truth_solution) in enumerate(self.truth_problem._solution_over_time):
                 self.set_time(k*self.dt)
                 assign(self.truth_problem._solution, truth_solution)
@@ -381,7 +392,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         # Internal method for output error computation
         def _compute_error_output(self, **kwargs):
-            error_output_over_time = list()
+            error_output_over_time = TimeSeries((self.t0, self.T), self.dt)
+            assert len(self.truth_problem._output_over_time) == len(self._output_over_time)
             for (k, (truth_output, reduced_output)) in enumerate(zip(self.truth_problem._output_over_time, self._output_over_time)):
                 self.set_time(k*self.dt)
                 self._output = reduced_output
@@ -392,7 +404,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         # Internal method for output relative error computation
         def _compute_relative_error_output(self, absolute_error_output_over_time, **kwargs):
-            relative_error_output_over_time = list()
+            relative_error_output_over_time = TimeSeries((self.t0, self.T), self.dt)
+            assert len(self.truth_problem._output_over_time) == len(absolute_error_output_over_time)
             for (k, (truth_output, absolute_error_output)) in enumerate(zip(self.truth_problem._output_over_time, absolute_error_output_over_time)):
                 self.set_time(k*self.dt)
                 self.truth_problem._output = truth_output
@@ -400,16 +413,14 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 relative_error_output_over_time.append(relative_error_output)
             return relative_error_output_over_time
         
-        @staticmethod
-        def _convert_error_over_time(error_over_time):
+        def _convert_error_over_time(self, error_over_time):
             """
-            This internal static method converts the error over time as follows:
+            This internal method converts the error over time as follows:
              - if the problem has only one component, no conversion is required;
              - if the problem has more than one component, then a conversion is preformed such that
                the result is a dict from components to error over time for that component, rather than
                a list (over time) of dicts (over components)
             """
-            assert isinstance(error_over_time, list)
             assert isinstance(error_over_time[0], (dict, Number))
             if isinstance(error_over_time[0], dict):
                 assert all([isinstance(error, dict) for error in error_over_time])
@@ -417,7 +428,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assert all([list(error.keys()) == components for error in error_over_time])
                 output = dict()
                 for component in components:
-                    output[component] = list()
+                    output[component] = TimeSeries((self.t0, self.T), self.dt)
                     for error in error_over_time:
                         output[component].append(error[component])
                 return output
@@ -425,16 +436,19 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assert all([isinstance(error, Number) for error in error_over_time])
                 return error_over_time
         
-        @staticmethod
-        def _convert_error_at_time(k, converted_error_over_time):
+        def _convert_error_at_time(self, k, converted_error_over_time):
             """
-            This internal static method converts back the error at time step k as follows:
+            This internal method converts back the error at time step k as follows:
              - if the problem has only one component, no conversion is required, and the error at time
                k is returned by extracting the k-th index of the input;
              - if the problem has more than one component, then a conversion is performed such that
                the result is a dict from components to error at time step k
             """
-            assert isinstance(converted_error_over_time, (dict, list))
+            assert (
+                isinstance(converted_error_over_time, dict)
+                    or
+                hasattr(converted_error_over_time, "__iter__") # isinstance(converted_error_over_time, TimeSeries)
+            )
             if isinstance(converted_error_over_time, dict):
                 output = dict()
                 for (component, error_over_time_for_component) in converted_error_over_time.items():
@@ -449,7 +463,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
-            solution_over_time_as_truth_function = list()
+            solution_over_time_as_truth_function = TimeSeries((self.t0, self.T), self.dt)
             for (k, solution) in enumerate(solution_over_time):
                 N = solution.N
                 solution_over_time_as_truth_function.append(self.basis_functions[:N]*solution)
@@ -457,7 +471,8 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             
         def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
             self.truth_problem.solve(**kwargs)
-            error_function_over_time = list()
+            error_function_over_time = TimeSeries((self.t0, self.T), self.dt)
+            assert len(self.truth_problem._solution_over_time) == len(self._solution_over_time)
             for (k, (truth_solution, reduced_solution)) in enumerate(zip(self.truth_problem._solution_over_time, self._solution_over_time)):
                 error_function_over_time.append(truth_solution - self.basis_functions[:reduced_solution.N]*reduced_solution)
             self.truth_problem.export_solution(folder, filename, error_function_over_time, component, suffix)

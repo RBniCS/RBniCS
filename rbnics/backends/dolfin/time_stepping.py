@@ -109,10 +109,10 @@ class _TimeDependentProblem_Base(object):
         self.set_time = set_time
         # Storage for derivatives
         self.V = solution.function_space()
-        # Storage for solutions
+        # Storage for solutions (will be setup by solver)
         self.all_solutions_time = list()
-        self.all_solutions = list()
-        self.all_solutions_dot = list()
+        self.all_solutions = None # will be of type TimeSeries
+        self.all_solutions_dot = None # will be of type TimeSeries
         # Note: self.all_solutions_dot_dot will be defined for second order problems in child class
         self.output_dt = None
         self.output_t_prev = None
@@ -403,8 +403,8 @@ class _TimeDependentProblem2(_TimeDependentProblem_Base):
         # Make sure that residual vector and jacobian matrix are properly initialized
         self.residual_vector = self._residual_vector_assemble(self.residual_eval(0., self.solution, self.solution_dot, self.solution_dot_dot))
         self.jacobian_matrix = self._jacobian_matrix_assemble(self.jacobian_eval(0., self.solution, self.solution_dot, self.solution_dot_dot, 0., 0.))
-        # Storage for solutions
-        self.all_solutions_dot_dot = list()
+        # Storage for solutions (will be setup by solver)
+        self.all_solutions_dot_dot = None # will be of type TimeSeries
         
     def residual_vector_eval(self, ts, t, petsc_solution, petsc_solution_dot, petsc_solution_dot_dot, petsc_residual):
         """

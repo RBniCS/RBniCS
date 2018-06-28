@@ -24,6 +24,8 @@ from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple
 from rbnics.utils.mpi import parallel_io
 
 def FunctionsList(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
+    from rbnics.backends.common import TimeSeries # cannot import at global scope due to cyclic dependence
+    
     if AdditionalIsFunction is None:
         def _AdditionalIsFunction(arg):
             return False
@@ -64,6 +66,10 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
             else:
                 for function in functions:
                     self._add_to_list(function, component, None, copy)
+                    
+        @overload(TimeSeries, (None, str, dict_of(str, str)), (None, list_of(Number)), bool)
+        def _enrich(self, functions, component, weights, copy):
+            self._enrich(functions._list, component, weights, copy)
         
         @overload(object, (None, str, dict_of(str, str)), (None, Number, list_of(Number)), bool)
         def _enrich(self, function, component, weight, copy):

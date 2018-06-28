@@ -246,7 +246,7 @@ def is_not_implemented(value):
         return True
     elif value is CustomNotImplemented:
         return True
-    elif isinstance(value, list):
+    elif hasattr(value, "__iter__"):
         each_is_not_implemented = [is_not_implemented(v) for v in value]
         assert all(b == each_is_not_implemented[0] for b in each_is_not_implemented)
         return each_is_not_implemented[0]

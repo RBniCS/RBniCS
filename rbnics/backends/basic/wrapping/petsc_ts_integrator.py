@@ -18,6 +18,7 @@
 
 from numpy import isclose
 from petsc4py import PETSc
+from rbnics.backends.common import TimeSeries
 
 def BasicPETScTSIntegrator(backend, wrapping):
     class _BasicPETScTSIntegrator(object):
@@ -147,10 +148,19 @@ def BasicPETScTSIntegrator(backend, wrapping):
             self.ts.setFromOptions()
             
         def solve(self):
+            # Setup TimeSeries
+            assert self.problem.output_t == self.problem.output_t_prev # initial time
+            t0 = self.problem.output_t
+            dt = self.problem.output_dt
+            T = self.problem.output_T
+            self.problem.all_solutions = TimeSeries((t0, T), dt)
+            self.problem.all_solutions_dot = TimeSeries((t0, T), dt)
+            # Solve
             petsc_solution = wrapping.to_petsc4py(self.solution)
             if self.problem.time_order == 1:
                 self.ts.solve(petsc_solution)
             elif self.problem.time_order == 2: # need to explicitly set the solution and solution_dot, as done in PETSc/src/ts/examples/tutorials/ex43.c
+                self.problem.all_solutions_dot_dot = TimeSeries((t0, T), dt)
                 petsc_solution_dot = wrapping.to_petsc4py(self.solution_dot)
                 self.ts.setSolution2(petsc_solution, petsc_solution_dot)
                 self.ts.solve(petsc_solution)
