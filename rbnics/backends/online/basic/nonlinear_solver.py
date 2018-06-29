@@ -31,6 +31,8 @@ def _NonlinearProblem(backend, wrapping):
             preserve_solution_attributes(self.jacobian_matrix, self.solution, self.residual_vector)
             # Initialize BCs
             self._init_bcs(bcs)
+            if self.bcs is not None:
+                self.bcs.apply_to_vector(self.solution.vector())
         
         @overload
         def _init_bcs(self, bcs: None):

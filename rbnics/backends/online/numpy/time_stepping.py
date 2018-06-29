@@ -16,18 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-
-from numpy import arange, linspace
+from numpy import arange, isclose, linspace
 try:
     from assimulo.solvers import IDA
-    from assimulo.solvers.sundials import IDAError
     from assimulo.problem import Implicit_Problem
 except ImportError:
     has_IDA = False
 else:
     has_IDA = True
 from rbnics.backends.abstract import TimeStepping as AbstractTimeStepping, TimeDependentProblemWrapper
-from rbnics.backends.common import TimeSeries
 from rbnics.backends.online.basic.wrapping import DirichletBC
 from rbnics.backends.online.numpy.assign import assign
 from rbnics.backends.online.numpy.copy import function_copy
@@ -39,34 +36,23 @@ from rbnics.utils.decorators import BackendFor
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
-        assert problem_wrapper.time_order() in (1, 2)
-        if problem_wrapper.time_order() == 1:
-            assert solution_dot_dot is None
-            ic = problem_wrapper.ic_eval()
-            if ic is not None:
-                assign(solution, ic)
-            self.problem = _TimeDependentProblem1(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
-            self.solver = self.problem.create_solver({"problem_type": "linear"})
-        elif problem_wrapper.time_order() == 2:
-            assert solution_dot_dot is not None
-            ic_eval_output = problem_wrapper.ic_eval()
-            assert isinstance(ic_eval_output, tuple) or ic_eval_output is None
-            if ic_eval_output is not None:
-                assert len(ic_eval_output) == 2
-                assign(solution, ic_eval_output[0])
-                assign(solution_dot, ic_eval_output[1])
-            self.problem = _TimeDependentProblem2(problem_wrapper.residual_eval, solution, solution_dot, solution_dot_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
-            self.solver = self.problem.create_solver({"problem_type": "nonlinear"})
-        else:
-            raise ValueError("Invalid time order in TimeStepping.__init__().")
-                        
+        assert solution_dot_dot is None
+        ic = problem_wrapper.ic_eval()
+        if ic is not None:
+            assign(solution, ic)
+        self.problem = _TimeDependentProblem(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
+        self._monitor_callback = problem_wrapper.monitor
+        self.solver = self.problem.create_solver({"problem_type": "linear"})
+        self.solver._monitor_callback = self._monitor_callback
+        
     def set_parameters(self, parameters):
         self.solver = self.problem.create_solver(parameters)
+        self.solver._monitor_callback = self._monitor_callback
                 
     def solve(self):
-        return self.solver.solve()
+        self.solver.solve()
         
-class _TimeDependentProblem1(object):
+class _TimeDependentProblem(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
         self.residual_eval = residual_eval
         self.solution = solution
@@ -104,29 +90,27 @@ class _TimeDependentProblem1(object):
         else:
             raise ValueError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
             
-class _TimeDependentProblem2(object):
-    pass
-        
 class _ScipyImplicitEuler(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time, problem_type):
         self.residual_eval = residual_eval
         self.solution = solution
         self.solution_dot = solution_dot
-        self.solution_previous = Function(solution.vector().N) # equal to zero
-        self.zero = Function(self.solution.vector().N) # equal to zero
+        self.solution_previous = function_copy(solution)
+        self.zero = Function(solution.vector().N) # equal to zero
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
         self.set_time = set_time
         self.problem_type = problem_type
         # Setup solver
         if problem_type == "linear":
+            self.minus_solution_previous_over_dt = function_copy(solution)
             class _LinearSolver(LinearSolver):
                 def __init__(self_, t):
                     self.set_time(t)
-                    minus_solution_previous_over_dt = self.solution_previous
-                    minus_solution_previous_over_dt.vector()[:] /= - self._time_step_size
+                    self.minus_solution_previous_over_dt.vector()[:] = self.solution_previous.vector()
+                    self.minus_solution_previous_over_dt.vector()[:] /= - self._time_step_size
                     lhs = self.jacobian_eval(t, self.zero, self.zero, 1./self._time_step_size)
-                    rhs = - self.residual_eval(t, self.zero, minus_solution_previous_over_dt)
+                    rhs = - self.residual_eval(t, self.zero, self.minus_solution_previous_over_dt)
                     bcs_t = self.bc_eval(t)
                     LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t)
                 
@@ -148,6 +132,8 @@ class _ScipyImplicitEuler(object):
                             return self.residual_eval(t, self.solution, self.solution_dot)
                         def bc_eval(self_):
                             return self.bc_eval(t)
+                        def monitor(self_, solution):
+                            pass
                     NonlinearSolver.__init__(self_, _NonlinearProblemWrapper(), self.solution)
                 
             self.solver_generator = _NonlinearSolver
@@ -156,9 +142,15 @@ class _ScipyImplicitEuler(object):
         self._initial_time = 0.
         self._nonlinear_solver_parameters = None
         self._max_time_steps = None
-        self._monitor = None
         self._report = None
+        self._monitor_callback = None
+        self._monitor_initial_time = None
+        self._monitor_time_step_size = None
         self._time_step_size = None
+        
+    def _monitor(self, t, solution, solution_dot):
+        if self._monitor_callback is not None:
+            self._monitor_callback(t, solution, solution_dot)
     
     def set_parameters(self, parameters):
         for (key, value) in parameters.items():
@@ -171,7 +163,12 @@ class _ScipyImplicitEuler(object):
             elif key == "max_time_steps":
                 self._max_time_steps = value
             elif key == "monitor":
-                self._monitor = value
+                assert isinstance(value, dict)
+                assert all(key_monitor in ("initial_time", "time_step_size") for key_monitor in value)
+                if "initial_time" in value:
+                    self._monitor_initial_time = value["initial_time"]
+                if "time_step_size" in value:
+                    self._monitor_time_step_size = value["time_step_size"]
             elif key == "nonlinear_solver":
                 self._nonlinear_solver_parameters = value
             elif key == "problem_type":
@@ -189,6 +186,7 @@ class _ScipyImplicitEuler(object):
                 raise ValueError("Invalid paramater passed to _ScipyImplicitEuler object.")
                 
     def solve(self):
+        # Prepar time array
         assert self._max_time_steps is not None or self._time_step_size is not None
         if self._time_step_size is not None:
             all_t = arange(self._initial_time, self._final_time + self._time_step_size/2., self._time_step_size)
@@ -197,12 +195,25 @@ class _ScipyImplicitEuler(object):
             self._time_step_size = float(all_t[2] - all_t[1])
         else:
             raise ValueError("Time step size and maximum time steps cannot be both None")
-            
-        all_solutions = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
-        all_solutions.append(function_copy(self.solution))
-        all_solutions_dot = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
-        all_solutions_dot.append(function_copy(self.solution_dot))
-        self.solution_previous.vector()[:] = self.solution.vector()
+        # Assert consistency of final time and time step size
+        final_time_consistency = (all_t[-1] - all_t[0])/self._time_step_size
+        assert isclose(round(final_time_consistency), final_time_consistency), "Final time should be occuring after an integer number of time steps"
+        # Prepare monitor computation if not provided by parameters
+        if self._monitor_initial_time is None:
+            self._monitor_initial_time = all_t[0]
+        monitor_initial_time_consistency = (self._monitor_initial_time - self._initial_time)/self._time_step_size
+        assert isclose(round(monitor_initial_time_consistency), monitor_initial_time_consistency), "Monitor initial time should be occuring after an integer number of time steps"
+        if self._monitor_time_step_size is None:
+            self._monitor_time_step_size = self._time_step_size
+        monitor_dt_consistency = self._monitor_time_step_size/self._time_step_size
+        assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), "Monitor time step size should be a multiple of the time step size"
+        monitor_first_index = abs(all_t - self._monitor_initial_time).argmin()
+        assert isclose(all_t[monitor_first_index], self._monitor_initial_time, atol=0.1*self._time_step_size)
+        monitor_step = int(round(monitor_dt_consistency))
+        monitor_t = all_t[monitor_first_index::monitor_step]
+        # Solve
+        if all_t[0] in monitor_t:
+            self._monitor(all_t[0], self.solution, self.solution_dot)
         for t in all_t[1:]:
             if self._report is not None:
                 self._report(t)
@@ -211,14 +222,10 @@ class _ScipyImplicitEuler(object):
                 if self._nonlinear_solver_parameters is not None:
                     solver.set_parameters(self._nonlinear_solver_parameters)
             solver.solve()
-            all_solutions.append(function_copy(self.solution))
-            self.solution_dot.vector()[:] = (all_solutions[-1].vector() - all_solutions[-2].vector())/self._time_step_size
-            all_solutions_dot.append(function_copy(self.solution_dot))
-            self.solution_previous.vector()[:] = self.solution.vector()
-            if self._monitor is not None:
+            self.solution_dot.vector()[:] = (self.solution.vector() - self.solution_previous.vector())/self._time_step_size
+            if t in monitor_t:
                 self._monitor(t, self.solution, self.solution_dot)
-        
-        return all_t, all_solutions, all_solutions_dot
+            self.solution_previous.vector()[:] = self.solution.vector()
         
 if has_IDA:
     class _AssimuloIDA(object):
@@ -236,61 +243,71 @@ if has_IDA:
             assert self.sample_jacobian.N == self.sample_residual.N
             # Storage for current BC
             self.current_bc = None
-            # Define an Assimulo Implicit problem
-            def _store_solution_and_solution_dot(t, solution, solution_dot):
-                self.solution.vector()[:] = solution
-                self.solution_dot.vector()[:] = solution_dot
-                # Update current bc
-                if self.bc_eval is not None:
-                    bcs_t = self.bc_eval(t)
-                    assert isinstance(bcs_t, (tuple, dict))
-                    if isinstance(bcs_t, tuple):
-                        self.current_bc = DirichletBC(bcs_t)
-                    elif isinstance(bcs_t, dict):
-                        self.current_bc = DirichletBC(bcs_t, self.sample_residual._component_name_to_basis_component_index, self.solution.vector().N)
-                    else:
-                        raise TypeError("Invalid bc in _LinearSolver.__init__().")
-            def _assimulo_residual_eval(t, solution, solution_dot):
-                # Store current time
-                self.set_time(t)
-                # Convert to a matrix with one column, rather than an array
-                _store_solution_and_solution_dot(t, solution, solution_dot)
-                # Compute residual
-                residual_vector = self.residual_eval(t, self.solution, self.solution_dot)
-                # Apply BCs, if necessary
-                if self.bc_eval is not None:
-                    self.current_bc.apply_to_vector(residual_vector, self.solution.vector())
-                # Convert to an array, rather than a matrix with one column, and return
-                return residual_vector.__array__()
-            def _assimulo_jacobian_eval(solution_dot_coefficient, t, solution, solution_dot):
-                # Store current time
-                self.set_time(t)
-                # Convert to a matrix with one column, rather than an array
-                _store_solution_and_solution_dot(t, solution, solution_dot)
-                # Compute jacobian
-                jacobian_matrix = self.jacobian_eval(t, self.solution, self.solution_dot, solution_dot_coefficient)
-                # Apply BCs, if necessary
-                if self.bc_eval is not None:
-                    self.current_bc.apply_to_matrix(jacobian_matrix)
-                # Return
-                return jacobian_matrix.__array__()
-            self.problem = Implicit_Problem(_assimulo_residual_eval, self.solution.vector(), self.solution_dot.vector())
-            self.problem.jac = _assimulo_jacobian_eval
-            # Define an Assimulo IDA solver
-            self.solver = IDA(self.problem)
-            self.solver.display_progress = False
-            self.solver.verbosity = 50
             # Additional storage which will be setup by set_parameters
+            self._absolute_tolerance = None
             self._final_time = None
             self._initial_time = 0.
             self._max_time_steps = None
-            self._monitor = None
+            self._monitor_callback = None
+            self._monitor_initial_time = None
+            self._monitor_time_step_size = None
+            self._relative_tolerance = None
+            self._report = False
             self._time_step_size = None
+            
+        def _update_bcs(self, t):
+            # Update current bc
+            bcs_t = self.bc_eval(t)
+            assert isinstance(bcs_t, (tuple, dict))
+            if isinstance(bcs_t, tuple):
+                self.current_bc = DirichletBC(bcs_t)
+            elif isinstance(bcs_t, dict):
+                self.current_bc = DirichletBC(bcs_t, self.sample_residual._component_name_to_basis_component_index, self.solution.vector().N)
+            else:
+                raise TypeError("Invalid bc in _LinearSolver.__init__().")
+                    
+        def _residual_vector_eval(self, t, solution, solution_dot):
+            # Store current time
+            self.set_time(t)
+            # Store solution and solution_dot
+            self.solution.vector()[:] = solution
+            self.solution_dot.vector()[:] = solution_dot
+            # Compute residual
+            residual_vector = self.residual_eval(t, self.solution, self.solution_dot)
+            # Apply BCs, if necessary
+            if self.bc_eval is not None:
+                self._update_bcs(t)
+                self.current_bc.apply_to_vector(residual_vector, self.solution.vector())
+            # Convert to an array, rather than a matrix with one column, and return
+            return residual_vector.__array__()
+            
+        def _jacobian_matrix_eval(self, solution_dot_coefficient, t, solution, solution_dot):
+            # Store current time
+            self.set_time(t)
+            # Store solution and solution_dot
+            self.solution.vector()[:] = solution
+            self.solution_dot.vector()[:] = solution_dot
+            # Compute jacobian
+            jacobian_matrix = self.jacobian_eval(t, self.solution, self.solution_dot, solution_dot_coefficient)
+            # Apply BCs, if necessary
+            if self.bc_eval is not None:
+                self._update_bcs(t)
+                self.current_bc.apply_to_matrix(jacobian_matrix)
+            # Return
+            return jacobian_matrix.__array__()
+            
+        def _monitor(self, solver, t, solution, solution_dot):
+            # Store solution and solution_dot
+            self.solution.vector()[:] = solution
+            self.solution_dot.vector()[:] = solution_dot
+            # Call monitor
+            if self._monitor_callback is not None:
+                self._monitor_callback(t, self.solution, self.solution_dot)
             
         def set_parameters(self, parameters):
             for (key, value) in parameters.items():
                 if key == "absolute_tolerance":
-                    self.solver.atol = value
+                    self._absolute_tolerance = value
                 elif key == "final_time":
                     self._final_time = value
                 elif key == "initial_time":
@@ -298,20 +315,24 @@ if has_IDA:
                 elif key == "integrator_type":
                     assert value == "ida"
                 elif key == "max_time_steps":
-                    self.solver.maxsteps = value
                     self._max_time_steps = value
                 elif key == "monitor":
-                    self._monitor = value
+                    assert isinstance(value, dict)
+                    assert all(key_monitor in ("initial_time", "time_step_size") for key_monitor in value)
+                    if "initial_time" in value:
+                        self._monitor_initial_time = value["initial_time"]
+                    if "time_step_size" in value:
+                        self._monitor_time_step_size = value["time_step_size"]
                 elif key == "nonlinear_solver":
                     for (key_nonlinear, value_nonlinear) in value.items():
                         if key_nonlinear == "absolute_tolerance":
-                            self.solver.atol = value_nonlinear
+                            raise NotImplementedError("This feature has not been implemented in IDA.")
                         elif key_nonlinear == "line_search":
                             raise NotImplementedError("This feature has not been implemented in IDA.")
                         elif key_nonlinear == "maximum_iterations":
                             raise NotImplementedError("This feature has not been implemented in IDA.")
                         elif key_nonlinear == "relative_tolerance":
-                            self.solver.rtol = value
+                            raise NotImplementedError("This feature has not been implemented in IDA.")
                         elif key_nonlinear == "report":
                             raise NotImplementedError("This feature has not been implemented in IDA.")
                         elif key_nonlinear == "solution_tolerance":
@@ -321,53 +342,51 @@ if has_IDA:
                 elif key == "problem_type":
                     pass
                 elif key == "relative_tolerance":
-                    self.solver.rtol = value
+                    self._relative_tolerance = value
                 elif key == "report":
-                    self.solver.verbosity = 10
-                    self.solver.display_progress = True
-                    self.solver.report_continuously = True
+                    self._report = True
                 elif key == "time_step_size":
-                    self.solver.inith = value
                     self._time_step_size = value
                 else:
                     raise ValueError("Invalid paramater passed to _AssimuloIDA object.")
-            
+        
         def solve(self):
-            assert self._max_time_steps is not None or self._time_step_size is not None
-            if self._time_step_size is not None:
-                all_t = arange(self._initial_time, self._final_time + self._time_step_size/2., self._time_step_size)
-                all_t = all_t.tolist()
-            elif self._max_time_steps is not None:
-                all_t = linspace(self._initial_time, self._final_time, num=self._max_time_steps+1)
-                all_t = all_t.tolist()
+            # Setup IDA
+            assert self._initial_time is not None
+            problem = Implicit_Problem(self._residual_vector_eval, self.solution.vector(), self.solution_dot.vector(), self._initial_time)
+            problem.jac = self._jacobian_matrix_eval
+            problem.handle_result = self._monitor
+            # Define an Assimulo IDA solver
+            solver = IDA(problem)
+            # Setup options
+            assert self._time_step_size is not None
+            solver.inith = self._time_step_size
+            if self._absolute_tolerance is not None:
+                solver.atol = self._absolute_tolerance
+            if self._max_time_steps is not None:
+                solver.maxsteps = self._max_time_steps
+            if self._relative_tolerance is not None:
+                solver.rtol = self._relative_tolerance
+            if self._report:
+                solver.verbosity = 10
+                solver.display_progress = True
+                solver.report_continuously = True
             else:
-                raise ValueError("Time step size and maximum time steps cannot be both None")
-                
-            for ida_trial in range(5):
-                try:
-                    all_times, all_solutions, all_solutions_dot = self.solver.simulate(self._final_time, ncp_list=all_t)
-                except IDAError as error:
-                    if str(error) == "'Error test failures occurred too many times during one internal time step or minimum step size was reached. At time 0.000000.'":
-                        # There is no way to increase the number of error test failures in the assimulo interface, try again with smaller inith
-                        self.solver.inith /= 10.
-                    else:
-                        # There was an error, but we cannot handle it. Raise it again
-                        raise
-                else:
-                    break
-            # Convert all_solutions to a list of Function
-            all_solutions_as_functions = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
-            all_solutions_dot_as_functions = TimeSeries((self._initial_time, self._final_time), self._time_step_size)
-            for (t, solution) in zip(all_times, all_solutions):
-                self.solution.vector()[:] = solution
-                all_solutions_as_functions.append(function_copy(self.solution))
-                if len(all_solutions_as_functions) > 1: # monitor is being called at t > 0.
-                    self.solution_dot.vector()[:] = (all_solutions_as_functions[-1].vector() - all_solutions_as_functions[-2].vector())/self._time_step_size
-                else:
-                    self.solution_dot.vector()[:] = all_solutions_dot[0]
-                all_solutions_dot_as_functions.append(function_copy(self.solution_dot))
-                if self._monitor is not None:
-                    self._monitor(t, self.solution, self.solution_dot)
-            self.solution.vector()[:] = all_solutions_as_functions[-1].vector()
-            self.solution_dot.vector()[:] = all_solutions_dot_as_functions[-1].vector()
-            return all_times, all_solutions_as_functions, all_solutions_dot_as_functions
+                solver.display_progress = False
+                solver.verbosity = 50
+            # Assert consistency of final time and time step size
+            assert self._final_time is not None
+            final_time_consistency = (self._final_time - self._initial_time)/self._time_step_size
+            assert isclose(round(final_time_consistency), final_time_consistency), "Final time should be occuring after an integer number of time steps"
+            # Prepare monitor computation if not provided by parameters
+            if self._monitor_initial_time is None:
+                self._monitor_initial_time = self._initial_time
+            assert isclose(round(self._monitor_initial_time/self._time_step_size), self._monitor_initial_time/self._time_step_size), "Monitor initial time should be a multiple of the time step size"
+            if self._monitor_time_step_size is None:
+                self._monitor_time_step_size = self._time_step_size
+            assert isclose(round(self._monitor_time_step_size/self._time_step_size), self._monitor_time_step_size/self._time_step_size), "Monitor time step size should be a multiple of the time step size"
+            monitor_t = arange(self._monitor_initial_time, self._final_time + self._monitor_time_step_size/2., self._monitor_time_step_size)
+            # Solve
+            solver.simulate(self._final_time, ncp_list=monitor_t)
+            # Solution and solution_dot at the final time are already up to date through
+            # the monitor function

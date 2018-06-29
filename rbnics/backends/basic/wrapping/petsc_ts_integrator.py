@@ -16,31 +16,21 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import isclose
+from numpy import arange, isclose
 from petsc4py import PETSc
-from rbnics.backends.common import TimeSeries
 
 def BasicPETScTSIntegrator(backend, wrapping):
     class _BasicPETScTSIntegrator(object):
-        def __init__(self, problem, solution, solution_dot, solution_dot_dot=None):
-            self.problem = problem
+        def __init__(self, problem, solution, solution_dot):
             self.solution = solution
             self.solution_dot = solution_dot
-            self.solution_dot_dot = solution_dot_dot
             # Create PETSc's TS object
             self.ts = PETSc.TS().create(wrapping.get_mpi_comm(solution))
             # ... and associate residual and jacobian
-            assert problem.time_order in (1, 2)
-            if problem.time_order == 1:
-                self.ts.setIFunction(problem.residual_vector_eval, wrapping.to_petsc4py(problem.residual_vector))
-                self.ts.setIJacobian(problem.jacobian_matrix_eval, wrapping.to_petsc4py(problem.jacobian_matrix))
-            elif problem.time_order == 2:
-                self.ts.setI2Function(problem.residual_vector_eval, wrapping.to_petsc4py(problem.residual_vector))
-                self.ts.setI2Jacobian(problem.jacobian_matrix_eval, wrapping.to_petsc4py(problem.jacobian_matrix))
-            else:
-                raise ValueError("Invalid time order in PETScTSIntegrator.__init__().")
-            # ... and monitor
-            self.ts.setMonitor(problem.monitor)
+            self.ts.setIFunction(problem.residual_vector_eval, wrapping.to_petsc4py(problem.residual_vector))
+            self.ts.setIJacobian(problem.jacobian_matrix_eval, wrapping.to_petsc4py(problem.jacobian_matrix))
+            self.monitor = _Monitor(self.ts)
+            self.ts.setMonitor(self.monitor)
             # Set sensible default values to parameters
             default_parameters = {
                 "exact_final_time": "stepover",
@@ -49,11 +39,6 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 "report": True
             }
             self.set_parameters(default_parameters)
-            # TODO since PETSc 3.8 TSAlpha2 is not working properly in the linear case without attaching a fake monitor
-            if self.problem.time_order == 2:
-                def monitor(snes, it, fgnorm):
-                    pass
-                self.ts.getSNES().setMonitor(monitor)
                  
         def set_parameters(self, parameters):
             for (key, value) in parameters.items():
@@ -61,11 +46,8 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     self.ts.setExactFinalTime(getattr(self.ts.ExactFinalTime, value.upper()))
                 elif key == "final_time":
                     self.ts.setMaxTime(value)
-                    self.problem.output_T = value
                 elif key == "initial_time":
                     self.ts.setTime(value)
-                    self.problem.output_t_prev = value
-                    self.problem.output_t = value
                 elif key == "integrator_type":
                     self.ts.setType(getattr(self.ts.Type, value.upper()))
                 elif key == "linear_solver":
@@ -82,7 +64,12 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 elif key == "max_time_steps":
                     self.ts.setMaxSteps(value)
                 elif key == "monitor":
-                    self.problem.output_monitor = value
+                    assert isinstance(value, dict)
+                    assert all(key_monitor in ("initial_time", "time_step_size") for key_monitor in value)
+                    if "initial_time" in value:
+                        self.monitor.monitor_t0 = value["initial_time"]
+                    if "time_step_size" in value:
+                        self.monitor.monitor_dt = value["time_step_size"]
                 elif key == "problem_type":
                     assert value in ("linear", "nonlinear")
                     self.ts.setProblemType(getattr(self.ts.ProblemType, value.upper()))
@@ -141,48 +128,143 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     snes.setTolerances(*snes_tolerances)
                 elif key == "time_step_size":
                     self.ts.setTimeStep(value)
-                    self.problem.output_dt = value
                 else:
                     raise ValueError("Invalid paramater passed to PETSc TS object.")
             # Finally, read in additional options from the command line
             self.ts.setFromOptions()
             
         def solve(self):
-            # Setup TimeSeries
-            assert self.problem.output_t == self.problem.output_t_prev # initial time
-            t0 = self.problem.output_t
-            dt = self.problem.output_dt
-            T = self.problem.output_T
-            self.problem.all_solutions = TimeSeries((t0, T), dt)
-            self.problem.all_solutions_dot = TimeSeries((t0, T), dt)
+            # Assert consistency of final time and time step size
+            t0, dt, T = self.ts.getTime(), self.ts.getTimeStep(), self.ts.getMaxTime()
+            final_time_consistency = (T - t0)/dt
+            assert isclose(round(final_time_consistency), final_time_consistency), "Final time should be occuring after an integer number of time steps"
+            # Init monitor
+            self.monitor.init(self.solution, self.solution_dot)
             # Solve
-            petsc_solution = wrapping.to_petsc4py(self.solution)
-            if self.problem.time_order == 1:
-                self.ts.solve(petsc_solution)
-            elif self.problem.time_order == 2: # need to explicitly set the solution and solution_dot, as done in PETSc/src/ts/examples/tutorials/ex43.c
-                self.problem.all_solutions_dot_dot = TimeSeries((t0, T), dt)
-                petsc_solution_dot = wrapping.to_petsc4py(self.solution_dot)
-                self.ts.setSolution2(petsc_solution, petsc_solution_dot)
-                self.ts.solve(petsc_solution)
-            else:
-                raise ValueError("Invalid time order in PETScTSIntegrator.solve().")
-            petsc_solution.ghostUpdate()
-            if self.problem.time_order == 2:
-                petsc_solution_dot.ghostUpdate()
+            solution_copy = wrapping.function_copy(self.solution) # create copy to avoid possible internal storage overwriting by linesearch
+            petsc_solution_copy = wrapping.to_petsc4py(solution_copy)
+            self.ts.solve(petsc_solution_copy)
             text_output = "Total time steps %d (%d rejected, %d SNES fails)" % (self.ts.getStepNumber(), self.ts.getStepRejections(), self.ts.getSNESFailures())
             if self.ts.getProblemType() == self.ts.ProblemType.NONLINEAR:
                 text_output += ", with total %d nonlinear iterations" % (self.ts.getSNESIterations(), )
             if self._report:
                 print(text_output)
-            # Double check that due small roundoff errors we may have missed the monitor at the last time step
-            if not isclose(self.problem.output_t_prev, self.problem.output_T, atol=0.1*self.problem.output_dt):
-                self.problem.monitor(self.ts, -1, self.problem.output_T, petsc_solution)
-            # Return all solutions
-            if self.problem.time_order == 1:
-                return self.problem.all_solutions_time, self.problem.all_solutions, self.problem.all_solutions_dot
-            elif self.problem.time_order == 2:
-                return self.problem.all_solutions_time, self.problem.all_solutions, self.problem.all_solutions_dot, self.problem.all_solutions_dot_dot
+            # Evaluate solution and solution at the final time. Note that the value store in solution_copy might
+            # not be correct if TS has stepped over the final time.
+            self.monitor._evaluate_solution(T, self.solution)
+            self.monitor._evaluate_solution_dot(T, self.solution_dot)
+        
+    class _Monitor(object):
+        def __init__(self, ts):
+            self.ts = ts
+            self.t0 = None
+            self.dt = None
+            self.T = None
+            self.monitor_solution = None
+            self.monitor_solution_prev = None
+            self.monitor_solution_dot = None
+            self.monitor_eps = None
+            self.monitor_t0 = None
+            self.monitor_dt = None
+            self.monitor_t = None
+            self.monitor_T = None
+            self.monitor_callback = None
+            
+        def init(self, solution, solution_dot):
+            if self.monitor_callback is not None:
+                self.monitor_solution = wrapping.function_copy(solution)
+                self.monitor_solution_prev = wrapping.function_copy(solution)
+                self.monitor_solution_dot = wrapping.function_copy(solution_dot)
+                self.t0, self.dt, self.T = self.ts.getTime(), self.ts.getTimeStep(), self.ts.getMaxTime()
+                if self.monitor_t0 is None:
+                    self.monitor_t0 = self.t0
+                monitor_t0_consistency = (self.monitor_t0 - self.t0)/self.dt
+                assert isclose(round(monitor_t0_consistency), monitor_t0_consistency), "Monitor initial time should be occuring after an integer number of time steps"
+                self.monitor_t = self.monitor_t0
+                self.monitor_eps = 0.1*self.dt
+                if self.monitor_dt is None:
+                    self.monitor_dt = self.dt
+                monitor_dt_consistency = self.monitor_dt/self.dt
+                assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), "Monitor time step size should be a multiple of the time step size"
+                assert self.monitor_T is None
+                self.monitor_T = self.T
+                monitor_T_consistency = (self.monitor_T - self.t0)/self.dt
+                assert isclose(round(monitor_T_consistency), monitor_T_consistency), "Monitor initial time should be occuring after an integer number of time steps"
+        
+        def __call__(self, ts, step, time, solution):
+            """
+               TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
+               timestep to display the iteration's  progress.
+
+               Logically Collective on TS
+
+               Input Parameters:
+                    +  ts - the TS context obtained from TSCreate()
+                    .  monitor - monitoring routine
+                    .  mctx - [optional] user-defined context for private data for the
+                                 monitor routine (use NULL if no context is desired)
+                    -  monitordestroy - [optional] routine that frees monitor context
+                              (may be NULL)
+
+               Calling sequence of monitor:
+                    $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
+
+                    +    ts - the TS context
+                    .    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
+                    .    time - current time
+                    .    u - current iterate
+                    -    mctx - [optional] monitoring context
+            """
+            
+            if self.monitor_callback is not None:
+                monitor_times = arange(self.monitor_t, min(self.monitor_T, time) + self.monitor_eps, self.monitor_dt).tolist()
+                assert all(monitor_t <= time or isclose(monitor_t, time, self.monitor_eps) for monitor_t in monitor_times)
+                monitor_times = [min(monitor_t, time) for monitor_t in monitor_times]
+                for self.monitor_t in monitor_times:
+                    self._evaluate_solution(self.monitor_t, self.monitor_solution)
+                    self._evaluate_solution_dot(self.monitor_t, self.monitor_solution_dot)
+                    # Apply monitor
+                    self.monitor_callback(self.monitor_t, self.monitor_solution, self.monitor_solution_dot)
+                # Prepare for next time step
+                if len(monitor_times) > 0:
+                    self.monitor_t += self.monitor_dt
+                
+        def _evaluate_solution(self, t, result):
+            assert t >= self.t0 or isclose(t, self.t0, atol=self.monitor_eps)
+            assert t <= self.T or isclose(t, self.T, atol=self.monitor_eps)
+            if isclose(t, self.t0, atol=self.monitor_eps): # t = t0
+                pass # assuming that result already contains the initial solution
             else:
-                raise ValueError("Invalid time order in PETScTSIntegrator.solve().")
-    
+                result_petsc = wrapping.to_petsc4py(result)
+                self.ts.interpolate(t, result_petsc)
+                result_petsc.assemble()
+                result_petsc.ghostUpdate()
+                
+        def _evaluate_solution_dot(self, t, result):
+            assert t >= self.t0 or isclose(t, self.t0, atol=self.monitor_eps)
+            assert t <= self.T or isclose(t, self.T, atol=self.monitor_eps)
+            if isclose(t, self.t0, atol=self.monitor_eps): # t = t0
+                pass # assuming that result already contains the initial solution
+            else:
+                # There is no equivalent TSInterpolate for solution dot, so we approximate it
+                # by a first order time discretization
+                current_dt = self.ts.getTimeStep() # might be different from self.dt with adaptivity
+                current_dt *= 0.5 # make sure to be in the latest time interval
+                if t - current_dt >= self.ts.getTime() - self.ts.getTimeStep(): # use backward finite difference
+                    self._evaluate_solution(t, result)
+                    self._evaluate_solution(t - current_dt, self.monitor_solution_prev)
+                else: # use forward finite difference
+                    assert isclose(t, self.T, atol=self.monitor_eps) # this case will only happen when TS steps over final time
+                    assert t + current_dt <= self.ts.getTime()
+                    bak_monitor_eps = self.monitor_eps
+                    self.monitor_eps = 2*current_dt # disable assert inside self._evaluate_solution
+                    self._evaluate_solution(t + current_dt, result)
+                    self.monitor_eps = bak_monitor_eps
+                    self._evaluate_solution(t, self.monitor_solution_prev)
+                result_petsc = wrapping.to_petsc4py(result)
+                result_petsc -= wrapping.to_petsc4py(self.monitor_solution_prev)
+                result_petsc /= current_dt
+                result_petsc.assemble()
+                result_petsc.ghostUpdate()
+            
     return _BasicPETScTSIntegrator

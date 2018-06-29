@@ -36,9 +36,13 @@ class TimeDependentProblemWrapper(object, metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def time_order(self):
+    def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
         pass
-    
+        
+    @abstractmethod
+    def residual_eval(self, t, solution, solution_dot):
+        pass
+        
     @abstractmethod
     def bc_eval(self, t):
         pass
@@ -46,27 +50,7 @@ class TimeDependentProblemWrapper(object, metaclass=ABCMeta):
     @abstractmethod
     def ic_eval(self):
         pass
-
-class TimeDependentProblem1Wrapper(TimeDependentProblemWrapper):
-    def time_order(self):
-        return 1
         
     @abstractmethod
-    def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
-        pass
-        
-    @abstractmethod
-    def residual_eval(self, t, solution, solution_dot):
-        pass
-
-class TimeDependentProblem2Wrapper(TimeDependentProblemWrapper):
-    def time_order(self):
-        return 2
-        
-    @abstractmethod
-    def jacobian_eval(self, t, solution, solution_dot, solution_dot_dot, solution_dot_coefficient, solution_dot_dot_coefficient):
-        pass
-        
-    @abstractmethod
-    def residual_eval(self, t, solution, solution_dot, solution_dot_dot):
+    def monitor(self, t, solution, solution_dot):
         pass

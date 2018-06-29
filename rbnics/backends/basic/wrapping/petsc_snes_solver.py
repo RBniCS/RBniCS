@@ -23,11 +23,12 @@ def BasicPETScSNESSolver(backend, wrapping):
         def __init__(self, problem, solution):
             self.problem = problem
             self.solution = solution
+            self.monitor = None
             # Create SNES object
             self.snes = PETSc.SNES().create(wrapping.get_mpi_comm(solution))
             # ... and associate residual and jacobian
-            self.snes.setFunction(self.problem.residual_vector_eval, wrapping.to_petsc4py(self.problem.residual_vector))
-            self.snes.setJacobian(self.problem.jacobian_matrix_eval, wrapping.to_petsc4py(self.problem.jacobian_matrix))
+            self.snes.setFunction(problem.residual_vector_eval, wrapping.to_petsc4py(problem.residual_vector))
+            self.snes.setJacobian(problem.jacobian_matrix_eval, wrapping.to_petsc4py(problem.jacobian_matrix))
             # Set sensible default values to parameters
             self._report = None
             self.set_parameters({
@@ -72,7 +73,9 @@ def BasicPETScSNESSolver(backend, wrapping):
             self.snes.setFromOptions()
             
         def solve(self):
-            self.snes.solve(None, wrapping.to_petsc4py(self.solution))
+            solution_copy = wrapping.function_copy(self.solution) # create copy to avoid possible internal storage overwriting by linesearch
+            petsc_solution_copy = wrapping.to_petsc4py(solution_copy)
+            self.snes.solve(None, petsc_solution_copy)
             if self._report:
                 reason = self.snes.getConvergedReason()
                 its = self.snes.getIterationNumber()
@@ -80,6 +83,8 @@ def BasicPETScSNESSolver(backend, wrapping):
                     print("PETSc SNES solver converged in " + str(its) + " iterations with convergence reason " + str(reason) + ".")
                 else:
                     print("PETSc SNES solver diverged in " + str(its) + " iterations with divergence reason " + str(reason) + ".")
-            return self.solution
+            self.problem.update_solution(petsc_solution_copy)
+            if self.monitor is not None:
+                self.monitor(self.solution)
     
     return _BasicPETScSNESSolver

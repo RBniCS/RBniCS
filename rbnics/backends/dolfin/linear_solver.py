@@ -18,7 +18,7 @@
 
 from ufl import Form
 from dolfin import assemble, DirichletBC, PETScLUSolver
-from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
+from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver, LinearProblemWrapper
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.matrix import Matrix
@@ -27,14 +27,21 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
-@BackendFor("dolfin", inputs=((Form, Matrix.Type(), ParametrizedTensorFactory), Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type()), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
+@BackendFor("dolfin", inputs=((Form, Matrix.Type(), ParametrizedTensorFactory, LinearProblemWrapper), Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type(), None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
+    @overload((Form, Matrix.Type(), ParametrizedTensorFactory), Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type()), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None))
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.solution = solution
         self._init_lhs(lhs, bcs)
         self._init_rhs(rhs, bcs)
         self._apply_bcs(bcs)
         self._linear_solver = "default"
+        self.monitor = None
+        
+    @overload(LinearProblemWrapper, Function.Type())
+    def __init__(self, problem_wrapper, solution):
+        self.__init__(problem_wrapper.matrix_eval(), solution, problem_wrapper.vector_eval(), problem_wrapper.bc_eval())
+        self.monitor = problem_wrapper.monitor
     
     @overload
     def _init_lhs(self, lhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
@@ -96,4 +103,5 @@ class LinearSolver(AbstractLinearSolver):
     def solve(self):
         solver = PETScLUSolver(self._linear_solver)
         solver.solve(self.lhs, self.solution.vector(), self.rhs)
-        return self.solution
+        if self.monitor is not None:
+            self.monitor(self.solution)

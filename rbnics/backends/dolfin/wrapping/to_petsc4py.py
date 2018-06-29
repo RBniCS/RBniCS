@@ -16,12 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import as_backend_type, has_pybind11
+from dolfin import as_backend_type, Function, has_pybind11
 if has_pybind11():
     from dolfin.cpp.la import GenericMatrix, GenericVector
 else:
     from dolfin import GenericMatrix, GenericVector
 from rbnics.utils.decorators import overload
+
+@overload
+def to_petsc4py(function: Function):
+    return to_petsc4py(function.vector())
 
 @overload
 def to_petsc4py(vector: GenericVector):

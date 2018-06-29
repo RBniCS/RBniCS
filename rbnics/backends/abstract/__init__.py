@@ -52,7 +52,7 @@ from rbnics.backends.abstract.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.abstract.tensors_list import TensorsList
 from rbnics.backends.abstract.time_quadrature import TimeQuadrature
 from rbnics.backends.abstract.time_series import TimeSeries
-from rbnics.backends.abstract.time_stepping import TimeDependentProblemWrapper, TimeDependentProblem1Wrapper, TimeDependentProblem2Wrapper, TimeStepping
+from rbnics.backends.abstract.time_stepping import TimeDependentProblemWrapper, TimeStepping
 from rbnics.backends.abstract.transpose import transpose
 from rbnics.backends.abstract.vector import Vector
 
@@ -94,8 +94,6 @@ __all__ = [
     'TensorSnapshotsList',
     'TensorsList',
     'TimeDependentProblemWrapper',
-    'TimeDependentProblem1Wrapper',
-    'TimeDependentProblem2Wrapper',
     'TimeQuadrature',
     'TimeSeries',
     'TimeStepping',

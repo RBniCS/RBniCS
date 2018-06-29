@@ -28,26 +28,26 @@ from rbnics.backends.basic.wrapping.petsc_snes_solver import BasicPETScSNESSolve
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
-from rbnics.backends.dolfin.wrapping import get_default_linear_solver, get_mpi_comm, to_petsc4py
+from rbnics.backends.dolfin.wrapping import function_copy, get_default_linear_solver, get_mpi_comm, to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
 
 backend = ModuleWrapper()
-wrapping_for_wrapping = ModuleWrapper(get_default_linear_solver, get_mpi_comm, to_petsc4py)
+wrapping_for_wrapping = ModuleWrapper(function_copy, get_default_linear_solver, get_mpi_comm, to_petsc4py)
 PETScSNESSolver = BasicPETScSNESSolver(backend, wrapping_for_wrapping)
 
 @BackendFor("dolfin", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
         self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
-        self.solver = PETScSNESSolver(self.problem, self.problem.solution.vector().copy()) # create copies to avoid internal storage overwriting by linesearch
+        self.solver = PETScSNESSolver(self.problem, self.problem.solution)
+        self.solver.monitor = problem_wrapper.monitor
         
     def set_parameters(self, parameters):
         self.solver.set_parameters(parameters)
         
     def solve(self):
         self.solver.solve()
-        return self.problem.solution
     
 class _NonlinearProblem(object):
     def __init__(self, residual_eval, solution, bcs, jacobian_eval):

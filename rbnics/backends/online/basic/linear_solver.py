@@ -16,18 +16,25 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver
+from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver, LinearProblemWrapper
 from rbnics.backends.online.basic.wrapping import DirichletBC, preserve_solution_attributes
 from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
 
 def LinearSolver(backend, wrapping):
     class LinearSolver_Class(AbstractLinearSolver):
+        @overload((backend.Matrix.Type(), wrapping.DelayedTransposeWithArithmetic), backend.Function.Type(), (backend.Vector.Type(), wrapping.DelayedTransposeWithArithmetic), ThetaType + DictOfThetaType + (None,))
         def __init__(self, lhs, solution, rhs, bcs=None):
             self.solution = solution
             self._init_lhs(lhs)
             self._init_rhs(rhs)
             self._apply_bcs(bcs)
             preserve_solution_attributes(self.lhs, self.solution, self.rhs)
+            self.monitor = None
+            
+        @overload(LinearProblemWrapper, backend.Function.Type())
+        def __init__(self, problem_wrapper, solution):
+            self.__init__(problem_wrapper.matrix_eval(), solution, problem_wrapper.vector_eval(), problem_wrapper.bc_eval())
+            self.monitor = problem_wrapper.monitor
             
         @overload
         def _init_lhs(self, lhs: backend.Matrix.Type()):

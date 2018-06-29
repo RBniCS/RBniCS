@@ -35,6 +35,7 @@ _NonlinearProblem_Base = _BasicNonlinearProblem(backend, wrapping)
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
         self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
+        self.monitor = problem_wrapper.monitor
         # Additional storage which will be setup by set_parameters
         self._absolute_tolerance = None
         self._line_search = True
@@ -62,11 +63,9 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 raise ValueError("Invalid paramater passed to scipy object.")
                 
     def solve(self):
-        residual = self.problem.residual
-        if self.problem.bcs is not None:
-            self.problem.bcs.apply_to_vector(self.problem.solution.vector())
+        residual = self.problem.residual_vector_eval
         initial_guess_vector = self.problem.solution.vector()
-        jacobian = _Jacobian(self.problem.jacobian)
+        jacobian = _Jacobian(self.problem.jacobian_matrix_eval)
         try:
             solution_vector, info = nonlin_solve(
                 residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
@@ -83,10 +82,10 @@ class NonlinearSolver(AbstractNonlinearSolver):
         except ArithmeticError as error:
             if self._report:
                 print("scipy solver diverged due to arithmetic error " + str(error))
-        return self.problem.solution
+        self.monitor(self.problem.solution)
         
 class _NonlinearProblem(_NonlinearProblem_Base):
-    def residual(self, solution):
+    def residual_vector_eval(self, solution):
         # Store solution
         self.solution.vector()[:] = solution
         # Compute residual
@@ -97,7 +96,7 @@ class _NonlinearProblem(_NonlinearProblem_Base):
         # Return
         return residual_vector
         
-    def jacobian(self, solution):
+    def jacobian_matrix_eval(self, solution):
         # Store solution
         self.solution.vector()[:] = solution
         # Compute jacobian

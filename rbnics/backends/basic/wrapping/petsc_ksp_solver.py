@@ -45,6 +45,5 @@ def BasicPETScKSPSolver(backend, wrapping):
         def solve(self):
             self.ksp.setOperators(wrapping.to_petsc4py(self.lhs))
             self.ksp.solve(wrapping.to_petsc4py(self.rhs), wrapping.to_petsc4py(self.solution))
-            return self.solution
     
     return _BasicPETScKSPSolver
