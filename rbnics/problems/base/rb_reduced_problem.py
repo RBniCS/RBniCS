@@ -213,7 +213,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 problem = self.problem
                 solver = LinearSolver(problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs, problem._riesz_solve_homogeneous_dirichlet_bc)
                 solver.set_parameters(problem._linear_solver_parameters)
-                return solver.solve()
+                solver.solve()
+                return problem._riesz_solve_storage
                 
             @overload
             def solve(self, coef: Number, matrix: object, basis_function: object):

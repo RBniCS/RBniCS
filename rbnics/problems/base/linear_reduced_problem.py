@@ -36,7 +36,7 @@ def LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, LinearProblemWrapper):
             def solve(self):
                 problem = self.problem
-                solver = LinearSolver(self.matrix_eval(), problem._solution, self.vector_eval(), self.bc_eval())
+                solver = LinearSolver(self, problem._solution)
                 solver.set_parameters(problem._linear_solver_parameters)
                 solver.solve()
             

@@ -20,7 +20,7 @@ from numbers import Number
 from numpy import isclose
 from rbnics.backends import assign, copy, product, sum, TimeDependentProblemWrapper, TimeSeries, TimeQuadrature, transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction, OnlineLinearSolver, OnlineTimeStepping
-from rbnics.utils.cache import Cache
+from rbnics.utils.cache import Cache, TimeSeriesCache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, sync_setters
 
 @RequiredBaseDecorators(None)
@@ -68,11 +68,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 assert len(args) is 2
                 assert args[0] == self.mu
                 return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
-            self._solution_over_time_cache = Cache(
+            self._solution_over_time_cache = TimeSeriesCache(
                 "reduced problems",
                 key_generator=_solution_cache_key_generator
             )
-            self._solution_dot_over_time_cache = Cache(
+            self._solution_dot_over_time_cache = TimeSeriesCache(
                 "reduced problems",
                 key_generator=_solution_cache_key_generator
             )
@@ -239,12 +239,12 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             N += self.N_bc
             self._latest_solve_kwargs = kwargs
             self._solution = OnlineFunction(N)
+            self._solution_over_time.clear()
             self._solution_dot = OnlineFunction(N)
+            self._solution_dot_over_time.clear()
             if N == 0: # trivial case
-                self._solution_over_time.clear()
-                self._solution_over_time.extend([self._solution for _ in self._solution_over_time.times()])
-                self._solution_dot_over_time.clear()
-                self._solution_dot_over_time.extend([self._solution_dot for _ in self._solution_dot_over_time.times()])
+                self._solution_over_time.extend([self._solution for _ in self._solution_over_time.expected_times()])
+                self._solution_dot_over_time.extend([self._solution_dot for _ in self._solution_dot_over_time.expected_times()])
                 return self._solution_over_time
             try:
                 assign(self._solution_over_time, self._solution_over_time_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
@@ -252,18 +252,13 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             except KeyError:
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
-                self._solution_over_time.clear()
-                self._solution_dot_over_time.clear()
                 self._solve(N, **kwargs)
                 delattr(self, "_is_solving")
-                self._solution_over_time_cache[self.mu, N, kwargs] = copy(self._solution_over_time)
-                self._solution_dot_over_time_cache[self.mu, N, kwargs] = copy(self._solution_dot_over_time)
-            else:
-                assign(self._solution, self._solution_over_time[-1])
-                assign(self._solution_dot, self._solution_dot_over_time[-1])
+            assign(self._solution, self._solution_over_time[-1])
+            assign(self._solution_dot, self._solution_dot_over_time[-1])
             return self._solution_over_time
             
-        class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
+        class ProblemSolver(ParametrizedReducedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblemWrapper):
             def set_time(self, t):
                 problem = self.problem
                 problem.set_time(t)
@@ -305,15 +300,26 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     solver.solve()
                     return projected_initial_condition
                 else:
-                    return OnlineFunction(N)
+                    return None
                     
+            def monitor(self, t, solution, solution_dot):
+                problem = self.problem
+                solution_copy = copy(solution)
+                problem._solution_over_time.append(solution_copy)
+                problem._solution_over_time_cache[problem.mu, self.N, self.kwargs].append(solution_copy)
+                solution_dot_copy = copy(solution_dot)
+                problem._solution_dot_over_time.append(solution_dot_copy)
+                problem._solution_dot_over_time_cache[problem.mu, self.N, self.kwargs].append(solution_dot_copy)
+                
             def solve(self):
                 problem = self.problem
+                assert len(problem._solution_over_time) is 0
+                problem._solution_over_time_cache[problem.mu, self.N, self.kwargs] = copy(problem._solution_over_time)
+                assert len(problem._solution_dot_over_time) is 0
+                problem._solution_dot_over_time_cache[problem.mu, self.N, self.kwargs] = copy(problem._solution_dot_over_time)
                 solver = OnlineTimeStepping(self, problem._solution, problem._solution_dot)
                 solver.set_parameters(problem._time_stepping_parameters)
-                (_, problem._solution_over_time, problem._solution_dot_over_time) = solver.solve()
-                assign(problem._solution, problem._solution_over_time[-1])
-                assign(problem._solution_dot, problem._solution_dot_over_time[-1])
+                solver.solve()
                 
         # Perform an online evaluation of the output
         def compute_output(self):

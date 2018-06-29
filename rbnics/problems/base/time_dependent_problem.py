@@ -18,7 +18,8 @@
 
 from numbers import Number
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblemWrapper, TimeSeries, TimeStepping
-from rbnics.utils.cache import Cache
+from rbnics.backends.abstract import TimeSeries as AbstractTimeSeries
+from rbnics.utils.cache import Cache, TimeSeriesCache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, StoreMapFromSolutionDotToProblem
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -57,13 +58,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             def _solution_cache_import(filename):
                 self.import_solution(self.folder["cache"], filename, self._solution_over_time)
                 return self._solution_over_time
-            def _solution_cache_export(filename):
-                self.export_solution(self.folder["cache"], filename, self._solution_over_time)
+            def _solution_cache_export(filename, solution, suffix):
+                self.export_solution(self.folder["cache"], filename, solution, suffix=suffix)
             def _solution_cache_filename_generator(*args, **kwargs):
                 assert len(args) is 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
-            self._solution_over_time_cache = Cache(
+            self._solution_over_time_cache = TimeSeriesCache(
                 "problems",
                 key_generator=_solution_cache_key_generator,
                 import_=_solution_cache_import,
@@ -77,13 +78,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             def _solution_dot_cache_import(filename):
                 self.import_solution(self.folder["cache"], filename + "_dot", self._solution_dot_over_time)
                 return self._solution_over_time
-            def _solution_dot_cache_export(filename):
-                self.export_solution(self.folder["cache"], filename + "_dot", self._solution_dot_over_time)
+            def _solution_dot_cache_export(filename, solution_dot, suffix):
+                self.export_solution(self.folder["cache"], filename + "_dot", solution_dot, suffix=suffix)
             def _solution_dot_cache_filename_generator(*args, **kwargs):
                 assert len(args) is 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
-            self._solution_dot_over_time_cache = Cache(
+            self._solution_dot_over_time_cache = TimeSeriesCache(
                 "problems",
                 key_generator=_solution_dot_cache_key_generator,
                 import_=_solution_dot_cache_import,
@@ -144,9 +145,15 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 filename = "solution"
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
-            assert suffix is None
-            for (k, solution) in enumerate(solution_over_time):
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=k)
+            if isinstance(solution_over_time, AbstractTimeSeries):
+                assert suffix is None
+                for (k, solution) in enumerate(solution_over_time):
+                    ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=k)
+            else:
+                # Used only for cache export
+                solution = solution_over_time
+                assert suffix is not None
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=suffix)
                 
         # Import solution from file
         def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
@@ -291,26 +298,50 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         
         def solve(self, **kwargs):
             self._latest_solve_kwargs = kwargs
+            key_error_raised = False
+            self._solution_over_time.clear()
             try:
                 assign(self._solution_over_time, self._solution_over_time_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+            except KeyError:
+                key_error_raised = True
+            self._solution_dot_over_time.clear()
+            try:
                 assign(self._solution_dot_over_time, self._solution_dot_over_time_cache[self.mu, kwargs])
             except KeyError:
+                key_error_raised = True
+            if key_error_raised:
+                # Solutions might still have been loaded from file, only not up to the final time
+                assert (
+                    len(self._solution_over_time) == len(self._solution_dot_over_time)
+                        or
+                    len(self._solution_over_time) == len(self._solution_dot_over_time) + 1 # simulation was stopped after the solution was written out, but before corresponding solution_dot was.
+                )
+                if len(self._solution_over_time) == len(self._solution_dot_over_time) + 1:
+                    del self._solution_over_time[-1]
+                assert len(self._solution_over_time) == len(self._solution_dot_over_time)
+                bak_t0 = self.t0
+                if len(self._solution_over_time) is 0:
+                    assign(self._solution, Function(self.V))
+                    assign(self._solution_dot, Function(self.V))
+                else:
+                    t0 = self._solution_over_time.stored_times()[-1]
+                    self.set_initial_time(t0)
+                    assign(self._solution, self._solution_over_time[-1])
+                    del self._solution_over_time[-1]
+                    assign(self._solution_dot, self._solution_dot_over_time[-1])
+                    del self._solution_dot_over_time[-1]
+                # Solve
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
-                assign(self._solution, Function(self.V))
-                self._solution_over_time.clear()
-                assign(self._solution_dot, Function(self.V))
-                self._solution_dot_over_time.clear()
                 self._solve(**kwargs)
                 delattr(self, "_is_solving")
-                self._solution_over_time_cache[self.mu, kwargs] = copy(self._solution_over_time)
-                self._solution_dot_over_time_cache[self.mu, kwargs] = copy(self._solution_dot_over_time)
-            else:
-                assign(self._solution, self._solution_over_time[-1])
-                assign(self._solution_dot, self._solution_dot_over_time[-1])
+                # Restore initial time, if it was changed
+                self.set_initial_time(bak_t0)
+            assign(self._solution, self._solution_over_time[-1])
+            assign(self._solution_dot, self._solution_dot_over_time[-1])
             return self._solution_over_time
             
-        class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblem1Wrapper):
+        class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblemWrapper):
             def set_time(self, t):
                 problem = self.problem
                 problem.set_time(t)
@@ -346,15 +377,24 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 if all_initial_conditions is not None:
                     return sum(product(all_initial_conditions_thetas, all_initial_conditions))
                 else:
-                    return Function(problem.V)
+                    return None
                     
+            def monitor(self, t, solution, solution_dot):
+                problem = self.problem
+                solution_copy = copy(solution)
+                problem._solution_over_time.append(solution_copy)
+                problem._solution_over_time_cache[problem.mu, self.kwargs].append(solution_copy)
+                solution_dot_copy = copy(solution_dot)
+                problem._solution_dot_over_time.append(solution_dot_copy)
+                problem._solution_dot_over_time_cache[problem.mu, self.kwargs].append(solution_dot_copy)
+                
             def solve(self):
                 problem = self.problem
+                problem._solution_over_time_cache[problem.mu, self.kwargs] = copy(problem._solution_over_time)
+                problem._solution_dot_over_time_cache[problem.mu, self.kwargs] = copy(problem._solution_dot_over_time)
                 solver = TimeStepping(self, problem._solution, problem._solution_dot)
                 solver.set_parameters(problem._time_stepping_parameters)
-                (_, problem._solution_over_time, problem._solution_dot_over_time) = solver.solve()
-                assign(problem._solution, problem._solution_over_time[-1])
-                assign(problem._solution_dot, problem._solution_dot_over_time[-1])
+                solver.solve()
         
         # Perform a truth evaluation of the output
         def compute_output(self):

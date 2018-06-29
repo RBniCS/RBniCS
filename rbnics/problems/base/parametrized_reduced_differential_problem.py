@@ -322,15 +322,15 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         except KeyError:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
-            self._solve(N, **kwargs)
+            self._solve(N, **kwargs) # will also add to cache
             delattr(self, "_is_solving")
-            self._solution_cache[self.mu, N, kwargs] = copy(self._solution)
         return self._solution
         
     class ProblemSolver(object, metaclass=ABCMeta):
-        def __init__(self, problem, N):
+        def __init__(self, problem, N, **kwargs):
             self.problem = problem
             self.N = N
+            self.kwargs = kwargs
         
         def bc_eval(self):
             problem = self.problem
@@ -348,13 +348,17 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     all_dirichlet_bcs_thetas = None
             return all_dirichlet_bcs_thetas
             
+        def monitor(self, solution):
+            problem = self.problem
+            problem._solution_cache[problem.mu, self.N, self.kwargs] = copy(solution)
+            
         @abstractmethod
         def solve(self):
             pass
         
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
-        problem_solver = self.ProblemSolver(self, N)
+        problem_solver = self.ProblemSolver(self, N, **kwargs)
         problem_solver.solve()
         
     def project(self, snapshot, N=None, on_dirichlet_bc=True, **kwargs):

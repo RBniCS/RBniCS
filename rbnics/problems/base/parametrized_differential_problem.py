@@ -284,14 +284,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             assign(self._solution, Function(self.V))
-            self._solve(**kwargs)
+            self._solve(**kwargs) # will also add to cache
             delattr(self, "_is_solving")
-            self._solution_cache[self.mu, kwargs] = copy(self._solution)
         return self._solution
             
     class ProblemSolver(object, metaclass=ABCMeta):
-        def __init__(self, problem):
+        def __init__(self, problem, **kwargs):
             self.problem = problem
+            self.kwargs = kwargs
             
         def bc_eval(self):
             problem = self.problem
@@ -321,6 +321,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 return sum(product(all_dirichlet_bcs_thetas, all_dirichlet_bcs))
             else:
                 return None
+                
+        def monitor(self, solution):
+            problem = self.problem
+            problem._solution_cache[problem.mu, self.kwargs] = copy(solution)
         
         @abstractmethod
         def solve(self):
@@ -328,7 +332,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     
     # Perform a truth solve
     def _solve(self, **kwargs):
-        problem_solver = self.ProblemSolver(self)
+        problem_solver = self.ProblemSolver(self, **kwargs)
         problem_solver.solve()
         
     def compute_output(self):
