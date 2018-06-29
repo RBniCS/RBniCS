@@ -70,6 +70,10 @@ class Data(object):
             # Define boundary condition
             def bc_eval(self_):
                 return None
+                
+            # Empty solution monitor
+            def monitor(self_, solution):
+                pass
         problem_wrapper = ProblemWrapper()
         # Return
         return (r, j, problem_wrapper)

@@ -19,8 +19,6 @@
 from math import sqrt
 from numpy import isclose
 from dolfin import assemble, Constant, DirichletBC, div, DOLFIN_EPS, dx, FiniteElement, FunctionSpace, grad, inner, MeshFunction, MixedElement, split, SubDomain, TestFunction, TrialFunction, UnitSquareMesh, VectorElement
-from rbnics.backends.dolfin import EigenSolver as SparseEigenSolver
-from rbnics.backends.online.numpy import EigenSolver as DenseEigenSolver, Matrix as DenseMatrix
 
 """
 Computation of the inf-sup constant
@@ -29,6 +27,8 @@ of a Stokes problem on a square
 
 # ~~~ Sparse case ~~~ #
 def _test_eigen_solver_sparse(callback_type):
+    from rbnics.backends.dolfin import EigenSolver
+    
     # Define mesh
     mesh = UnitSquareMesh(10, 10)
 
@@ -62,50 +62,48 @@ def _test_eigen_solver_sparse(callback_type):
     # Define eigensolver depending on callback type
     assert callback_type in ("form callbacks", "tensor callbacks")
     if callback_type == "form callbacks":
-        sparse_solver = SparseEigenSolver(W, lhs, rhs, bc)
+        solver = EigenSolver(W, lhs, rhs, bc)
     elif callback_type == "tensor callbacks":
         LHS = assemble(lhs)
         RHS = assemble(rhs)
-        sparse_solver = SparseEigenSolver(W, LHS, RHS, bc)
+        solver = EigenSolver(W, LHS, RHS, bc)
 
     # Solve the eigenproblem
-    sparse_solver.set_parameters({
+    solver.set_parameters({
         "problem_type": "gen_non_hermitian",
         "spectrum": "target real",
         "spectral_transform": "shift-and-invert",
         "spectral_shift": 1.e-5
     })
-    sparse_solver.solve(1)
-    r, c = sparse_solver.get_eigenvalue(0)
+    solver.solve(1)
+    r, c = solver.get_eigenvalue(0)
     assert abs(c) < 1.e-10
     assert r > 0., "r = " + str(r) + " is not positive"
     print("Sparse inf-sup constant: ", sqrt(r))
-    return (sqrt(r), sparse_solver.condensed_A, sparse_solver.condensed_B)
+    return (sqrt(r), solver.condensed_A, solver.condensed_B)
 
 # ~~~ Dense case ~~~ #
 def _test_eigen_solver_dense(sparse_LHS, sparse_RHS):
-    # Extract constrained matrices from sparse eigensolver
-    dense_LHS_array = sparse_LHS.array()
-    dense_RHS_array = sparse_RHS.array()
+    from rbnics.backends.online.numpy import EigenSolver, Matrix
     
-    # Convert to dense format
-    dense_LHS = DenseMatrix(*dense_LHS_array.shape)
-    dense_RHS = DenseMatrix(*dense_RHS_array.shape)
-    dense_LHS[:, :] = dense_LHS_array
-    dense_RHS[:, :] = dense_RHS_array
+    # Extract constrained matrices from sparse eigensolver
+    LHS = Matrix(*sparse_LHS.array().shape)
+    RHS = Matrix(*sparse_RHS.array().shape)
+    LHS[:, :] = sparse_LHS.array()
+    RHS[:, :] = sparse_RHS.array()
     
     # Solve the eigenproblem
-    dense_solver = DenseEigenSolver(None, dense_LHS, dense_RHS)
-    dense_solver.set_parameters({
+    solver = EigenSolver(None, LHS, RHS)
+    solver.set_parameters({
         "problem_type": "gen_non_hermitian",
         "spectrum": "smallest real",
     })
-    dense_solver.solve(1)
-    dense_r, dense_c = dense_solver.get_eigenvalue(0)
-    assert abs(dense_c) < 1.e-10
-    assert dense_r > 0., "dense_r = " + str(dense_r) + " is not positive"
-    print("Dense inf-sup constant: ", sqrt(dense_r))
-    return (sqrt(dense_r), dense_LHS_array, dense_RHS_array)
+    solver.solve(1)
+    r, c = solver.get_eigenvalue(0)
+    assert abs(c) < 1.e-10
+    assert r > 0., "r = " + str(r) + " is not positive"
+    print("Dense inf-sup constant: ", sqrt(r))
+    return (sqrt(r), LHS, RHS)
     
 # ~~~ Test function ~~~ #
 def test_eigen_solver():
@@ -119,5 +117,5 @@ def test_eigen_solver():
         assert isclose(sqrt_r_dense, sqrt_r_exact)
         # Compute the error
         sqrt_r_dense_error = abs(sqrt_r_sparse_tensor_callbacks - sqrt_r_dense)
-        print("DenseEigenSolver error:", sqrt_r_dense_error)
+        print("Dense error:", sqrt_r_dense_error)
         assert isclose(sqrt_r_dense_error, 0., atol=1.e-5)

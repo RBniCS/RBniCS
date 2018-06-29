@@ -78,7 +78,7 @@ def pytest_collection_modifyitems(session, config, items):
     # unless only those specific tests were enabled
     for test_matplotlib_prefixes in (
         ("test_sampling", ),
-        ("test_time_stepping", ),
+        ("test_linear_solver", "test_nonlinear_solver", "test_time_stepping"),
         ("test_mesh_to_submesh", "test_submesh_to_mesh", "test_submesh_global_cell_numbering_independent_on_mpi", "test_shared_entities_detection")
     ):
         if not all([any([item.name.startswith(test_matplotlib_prefix) for test_matplotlib_prefix in test_matplotlib_prefixes]) for item in items]):

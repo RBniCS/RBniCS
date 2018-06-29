@@ -17,10 +17,11 @@
 #
 
 from numpy import dot, isclose
-from dolfin import assemble, assign, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, Function, FunctionSpace, grad, inner, IntervalMesh, pi, project, TestFunction, TrialFunction
+from numpy.linalg import norm as monitor_norm
+import matplotlib
+import matplotlib.pyplot as plt
+from dolfin import assemble, assign, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad, inner, IntervalMesh, pi, plot, project, TestFunction, TrialFunction
 from rbnics.backends.abstract import NonlinearProblemWrapper
-from rbnics.backends.dolfin import NonlinearSolver as SparseNonlinearSolver
-from rbnics.backends.online.numpy import Function as DenseFunction, NonlinearSolver as DenseNonlinearSolver, Matrix as DenseMatrix, Vector as DenseVector
 
 """
 Solve
@@ -31,6 +32,9 @@ for g such that u = u_ex = x + sin(2*x)
 
 # ~~~ Sparse case ~~~ #
 def _test_nonlinear_solver_sparse(callback_type):
+    from dolfin import Function
+    from rbnics.backends.dolfin import NonlinearSolver
+    
     # Create mesh and define function space
     mesh = IntervalMesh(132, 0, 2*pi)
     V = FunctionSpace(mesh, "Lagrange", 1)
@@ -56,7 +60,7 @@ def _test_nonlinear_solver_sparse(callback_type):
     X = assemble(x)
     
     # Define initial guess
-    def sparse_initial_guess():
+    def initial_guess():
         initial_guess_expression = Expression("0.1 + 0.9*x[0]", element=V.ufl_element())
         return project(initial_guess_expression, V)
 
@@ -73,7 +77,7 @@ def _test_nonlinear_solver_sparse(callback_type):
             return assemble(arg)
     
     # Define problem wrapper
-    class SparseFormProblemWrapper(NonlinearProblemWrapper):
+    class ProblemWrapper(NonlinearProblemWrapper):
         # Residual function
         def residual_eval(self, solution):
             return callback(r)
@@ -85,31 +89,42 @@ def _test_nonlinear_solver_sparse(callback_type):
         # Define boundary condition
         def bc_eval(self):
             return bc
+            
+        # Define custom monitor to plot the solution
+        def monitor(self, solution):
+            if matplotlib.get_backend() != "agg":
+                plot(solution, title="u")
+                plt.show(block=False)
+                plt.pause(1)
+            else:
+                print("||u|| = " + str(solution.vector().norm("l2")))
         
     # Solve the nonlinear problem
-    sparse_problem_wrapper = SparseFormProblemWrapper()
-    sparse_solution = u
-    assign(sparse_solution, sparse_initial_guess())
-    sparse_solver = SparseNonlinearSolver(sparse_problem_wrapper, sparse_solution)
-    sparse_solver.set_parameters({
+    problem_wrapper = ProblemWrapper()
+    solution = u
+    assign(solution, initial_guess())
+    solver = NonlinearSolver(problem_wrapper, solution)
+    solver.set_parameters({
         "linear_solver": "mumps",
         "maximum_iterations": 20,
         "report": True
     })
-    sparse_solver.solve()
-
+    solver.solve()
+    
     # Compute the error
-    sparse_error = Function(V)
-    sparse_error.vector().add_local(+ sparse_solution.vector().get_local())
-    sparse_error.vector().add_local(- exact_solution.vector().get_local())
-    sparse_error.vector().apply("")
-    sparse_error_norm = sparse_error.vector().inner(X*sparse_error.vector())
-    print("SparseNonlinearSolver error (" + callback_type + "):", sparse_error_norm)
-    assert isclose(sparse_error_norm, 0., atol=1.e-5)
-    return (sparse_error_norm, V, u, r, j, X, sparse_initial_guess, exact_solution)
+    error = Function(V)
+    error.vector().add_local(+ solution.vector().get_local())
+    error.vector().add_local(- exact_solution.vector().get_local())
+    error.vector().apply("")
+    error_norm = error.vector().inner(X*error.vector())
+    print("Sparse error (" + callback_type + "):", error_norm)
+    assert isclose(error_norm, 0., atol=1.e-5)
+    return (error_norm, V, u, r, j, X, initial_guess, exact_solution)
 
 # ~~~ Dense case ~~~ #
 def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solution):
+    from rbnics.backends.online.numpy import Function, NonlinearSolver, Matrix, Vector
+    
     # Define boundary condition
     x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
@@ -118,41 +133,48 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     max_dof_0_2pi = max(dof_0, dof_2pi)
     
     def dense_initial_guess():
-        sparse_function = sparse_initial_guess()
-        dense_solution = DenseFunction(*sparse_function.vector().get_local().shape)
-        dense_solution.vector()[:] = sparse_function.vector().get_local()
-        dense_solution_array = dense_solution.vector()
-        dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-        return dense_solution
+        solution = Function(*exact_solution.vector().get_local().shape)
+        solution.vector()[:] = sparse_initial_guess().vector().get_local()
+        solution_array = solution.vector()
+        solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+        return solution
     
-    class DenseProblemWrapper(NonlinearProblemWrapper):
+    class ProblemWrapper(NonlinearProblemWrapper):
         # Residual and jacobian functions, reordering resulting matrix and vector
         # such that dof_0 and dof_2pi are in the first two rows/cols,
         # because the dense nonlinear solver has implicitly this assumption
         def residual_eval(self, solution):
             self._solution_from_dense_to_sparse(solution)
-            sparse_residual = assemble(r)
-            dense_residual_array = sparse_residual.get_local()
-            dense_residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-            dense_residual = DenseVector(*dense_residual_array.shape)
-            dense_residual[:] = dense_residual_array
-            return dense_residual
+            residual_array = assemble(r).get_local()
+            residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            residual = Vector(*residual_array.shape)
+            residual[:] = residual_array
+            return residual
             
         def jacobian_eval(self, solution):
             self._solution_from_dense_to_sparse(solution)
-            sparse_jacobian = assemble(j)
-            dense_jacobian_array = sparse_jacobian.array()
-            dense_jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = dense_jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
-            dense_jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = dense_jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-            dense_jacobian = DenseMatrix(*dense_jacobian_array.shape)
-            dense_jacobian[:, :] = dense_jacobian_array
-            return dense_jacobian
+            jacobian_array = assemble(j).array()
+            jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
+            jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            jacobian = Matrix(*jacobian_array.shape)
+            jacobian[:, :] = jacobian_array
+            return jacobian
             
         def bc_eval(self):
             if min_dof_0_2pi == dof_0:
                 return (0., 2*pi)
             else:
                 return (2*pi, 0.)
+                
+        # Define custom monitor to plot the solution
+        def monitor(self, solution):
+            if matplotlib.get_backend() != "agg":
+                self._solution_from_dense_to_sparse(solution)
+                plot(u, title="u")
+                plt.show(block=False)
+                plt.pause(1)
+            else:
+                print("||u|| = " + str(monitor_norm(solution.vector())))
             
         def _solution_from_dense_to_sparse(self, solution):
             solution_array = solution.vector()
@@ -163,25 +185,26 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
             solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
         
     # Solve the nonlinear problem
-    dense_problem_wrapper = DenseProblemWrapper()
-    dense_solution = dense_initial_guess()
-    dense_solver = DenseNonlinearSolver(dense_problem_wrapper, dense_solution)
-    dense_solver.set_parameters({
+    problem_wrapper = ProblemWrapper()
+    solution = dense_initial_guess()
+    solver = NonlinearSolver(problem_wrapper, solution)
+    solver.set_parameters({
         "maximum_iterations": 20,
         "report": True
     })
-    dense_solver.solve()
-    dense_solution_array = dense_solution.vector()
-    dense_solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = dense_solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+    solver.solve()
     
     # Compute the error
-    dense_error = DenseFunction(*exact_solution.vector().get_local().shape)
-    dense_error.vector()[:] = exact_solution.vector().get_local()
-    dense_error.vector()[:] -= dense_solution_array
-    dense_error_norm = dot(dense_error.vector(), dot(X.array(), dense_error.vector()))
-    print("DenseNonlinearSolver error:", dense_error_norm)
-    assert isclose(dense_error_norm, 0., atol=1.e-5)
-    return dense_error_norm
+    error = Function(*exact_solution.vector().get_local().shape)
+    error.vector()[:] = exact_solution.vector().get_local()
+    solution_array = solution.vector()
+    solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+    error.vector()[:] -= solution_array
+    solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+    error_norm = dot(error.vector(), dot(X.array(), error.vector()))
+    print("Dense error:", error_norm)
+    assert isclose(error_norm, 0., atol=1.e-5)
+    return error_norm
     
 # ~~~ Test function ~~~ #
 def test_nonlinear_solver():
