@@ -28,7 +28,7 @@ if has_pybind11():
     from dolfin.function.expression import BaseExpression
 else:
     from dolfin import Expression as BaseExpression
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import _solution_split_to_component, _solution_split_to_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution import _solution_split_to_component, _solution_split_to_solution
 from rbnics.utils.decorators import overload
 
 def solution_identify_component(node):

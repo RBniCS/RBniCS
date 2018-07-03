@@ -53,8 +53,8 @@ def ParametrizedTensorFactory(backend, wrapping):
                 if node in visited:
                     continue
                 # ... problem solutions related to nonlinear terms
-                elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
-                    if wrapping.is_problem_solution_or_problem_solution_component(node):
+                elif wrapping.is_problem_solution_type(node):
+                    if wrapping.is_problem_solution(node):
                         (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                         truth_problem = get_problem_from_solution(truth_solution)
                         auxiliary_problems_and_components.add((truth_problem, component))

@@ -31,21 +31,21 @@ else:
 from rbnics.utils.decorators import overload
 
 @overload
-def is_problem_solution_or_problem_solution_component_type(node: (Argument, BaseExpression, Constant, ConstantValue, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def is_problem_solution_type(node: (Argument, BaseExpression, Constant, ConstantValue, GeometricQuantity, IndexBase, MultiIndex, Operator)):
     return False
     
 @overload
-def is_problem_solution_or_problem_solution_component_type(node: Function):
+def is_problem_solution_type(node: Function):
     return True
     
 @overload
-def is_problem_solution_or_problem_solution_component_type(node: Indexed):
+def is_problem_solution_type(node: Indexed):
     assert len(node.ufl_operands) == 2
     assert isinstance(node.ufl_operands[1], MultiIndex)
-    return is_problem_solution_or_problem_solution_component_type(node.ufl_operands[0])
+    return is_problem_solution_type(node.ufl_operands[0])
     
 @overload
-def is_problem_solution_or_problem_solution_component_type(node: ListTensor):
-    result = [is_problem_solution_or_problem_solution_component_type(component) for component in node.ufl_operands]
+def is_problem_solution_type(node: ListTensor):
+    result = [is_problem_solution_type(component) for component in node.ufl_operands]
     assert all([result_i == result[0] for result_i in result[1:]])
     return result[0]

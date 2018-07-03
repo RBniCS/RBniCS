@@ -63,8 +63,8 @@ from rbnics.backends.dolfin.wrapping.get_local_dof_to_component_map import get_l
 from rbnics.backends.dolfin.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.dolfin.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from rbnics.backends.dolfin.wrapping.is_parametrized import is_parametrized
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import is_problem_solution_or_problem_solution_component
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component_type import is_problem_solution_or_problem_solution_component_type
+from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.backends.dolfin.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.dolfin.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, ParametrizedConstant, parametrized_constant_to_float
@@ -131,8 +131,8 @@ __all__ = [
     'gram_schmidt_projection_step',
     'is_parametrized',
     'is_parametrized_constant',
-    'is_problem_solution_or_problem_solution_component',
-    'is_problem_solution_or_problem_solution_component_type',
+    'is_problem_solution',
+    'is_problem_solution_type',
     'is_pull_back_expression',
     'is_pull_back_expression_parametrized',
     'is_time_dependent',

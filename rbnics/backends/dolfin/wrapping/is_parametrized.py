@@ -38,15 +38,15 @@ def basic_is_parametrized(backend, wrapping):
                     if "mu_0" in parameters:
                         return True
             # ... problem solutions related to nonlinear terms
-            elif wrapping.is_problem_solution_or_problem_solution_component_type(node):
-                if wrapping.is_problem_solution_or_problem_solution_component(node):
+            elif wrapping.is_problem_solution_type(node):
+                if wrapping.is_problem_solution(node):
                     return True
         return False
     return _basic_is_parametrized
     
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import is_problem_solution_or_problem_solution_component
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component_type import is_problem_solution_or_problem_solution_component_type
+from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type)
+wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_type)
 is_parametrized = basic_is_parametrized(backend, wrapping)

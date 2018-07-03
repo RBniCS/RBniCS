@@ -53,8 +53,8 @@ def basic_expression_name(backend, wrapping):
                 coefficients_replacement[repr(n)] = str(getattr(n, cppcode_attribute))
                 str_repr += repr(getattr(n, cppcode_attribute))
                 visited.add(n)
-            elif wrapping.is_problem_solution_or_problem_solution_component_type(n):
-                if wrapping.is_problem_solution_or_problem_solution_component(n):
+            elif wrapping.is_problem_solution_type(n):
+                if wrapping.is_problem_solution(n):
                     (preprocessed_n, component, truth_solution) = wrapping.solution_identify_component(n)
                     problem = get_problem_from_solution(truth_solution)
                 else:
@@ -90,11 +90,11 @@ def basic_expression_name(backend, wrapping):
 
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import is_problem_solution_or_problem_solution_component
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component_type import is_problem_solution_or_problem_solution_component_type
+from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(expression_iterator, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, solution_identify_component, solution_iterator, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function)
+wrapping = ModuleWrapper(expression_iterator, is_problem_solution, is_problem_solution_type, solution_identify_component, solution_iterator, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function)
 expression_name = basic_expression_name(backend, wrapping)

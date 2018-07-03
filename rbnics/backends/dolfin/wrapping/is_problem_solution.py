@@ -33,7 +33,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
 
-def is_problem_solution_or_problem_solution_component(node):
+def is_problem_solution(node):
     _prepare_solution_split_storage()
     node = _remove_all_indices(node)
     return node in _solution_split_to_component

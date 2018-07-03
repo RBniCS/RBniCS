@@ -145,8 +145,8 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                             elif isinstance(t, GeometricQuantity) and not isinstance(t, FacetNormal) and self._strict:
                                                 log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a geometric quantity and strict mode is on")
                                                 break
-                                            elif wrapping.is_problem_solution_or_problem_solution_component_type(t):
-                                                if not wrapping.is_problem_solution_or_problem_solution_component(t):
+                                            elif wrapping.is_problem_solution_type(t):
+                                                if not wrapping.is_problem_solution(t):
                                                     log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized function")
                                                     break
                                                 elif self._strict: # solutions are not allowed, break
@@ -160,8 +160,8 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                     at_least_one_expression_or_solution = True
                                                     log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the parametrized expression " + str(t))
                                                     break
-                                                elif wrapping.is_problem_solution_or_problem_solution_component_type(t):
-                                                    if wrapping.is_problem_solution_or_problem_solution_component(t):
+                                                elif wrapping.is_problem_solution_type(t):
+                                                    if wrapping.is_problem_solution(t):
                                                         at_least_one_expression_or_solution = True
                                                         (_, _, solution) = wrapping.solution_identify_component(t)
                                                         log(PROGRESS, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution of " + get_problem_from_solution(solution).name())
@@ -318,9 +318,9 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
     
     return _BasicSeparatedParametrizedForm
 
-from rbnics.backends.dolfin.wrapping import expression_name, is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_identify_component
+from rbnics.backends.dolfin.wrapping import expression_name, is_problem_solution, is_problem_solution_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_identify_component
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(is_problem_solution_or_problem_solution_component, is_problem_solution_or_problem_solution_component_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_identify_component, expression_name=expression_name)
+wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_identify_component, expression_name=expression_name)
 SeparatedParametrizedForm_Base = BasicSeparatedParametrizedForm(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(Form, ))

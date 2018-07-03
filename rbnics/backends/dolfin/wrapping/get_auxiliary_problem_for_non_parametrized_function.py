@@ -21,7 +21,7 @@ from ufl.core.multiindex import MultiIndex
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
 from dolfin import Function
-from rbnics.backends.dolfin.wrapping.is_problem_solution_or_problem_solution_component import _split_function
+from rbnics.backends.dolfin.wrapping.is_problem_solution import _split_function
 from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_mute_indices
 from rbnics.utils.cache import Cache, cache
 
