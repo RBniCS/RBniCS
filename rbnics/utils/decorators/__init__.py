@@ -38,6 +38,7 @@ from rbnics.utils.decorators.store_map_from_problem_to_reduced_problem import ad
 from rbnics.utils.decorators.store_map_from_problem_to_reduction_method import add_to_map_from_problem_to_reduction_method, get_reduction_method_from_problem, StoreMapFromProblemToReductionMethod
 from rbnics.utils.decorators.store_and_update_map_from_problem_to_training_status import is_training_finished, is_training_started, set_map_from_problem_to_training_status_on, set_map_from_problem_to_training_status_off, StoreMapFromProblemToTrainingStatus, UpdateMapFromProblemToTrainingStatus
 from rbnics.utils.decorators.store_map_from_solution_to_problem import add_to_map_from_solution_to_problem, get_problem_from_solution, StoreMapFromSolutionToProblem
+from rbnics.utils.decorators.store_map_from_solution_dot_to_problem import add_to_map_from_solution_dot_to_problem, get_problem_from_solution_dot, StoreMapFromSolutionDotToProblem
 from rbnics.utils.decorators.store_problem_decorators_for_factories import StoreProblemDecoratorsForFactories
 from rbnics.utils.decorators.sync_setters import sync_setters
 from rbnics.utils.decorators.theta_type import ComputeThetaType, DictOfThetaType, ThetaType
@@ -53,6 +54,7 @@ __all__ = [
     'add_to_map_from_problem_name_to_problem',
     'add_to_map_from_problem_to_reduced_problem',
     'add_to_map_from_problem_to_reduction_method',
+    'add_to_map_from_solution_dot_to_problem',
     'add_to_map_from_solution_to_problem',
     'array_of',
     'BackendFor',
@@ -66,6 +68,7 @@ __all__ = [
     'exact_problem',
     'get_problem_from_problem_name',
     'get_problem_from_solution',
+    'get_problem_from_solution_dot',
     'get_reduced_problem_from_problem',
     'get_reduction_method_from_problem',
     'is_training_finished',
@@ -90,6 +93,7 @@ __all__ = [
     'StoreMapFromProblemToReducedProblem',
     'StoreMapFromProblemToReductionMethod',
     'StoreMapFromProblemToTrainingStatus',
+    'StoreMapFromSolutionDotToProblem',
     'StoreMapFromSolutionToProblem',
     'StoreProblemDecoratorsForFactories',
     'sync_setters',

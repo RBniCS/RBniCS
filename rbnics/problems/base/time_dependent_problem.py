@@ -20,12 +20,13 @@ from numbers import Number
 from numpy import arange
 from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeSeries, TimeStepping
 from rbnics.utils.cache import Cache
-from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, StoreMapFromSolutionDotToProblem
 from rbnics.utils.test import PatchInstanceMethod
 
 @RequiredBaseDecorators(None)
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
     
+    @StoreMapFromSolutionDotToProblem
     @PreserveClassName
     class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         # Default initialization of members
