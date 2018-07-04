@@ -17,7 +17,7 @@
 #
 
 from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
-from rbnics.utils.decorators import get_problem_from_solution
+from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
 def ParametrizedExpressionFactory(backend, wrapping):
     class _ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
@@ -55,6 +55,10 @@ def ParametrizedExpressionFactory(backend, wrapping):
                     if wrapping.is_problem_solution(node):
                         (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                         truth_problem = get_problem_from_solution(truth_solution)
+                        auxiliary_problems_and_components.add((truth_problem, component))
+                    elif wrapping.is_problem_solution_dot(node):
+                        (preprocessed_node, component, truth_solution_dot) = wrapping.solution_dot_identify_component(node)
+                        truth_problem = get_problem_from_solution_dot(truth_solution_dot)
                         auxiliary_problems_and_components.add((truth_problem, component))
                     else:
                         (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)

@@ -26,11 +26,11 @@ from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
-from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, get_auxiliary_problem_for_non_parametrized_function, is_parametrized, is_problem_solution, is_problem_solution_type, is_time_dependent, solution_identify_component, solution_iterator
+from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, get_auxiliary_problem_for_non_parametrized_function, is_parametrized, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_time_dependent, solution_dot_identify_component, solution_identify_component, solution_iterator
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(copy, Function, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
-wrapping = ModuleWrapper(form_iterator, is_problem_solution, is_problem_solution_type, solution_identify_component, solution_iterator, form_description=form_description, form_name=form_name, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
+wrapping = ModuleWrapper(form_iterator, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, solution_dot_identify_component, solution_identify_component, solution_iterator, form_description=form_description, form_name=form_name, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
 ParametrizedTensorFactory_Base = BasicParametrizedTensorFactory(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(Form, ))

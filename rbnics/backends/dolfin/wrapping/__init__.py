@@ -64,6 +64,7 @@ from rbnics.backends.dolfin.wrapping.get_mpi_comm import get_mpi_comm
 from rbnics.backends.dolfin.wrapping.gram_schmidt_projection_step import gram_schmidt_projection_step
 from rbnics.backends.dolfin.wrapping.is_parametrized import is_parametrized
 from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
 from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.backends.dolfin.wrapping.is_time_dependent import is_time_dependent
 from rbnics.backends.dolfin.wrapping.matrix_mul import matrix_mul_vector, vectorized_matrix_inner_vectorized_matrix
@@ -72,6 +73,7 @@ from rbnics.backends.dolfin.wrapping.parametrized_expression import Parametrized
 from rbnics.backends.dolfin.wrapping.plot import plot
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.rewrite_quotients import rewrite_quotients
+from rbnics.backends.dolfin.wrapping.solution_dot_identify_component import solution_dot_identify_component
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.backends.dolfin.wrapping.tensor_copy import tensor_copy
@@ -132,6 +134,7 @@ __all__ = [
     'is_parametrized',
     'is_parametrized_constant',
     'is_problem_solution',
+    'is_problem_solution_dot',
     'is_problem_solution_type',
     'is_pull_back_expression',
     'is_pull_back_expression_parametrized',
@@ -144,6 +147,7 @@ __all__ = [
     'plot',
     'PullBackFormsToReferenceDomain',
     'rewrite_quotients',
+    'solution_dot_identify_component',
     'solution_identify_component',
     'solution_iterator',
     'tensor_copy',

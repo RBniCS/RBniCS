@@ -39,14 +39,15 @@ def basic_is_parametrized(backend, wrapping):
                         return True
             # ... problem solutions related to nonlinear terms
             elif wrapping.is_problem_solution_type(node):
-                if wrapping.is_problem_solution(node):
+                if wrapping.is_problem_solution(node) or wrapping.is_problem_solution_dot(node):
                     return True
         return False
     return _basic_is_parametrized
     
 from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
 from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_type)
+wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type)
 is_parametrized = basic_is_parametrized(backend, wrapping)

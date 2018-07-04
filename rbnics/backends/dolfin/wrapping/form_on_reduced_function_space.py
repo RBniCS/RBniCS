@@ -25,7 +25,7 @@ else:
     from dolfin import Argument
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.cache import Cache
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_problem_from_solution_dot, get_reduced_problem_from_problem, is_training_finished, is_training_started
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.mpi import log, PROGRESS
 
@@ -33,21 +33,40 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
     def _basic_form_on_reduced_function_space(form_wrapper, at):
         form = form_wrapper._form
         form_name = form_wrapper.name()
-        mu = get_problem_from_parametrized_operator(form_wrapper).mu
+        form_problem = get_problem_from_parametrized_operator(form_wrapper)
         reduced_V = at.get_reduced_function_spaces()
         reduced_subdomain_data = at.get_reduced_subdomain_data()
+        mu = form_problem.mu
+        if hasattr(form_problem, "set_time"):
+            t = form_problem.t
+        else:
+            t = None
         
-        if (form_name, reduced_V) not in form_on_reduced_function_space__form_cache:
+        if (form_name, reduced_V) not in form_cache:
             visited = set()
             replacements = dict()
             truth_problems = list()
-            truth_problem_to_components = dict()
+            truth_problem_to_components = { # outer dict index over time derivative
+                0: dict(),
+                1: dict()
+            }
             truth_problem_to_exact_truth_problem = dict()
             truth_problem_to_reduced_mesh_solution = dict()
-            truth_problem_to_reduced_mesh_interpolator = dict()
-            reduced_problem_to_components = dict()
+            truth_problem_to_reduced_mesh_solution_dot = dict()
+            truth_problem_to_reduced_mesh_interpolator = { # outer dict index over time derivative
+                0: dict(),
+                1: dict()
+            }
+            reduced_problem_to_components = { # outer dict index over time derivative
+                0: dict(),
+                1: dict()
+            }
             reduced_problem_to_reduced_mesh_solution = dict()
-            reduced_problem_to_reduced_basis_functions = dict()
+            reduced_problem_to_reduced_mesh_solution_dot = dict()
+            reduced_problem_to_reduced_basis_functions = { # outer dict index over time derivative
+                0: dict(),
+                1: dict()
+            }
             
             # Look for terminals on truth mesh
             for node in wrapping.form_iterator(form, "nodes"):
@@ -59,28 +78,44 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                     visited.add(node)
                 # ... problem solutions related to nonlinear terms
                 elif wrapping.is_problem_solution_type(node):
-                    if wrapping.is_problem_solution(node):
-                        (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
-                        truth_problem = get_problem_from_solution(truth_solution)
+                    node_is_problem_solution = wrapping.is_problem_solution(node)
+                    node_is_problem_solution_dot = wrapping.is_problem_solution_dot(node)
+                    if node_is_problem_solution or node_is_problem_solution_dot:
+                        if node_is_problem_solution:
+                            (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
+                            truth_problem = get_problem_from_solution(truth_solution)
+                            # Time derivative key for components and interpolator dicts
+                            time_derivative = 0
+                        elif node_is_problem_solution_dot:
+                            (preprocessed_node, component, truth_solution_dot) = wrapping.solution_dot_identify_component(node)
+                            truth_problem = get_problem_from_solution_dot(truth_solution_dot)
+                            # Time derivative key for components and interpolator dicts
+                            time_derivative = 1
+                        # Store truth problem
                         if truth_problem not in truth_problems:
                             truth_problems.append(truth_problem)
                         # Store the component
-                        if truth_problem not in truth_problem_to_components:
-                            truth_problem_to_components[truth_problem] = list()
-                        if component not in truth_problem_to_components[truth_problem]:
-                            truth_problem_to_components[truth_problem].append(component)
+                        if truth_problem not in truth_problem_to_components[time_derivative]:
+                            truth_problem_to_components[time_derivative][truth_problem] = list()
+                        if component not in truth_problem_to_components[time_derivative][truth_problem]:
+                            truth_problem_to_components[time_derivative][truth_problem].append(component)
                             # Get the function space corresponding to preprocessed_node on the reduced mesh
                             auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem, component)
                             # Define and store the replacement
-                            if truth_problem not in truth_problem_to_reduced_mesh_solution:
-                                truth_problem_to_reduced_mesh_solution[truth_problem] = list()
                             assert preprocessed_node not in replacements # as it is related to a new truth solution component
                             replacements[preprocessed_node] = backend.Function(auxiliary_reduced_V)
-                            truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
+                            if time_derivative is 0:
+                                if truth_problem not in truth_problem_to_reduced_mesh_solution:
+                                    truth_problem_to_reduced_mesh_solution[truth_problem] = list()
+                                truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
+                            elif time_derivative is 1:
+                                if truth_problem not in truth_problem_to_reduced_mesh_solution_dot:
+                                    truth_problem_to_reduced_mesh_solution_dot[truth_problem] = list()
+                                truth_problem_to_reduced_mesh_solution_dot[truth_problem].append(replacements[preprocessed_node])
                             # Get interpolator on reduced mesh
-                            if truth_problem not in truth_problem_to_reduced_mesh_interpolator:
-                                truth_problem_to_reduced_mesh_interpolator[truth_problem] = list()
-                            truth_problem_to_reduced_mesh_interpolator[truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
+                            if truth_problem not in truth_problem_to_reduced_mesh_interpolator[time_derivative]:
+                                truth_problem_to_reduced_mesh_interpolator[time_derivative][truth_problem] = list()
+                            truth_problem_to_reduced_mesh_interpolator[time_derivative][truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
                         (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
                         if preprocessed_node not in replacements:
@@ -128,26 +163,30 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             replaced_form_with_replaced_measures = wrapping.form_replace(replaced_form, replacements_measures, "measures")
             
             # Cache the resulting dicts
-            form_on_reduced_function_space__form_cache[(form_name, reduced_V)] = replaced_form_with_replaced_measures
-            form_on_reduced_function_space__truth_problems_cache[(form_name, reduced_V)] = truth_problems
-            form_on_reduced_function_space__truth_problem_to_components_cache[(form_name, reduced_V)] = truth_problem_to_components
-            form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache[(form_name, reduced_V)] = truth_problem_to_exact_truth_problem
-            form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_solution
-            form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_interpolator
-            form_on_reduced_function_space__reduced_problem_to_components_cache[(form_name, reduced_V)] = reduced_problem_to_components
-            form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_mesh_solution
-            form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_basis_functions
+            form_cache[(form_name, reduced_V)] = replaced_form_with_replaced_measures
+            truth_problems_cache[(form_name, reduced_V)] = truth_problems
+            truth_problem_to_components_cache[(form_name, reduced_V)] = truth_problem_to_components
+            truth_problem_to_exact_truth_problem_cache[(form_name, reduced_V)] = truth_problem_to_exact_truth_problem
+            truth_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_solution
+            truth_problem_to_reduced_mesh_solution_dot_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_solution_dot
+            truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)] = truth_problem_to_reduced_mesh_interpolator
+            reduced_problem_to_components_cache[(form_name, reduced_V)] = reduced_problem_to_components
+            reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_mesh_solution
+            reduced_problem_to_reduced_mesh_solution_dot_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_mesh_solution_dot
+            reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_basis_functions
             
         # Extract from cache
-        replaced_form_with_replaced_measures = form_on_reduced_function_space__form_cache[(form_name, reduced_V)]
-        truth_problems = form_on_reduced_function_space__truth_problems_cache[(form_name, reduced_V)]
-        truth_problem_to_components = form_on_reduced_function_space__truth_problem_to_components_cache[(form_name, reduced_V)]
-        truth_problem_to_exact_truth_problem = form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache[(form_name, reduced_V)]
-        truth_problem_to_reduced_mesh_solution = form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
-        truth_problem_to_reduced_mesh_interpolator = form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)]
-        reduced_problem_to_components = form_on_reduced_function_space__reduced_problem_to_components_cache[(form_name, reduced_V)]
-        reduced_problem_to_reduced_mesh_solution = form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
-        reduced_problem_to_reduced_basis_functions = form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)]
+        replaced_form_with_replaced_measures = form_cache[(form_name, reduced_V)]
+        truth_problems = truth_problems_cache[(form_name, reduced_V)]
+        truth_problem_to_components = truth_problem_to_components_cache[(form_name, reduced_V)]
+        truth_problem_to_exact_truth_problem = truth_problem_to_exact_truth_problem_cache[(form_name, reduced_V)]
+        truth_problem_to_reduced_mesh_solution = truth_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
+        truth_problem_to_reduced_mesh_solution_dot = truth_problem_to_reduced_mesh_solution_dot_cache[(form_name, reduced_V)]
+        truth_problem_to_reduced_mesh_interpolator = truth_problem_to_reduced_mesh_interpolator_cache[(form_name, reduced_V)]
+        reduced_problem_to_components = reduced_problem_to_components_cache[(form_name, reduced_V)]
+        reduced_problem_to_reduced_mesh_solution = reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
+        reduced_problem_to_reduced_mesh_solution_dot = reduced_problem_to_reduced_mesh_solution_dot_cache[(form_name, reduced_V)]
+        reduced_problem_to_reduced_basis_functions = reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)]
         
         # Get list of truth and reduced problems that need to be solved, possibly updating cache
         required_truth_problems = list()
@@ -162,17 +201,34 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 reduced_problem_is_solving = False
             if not truth_problem_is_solving:
                 if is_training_finished(truth_problem):
-                    # Store the component
-                    if reduced_problem not in reduced_problem_to_components:
-                        reduced_problem_to_components[reduced_problem] = truth_problem_to_components[truth_problem]
-                    # Store the replacement
-                    if reduced_problem not in reduced_problem_to_reduced_mesh_solution:
+                    # Store the replacement for solution
+                    if (
+                        reduced_problem not in reduced_problem_to_reduced_mesh_solution
+                            and
+                        truth_problem in truth_problem_to_reduced_mesh_solution
+                    ):
                         reduced_problem_to_reduced_mesh_solution[reduced_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
-                    # Get reduced problem basis functions on reduced mesh
-                    if reduced_problem not in reduced_problem_to_reduced_basis_functions:
-                        reduced_problem_to_reduced_basis_functions[reduced_problem] = list()
-                        for component in reduced_problem_to_components[reduced_problem]:
-                            reduced_problem_to_reduced_basis_functions[reduced_problem].append(at.get_auxiliary_basis_functions_matrix(truth_problem, component))
+                        # Store the component
+                        assert reduced_problem not in reduced_problem_to_components[0]
+                        assert truth_problem in truth_problem_to_components[0]
+                        reduced_problem_to_components[0][reduced_problem] = truth_problem_to_components[0][truth_problem]
+                        # Get reduced problem basis functions on reduced mesh
+                        assert reduced_problem not in reduced_problem_to_reduced_basis_functions[0]
+                        reduced_problem_to_reduced_basis_functions[0][reduced_problem] = [at.get_auxiliary_basis_functions_matrix(truth_problem, component) for component in reduced_problem_to_components[0][reduced_problem]]
+                    # Store the replacement for solution_dot
+                    if (
+                        reduced_problem not in reduced_problem_to_reduced_mesh_solution_dot
+                            and
+                        truth_problem in truth_problem_to_reduced_mesh_solution_dot
+                    ):
+                        reduced_problem_to_reduced_mesh_solution_dot[reduced_problem] = truth_problem_to_reduced_mesh_solution_dot[truth_problem]
+                        # Store the component
+                        assert reduced_problem not in reduced_problem_to_components[1]
+                        assert truth_problem in truth_problem_to_components[1]
+                        reduced_problem_to_components[1][reduced_problem] = truth_problem_to_components[1][truth_problem]
+                        # Get reduced problem basis functions on reduced mesh
+                        assert reduced_problem not in reduced_problem_to_reduced_basis_functions[1]
+                        reduced_problem_to_reduced_basis_functions[1][reduced_problem] = [at.get_auxiliary_basis_functions_matrix(truth_problem, component) for component in reduced_problem_to_components[1][reduced_problem]]
                     # Append to list of required reduced problems
                     required_reduced_problems.append((reduced_problem, reduced_problem_is_solving))
                 else:
@@ -196,15 +252,36 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                             exact_truth_problem.init()
                         else:
                             exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
-                        # Store the component
-                        if exact_truth_problem not in truth_problem_to_components:
-                            truth_problem_to_components[exact_truth_problem] = truth_problem_to_components[truth_problem]
-                        # Store the replacement
-                        if exact_truth_problem not in truth_problem_to_reduced_mesh_solution:
+                        # Store the replacement for solution
+                        if (
+                            exact_truth_problem not in truth_problem_to_reduced_mesh_solution
+                                and
+                            truth_problem in truth_problem_to_reduced_mesh_solution
+                        ):
                             truth_problem_to_reduced_mesh_solution[exact_truth_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
-                        # Get interpolator on reduced mesh
-                        if exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator:
-                            truth_problem_to_reduced_mesh_interpolator[exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[truth_problem]
+                            # Store the component
+                            assert exact_truth_problem not in truth_problem_to_components[0]
+                            assert truth_problem in truth_problem_to_components[0]
+                            truth_problem_to_components[0][exact_truth_problem] = truth_problem_to_components[0][truth_problem]
+                            # Get interpolator on reduced mesh
+                            assert exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator[0]
+                            assert truth_problem in truth_problem_to_reduced_mesh_interpolator[0]
+                            truth_problem_to_reduced_mesh_interpolator[0][exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[0][truth_problem]
+                        # Store the replacement for solution_dot
+                        if (
+                            exact_truth_problem not in truth_problem_to_reduced_mesh_solution_dot
+                                and
+                            truth_problem in truth_problem_to_reduced_mesh_solution_dot
+                        ):
+                            truth_problem_to_reduced_mesh_solution_dot[exact_truth_problem] = truth_problem_to_reduced_mesh_solution_dot[truth_problem]
+                            # Store the component
+                            assert exact_truth_problem not in truth_problem_to_components[1]
+                            assert truth_problem in truth_problem_to_components[1]
+                            truth_problem_to_components[1][exact_truth_problem] = truth_problem_to_components[1][truth_problem]
+                            # Get interpolator on reduced mesh
+                            assert exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator[1]
+                            assert truth_problem in truth_problem_to_reduced_mesh_interpolator[1]
+                            truth_problem_to_reduced_mesh_interpolator[1][exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[1][truth_problem]
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((exact_truth_problem, False, reduced_problem_is_solving))
             else:
@@ -215,7 +292,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, truth_problem_is_solving, reduced_problem_is_solving) in required_truth_problems:
             if not reduced_problem_is_solving:
-                # Solve (if necessary) ...
+                # Solve (if necessary)
                 truth_problem.set_mu(mu)
                 if not truth_problem_is_solving:
                     log(PROGRESS, "In form_on_reduced_function_space, requiring truth problem solve for problem " + truth_problem.name())
@@ -225,50 +302,95 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             else:
                 reduced_problem = get_reduced_problem_from_problem(truth_problem)
                 log(PROGRESS, "In form_on_reduced_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
-            # ... and assign to reduced_mesh_solution
-            for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution[truth_problem], truth_problem_to_reduced_mesh_interpolator[truth_problem]):
-                solution_to = reduced_mesh_solution
-                if not reduced_problem_is_solving:
-                    solution_from = reduced_mesh_interpolator(truth_problem._solution)
-                else:
-                    solution_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution)
-                backend.assign(solution_to, solution_from)
+            # Assign to reduced_mesh_solution
+            if truth_problem in truth_problem_to_reduced_mesh_solution:
+                for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution[truth_problem], truth_problem_to_reduced_mesh_interpolator[0][truth_problem]):
+                    solution_to = reduced_mesh_solution
+                    if t is None:
+                        if not reduced_problem_is_solving:
+                            solution_from = reduced_mesh_interpolator(truth_problem._solution)
+                        else:
+                            solution_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution)
+                    else:
+                        if not reduced_problem_is_solving:
+                            if not truth_problem_is_solving:
+                                solution_from = reduced_mesh_interpolator(truth_problem._solution_over_time.at(t))
+                            else:
+                                solution_from = reduced_mesh_interpolator(truth_problem._solution)
+                        else:
+                            solution_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution)
+                    backend.assign(solution_to, solution_from)
+            # Assign to reduced_mesh_solution_dot
+            if truth_problem in truth_problem_to_reduced_mesh_solution_dot:
+                for (reduced_mesh_solution_dot, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution_dot[truth_problem], truth_problem_to_reduced_mesh_interpolator[1][truth_problem]):
+                    solution_dot_to = reduced_mesh_solution_dot
+                    assert t is not None
+                    if not reduced_problem_is_solving:
+                        if not truth_problem_is_solving:
+                            solution_dot_from = reduced_mesh_interpolator(truth_problem._solution_dot_over_time.at(t))
+                        else:
+                            solution_dot_from = reduced_mesh_interpolator(truth_problem._solution_dot)
+                    else:
+                        solution_dot_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution_dot.N]*reduced_problem._solution_dot)
+                    backend.assign(solution_dot_to, solution_dot_from)
         
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
-            # Solve (if necessary) ...
+            # Solve (if necessary)
             reduced_problem.set_mu(mu)
             if not is_solving:
                 log(PROGRESS, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
                 log(PROGRESS, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
-            # ... and assign to reduced_mesh_solution
-            for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[reduced_problem]):
-                solution_to = reduced_mesh_solution
-                solution_from_N = OnlineSizeDict()
-                for c, v in reduced_problem._solution.N.items():
-                    if c in reduced_basis_functions._components_name:
-                        solution_from_N[c] = v
-                solution_from = online_backend.OnlineFunction(solution_from_N)
-                online_backend.online_assign(solution_from, reduced_problem._solution)
-                solution_from = reduced_basis_functions[:solution_from_N]*solution_from
-                backend.assign(solution_to, solution_from)
+            # Assign to reduced_mesh_solution
+            if reduced_problem in reduced_problem_to_reduced_mesh_solution:
+                for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[0][reduced_problem]):
+                    solution_to = reduced_mesh_solution
+                    solution_from_N = OnlineSizeDict()
+                    for c, v in reduced_problem._solution.N.items():
+                        if c in reduced_basis_functions._components_name:
+                            solution_from_N[c] = v
+                    solution_from = online_backend.OnlineFunction(solution_from_N)
+                    if t is None or is_solving:
+                        online_backend.online_assign(solution_from, reduced_problem._solution)
+                    else:
+                        online_backend.online_assign(solution_from, reduced_problem._solution_over_time.at(t))
+                    solution_from = reduced_basis_functions[:solution_from_N]*solution_from
+                    backend.assign(solution_to, solution_from)
+            # Assign to reduced_mesh_solution_dot
+            if reduced_problem in reduced_problem_to_reduced_mesh_solution_dot:
+                for (reduced_mesh_solution_dot, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution_dot[reduced_problem], reduced_problem_to_reduced_basis_functions[1][reduced_problem]):
+                    solution_dot_to = reduced_mesh_solution_dot
+                    solution_dot_from_N = OnlineSizeDict()
+                    for c, v in reduced_problem._solution_dot.N.items():
+                        if c in reduced_basis_functions._components_name:
+                            solution_dot_from_N[c] = v
+                    solution_dot_from = online_backend.OnlineFunction(solution_dot_from_N)
+                    assert t is not None
+                    if is_solving:
+                        online_backend.online_assign(solution_dot_from, reduced_problem._solution_dot)
+                    else:
+                        online_backend.online_assign(solution_dot_from, reduced_problem._solution_dot_over_time.at(t))
+                    solution_dot_from = reduced_basis_functions[:solution_dot_from_N]*solution_dot_from
+                    backend.assign(solution_dot_to, solution_dot_from)
         
         # Assemble and return
         assembled_replaced_form = wrapping.assemble(replaced_form_with_replaced_measures)
         form_rank = assembled_replaced_form.rank()
         return (assembled_replaced_form, form_rank)
         
-    form_on_reduced_function_space__form_cache = Cache()
-    form_on_reduced_function_space__truth_problems_cache = Cache()
-    form_on_reduced_function_space__truth_problem_to_components_cache = Cache()
-    form_on_reduced_function_space__truth_problem_to_exact_truth_problem_cache = Cache()
-    form_on_reduced_function_space__truth_problem_to_reduced_mesh_solution_cache = Cache()
-    form_on_reduced_function_space__truth_problem_to_reduced_mesh_interpolator_cache = Cache()
-    form_on_reduced_function_space__reduced_problem_to_components_cache = Cache()
-    form_on_reduced_function_space__reduced_problem_to_reduced_mesh_solution_cache = Cache()
-    form_on_reduced_function_space__reduced_problem_to_reduced_basis_functions_cache = Cache()
+    form_cache = Cache()
+    truth_problems_cache = Cache()
+    truth_problem_to_components_cache = Cache()
+    truth_problem_to_exact_truth_problem_cache = Cache()
+    truth_problem_to_reduced_mesh_solution_cache = Cache()
+    truth_problem_to_reduced_mesh_solution_dot_cache = Cache()
+    truth_problem_to_reduced_mesh_interpolator_cache = Cache()
+    reduced_problem_to_components_cache = Cache()
+    reduced_problem_to_reduced_mesh_solution_cache = Cache()
+    reduced_problem_to_reduced_mesh_solution_dot_cache = Cache()
+    reduced_problem_to_reduced_basis_functions_cache = Cache()
     
     return _basic_form_on_reduced_function_space
 
