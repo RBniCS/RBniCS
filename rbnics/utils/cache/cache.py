@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from collections import MutableMapping, OrderedDict
+from collections import MutableMapping
 from functools import wraps
 from pylru import lrucache
 from rbnics.utils.mpi import log, PROGRESS
@@ -126,8 +126,9 @@ class Cache(object):
         del self._storage[storage_key]
         
     def _compute_storage_key(self, key):
+        from rbnics.utils.io import OnlineSizeDict # cannot import at global scope
         if isinstance(key, tuple):
-            if len(key) > 0 and isinstance(key[-1], dict) and not isinstance(key[-1], OrderedDict):
+            if len(key) > 0 and isinstance(key[-1], dict) and not isinstance(key[-1], OnlineSizeDict):
                 kwargs = key[-1]
                 args = key[:-1]
             else:
