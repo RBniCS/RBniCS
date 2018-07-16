@@ -60,9 +60,9 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
             if current_stage == "online":
                 # Initialize all terms using a non-hierarchical affine expansion storage, and then loading from file
                 for term in self.terms:
-                    self.operator[term] = OnlineNonHierarchicalAffineExpansionStorage(0) # it will be resized by assemble_operator
+                    self.Q[term] = self.truth_problem.Q[term]
+                    self.operator[term] = OnlineNonHierarchicalAffineExpansionStorage(self.Q[term])
                     self.assemble_operator(term, "online")
-                    self.Q[term] = len(self.operator[term])
                 # Initialize additional reduced operator related to vanishing viscosity
                 self.operator["vanishing_viscosity"] = OnlineNonHierarchicalAffineExpansionStorage(1)
                 self.assemble_operator("vanishing_viscosity", "online")

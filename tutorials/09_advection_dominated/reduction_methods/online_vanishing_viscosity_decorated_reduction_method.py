@@ -19,7 +19,7 @@
 from rbnics.backends import BasisFunctionsMatrix, transpose
 from rbnics.backends.online import OnlineEigenSolver
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
-from rbnics.utils.io import ExportableList
+from rbnics.utils.io import ExportableList, TextBox
 from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineVanishingViscosity
 
@@ -39,9 +39,8 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             # Call standard offline phase
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
             
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase begins") + "=")
-            print("==============================================================")
+            # Start vanishing viscosity postprocessing
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline vanishing viscosity postprocessing phase begins", fill="="))
             print("")
             
             # Prepare storage for copy of lifting basis functions matrix
@@ -110,9 +109,7 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             self.reduced_problem._solution_cache.clear()
             self.reduced_problem._output_cache.clear()
             
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline vanishing viscosity postprocessing phase ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline vanishing viscosity postprocessing phase ends", fill="="))
             print("")
             
             # Restore default online solve arguments for online stage

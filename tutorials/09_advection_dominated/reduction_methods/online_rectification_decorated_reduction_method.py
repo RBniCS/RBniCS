@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
+from rbnics.utils.io import TextBox
 from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineRectification
 
@@ -34,9 +35,8 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
             # Call standard offline phase
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
             
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase begins") + "=")
-            print("==============================================================")
+            # Start rectification postprocessing
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline rectification postprocessing phase begins", fill="="))
             print("")
             
             # Compute projection of truth and reduced snapshots
@@ -54,9 +54,7 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
                         error = self.reduced_problem.compute_error(**online_solve_kwargs)
                         print("\t\tmu = " + str(mu_i) + ", absolute error = " + str(error))
                         
-            print("==============================================================")
-            print("=" + "{:^60}".format(self.label + " offline rectification postprocessing phase ends") + "=")
-            print("==============================================================")
+            print(TextBox(self.truth_problem.name() + " " + self.label + " offline rectification postprocessing phase ends", fill="="))
             print("")
             
             # Restore default online solve arguments for online stage
