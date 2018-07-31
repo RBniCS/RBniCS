@@ -25,8 +25,10 @@ from ufl.core.multiindex import MultiIndex
 from ufl.corealg.multifunction import MultiFunction
 from ufl.indexed import Indexed
 from ufl.tensors import ComponentTensor
+from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 
 def expand_sum_product(form):
+    form = remove_complex_nodes(form) # TODO support forms in the complex field. This is currently needed otherwise conj((a+b)*c) does not get expanded.
     # Patch Expr.__mul__ and Expr.__rmul__
     patch_expr_mul()
     # Call sympy replacer

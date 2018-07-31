@@ -36,7 +36,7 @@ else:
     from dolfin import Expression as BaseExpression
     from dolfin import log, PROGRESS
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from rbnics.backends.dolfin.wrapping import expand_sum_product, rewrite_quotients
+from rbnics.backends.dolfin.wrapping import expand_sum_product, remove_complex_nodes, rewrite_quotients
 from rbnics.utils.decorators import BackendFor, get_problem_from_solution, get_problem_from_solution_dot, ModuleWrapper
 
 def BasicSeparatedParametrizedForm(backend, wrapping):
@@ -46,6 +46,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             form = expand_derivatives(form)
             form = expand_sum_product(form)
             form = rewrite_quotients(form)
+            form = remove_complex_nodes(form) # TODO support forms in the complex field
             self._form = form
             self._coefficients = list() # of list of ParametrizedExpression
             self._placeholders = list() # of list of Constants

@@ -43,6 +43,7 @@ else:
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
+from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
@@ -585,6 +586,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             pass
                         else:
                             # Pull back forms
+                            forms = [remove_complex_nodes(form) for form in forms] # TODO support forms in the complex field
                             pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
                             # Preprocess pulled back forms via SeparatedParametrizedForm
                             separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form), strict=True) for pulled_back_form in pulled_back_forms]

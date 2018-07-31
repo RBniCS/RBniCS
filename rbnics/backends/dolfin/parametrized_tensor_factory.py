@@ -26,7 +26,7 @@ from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
-from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, get_auxiliary_problem_for_non_parametrized_function, is_parametrized, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_time_dependent, solution_dot_identify_component, solution_identify_component, solution_iterator
+from rbnics.backends.dolfin.wrapping import form_argument_space, form_description, form_iterator, form_name, get_auxiliary_problem_for_non_parametrized_function, is_parametrized, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_time_dependent, remove_complex_nodes, solution_dot_identify_component, solution_identify_component, solution_iterator
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(copy, Function, HighOrderProperOrthogonalDecomposition, ReducedMesh, TensorBasisList, TensorSnapshotsList)
@@ -38,6 +38,7 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
     def __init__(self, form):
         # Preprocess form
         form = expand_derivatives(form)
+        form = remove_complex_nodes(form) # TODO support forms in the complex field
         # Extract spaces from forms
         len_spaces = len(form.arguments())
         assert len_spaces in (1, 2)
