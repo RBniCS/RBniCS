@@ -59,7 +59,12 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
             time_import_successful = time_testing_set.load(self.folder["testing_set"], "time_testing_set") and (len(time_testing_set) == ntest)
         if not import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
-            time_testing_set.generate([(0., self.EIM_approximation.T)], ntest, time_sampling)
+            try:
+                t0 = self.EIM_approximation.truth_problem._time_stepping_parameters["monitor"]["initial_time"]
+            except KeyError:
+                t0 = self.t0
+            T = self.EIM_approximation.T
+            time_testing_set.generate([(t0, T)], ntest, time_sampling)
             # Export
             time_testing_set.save(self.folder["testing_set"], "time_testing_set")
         # Combine both sets into one
@@ -73,7 +78,12 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
             time_sampling = kwargs["time_sampling"]
         else:
             time_sampling = UniformDistribution()
-        return DiscreteDistribution(time_sampling, (self.EIM_approximation.dt, ))
+        try:
+            dt = self.EIM_approximation.truth_problem._time_stepping_parameters["monitor"]["time_step_size"]
+        except KeyError:
+            assert self.EIM_approximation.dt is not None
+            dt = self.EIM_approximation.dt
+        return DiscreteDistribution(time_sampling, (dt, ))
         
     def _combine_sets(self, mu_set, time_set):
         for (n, (mu, t)) in enumerate(zip(mu_set, time_set)):

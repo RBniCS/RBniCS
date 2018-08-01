@@ -24,7 +24,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import LinearTimeDependentRBReducedProblem
 from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
-from rbnics.backends import product, sum, TimeSeries, transpose
+from rbnics.backends import assign, product, sum, TimeSeries, transpose
 
 ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
 
@@ -46,15 +46,16 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
     def estimate_error(self):
         eps2_over_time = self.get_residual_norm_squared()
         alpha = self.get_stability_factor()
-        initial_error_estimate_squared = self.get_initial_error_estimate_squared()
         # Compute error bound
-        error_bound_over_time = TimeSeries((self.t0, self.T), self.dt)
-        for (k, eps2) in enumerate(eps2_over_time):
-            if k > 0:
+        error_bound_over_time = TimeSeries(eps2_over_time)
+        for (k, t) in enumerate(eps2_over_time.stored_times()):
+            if not isclose(t, self.t0, self.dt/2.):
+                eps2 = eps2_over_time[k]
                 assert eps2 >= 0. or isclose(eps2, 0.)
                 assert alpha >= 0.
                 error_bound_over_time.append(sqrt(abs(eps2)/alpha))
             else:
+                initial_error_estimate_squared = self.get_initial_error_estimate_squared()
                 assert initial_error_estimate_squared >= 0. or isclose(initial_error_estimate_squared, 0.)
                 error_bound_over_time.append(sqrt(abs(initial_error_estimate_squared)))
         #
@@ -74,15 +75,15 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
 
     # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
-        residual_norm_squared_over_time = TimeSeries((self.t0, self.T), self.dt)
+        residual_norm_squared_over_time = TimeSeries(self._solution_over_time)
         assert len(self._solution_over_time) == len(self._solution_dot_over_time)
-        for (k, (solution, solution_dot)) in enumerate(zip(self._solution_over_time, self._solution_dot_over_time)):
-            if k > 0:
+        for (k, t) in enumerate(self._solution_over_time.stored_times()):
+            if not isclose(t, self.t0, self.dt/2.):
                 # Set current time
-                self.set_time(k*self.dt)
+                self.set_time(t)
                 # Set current solution and solution_dot
-                self._solution = solution
-                self._solution_dot = solution_dot
+                assign(self._solution, self._solution_over_time[k])
+                assign(self._solution_dot, self._solution_dot_over_time[k])
                 # Compute the numerator of the error bound at the current time, first
                 # by computing residual of elliptic part
                 elliptic_residual_norm_squared = ParabolicCoerciveRBReducedProblem_Base.get_residual_norm_squared(self)

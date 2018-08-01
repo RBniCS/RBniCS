@@ -17,8 +17,6 @@
 #
 
 import inspect
-from numbers import Number
-from numpy import isclose
 from rbnics.backends import assign, TimeSeries
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.test import PatchInstanceMethod
@@ -28,43 +26,11 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
     
     @PreserveClassName
     class TimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
-        
-        # Default initialization of members
-        def __init__(self, truth_problem, **kwargs):
-            # Call to parent
-            DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
-            # Indices for undersampling snapshots, e.g. after a transient
-            self.reduction_first_index = None # keep temporal evolution from the beginning by default
-            self.reduction_delta_index = None # keep every time step by default
-            self.reduction_last_index = None # keep temporal evolution until the end by default
-            
-        # Set reduction initial time
-        def set_reduction_initial_time(self, t0):
-            assert isinstance(t0, Number)
-            assert t0 >= self.truth_problem.t0
-            self.reduction_first_index = int(round(t0/self.truth_problem.dt))
-            assert isclose(self.reduction_first_index*self.truth_problem.dt, t0), "Reduction initial time should be a multiple of discretization time step size"
-                    
-        # Set reduction time step size
-        def set_reduction_time_step_size(self, dt):
-            assert isinstance(dt, Number)
-            assert dt >= self.truth_problem.dt
-            self.reduction_delta_index = int(round(dt/self.truth_problem.dt))
-            assert isclose(self.reduction_delta_index*self.truth_problem.dt, dt), "Reduction time step size should be a multiple of discretization time step size"
-            
-        # Set reduction final time
-        def set_reduction_final_time(self, T):
-            assert isinstance(T, Number)
-            assert T <= self.truth_problem.T
-            self.reduction_last_index = int(round(T/self.truth_problem.dt))
-            assert isclose(self.reduction_last_index*self.truth_problem.dt, T), "Reduction final time should be a multiple of discretization time step size"
-            
         def postprocess_snapshot(self, snapshot_over_time, snapshot_index):
-            postprocessed_snapshot = TimeSeries((self.truth_problem.t0, self.truth_problem.T), self.truth_problem.dt)
-            for (k, snapshot_k) in enumerate(snapshot_over_time):
-                self.reduced_problem.set_time(k*self.reduced_problem.dt)
-                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(self, snapshot_k, snapshot_index)
+            postprocessed_snapshot = TimeSeries(snapshot_over_time)
+            for (k, t) in enumerate(snapshot_over_time.stored_times()):
+                self.reduced_problem.set_time(t)
+                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(self, snapshot_over_time[k], snapshot_index)
                 postprocessed_snapshot.append(postprocessed_snapshot_k)
             return postprocessed_snapshot
         

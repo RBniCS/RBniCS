@@ -40,9 +40,21 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             print("# t = {0:g}".format(self.t))
             AbstractCFDUnsteadyProblem_Base._solve_supremizer(self, solution)
             
+        def _supremizer_integer_index(self):
+            try:
+                monitor_t0 = self._time_stepping_parameters["monitor"]["initial_time"]
+            except KeyError:
+                monitor_t0 = self.t0
+            try:
+                monitor_dt = self._time_stepping_parameters["monitor"]["time_step_size"]
+            except KeyError:
+                assert self.dt is not None
+                monitor_dt = self.dt
+            return int(round((self.t - monitor_t0)/monitor_dt))
+            
         def _supremizer_cache_key_from_kwargs(self, **kwargs):
             cache_key = AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_from_kwargs(self, **kwargs)
-            cache_key += (int(round(self.t/self.dt)), )
+            cache_key += (self._supremizer_integer_index(), )
             return cache_key
             
         def _supremizer_cache_file_from_kwargs(self, **kwargs):
@@ -50,11 +62,11 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             
         def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
-            AbstractCFDUnsteadyProblem_Base.export_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
+            AbstractCFDUnsteadyProblem_Base.export_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=self._supremizer_integer_index())
             
         def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
-            AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=int(round(self.t/self.dt)))
+            AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=self._supremizer_integer_index())
 
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:

@@ -109,8 +109,6 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
         
         # Update the snapshots matrix
         def update_snapshots_matrix(self, snapshot_over_time):
-            snapshot_over_time = snapshot_over_time[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
-            
             if self.nested_POD:
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:

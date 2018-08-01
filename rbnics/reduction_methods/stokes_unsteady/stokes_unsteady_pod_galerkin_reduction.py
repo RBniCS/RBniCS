@@ -53,9 +53,6 @@ def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, Abs
             snapshot_over_time = snapshot_and_supremizer_over_time[0]
             supremizer_over_time = snapshot_and_supremizer_over_time[1]
             
-            snapshot_over_time = snapshot_over_time[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
-            supremizer_over_time = supremizer_over_time[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
-            
             if self.nested_POD:
                 for component in ("u", "p"):
                     (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)

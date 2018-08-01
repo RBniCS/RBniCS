@@ -17,8 +17,7 @@
 #
 
 from numbers import Number
-from numpy import arange
-from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblem1Wrapper, TimeSeries, TimeStepping
+from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblemWrapper, TimeSeries, TimeStepping
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, StoreMapFromSolutionDotToProblem
 from rbnics.utils.test import PatchInstanceMethod
@@ -159,13 +158,10 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
             assert suffix is None
-            k = 0
-            all_t = arange(self.t0, self.T + self.dt/2., self.dt).tolist()
-            del solution_over_time[:]
-            for self.t in all_t:
+            solution_over_time.clear()
+            for (k, _) in enumerate(self._solution_over_time.expected_times()):
                 ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
                 solution_over_time.append(copy(solution))
-                k += 1
                 
         def export_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
             if folder is None:
@@ -187,14 +183,11 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             if output_over_time is None:
                 output_over_time = self._output_over_time
             assert suffix is None
-            k = 0
-            all_t = arange(self.t0, self.T + self.dt/2., self.dt).tolist()
-            del output_over_time[:]
-            for self.t in all_t:
+            output_over_time.clear()
+            for (k, _) in enumerate(self._output_over_time.expected_times()):
                 ParametrizedDifferentialProblem_DerivedClass.import_output(self, folder, filename, output, suffix=k)
                 assert len(output) is 1
                 output_over_time.append(output[0])
-                k += 1
                 
         # Initialize data structures required for the offline phase
         def init(self):
@@ -281,11 +274,20 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                         raise RuntimeError("Impossible to arrive here.")
                         
         def _init_time_series(self):
-            assert self.dt is not None
+            try:
+                monitor_t0 = self._time_stepping_parameters["monitor"]["initial_time"]
+            except KeyError:
+                monitor_t0 = self.t0
+            try:
+                monitor_dt = self._time_stepping_parameters["monitor"]["time_step_size"]
+            except KeyError:
+                assert self.dt is not None
+                monitor_dt = self.dt
             assert self.T is not None
-            self._solution_over_time = TimeSeries((self.t0, self.T), self.dt)
-            self._solution_dot_over_time = TimeSeries((self.t0, self.T), self.dt)
-            self._output_over_time = TimeSeries((self.t0, self.T), self.dt)
+            monitor_T = self.T
+            self._solution_over_time = TimeSeries((monitor_t0, monitor_T), monitor_dt)
+            self._solution_dot_over_time = TimeSeries((monitor_t0, monitor_T), monitor_dt)
+            self._output_over_time = TimeSeries((monitor_t0, monitor_T), monitor_dt)
         
         def solve(self, **kwargs):
             self._latest_solve_kwargs = kwargs
@@ -296,7 +298,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assert not hasattr(self, "_is_solving")
                 self._is_solving = True
                 assign(self._solution, Function(self.V))
+                self._solution_over_time.clear()
                 assign(self._solution_dot, Function(self.V))
+                self._solution_dot_over_time.clear()
                 self._solve(**kwargs)
                 delattr(self, "_is_solving")
                 self._solution_over_time_cache[self.mu, kwargs] = copy(self._solution_over_time)
@@ -365,7 +369,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 try:
                     self._compute_output()
                 except ValueError: # raised by compute_theta if output computation is optional
-                    del self._output_over_time[:]
+                    self._output_over_time.clear()
                     self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
                     self._output = NotImplemented
                 self._output_over_time_cache[self.mu, kwargs] = self._output_over_time
@@ -375,7 +379,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             
         # Perform a truth evaluation of the output
         def _compute_output(self):
-            del self._output_over_time[:]
+            self._output_over_time.clear()
             self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
             self._output = NotImplemented
             

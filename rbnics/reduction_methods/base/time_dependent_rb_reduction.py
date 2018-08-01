@@ -150,8 +150,6 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             
         # Update basis matrix by POD-Greedy
         def update_basis_matrix(self, snapshot_over_time):
-            snapshot_over_time = snapshot_over_time[self.reduction_first_index:self.reduction_last_index:self.reduction_delta_index]
-            
             if self.POD_greedy_basis_extension == "orthogonal":
                 orthogonal_snapshot_over_time = self._POD_greedy_orthogonalize_snapshot(snapshot_over_time)
                 if len(self.truth_problem.components) > 1:
