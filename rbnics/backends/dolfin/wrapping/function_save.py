@@ -130,34 +130,35 @@ else:
             parallel_io(remove_files_task)
             
         def write(self, function, name, index):
-            assert index in (self._last_index, self._last_index + 1)
-            if index == self._last_index + 1: # writing out solutions after time stepping
+            time = float(index)
+            # Write visualization file (no append available, will overwrite)
+            self._update_function_container(function)
+            self._visualization_file.write(self._function_container, time)
+            # Write restart file. It might be possible that the solution was written to file in a previous run
+            # and the execution was interrupted before last written index was updated. In this corner case
+            # there would be two functions corresponding to the same time, with two consecutive indices.
+            # For now the inelegant way is to try to read: if that works, assume that we are in the corner case;
+            # otherwise, we are in the standard case and we should write to file.
+            try:
+                self._restart_file.read_checkpoint(self._function_container, name, index)
+            except RuntimeError:
                 self._update_function_container(function)
-                time = float(index)
-                self._visualization_file.write(self._function_container, time)
                 bak_log_level = get_log_level()
-                set_log_level(int(WARNING) + 1) # disable xdmf logs)
+                set_log_level(int(WARNING) + 1) # disable xdmf logs
                 if self.append_attribute:
                     self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
                 else:
                     self._restart_file.write_checkpoint(self._function_container, name, time)
                 set_log_level(bak_log_level)
-                # Once solutions have been written to file, update last written index
-                self._write_last_index(index)
-            elif index == self._last_index:
-                # corner case for problems with two (or more) unknowns which are written separately to file;
-                # one unknown was written to file, while the other was not: since the problem might be coupled,
-                # a recomputation of both is required, but there is no need to update storage
-                pass
-            else:
-                raise ValueError("Invalid index")
+            # Once solutions have been written to file, update last written index
+            self._write_last_index(index)
             
         def read(self, function, name, index):
             if index <= self._last_index:
                 time = float(index)
                 self._restart_file.read_checkpoint(function, name, index)
                 self._update_function_container(function)
-                self._visualization_file.write(self._function_container, time)
+                self._visualization_file.write(self._function_container, time) # because there is no append option available
             else:
                 raise OSError
 
