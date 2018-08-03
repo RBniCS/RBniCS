@@ -40,9 +40,8 @@ def pytest_pycollect_makemodule(path, parent):
     """
     Hook into py.test to avoid collecting twice tutorial files explicitly provided on the command lines
     """
-    assert path.ext == ".py"
-    assert path.basename.startswith("tutorial_")
-    return DoNothingFile(path, parent)
+    if path.ext == ".py" and path.basename.startswith("tutorial_"):
+        return DoNothingFile(path, parent)
         
 class TutorialFile(pytest.File):
     """
