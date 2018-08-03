@@ -28,7 +28,7 @@ flake8:
     - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
     - python3 -c "import dolfin; import rbnics"
   script:
-    - pytest --flake8 -m flake8 -n auto -vv --html=pytest_flake8.html --self-contained-html
+    - pytest --flake8 -m flake8 -vv --html=pytest_flake8.html --self-contained-html
   artifacts:
     paths:
       - pytest_flake8.html
