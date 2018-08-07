@@ -46,6 +46,7 @@ def apply_clean_main_module_to_tests():
 tests_blacklist = {
     "test_conflict.py": [
         "test_super_signature", "test_type_mro", # we are not interested in the super signature warning
+        "test_supercedes_variadic", "test_consistent_variadic", # variadic arguments are not supported by our custom version
     ],
     "test_core.py": [
         "test_competing_ambiguous", # patched version raises an error rather than a warning and this would stop the execution
@@ -55,6 +56,7 @@ tests_blacklist = {
         "test_register_instance_method", "test_register_stacking", "test_dispatch_method", # created a custom version of that replaces unallowed list with list_of(int) and tuple_of(int)
         "test_source", # disabled because of incompatibility with exec (failure with OSError)
         "test_not_implemented", "test_not_implemented_error", # handling of MDNotImplementedError has been disabled by us
+        "test_vararg_not_last_element_of_signature", "test_vararg_has_multiple_elements", "test_vararg_dispatch_simple", "test_vararg_dispatch_ambiguity", "test_vararg_dispatch_ambiguity_in_variadic", "test_vararg_dispatch_multiple_types_explicit_args", "test_vararg_dispatch_multiple_implementations", "test_vararg_dispatch_unions", "test_vararg_no_args", "test_vararg_no_args_failure", "test_vararg_no_args_failure", "test_vararg_ordering", # variadic arguments are not supported by our custom version
     ]
 }
 
