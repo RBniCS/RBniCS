@@ -63,7 +63,7 @@ def load_backends(required_backends):
         from toposort import toposort_flatten
         required_backends = toposort_flatten(depends_on_backends)
 
-    # Extend parent module __all__ variable with backends wrapping
+    # Apply possible overriddes defined in backends wrapping
     for backend in required_backends:
         if hasattr(sys.modules[__name__ + "." + backend + ".wrapping"], "__overridden__"):
             wrapping_overridden = sys.modules[__name__ + "." + backend + ".wrapping"].__overridden__
@@ -74,8 +74,9 @@ def load_backends(required_backends):
                     classes_or_functions = dict((class_or_function, class_or_function) for class_or_function in classes_or_functions)
                 for (class_or_function_name, class_or_function_impl) in classes_or_functions.items():
                     setattr(sys.modules[module_name], class_or_function_name, getattr(sys.modules[__name__ + "." + backend + ".wrapping"], class_or_function_impl))
-                    if class_or_function_name not in sys.modules[module_name].__all__:
-                        sys.modules[module_name].__all__.append(class_or_function_name)
+                    if hasattr(sys.modules[module_name], "__all__"):
+                        if class_or_function_name not in sys.modules[module_name].__all__:
+                            sys.modules[module_name].__all__.append(class_or_function_name)
 
     # Make sure that backends do not contain dispatcher functions (but rather, actual functions and classes)
     import inspect
