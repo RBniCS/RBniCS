@@ -16,11 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import hashlib
 from numpy import zeros
 from ufl.core.multiindex import Index as MuteIndex, MultiIndex
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import __version__ as dolfin_version, Constant, has_pybind11
-import hashlib
+from dolfin import Constant, has_pybind11
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
 def basic_expression_name(backend, wrapping):
@@ -90,9 +90,7 @@ def basic_expression_name(backend, wrapping):
                 visited.add(n)
         for key, value in coefficients_replacement.items():
             str_repr = str_repr.replace(key, value)
-        hash_code = hashlib.sha1(
-                        (str_repr + dolfin_version).encode("utf-8")
-                    ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
+        hash_code = hashlib.sha1(str_repr.encode("utf-8")).hexdigest()
         return hash_code
     
     return _basic_expression_name

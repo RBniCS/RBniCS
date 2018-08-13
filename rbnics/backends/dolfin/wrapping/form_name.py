@@ -16,7 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import __version__ as dolfin_version
 import hashlib
 
 def basic_form_name(backend, wrapping):
@@ -25,9 +24,7 @@ def basic_form_name(backend, wrapping):
         for integral in form.integrals():
             str_repr += wrapping.expression_name(integral.integrand())
             str_repr += "measure(" + integral.integral_type() + ")[" + str(integral.subdomain_id()) + "]"
-        hash_code = hashlib.sha1(
-                        (str_repr + dolfin_version).encode("utf-8")
-                    ).hexdigest() # similar to dolfin/compilemodules/compilemodule.py
+        hash_code = hashlib.sha1(str_repr.encode("utf-8")).hexdigest()
         return hash_code
     return _basic_form_name
     
