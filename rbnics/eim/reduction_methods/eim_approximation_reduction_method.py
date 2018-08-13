@@ -19,6 +19,7 @@
 import os
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
+from rbnics.utils.decorators import snapshot_links_to_cache
 from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -84,6 +85,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.init("offline")
             return True # offline construction should be carried out
         
+    @snapshot_links_to_cache
     def _offline(self):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()

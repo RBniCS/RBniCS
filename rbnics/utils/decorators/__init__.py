@@ -33,6 +33,7 @@ from rbnics.utils.decorators.reduced_problem_for import ReducedProblemFor
 from rbnics.utils.decorators.reduction_method_decorator_for import ReductionMethodDecoratorFor
 from rbnics.utils.decorators.reduction_method_for import ReductionMethodFor
 from rbnics.utils.decorators.required_base_decorators import RequiredBaseDecorators
+from rbnics.utils.decorators.snapshot_links_to_cache import snapshot_links_to_cache
 from rbnics.utils.decorators.store_map_from_problem_name_to_problem import add_to_map_from_problem_name_to_problem, get_problem_from_problem_name, StoreMapFromProblemNameToProblem
 from rbnics.utils.decorators.store_map_from_problem_to_reduced_problem import add_to_map_from_problem_to_reduced_problem, get_reduced_problem_from_problem, StoreMapFromProblemToReducedProblem
 from rbnics.utils.decorators.store_map_from_problem_to_reduction_method import add_to_map_from_problem_to_reduction_method, get_reduction_method_from_problem, StoreMapFromProblemToReductionMethod
@@ -89,6 +90,7 @@ __all__ = [
     'set_map_from_problem_to_training_status_on',
     'set_map_from_problem_to_training_status_off',
     'set_of',
+    'snapshot_links_to_cache',
     'StoreMapFromProblemNameToProblem',
     'StoreMapFromProblemToReducedProblem',
     'StoreMapFromProblemToReductionMethod',

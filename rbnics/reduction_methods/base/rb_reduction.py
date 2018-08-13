@@ -19,7 +19,7 @@
 import os
 from math import sqrt
 from rbnics.backends import GramSchmidt
-from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, snapshot_links_to_cache
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
 from rbnics.utils.mpi import log, DEBUG
 
@@ -80,6 +80,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._finalize_offline()
             return self.reduced_problem
             
+        @snapshot_links_to_cache
         def _offline(self):
             print(TextBox(self.truth_problem.name() + " " + self.label + " offline phase begins", fill="="))
             print("")

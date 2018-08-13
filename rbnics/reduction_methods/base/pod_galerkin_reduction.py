@@ -19,7 +19,7 @@
 import os
 from numbers import Number
 from rbnics.backends import ProperOrthogonalDecomposition
-from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
+from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, snapshot_links_to_cache
 from rbnics.utils.io import ErrorAnalysisTable, SpeedupAnalysisTable, TextBox, TextLine, Timer
 
 @RequiredBaseDecorators(None)
@@ -120,6 +120,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             self._finalize_offline()
             return self.reduced_problem
             
+        @snapshot_links_to_cache
         def _offline(self):
             print(TextBox(self.truth_problem.name() + " " + self.label + " offline phase begins", fill="="))
             print("")
