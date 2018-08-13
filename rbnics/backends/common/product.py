@@ -74,8 +74,8 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
             output._rhs += rhs
             assert output._bcs is operator._bcs
             assert output._parameters == operator._parameters
-    output = output.solve()
-    return ProductOutput(output)
+    output.solve()
+    return ProductOutput(output._solution)
     
 @overload
 def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix), thetas2: None):

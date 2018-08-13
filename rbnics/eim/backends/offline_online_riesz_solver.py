@@ -57,7 +57,8 @@ def OfflineOnlineRieszSolver(problem_name):
                 if not self.delay:
                     solver = LinearSolver(*args)
                     solver.set_parameters(problem._linear_solver_parameters)
-                    return solver.solve()
+                    solver.solve()
+                    return problem._riesz_solve_storage
                 else:
                     solver = DelayedLinearSolver(*args)
                     solver.set_parameters(problem._linear_solver_parameters)

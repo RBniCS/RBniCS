@@ -65,7 +65,7 @@ class DelayedLinearSolver(object):
         rhs = sum(product(thetas, operators))
         solver = LinearSolver(self._lhs, self._solution, rhs, self._bcs)
         solver.set_parameters(self._parameters)
-        return solver.solve()
+        solver.solve()
         
     def save(self, directory, filename):
         # Get full directory name
