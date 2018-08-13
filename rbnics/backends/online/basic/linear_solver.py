@@ -33,7 +33,10 @@ def LinearSolver(backend, wrapping):
             
         @overload(LinearProblemWrapper, backend.Function.Type())
         def __init__(self, problem_wrapper, solution):
-            self.__init__(problem_wrapper.matrix_eval(), solution, problem_wrapper.vector_eval(), problem_wrapper.bc_eval())
+            lhs = problem_wrapper.matrix_eval()
+            rhs = problem_wrapper.vector_eval()
+            bcs = problem_wrapper.bc_eval()
+            self.__init__(lhs, solution, rhs, bcs)
             self.monitor = problem_wrapper.monitor
             
         @overload
