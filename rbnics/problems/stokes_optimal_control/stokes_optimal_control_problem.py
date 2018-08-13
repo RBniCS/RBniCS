@@ -17,7 +17,7 @@
 #
 
 import hashlib
-from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum, transpose
+from rbnics.backends import assign, copy, Function, LinearSolver, product, sum, transpose
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
 from rbnics.utils.cache import Cache
 
@@ -233,7 +233,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         assert isinstance(component, str)
         if supremizer is None:
             supremizer = self._supremizer[component]
-        export(supremizer, folder, filename + "_" + component, suffix, component)
+        self.export_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
         
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         assert folder is not None
@@ -242,7 +242,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         assert isinstance(component, str)
         if supremizer is None:
             supremizer = self._supremizer[component]
-        import_(supremizer, folder, filename + "_" + component, suffix, component)
+        self.import_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
         
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:

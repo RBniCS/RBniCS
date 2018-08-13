@@ -18,7 +18,7 @@
 
 import hashlib
 from rbnics.problems.base import LinearProblem, ParametrizedDifferentialProblem
-from rbnics.backends import assign, copy, export, Function, import_, LinearSolver, product, sum
+from rbnics.backends import assign, copy, Function, LinearSolver, product, sum
 from rbnics.utils.cache import Cache
 
 StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
@@ -138,7 +138,7 @@ class StokesProblem(StokesProblem_Base):
         assert component is None or isinstance(component, str)
         if component is None:
             component = "s"
-        export(supremizer, folder, filename + "_" + component, suffix, component)
+        self.export_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
         
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         if folder is None:
@@ -150,7 +150,7 @@ class StokesProblem(StokesProblem_Base):
         assert component is None or isinstance(component, str)
         if component is None:
             component = "s"
-        import_(supremizer, folder, filename + "_" + component, suffix, component)
+        self.import_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
         
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
