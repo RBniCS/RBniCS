@@ -44,6 +44,10 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self.alpha = 0.01
         # Desired state
         self.y_d = Constant(1.0)
+        # Customize linear solver parameters
+        self._linear_solver_parameters.update({
+            "linear_solver": "mumps"
+        })
         
     # Return custom problem name
     def name(self):

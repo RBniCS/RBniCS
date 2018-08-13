@@ -39,6 +39,10 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self.alpha = 0.01
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.sub(0).ufl_element())
+        # Customize linear solver parameters
+        self._linear_solver_parameters.update({
+            "linear_solver": "mumps"
+        })
         
     # Return custom problem name
     def name(self):

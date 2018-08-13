@@ -45,6 +45,10 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         self.nu = 0.1
         # Desired velocity
         self.vx_d = Expression("x[1]", degree=1)
+        # Customize linear solver parameters
+        self._linear_solver_parameters.update({
+            "linear_solver": "mumps"
+        })
         
     # Return custom problem name
     def name(self):
