@@ -18,6 +18,7 @@
 
 from collections import defaultdict, namedtuple, OrderedDict
 import itertools
+import numbers
 import re
 from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
 from mpi4py.MPI import Op
@@ -585,84 +586,85 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                         except ValueError: # raised by assemble_operator if output computation is optional
                             pass
                         else:
-                            # Pull back forms
-                            forms = [remove_complex_nodes(form) for form in forms] # TODO support forms in the complex field
-                            pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
-                            # Preprocess pulled back forms via SeparatedParametrizedForm
-                            separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form), strict=True) for pulled_back_form in pulled_back_forms]
-                            for separated_pulled_back_form in separated_pulled_back_forms:
-                                separated_pulled_back_form.separate()
-                            # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
-                            pull_back_is_affine = list()
-                            postprocessed_pulled_back_forms = list()
-                            postprocessed_pulled_back_theta_factors = list()
-                            for (q, separated_pulled_back_form) in enumerate(separated_pulled_back_forms):
-                                if self._is_affine_parameter_dependent(separated_pulled_back_form):
-                                    postprocessed_pulled_back_forms.append(self._get_affine_parameter_dependent_forms(separated_pulled_back_form))
-                                    postprocessed_pulled_back_theta_factors.append(self._get_affine_parameter_dependent_theta_factors(separated_pulled_back_form))
-                                    assert len(postprocessed_pulled_back_forms) == q + 1
-                                    assert len(postprocessed_pulled_back_theta_factors) == q + 1
-                                    (postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q]) = collect_common_forms_theta_factors(postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q])
-                                    pull_back_is_affine.append((True, )*len(postprocessed_pulled_back_forms[q]))
-                                else:
-                                    assert any([Algorithm in self.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"
-                                    postprocessed_pulled_back_forms.append((pulled_back_forms[q], ))
-                                    postprocessed_pulled_back_theta_factors.append((1, ))
-                                    pull_back_is_affine.append((False, ))
-                            # Store resulting pulled back forms and theta factors
-                            self._pull_back_is_affine[term] = pull_back_is_affine
-                            self._pulled_back_operators[term] = postprocessed_pulled_back_forms
-                            self._pulled_back_theta_factors[term] = postprocessed_pulled_back_theta_factors
-                            # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
-                            # on the parametrized domain results in the same tensor as the pulled back one
-                            if self.debug:
-                                # Init mesh motion object
-                                self.mesh_motion.init(self)
-                                # Backup current mu
-                                mu_bak = self.mu
-                                # Check pull back over all corners of parametric domain
-                                for mu in itertools.product(*self.mu_range):
-                                    self.set_mu(mu)
-                                    # Assemble from pulled back forms
-                                    thetas_pull_back = self.compute_theta(term)
-                                    forms_pull_back = self.assemble_operator(term)
-                                    tensor_pull_back = tensor_assemble(sum([Constant(theta)*discard_inexact_terms(operator) for (theta, operator) in zip(thetas_pull_back, forms_pull_back)]))
-                                    # Assemble from forms on parametrized domain
-                                    self.mesh_motion.move_mesh()
-                                    thetas_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
-                                    forms_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
-                                    tensor_parametrized_domain = tensor_assemble(sum([Constant(theta)*discard_inexact_terms(operator) for (theta, operator) in zip(thetas_parametrized_domain, forms_parametrized_domain)]))
-                                    self.mesh_motion.reset_reference()
-                                    # Print thetas and forms
-                                    print("=== DEBUGGING PULL BACK FOR TERM", term, "AND mu =", mu, "===")
-                                    print("Thetas on parametrized domain")
-                                    for (q, theta) in enumerate(thetas_parametrized_domain):
-                                        print("\ttheta_" + str(q), "=", theta)
-                                    print("Theta factors for pull back")
-                                    q = 0
-                                    for (parametrized_q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]):
-                                        for pulled_back_theta_factor in pulled_back_theta_factors:
-                                            print("\ttheta_factor_" + str(q), "=", pulled_back_theta_factor, "(evals to " + str(sympy_eval(str(pulled_back_theta_factor), {"mu": mu})) + ") associated to theta_" + str(parametrized_q))
-                                            q += 1
-                                    print("Pulled back thetas")
-                                    for (q, theta) in enumerate(thetas_pull_back):
-                                        print("\tpulled_back_theta_" + str(q), "=", theta)
-                                    print("Operators on parametrized domain")
-                                    for (q, form) in enumerate(forms_pull_back):
-                                        print("\toperator_" + str(q), "=", form)
-                                    print("Affinity of pulled back operators")
-                                    q = 0
-                                    for pull_back_is_affine in self._pull_back_is_affine[term]:
-                                        for pull_back_is_affine_q in pull_back_is_affine:
-                                            print("\tis_affine(pulled_back_operator_" + str(q) + ") =", pull_back_is_affine_q)
-                                            q += 1
-                                    print("Pulled back operators")
-                                    for (q, form) in enumerate(forms_pull_back):
-                                        print("\tpulled_back_operator_" + str(q), "=", form)
-                                    # Assert
-                                    assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
-                                # Restore mu
-                                self.set_mu(mu_bak)
+                            if not all(isinstance(form, numbers.Number) for form in forms): # trivial case associated to scalar outputs
+                                # Pull back forms
+                                forms = [remove_complex_nodes(form) for form in forms] # TODO support forms in the complex field
+                                pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
+                                # Preprocess pulled back forms via SeparatedParametrizedForm
+                                separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form), strict=True) for pulled_back_form in pulled_back_forms]
+                                for separated_pulled_back_form in separated_pulled_back_forms:
+                                    separated_pulled_back_form.separate()
+                                # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
+                                pull_back_is_affine = list()
+                                postprocessed_pulled_back_forms = list()
+                                postprocessed_pulled_back_theta_factors = list()
+                                for (q, separated_pulled_back_form) in enumerate(separated_pulled_back_forms):
+                                    if self._is_affine_parameter_dependent(separated_pulled_back_form):
+                                        postprocessed_pulled_back_forms.append(self._get_affine_parameter_dependent_forms(separated_pulled_back_form))
+                                        postprocessed_pulled_back_theta_factors.append(self._get_affine_parameter_dependent_theta_factors(separated_pulled_back_form))
+                                        assert len(postprocessed_pulled_back_forms) == q + 1
+                                        assert len(postprocessed_pulled_back_theta_factors) == q + 1
+                                        (postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q]) = collect_common_forms_theta_factors(postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q])
+                                        pull_back_is_affine.append((True, )*len(postprocessed_pulled_back_forms[q]))
+                                    else:
+                                        assert any([Algorithm in self.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"
+                                        postprocessed_pulled_back_forms.append((pulled_back_forms[q], ))
+                                        postprocessed_pulled_back_theta_factors.append((1, ))
+                                        pull_back_is_affine.append((False, ))
+                                # Store resulting pulled back forms and theta factors
+                                self._pull_back_is_affine[term] = pull_back_is_affine
+                                self._pulled_back_operators[term] = postprocessed_pulled_back_forms
+                                self._pulled_back_theta_factors[term] = postprocessed_pulled_back_theta_factors
+                                # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
+                                # on the parametrized domain results in the same tensor as the pulled back one
+                                if self.debug:
+                                    # Init mesh motion object
+                                    self.mesh_motion.init(self)
+                                    # Backup current mu
+                                    mu_bak = self.mu
+                                    # Check pull back over all corners of parametric domain
+                                    for mu in itertools.product(*self.mu_range):
+                                        self.set_mu(mu)
+                                        # Assemble from pulled back forms
+                                        thetas_pull_back = self.compute_theta(term)
+                                        forms_pull_back = self.assemble_operator(term)
+                                        tensor_pull_back = tensor_assemble(sum([Constant(theta)*discard_inexact_terms(operator) for (theta, operator) in zip(thetas_pull_back, forms_pull_back)]))
+                                        # Assemble from forms on parametrized domain
+                                        self.mesh_motion.move_mesh()
+                                        thetas_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
+                                        forms_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
+                                        tensor_parametrized_domain = tensor_assemble(sum([Constant(theta)*discard_inexact_terms(operator) for (theta, operator) in zip(thetas_parametrized_domain, forms_parametrized_domain)]))
+                                        self.mesh_motion.reset_reference()
+                                        # Print thetas and forms
+                                        print("=== DEBUGGING PULL BACK FOR TERM", term, "AND mu =", mu, "===")
+                                        print("Thetas on parametrized domain")
+                                        for (q, theta) in enumerate(thetas_parametrized_domain):
+                                            print("\ttheta_" + str(q), "=", theta)
+                                        print("Theta factors for pull back")
+                                        q = 0
+                                        for (parametrized_q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]):
+                                            for pulled_back_theta_factor in pulled_back_theta_factors:
+                                                print("\ttheta_factor_" + str(q), "=", pulled_back_theta_factor, "(evals to " + str(sympy_eval(str(pulled_back_theta_factor), {"mu": mu})) + ") associated to theta_" + str(parametrized_q))
+                                                q += 1
+                                        print("Pulled back thetas")
+                                        for (q, theta) in enumerate(thetas_pull_back):
+                                            print("\tpulled_back_theta_" + str(q), "=", theta)
+                                        print("Operators on parametrized domain")
+                                        for (q, form) in enumerate(forms_pull_back):
+                                            print("\toperator_" + str(q), "=", form)
+                                        print("Affinity of pulled back operators")
+                                        q = 0
+                                        for pull_back_is_affine in self._pull_back_is_affine[term]:
+                                            for pull_back_is_affine_q in pull_back_is_affine:
+                                                print("\tis_affine(pulled_back_operator_" + str(q) + ") =", pull_back_is_affine_q)
+                                                q += 1
+                                        print("Pulled back operators")
+                                        for (q, form) in enumerate(forms_pull_back):
+                                            print("\tpulled_back_operator_" + str(q), "=", form)
+                                        # Assert
+                                        assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
+                                    # Restore mu
+                                    self.set_mu(mu_bak)
                                 
             def _init_operators(self):
                 self._init_pull_back()

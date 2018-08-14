@@ -30,6 +30,11 @@ def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFu
     
     # Define the actual class which will carry out the multiplication
     class _Transpose_Class(object):
+        @overload(wrapping.DelayedTransposeWithArithmetic, )
+        def __init__(self, arg):
+            self.basic_transpose_instance_call = basic_transpose_instance(arg.evaluate())
+            
+        @overload(object, )
         def __init__(self, arg):
             self.basic_transpose_instance_call = basic_transpose_instance(arg)
             

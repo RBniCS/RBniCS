@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from ufl import Measure
 from ufl.geometry import GeometricQuantity
 from dolfin import has_pybind11
@@ -377,7 +378,10 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         
         # Assemble and return
         assembled_replaced_form = wrapping.assemble(replaced_form_with_replaced_measures)
-        form_rank = assembled_replaced_form.rank()
+        if not isinstance(assembled_replaced_form, Number):
+            form_rank = assembled_replaced_form.rank()
+        else:
+            form_rank = 0
         return (assembled_replaced_form, form_rank)
         
     form_cache = Cache()

@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.utils.decorators import PreserveClassName
 
 def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
@@ -36,10 +37,11 @@ def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
 def add_to_map_from_parametrized_expression_to_problem(parametrized_expression, problem):
     if hasattr(type(problem), "__is_exact__"):
         problem = problem.__decorated_problem__
-    if not hasattr(parametrized_expression, "_problem"):
-        setattr(parametrized_expression, "_problem", problem)
-    else:
-        assert parametrized_expression._problem is problem
+    if not isinstance(parametrized_expression, Number):
+        if not hasattr(parametrized_expression, "_problem"):
+            setattr(parametrized_expression, "_problem", problem)
+        else:
+            assert parametrized_expression._problem is problem
     
 def get_problem_from_parametrized_expression(parametrized_expression):
     assert hasattr(parametrized_expression, "_problem")

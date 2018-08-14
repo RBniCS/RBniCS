@@ -495,7 +495,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         else:
             raise TypeError("Invalid arguments to NonAffineExpansionStorage")
             
-    @overload((int, tuple_of(int)), Number)
+    @overload((int, tuple_of(int)), (AbstractParametrizedTensorFactory, Number))
     def __setitem__(self, key, item):
         if self._type != "empty":
             assert self._type == "operators"
@@ -508,7 +508,12 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             self._content["basis_functions"] = list() # will stay empty
             self._content.pop("basis_functions_shape", None)
         # Store
-        self._content["truth_operators"][key] = NumericForm(item)
+        if isinstance(item, Number):
+            self._content["truth_operators"][key] = NumericForm(item)
+        else:
+            assert isinstance(item, AbstractParametrizedTensorFactory)
+            assert len(item._spaces) is 0
+            self._content["truth_operators"][key] = item
         # Recompute (trivial) shape
         if "basis_functions_shape" not in self._content:
             self._content["basis_functions_shape"] = DelayedTransposeShape(self._content["basis_functions"])
@@ -523,10 +528,11 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         extracted_operators = tuple(op._form for op in self._content["truth_operators"])
         assert "truth_operators_as_expansion_storage" not in self._content
         self._content["truth_operators_as_expansion_storage"] = NonAffineExpansionStorage(extracted_operators)
-        problems = [get_problem_from_parametrized_operator(op) for op in self._content["truth_operators"]]
-        assert all([problem is problems[0] for problem in problems])
-        for extracted_operator in self._content["truth_operators_as_expansion_storage"]:
-            add_to_map_from_parametrized_operator_to_problem(extracted_operator, problems[0])
+        if not all(isinstance(op, Number) for op in extracted_operators):
+            problems = [get_problem_from_parametrized_operator(op) for op in self._content["truth_operators"]]
+            assert all([problem is problems[0] for problem in problems])
+            for extracted_operator in self._content["truth_operators_as_expansion_storage"]:
+                add_to_map_from_parametrized_operator_to_problem(extracted_operator, problems[0])
         
     def __len__(self):
         assert self._type == "operators"

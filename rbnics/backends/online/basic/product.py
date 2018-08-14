@@ -80,7 +80,15 @@ def product(backend, wrapping):
                 basis_functions = operators._content["basis_functions"]
                 assert len(basis_functions) in (0, 1, 2)
                 if len(basis_functions) is 0:
-                    assert isinstance(sum_product_truth_operators, Number)
+                    assert (
+                        isinstance(sum_product_truth_operators, Number)
+                            or
+                        (
+                            isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
+                                and
+                            len(sum_product_truth_operators._spaces) is 0
+                        )
+                    )
                     output = sum_product_truth_operators
                 elif len(basis_functions) is 1:
                     assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)

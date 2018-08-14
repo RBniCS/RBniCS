@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from numbers import Number
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.cache import Cache
@@ -320,8 +321,11 @@ def basic_form_on_truth_function_space(backend, wrapping):
         
         # Assemble
         assembled_form = wrapping.assemble(form, tensor)
-        assembled_form.generator = form_wrapper # for I/O
-        form_rank = assembled_form.rank()
+        if not isinstance(assembled_form, Number):
+            assembled_form.generator = form_wrapper # for I/O
+            form_rank = assembled_form.rank()
+        else:
+            form_rank = 0
         
         # Undo any side effect of truth problem solves
         for (truth_problem, _, _) in required_truth_problems:

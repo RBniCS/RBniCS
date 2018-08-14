@@ -125,7 +125,17 @@ def ParametrizedTensorFactory(backend, wrapping):
             # Return
             return output
             
-        @overload(lambda cls: cls)
+        @overload(Number)
+        def __add__(self, other):
+            from rbnics.backends import evaluate
+            assert len(self._spaces) is 0
+            return evaluate(self) + other
+            
+        @overload(Number)
+        def __radd__(self, other):
+            return self + other
+            
+        @overload((lambda cls: cls, Number))
         def __sub__(self, other):
             return self + (- other)
         

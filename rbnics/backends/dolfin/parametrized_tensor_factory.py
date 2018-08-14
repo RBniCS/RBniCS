@@ -41,22 +41,32 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
         form = remove_complex_nodes(form) # TODO support forms in the complex field
         # Extract spaces from forms
         len_spaces = len(form.arguments())
-        assert len_spaces in (1, 2)
-        if len_spaces == 2:
+        assert len_spaces in (0, 1, 2)
+        if len_spaces is 2:
             spaces = (
                 form_argument_space(form, 0),
                 form_argument_space(form, 1)
             )
-        elif len_spaces == 1:
+        elif len_spaces is 1:
             spaces = (
                 form_argument_space(form, 0),
             )
+        elif len_spaces is 0:
+            spaces = ()
+        else:
+            raise ValueError("Invalid arguments")
         # Create empty snapshot
-        def assemble_empty_snapshot():
-            empty_snapshot = assemble(form, keep_diagonal=True)
-            empty_snapshot.zero()
-            empty_snapshot.generator = self
-            return empty_snapshot
+        if len_spaces in (1, 2):
+            def assemble_empty_snapshot():
+                empty_snapshot = assemble(form, keep_diagonal=True)
+                empty_snapshot.zero()
+                empty_snapshot.generator = self
+                return empty_snapshot
+        elif len_spaces is 0:
+            def assemble_empty_snapshot():
+                return 0.
+        else:
+            raise ValueError("Invalid arguments")
         # Call Parent
         ParametrizedTensorFactory_Base.__init__(self, form, spaces, assemble_empty_snapshot)
         
