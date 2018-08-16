@@ -71,8 +71,9 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert args[0] == self.mu
             return self._cache_key_from_kwargs(**kwargs)
         def _solution_cache_import(filename):
-            self.import_solution(self.folder["cache"], filename)
-            return self._solution
+            solution = copy(self._solution)
+            self.import_solution(self.folder["cache"], filename, solution)
+            return solution
         def _solution_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
         def _solution_cache_filename_generator(*args, **kwargs):
@@ -91,8 +92,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert args[0] == self.mu
             return self._cache_key_from_kwargs(**kwargs)
         def _output_cache_import(filename):
-            self.import_output(self.folder["cache"], filename)
-            return self._output
+            output = [0.]
+            self.import_output(self.folder["cache"], filename, output)
+            assert len(output) is 1
+            return output[0]
         def _output_cache_export(filename):
             self.export_output(self.folder["cache"], filename)
         def _output_cache_filename_generator(*args, **kwargs):

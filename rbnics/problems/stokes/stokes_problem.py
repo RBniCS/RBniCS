@@ -52,8 +52,9 @@ class StokesProblem(StokesProblem_Base):
             assert args[0] == self.mu
             return self._supremizer_cache_key_from_kwargs(**kwargs)
         def _supremizer_cache_import(filename):
-            self.import_supremizer(self.folder["cache"], filename)
-            return self._supremizer
+            supremizer = copy(self._supremizer)
+            self.import_supremizer(self.folder["cache"], filename, supremizer)
+            return supremizer
         def _supremizer_cache_export(filename):
             self.export_supremizer(self.folder["cache"], filename)
         def _supremizer_cache_filename_generator(*args, **kwargs):

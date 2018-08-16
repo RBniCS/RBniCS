@@ -87,8 +87,9 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             return self._supremizer_cache_key_from_kwargs(**kwargs)
         def _supremizer_cache_import(component):
             def _supremizer_cache_import_impl(filename):
-                self.import_supremizer(self.folder["cache"], filename, component=component)
-                return self._supremizer[component]
+                supremizer = copy(self._supremizer[component])
+                self.import_supremizer(self.folder["cache"], filename, supremizer, component=component)
+                return supremizer
             return _supremizer_cache_import_impl
         def _supremizer_cache_export(component):
             def _supremizer_cache_export_impl(filename):

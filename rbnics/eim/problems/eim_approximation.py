@@ -63,8 +63,9 @@ class EIMApproximation(ParametrizedProblem):
             assert len(kwargs) is 0
             return self._cache_key()
         def _snapshot_cache_import(filename):
-            self.import_solution(self.folder["cache"], filename)
-            return self.snapshot
+            snapshot = copy(self.snapshot)
+            self.import_solution(self.folder["cache"], filename, snapshot)
+            return snapshot
         def _snapshot_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
         def _snapshot_cache_filename_generator(*args, **kwargs):

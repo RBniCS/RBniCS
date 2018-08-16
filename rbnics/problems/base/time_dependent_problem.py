@@ -56,8 +56,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _solution_cache_import(filename):
-                self.import_solution(self.folder["cache"], filename, self._solution_over_time)
-                return self._solution_over_time
+                solution_over_time = TimeSeries(self._solution_over_time)
+                self.import_solution(self.folder["cache"], filename, solution_over_time)
+                return solution_over_time
             def _solution_cache_export(filename, solution, suffix):
                 self.export_solution(self.folder["cache"], filename, solution, suffix=suffix)
             def _solution_cache_filename_generator(*args, **kwargs):
@@ -76,8 +77,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _solution_dot_cache_import(filename):
-                self.import_solution(self.folder["cache"], filename + "_dot", self._solution_dot_over_time)
-                return self._solution_over_time
+                solution_dot_over_time = TimeSeries(self._solution_dot_over_time)
+                self.import_solution(self.folder["cache"], filename + "_dot", solution_dot_over_time)
+                return solution_dot_over_time
             def _solution_dot_cache_export(filename, solution_dot, suffix):
                 self.export_solution(self.folder["cache"], filename + "_dot", solution_dot, suffix=suffix)
             def _solution_dot_cache_filename_generator(*args, **kwargs):
@@ -97,8 +99,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _output_cache_import(filename):
-                self.import_output(self.folder["cache"], filename)
-                return self._output_over_time
+                output_over_time = list()
+                self.import_output(self.folder["cache"], filename, output_over_time)
+                return output_over_time
             def _output_cache_export(filename):
                 self.export_output(self.folder["cache"], filename)
             def _output_cache_filename_generator(*args, **kwargs):
