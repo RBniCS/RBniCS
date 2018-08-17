@@ -18,6 +18,7 @@
 
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
+from rbnics.utils.test import PatchInstanceMethod
 
 def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
             
@@ -31,21 +32,17 @@ def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecorat
             # Populate basis functions to reduced problem map
             add_to_map_from_basis_functions_to_reduced_problem(self.basis_functions, self)
             
-            # Patch BasisFunctionsMatrix's __getitem__ to store the sub components basis function before returning
-            def patch_getitem(input_):
-                Type = type(input_) # note that we need to patch the type (and not the instance) because __getitem__ is a magic method
-                if not hasattr(Type, "getitem_patched_for_list_of_str"):
-                    original_getitem = Type.__getitem__
-                    def patched_getitem(self_, key):
-                        output = original_getitem(self_, key)
-                        if isinstance(key, list) and all(isinstance(k, str) for k in key):
-                            reduced_problem = get_reduced_problem_from_basis_functions(self_)
-                            add_to_map_from_basis_functions_to_reduced_problem(output, reduced_problem)
-                        return output
-                    # Apply patch
-                    Type.__getitem__ = patched_getitem
-                    Type.getitem_patched_for_list_of_str = True
-            patch_getitem(self.basis_functions)
+            # Add basis functions matrix obtained through sub components to the map as well, by patching
+            # BasisFunctionsMatrix._precompute_sub_components
+            if not hasattr(self.basis_functions, "_precompute_sub_components_patched"):
+                original_precompute_sub_components = self.basis_functions._precompute_sub_components
+                def patched_precompute_sub_components(self_, sub_components):
+                    output = original_precompute_sub_components(sub_components)
+                    add_to_map_from_basis_functions_to_reduced_problem(output, self)
+                    return output
+                # Apply patch
+                PatchInstanceMethod(self.basis_functions, "_precompute_sub_components", patched_precompute_sub_components).patch()
+                self.basis_functions._precompute_sub_components_patched = True
             
     # return value (a class) for the decorator
     return StoreMapFromBasisFunctionsToReducedProblem_Class

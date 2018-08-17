@@ -16,9 +16,10 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
+from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix
 from rbnics.utils.cache import Cache
-from rbnics.utils.decorators import PreserveClassName
+from rbnics.utils.decorators import dict_of, overload, PreserveClassName
+from rbnics.utils.test import PatchInstanceMethod
 
 def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
             
@@ -29,24 +30,40 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
             # Initialize basis functions as in Parent class
             ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
             
-            # Patch BasisFunctionsMatrix's __getitem__ to store component and index before returning
-            def patch_getitem(input_):
-                Type = type(input_) # note that we need to patch the type (and not the instance) because __getitem__ is a magic method
-                if not hasattr(Type, "getitem_patched_for_int_and_str"):
-                    original_getitem = Type.__getitem__
-                    def patched_getitem(self_, key):
-                        output = original_getitem(self_, key)
-                        if isinstance(key, int):
-                            add_to_map_from_basis_function_to_component_and_index(output, None, key)
-                        elif isinstance(key, str):
-                            assert isinstance(self_, AbstractBasisFunctionsMatrix)
-                            assert isinstance(output, AbstractFunctionsList)
-                            patch_getitem(output)
-                        return output
-                    # Apply patch
-                    Type.__getitem__ = patched_getitem
-                    Type.getitem_patched_for_int_and_str = True
-            patch_getitem(self.basis_functions)
+            # Patch BasisFunctionsMatrix._update_component_name_to_basis_component_length so that it also updates the map
+            # from each basis function to component and index after BasisFunctionsMatrix.enrich() has been called.
+            if not hasattr(self.basis_functions, "_update_component_name_to_basis_component_length_patched"):
+                original_update_component_name_to_basis_component_length = self.basis_functions._update_component_name_to_basis_component_length
+                
+                @overload(AbstractBasisFunctionsMatrix, None)
+                def patched_update_component_name_to_basis_component_length(self_, component):
+                    assert len(self_._components) == 1
+                    assert len(self_._components_name) == 1
+                    component_0 = self_._components_name[0]
+                    _add_new_basis_functions_to_map_from_basis_function_to_component_and_index(self_, component_0)
+                    
+                @overload(AbstractBasisFunctionsMatrix, str)
+                def patched_update_component_name_to_basis_component_length(self_, component):
+                    _add_new_basis_functions_to_map_from_basis_function_to_component_and_index(self_, component)
+                    
+                @overload(AbstractBasisFunctionsMatrix, dict_of(str, str))
+                def patched_update_component_name_to_basis_component_length(self_, component):
+                    assert len(component) == 1
+                    for (_, component_to) in component.items():
+                        break
+                    assert component_to in self_._components
+                    _add_new_basis_functions_to_map_from_basis_function_to_component_and_index(self_, component_to)
+                    
+                def _add_new_basis_functions_to_map_from_basis_function_to_component_and_index(self_, component):
+                    old_component_length = self_._component_name_to_basis_component_length[component]
+                    original_update_component_name_to_basis_component_length(component)
+                    new_component_length = self_._component_name_to_basis_component_length[component]
+                    for index in range(old_component_length, new_component_length):
+                        add_to_map_from_basis_function_to_component_and_index(self_._components[component][index], component, index)
+                    
+                # Apply patch
+                PatchInstanceMethod(self.basis_functions, "_update_component_name_to_basis_component_length", patched_update_component_name_to_basis_component_length).patch()
+                self.basis_functions._update_component_name_to_basis_component_length_patched = True
             
     # return value (a class) for the decorator
     return StoreMapFromEachBasisFunctionToComponentAndIndex_Class
