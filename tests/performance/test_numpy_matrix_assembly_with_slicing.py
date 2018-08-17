@@ -42,22 +42,23 @@ class Data(object):
             A[i] = RandomNumpyMatrix(self.Nmax, self.Nmax)
         # Genereate random theta
         theta = RandomTuple(self.Q)
-        # Generate N <= Nmax
-        N = randint(1, self.Nmax + 1)
+        # Generate slice
+        N_stop = randint(1, self.Nmax + 1)
+        N_start = randint(0, N_stop)
         # Return
-        return (theta, A, N)
+        return (theta, A, slice(N_start, N_stop))
         
-    def evaluate_builtin(self, theta, A, N):
-        result_builtin = theta[0]*A[0][:N, :N]
+    def evaluate_builtin(self, theta, A, slice_):
+        result_builtin = theta[0]*A[0][slice_, slice_]
         for i in range(1, self.Q):
-            result_builtin += theta[i]*A[i][:N, :N]
+            result_builtin += theta[i]*A[i][slice_, slice_]
         return result_builtin
         
-    def evaluate_backend(self, theta, A, N):
-        return sum(product(theta, A[:N, :N]))
+    def evaluate_backend(self, theta, A, slice_):
+        return sum(product(theta, A[slice_, slice_]))
         
-    def assert_backend(self, theta, A, N, result_backend):
-        result_builtin = self.evaluate_builtin(theta, A, N)
+    def assert_backend(self, theta, A, slice_, result_backend):
+        result_builtin = self.evaluate_builtin(theta, A, slice_)
         relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 

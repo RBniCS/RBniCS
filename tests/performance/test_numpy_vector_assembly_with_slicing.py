@@ -42,23 +42,24 @@ class Data(object):
             F[i] = RandomNumpyVector(self.Nmax)
         # Genereate random theta
         theta = RandomTuple(self.Q)
-        # Generate N <= Nmax
-        N = randint(1, self.Nmax + 1)
+        # Generate slice
+        N_stop = randint(1, self.Nmax + 1)
+        N_start = randint(0, N_stop)
         # Return
-        return (theta, F, N)
+        return (theta, F, slice(N_start, N_stop))
         
-    def evaluate_builtin(self, theta, F, N):
-        result_builtin = theta[0]*F[0][:N]
+    def evaluate_builtin(self, theta, F, slice_):
+        result_builtin = theta[0]*F[0][slice_]
         for i in range(1, self.Q):
-            result_builtin += theta[i]*F[i][:N]
-        result_builtin.N = N
+            result_builtin += theta[i]*F[i][slice_]
+        result_builtin.N = slice_.stop - slice_.start
         return result_builtin
         
-    def evaluate_backend(self, theta, F, N):
-        return sum(product(theta, F[:N]))
+    def evaluate_backend(self, theta, F, slice_):
+        return sum(product(theta, F[slice_]))
         
-    def assert_backend(self, theta, F, N, result_backend):
-        result_builtin = self.evaluate_builtin(theta, F, N)
+    def assert_backend(self, theta, F, slice_, result_backend):
+        result_builtin = self.evaluate_builtin(theta, F, slice_)
         relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
