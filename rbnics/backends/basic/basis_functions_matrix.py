@@ -318,5 +318,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             return self._precomputed_sub_components[sub_components_key]
             
         def __iter__(self):
-            raise NotImplementedError("BasisFunctionsMatrix.iter() has not been implemented yet")
+            assert len(self._components) == 1
+            assert len(self._components_name) == 1
+            component_0 = self._components_name[0]
+            return self._components[component_0].__iter__()
     return _BasisFunctionsMatrix
