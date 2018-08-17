@@ -65,7 +65,15 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                         # Append to storage
                         original_functions_list_enrich(functions, component, weights, copy)
                         # Update component name to basis component length
-                        self._update_component_name_to_basis_component_length(component_name if component is None else component)
+                        if component is not None:
+                            if isinstance(component, dict):
+                                assert len(component) == 1
+                                for (_, component_to) in component.items():
+                                    break
+                                assert component_name == component_to
+                            else:
+                                assert component_name == component
+                        self._update_component_name_to_basis_component_length(component_name)
                         # Reset precomputed sub components
                         self._precomputed_sub_components.clear()
                         # Prepare trivial precomputed sub components
