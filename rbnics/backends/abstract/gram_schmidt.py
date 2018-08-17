@@ -20,10 +20,11 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
 @AbstractBackend
 class GramSchmidt(object, metaclass=ABCMeta):
-    def __init__(self, inner_product):
+    def __init__(self, space, inner_product, component=None):
         pass
         
-    # Apply Gram Schmidt on the provided basis functions matrix
+    # Apply one iteration of Gram Schmidt procedure to orthonormalize the new basis function
+    # with respect to the provided basis functions matrix
     @abstractmethod
-    def apply(self, basis_functions, N_bc):
+    def apply(self, new_basis_function, basis_functions, component=None):
         pass

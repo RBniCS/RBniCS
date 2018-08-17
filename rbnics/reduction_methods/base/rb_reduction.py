@@ -59,11 +59,11 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for component in self.truth_problem.components:
                     assert len(self.truth_problem.inner_product[component]) == 1
                     inner_product = self.truth_problem.inner_product[component][0]
-                    self.GS[component] = GramSchmidt(inner_product)
+                    self.GS[component] = GramSchmidt(self.truth_problem.V, inner_product)
             else:
                 assert len(self.truth_problem.inner_product) == 1
                 inner_product = self.truth_problem.inner_product[0]
-                self.GS = GramSchmidt(inner_product)
+                self.GS = GramSchmidt(self.truth_problem.V, inner_product)
                 
             # Return
             return output
@@ -133,13 +133,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
-                    self.reduced_problem.basis_functions.enrich(snapshot, component=component)
-                    self.GS[component].apply(self.reduced_problem.basis_functions[component], self.reduced_problem.N_bc[component])
+                    new_basis_function = self.GS[component].apply(snapshot, self.reduced_problem.basis_functions[component][self.reduced_problem.N_bc[component]:], component=component)
+                    self.reduced_problem.basis_functions.enrich(new_basis_function, component=component)
                     self.reduced_problem.N[component] += 1
                 self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
             else:
-                self.reduced_problem.basis_functions.enrich(snapshot)
-                self.GS.apply(self.reduced_problem.basis_functions, self.reduced_problem.N_bc)
+                new_basis_function = self.GS.apply(snapshot, self.reduced_problem.basis_functions[self.reduced_problem.N_bc:])
+                self.reduced_problem.basis_functions.enrich(new_basis_function)
                 self.reduced_problem.N += 1
                 self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
                 

@@ -16,16 +16,18 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.backends.abstract import FunctionsList as AbstractFunctionsList
 from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
+from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.transpose import transpose
 from rbnics.backends.online.numpy.wrapping import gram_schmidt_projection_step
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
-backend = ModuleWrapper(transpose)
+backend = ModuleWrapper(Function, transpose)
 wrapping = ModuleWrapper(gram_schmidt_projection_step)
 GramSchmidt_Base = BasicGramSchmidt(backend, wrapping)
 
-@BackendFor("numpy", inputs=(Matrix.Type(), ))
+@BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
 class GramSchmidt(GramSchmidt_Base):
     pass

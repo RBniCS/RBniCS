@@ -41,10 +41,10 @@ class StokesRBReduction(StokesRBReduction_Base):
         self.GS = dict()
         for component in ("u", "p"):
             inner_product = self.truth_problem.inner_product[component][0]
-            self.GS[component] = GramSchmidt(inner_product)
+            self.GS[component] = GramSchmidt(self.truth_problem.V, inner_product)
         for component in ("s", ):
             inner_product = self.truth_problem.inner_product["u"][0] # instead of the one for "s", which has smaller size
-            self.GS[component] = GramSchmidt(inner_product)
+            self.GS[component] = GramSchmidt(self.truth_problem.V, inner_product)
             
         # Return
         return output
@@ -56,11 +56,8 @@ class StokesRBReduction(StokesRBReduction_Base):
         snapshot = snapshot_and_supremizer[0]
         supremizer = snapshot_and_supremizer[1]
         for component in ("u", "s", "p"):
-            if component == "s":
-                self.reduced_problem.basis_functions.enrich(supremizer, component=component)
-            else:
-                self.reduced_problem.basis_functions.enrich(snapshot, component=component)
-            self.GS[component].apply(self.reduced_problem.basis_functions[component], self.reduced_problem.N_bc[component])
+            new_basis_function = self.GS[component].apply(supremizer if component == "s" else snapshot, self.reduced_problem.basis_functions[component][self.reduced_problem.N_bc[component]:], component=component)
+            self.reduced_problem.basis_functions.enrich(new_basis_function, component=component)
             self.reduced_problem.N[component] += 1
         self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
     
