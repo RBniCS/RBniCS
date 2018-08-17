@@ -37,7 +37,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             # Reset precomputed slices
             self._precomputed_slices.clear()
             # Prepare trivial precomputed slice
-            self._precomputed_slices[len(self._list)] = self
+            self._precomputed_slices[0, len(self._list)] = self
         
         @overload((backend.Matrix.Type(), backend.Vector.Type()), )
         def _enrich(self, tensors):
@@ -93,18 +93,26 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             
         @overload(slice) # e.g. key = :N, return the first N tensors
         def __getitem__(self, key):
-            assert key.start is None
-            assert key.step is None
-            assert key.stop <= len(self._list)
-            
-            if key.stop in self._precomputed_slices:
-                return self._precomputed_slices[key.stop]
+            if key.start is not None:
+                start = key.start
+                assert start >= 0
+                assert start < len(self._list)
             else:
+                start = 0
+            assert key.step is None
+            if key.stop is not None:
+                stop = key.stop
+                assert stop > 0
+                assert stop <= len(self._list)
+            else:
+                stop = len(self._list)
+            
+            if (start, stop) not in self._precomputed_slices:
                 output = _TensorsList.__new__(type(self), self.space, self.empty_tensor)
                 output.__init__(self.space, self.empty_tensor)
                 output._list = self._list[key]
-                self._precomputed_slices[key.stop] = output
-                return output
+                self._precomputed_slices[start, stop] = output
+            return self._precomputed_slices[start, stop]
                 
         def __iter__(self):
             return self._list.__iter__()

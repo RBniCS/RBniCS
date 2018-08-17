@@ -51,7 +51,7 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
             # Reset precomputed slices
             self._precomputed_slices = Cache()
             # Prepare trivial precomputed slice
-            self._precomputed_slices[len(self._list)] = self
+            self._precomputed_slices[0, len(self._list)] = self
         
         @overload(backend.Function.Type(), (None, str, dict_of(str, str)), (None, Number), bool)
         def _enrich(self, function, component, weight, copy):
@@ -153,18 +153,32 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
         
         @overload(slice) # e.g. key = :N, return the first N functions
         def __getitem__(self, key):
-            assert key.start is None
-            assert key.step is None
-            assert key.stop <= len(self._list)
-            
-            if key.stop in self._precomputed_slices:
-                return self._precomputed_slices[key.stop]
+            if key.start is not None:
+                start = key.start
             else:
+                start = 0
+            assert key.step is None
+            if key.stop is not None:
+                stop = key.stop
+            else:
+                stop = len(self._list)
+                
+            assert start <= stop
+            if start < stop:
+                assert start >= 0
+                assert start < len(self._list)
+                assert stop > 0
+                assert stop <= len(self._list)
+            # elif start == stop
+            #    trivial case which will result in an empty FunctionsList
+            
+            if (start, stop) not in self._precomputed_slices:
                 output = _FunctionsList.__new__(type(self), self.space)
                 output.__init__(self.space)
-                output._list = self._list[key]
-                self._precomputed_slices[key.stop] = output
-                return output
+                if start < stop:
+                    output._list = self._list[key]
+                self._precomputed_slices[start, stop] = output
+            return self._precomputed_slices[start, stop]
                 
         @overload(int, backend.Function.Type())
         def __setitem__(self, key, item):

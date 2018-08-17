@@ -36,7 +36,7 @@ class DelayedFunctionsList(object):
         # Reset precomputed slices
         self._precomputed_slices.clear()
         # Prepare trivial precomputed slice
-        self._precomputed_slices[len(self._enrich_memory)] = self
+        self._precomputed_slices[0, len(self._enrich_memory)] = self
         
     @overload(DelayedLinearSolver)
     def _enrich(self, function):
@@ -53,17 +53,31 @@ class DelayedFunctionsList(object):
         
     @overload(slice) # e.g. key = :N, return the first N functions
     def __getitem__(self, key):
-        assert key.start is None
-        assert key.step is None
-        assert key.stop <= len(self._enrich_memory)
-        
-        if key.stop in self._precomputed_slices:
-            return self._precomputed_slices[key.stop]
+        if key.start is not None:
+            start = key.start
         else:
+            start = 0
+        assert key.step is None
+        if key.stop is not None:
+            stop = key.stop
+        else:
+            stop = len(self._list)
+            
+        assert start <= stop
+        if start < stop:
+            assert start >= 0
+            assert start < len(self._list)
+            assert stop > 0
+            assert stop <= len(self._list)
+        # elif start == stop
+        #    trivial case which will result in an empty FunctionsList
+        
+        if (start, stop) not in self._precomputed_slices:
             output = DelayedFunctionsList(self.space)
-            output._enrich_memory = self._enrich_memory[key]
-            self._precomputed_slices[key.stop] = output
-            return output
+            if start < stop:
+                output._enrich_memory = self._enrich_memory[key]
+            self._precomputed_slices[start, stop] = output
+        return self._precomputed_slices[start, stop]
         
     def __len__(self):
         return len(self._enrich_memory)

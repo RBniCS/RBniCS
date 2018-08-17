@@ -138,13 +138,17 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             if len(self._components) == 1:
                 assert len(self._components_name) == 1
                 component_0 = self._components_name[0]
-                precomputed_slice_key = self._component_name_to_basis_component_length[component_0]
+                precomputed_slice_key_start = 0
+                precomputed_slice_key_stop = self._component_name_to_basis_component_length[component_0]
             else:
-                precomputed_slice_key = list()
+                precomputed_slice_key_start = list()
+                precomputed_slice_key_stop = list()
                 for component_name in self._components_name:
-                    precomputed_slice_key.append(self._component_name_to_basis_component_length[component_name])
-                precomputed_slice_key = tuple(precomputed_slice_key)
-            self._precomputed_slices[precomputed_slice_key] = self
+                    precomputed_slice_key_start.append(0)
+                    precomputed_slice_key_stop.append(self._component_name_to_basis_component_length[component_name])
+                precomputed_slice_key_start = tuple(precomputed_slice_key_start)
+                precomputed_slice_key_stop = tuple(precomputed_slice_key_stop)
+            self._precomputed_slices[precomputed_slice_key_start, precomputed_slice_key_stop] = self
             
         def clear(self):
             components_name = self._components_name
@@ -243,9 +247,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             
         @overload(slice) # e.g. key = :N, return the first N functions
         def __getitem__(self, key):
-            assert key.start is None
             assert key.step is None
-            return self._precompute_slice(key.stop)
+            return self._precompute_slice(key.start, key.stop)
             
         @overload(int, object) # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
         def __setitem__(self, key, item):
@@ -253,30 +256,54 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert len(self._components_name) == 1
             self._components[self._components_name[0]][key] = item
         
-        @overload(int)
-        def _precompute_slice(self, N):
-            if N not in self._precomputed_slices:
+        @overload(None, int)
+        def _precompute_slice(self, _, N_stop):
+            return self._precompute_slice(0, N_stop)
+            
+        @overload(int, None)
+        def _precompute_slice(self, N_start, _):
+            return self._precompute_slice(N_start, len(self))
+        
+        @overload(int, int)
+        def _precompute_slice(self, N_start, N_stop):
+            if (N_start, N_stop) not in self._precomputed_slices:
                 assert len(self._components) == 1
                 output = _BasisFunctionsMatrix.__new__(type(self), self.space)
                 output.__init__(self.space)
                 output.init(self._components_name)
                 for component_name in self._components_name:
-                    output._components[component_name].enrich(self._components[component_name][:N], copy=False)
-                self._precomputed_slices[N] = output
-            return self._precomputed_slices[N]
+                    output._components[component_name].enrich(self._components[component_name][N_start:N_stop], copy=False)
+                self._precomputed_slices[N_start, N_stop] = output
+            return self._precomputed_slices[N_start, N_stop]
             
-        @overload(OnlineSizeDict)
-        def _precompute_slice(self, N):
-            assert set(N.keys()) == set(self._components_name)
-            N_key = tuple(N[component_name] for component_name in self._components_name)
-            if N_key not in self._precomputed_slices:
+        @overload(None, OnlineSizeDict)
+        def _precompute_slice(self, _, N_stop):
+            N_start = OnlineSizeDict()
+            for component_name in self._components_name:
+                N_start[component_name] = 0
+            return self._precompute_slice(N_start, N_stop)
+            
+        @overload(OnlineSizeDict, None)
+        def _precompute_slice(self, N_start, _):
+            N_stop = OnlineSizeDict()
+            for component_name in self._components_name:
+                N_stop[component_name] = self._component_name_to_basis_component_length[component_name]
+            return self._precompute_slice(N_start, len(self))
+            
+        @overload(OnlineSizeDict, OnlineSizeDict)
+        def _precompute_slice(self, N_start, N_stop):
+            assert set(N_start.keys()) == set(self._components_name)
+            assert set(N_stop.keys()) == set(self._components_name)
+            N_start_key = tuple(N_start[component_name] for component_name in self._components_name)
+            N_stop_key = tuple(N_stop[component_name] for component_name in self._components_name)
+            if (N_start_key, N_stop_key) not in self._precomputed_slices:
                 output = _BasisFunctionsMatrix.__new__(type(self), self.space)
                 output.__init__(self.space)
                 output.init(self._components_name)
                 for component_name in self._components_name:
-                    output._components[component_name].enrich(self._components[component_name][:N[component_name]], copy=False)
-                self._precomputed_slices[N_key] = output
-            return self._precomputed_slices[N_key]
+                    output._components[component_name].enrich(self._components[component_name][N_start[component_name]:N_stop[component_name]], copy=False)
+                self._precomputed_slices[N_start_key, N_stop_key] = output
+            return self._precomputed_slices[N_start_key, N_stop_key]
             
         def _precompute_sub_components(self, sub_components):
             sub_components_key = tuple(sub_components)

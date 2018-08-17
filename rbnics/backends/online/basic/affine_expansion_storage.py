@@ -313,9 +313,7 @@ def AffineExpansionStorage(backend, wrapping):
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             slices = slice_to_array(self._content[it.multi_index], key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             
-            if slices in self._precomputed_slices:
-                return self._precomputed_slices[slices]
-            else:
+            if slices not in self._precomputed_slices:
                 output = _AffineExpansionStorage.__new__(type(self), *self._content.shape)
                 output.__init__(*self._content.shape)
                 while not it.finished:
@@ -324,7 +322,7 @@ def AffineExpansionStorage(backend, wrapping):
                     # Increment
                     it.iternext()
                 self._precomputed_slices[slices] = output
-                return output
+            return self._precomputed_slices[slices]
         
         @overload((int, tuple_of(int)), )
         def __getitem__(self, key):

@@ -18,6 +18,7 @@
 
 import sys
 from numpy import cumsum
+from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
 def slice_to_array(obj, key, length_dict, index_dict):
     key = _check_key(obj, key)
@@ -27,23 +28,27 @@ def slice_to_array(obj, key, length_dict, index_dict):
     slices_start = list()
     slices_stop = list()
     for (slice_index, slice_) in enumerate(key):
-        assert slice_.start is None
+        assert isinstance(slice_.start, (int, OnlineSizeDict))
         assert slice_.step is None
-        assert isinstance(slice_.stop, (int, dict))
+        assert isinstance(slice_.stop, (int, OnlineSizeDict))
+        assert isinstance(slice_.start, int) == isinstance(slice_.stop, int)
         if isinstance(slice_.stop, int):
-            slices_start.append(0)
+            slices_start.append(slice_.start)
             slices_stop.append(slice_.stop)
         else:
-            current_slice_length = [0]*len(index_dict[slice_index])
+            if len(index_dict[slice_index]) > 1:
+                current_slice_length = [0]*len(index_dict[slice_index])
+                for (component_name, basis_component_index) in index_dict[slice_index].items():
+                    current_slice_length[basis_component_index] = length_dict[slice_index][component_name]
+                current_slice_length_cumsum = [0] + cumsum(current_slice_length).tolist()[:-1]
+            else:
+                current_slice_length_cumsum = [0]
+            current_slice_start = [0]*len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
-                current_slice_length[basis_component_index] = length_dict[slice_index][component_name]
-            current_slice_length_cumsum = cumsum(current_slice_length).tolist()
-            del current_slice_length_cumsum[-1]
-            current_slice_start = [0]
-            current_slice_start.extend(current_slice_length_cumsum)
+                current_slice_start[basis_component_index] = current_slice_length_cumsum[basis_component_index] + slice_.start[component_name]
             current_slice_stop = [0]*len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
-                current_slice_stop[basis_component_index] = current_slice_start[basis_component_index] + slice_.stop[component_name]
+                current_slice_stop[basis_component_index] = current_slice_length_cumsum[basis_component_index] + slice_.stop[component_name]
             assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)
             slices_stop.append(current_slice_stop)
@@ -71,23 +76,37 @@ def _check_key(obj, key):
         key = (key,)
     assert isinstance(key, tuple)
     assert all([isinstance(key_i, slice) for key_i in key])
-    shape_attribute = _slice_shape_attribute[len(key)]
+    def shape_attribute(slice_index):
+        return getattr(obj, _slice_shape_attribute[len(key)][slice_index])
     converted_key = list()
     for (slice_index, slice_) in enumerate(key):
-        assert slice_.start is None or slice_.start == 0
-        if slice_.start == 0:
-            start = None
+        shape_index = shape_attribute(slice_index)
+        assert isinstance(slice_.start, (int, OnlineSizeDict)) or slice_.start is None
+        if (
+            (isinstance(slice_.start, int) and slice_.start == 0)
+                or
+            slice_.start is None
+        ):
+            assert isinstance(shape_index, (int, OnlineSizeDict))
+            if isinstance(shape_index, int):
+                start = 0
+            elif isinstance(shape_index, OnlineSizeDict):
+                start = OnlineSizeDict()
+                for component_name in shape_index.keys():
+                    start[component_name] = 0
+            else:
+                raise TypeError("Invalid shape")
         else:
             start = slice_.start
         assert slice_.step is None
         step = slice_.step
-        assert isinstance(slice_.stop, (int, dict)) or slice_.stop is None
+        assert isinstance(slice_.stop, (int, OnlineSizeDict)) or slice_.stop is None
         if (
             (isinstance(slice_.stop, int) and slice_.stop == sys.maxsize)
                 or
             slice_.stop is None
         ):
-            stop = getattr(obj, shape_attribute[slice_index])
+            stop = shape_index
         else:
             stop = slice_.stop
         converted_slice = slice(start, stop, step)
@@ -107,19 +126,19 @@ _slice_shape_attribute = {
 def _check_length_dict(key, length_dict):
     if length_dict is None:
         length_dict = (None, )*len(key)
-    elif isinstance(length_dict, dict):
+    elif isinstance(length_dict, OnlineSizeDict):
         length_dict = (length_dict, )
     assert isinstance(length_dict, tuple)
-    assert all([isinstance(length_dict_i, dict) or length_dict_i is None for length_dict_i in length_dict])
+    assert all([isinstance(length_dict_i, OnlineSizeDict) or length_dict_i is None for length_dict_i in length_dict])
     assert len(key) == len(length_dict)
     return length_dict
     
 def _check_index_dict(key, index_dict):
     if index_dict is None:
         index_dict = (None, )*len(key)
-    elif isinstance(index_dict, dict):
+    elif isinstance(index_dict, ComponentNameToBasisComponentIndexDict):
         index_dict = (index_dict, )
     assert isinstance(index_dict, tuple)
-    assert all([isinstance(index_dict_i, dict) or index_dict_i is None for index_dict_i in index_dict])
+    assert all([isinstance(index_dict_i, ComponentNameToBasisComponentIndexDict) or index_dict_i is None for index_dict_i in index_dict])
     assert len(key) == len(index_dict)
     return index_dict

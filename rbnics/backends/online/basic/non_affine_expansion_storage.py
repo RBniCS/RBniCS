@@ -270,9 +270,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             
             slice_ = slice_to_array(self._content["delayed_functions_shape"], key, self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
             
-            if slice_ in self._precomputed_slices:
-                return self._precomputed_slices[slice_]
-            else:
+            if slice_ not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
                 output._type = self._type
@@ -284,7 +282,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                     output._content["delayed_functions"][1][q] = self._content["delayed_functions"][1][q]
                 output._content["delayed_functions_shape"] = DelayedTransposeShape((output._content["delayed_functions"][0][0], output._content["delayed_functions"][1][0]))
                 self._precomputed_slices[slice_] = output
-                return output
+            return self._precomputed_slices[slice_]
         elif self._type == "operators":
             assert "basis_functions" in self._content
             assert len(self._content["basis_functions"]) is 1
@@ -292,9 +290,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             
             slice_ = slice_to_array(self._content["basis_functions_shape"], key, self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
             
-            if slice_ in self._precomputed_slices:
-                return self._precomputed_slices[slice_]
-            else:
+            if slice_ not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
                 output._type = self._type
@@ -304,7 +300,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 output._content["basis_functions"].append(self._content["basis_functions"][0][key])
                 output._content["basis_functions_shape"] = DelayedTransposeShape(output._content["basis_functions"])
                 self._precomputed_slices[slice_] = output
-                return output
+            return self._precomputed_slices[slice_]
         else:
             raise ValueError("Invalid type")
         
@@ -319,9 +315,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             
             slice_ = slice_to_array(self._content["delayed_functions_shape"], key, self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
             
-            if slice_ in self._precomputed_slices:
-                return self._precomputed_slices[slice_]
-            else:
+            if slice_ not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
                 output._type = self._type
@@ -333,7 +327,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                     output._content["delayed_functions"][1][q] = self._content["delayed_functions"][1][q][key[1]]
                 output._content["delayed_functions_shape"] = DelayedTransposeShape((output._content["delayed_functions"][0][0], output._content["delayed_functions"][1][0]))
                 self._precomputed_slices[slice_] = output
-                return output
+            return self._precomputed_slices[slice_]
         elif self._type == "operators":
             assert len(key) is 2
             assert "basis_functions" in self._content
@@ -342,9 +336,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             
             slices = slice_to_array(self._content["basis_functions_shape"], key, self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
             
-            if slices in self._precomputed_slices:
-                return self._precomputed_slices[slices]
-            else:
+            if slices not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
                 output._type = self._type
@@ -355,7 +347,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 output._content["basis_functions"].append(self._content["basis_functions"][1][key[1]])
                 output._content["basis_functions_shape"] = DelayedTransposeShape(output._content["basis_functions"])
                 self._precomputed_slices[slices] = output
-                return output
+            return self._precomputed_slices[slices]
         else:
             raise ValueError("Invalid type")
         
