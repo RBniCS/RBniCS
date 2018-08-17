@@ -90,6 +90,10 @@ def patch_benchmark_plugin(benchmark_plugin):
                 for _ in range(rounds):
                     stats.update(runner(loops_range))
                 self._logger.debug("  Ran for %ss." % format_time(time.time() - run_start), yellow=True, bold=True)
+            else:
+                args = setup()
+                result = function_to_benchmark(*args)
+                teardown(*args, result)
             
         def _make_runner(self, setup, function_to_benchmark, teardown, args_, kwargs_):
             assert len(args_) is 0   # arguments will be provided
