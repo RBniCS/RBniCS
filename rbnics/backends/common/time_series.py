@@ -19,7 +19,7 @@
 from numbers import Number
 from numpy import arange, isclose
 from rbnics.backends.abstract import TimeSeries as AbstractTimeSeries
-from rbnics.utils.decorators import BackendFor, tuple_of
+from rbnics.utils.decorators import BackendFor, overload, tuple_of
 
 @BackendFor("common", inputs=((tuple_of(Number), AbstractTimeSeries), (Number, None)))
 class TimeSeries(AbstractTimeSeries):
@@ -43,26 +43,27 @@ class TimeSeries(AbstractTimeSeries):
     def expected_times(self):
         return self._times
         
+    @overload(int)
     def __getitem__(self, key):
-        if isinstance(key, slice):
-            if key.start is None:
-                time_interval_0 = self._time_interval[0]
-            else:
-                time_interval_0 = self._time_interval[0] + key.start*self._time_step_size
-            if key.step is None:
-                time_step_size = self._time_step_size
-            else:
-                time_step_size = key.step*self._time_step_size
-            if key.stop is None:
-                time_interval_1 = self._time_interval[1]
-            else:
-                time_interval_1 = self._time_interval[0] + (key.stop - 1)*self._time_step_size
-            output = TimeSeries((time_interval_0, time_interval_1), time_step_size)
-            output.extend(self._list[key])
-            return output
+        return self._list[key]
+        
+    @overload(slice)
+    def __getitem__(self, key):
+        if key.start is None:
+            time_interval_0 = self._time_interval[0]
         else:
-            assert isinstance(key, int)
-            return self._list[key]
+            time_interval_0 = self._time_interval[0] + key.start*self._time_step_size
+        if key.step is None:
+            time_step_size = self._time_step_size
+        else:
+            time_step_size = key.step*self._time_step_size
+        if key.stop is None:
+            time_interval_1 = self._time_interval[1]
+        else:
+            time_interval_1 = self._time_interval[0] + (key.stop - 1)*self._time_step_size
+        output = TimeSeries((time_interval_0, time_interval_1), time_step_size)
+        output.extend(self._list[key])
+        return output
         
     def at(self, time):
         assert time >= self._time_interval[0]
