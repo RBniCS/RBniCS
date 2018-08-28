@@ -16,11 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import has_pybind11
-if has_pybind11():
-    from dolfin.cpp.la import GenericMatrix
-else:
-    from dolfin import GenericMatrix
+from dolfin.cpp.la import GenericMatrix
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.wrapping import to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import InvertProductOutputDirichletBC
@@ -34,14 +30,13 @@ def Type():
 Matrix.Type = Type
 
 # pybind11 wrappers do not define __radd__ and __rsub__
-if has_pybind11():
-    def set_roperator(operator, roperator):
-        original_operator = getattr(GenericMatrix, operator)
-        def custom_roperator(self, other):
-            return original_operator(other, self)
-        setattr(GenericMatrix, roperator, custom_roperator)
-    for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
-        set_roperator(operator, roperator)
+def set_roperator(operator, roperator):
+    original_operator = getattr(GenericMatrix, operator)
+    def custom_roperator(self, other):
+        return original_operator(other, self)
+    setattr(GenericMatrix, roperator, custom_roperator)
+for (operator, roperator) in zip(("__add__", "__sub__"), ("__radd__", "__rsub__")):
+    set_roperator(operator, roperator)
 
 # Enable matrix*function product (i.e. matrix*function.vector())
 original__mul__ = GenericMatrix.__mul__

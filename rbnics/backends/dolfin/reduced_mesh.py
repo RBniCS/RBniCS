@@ -17,12 +17,9 @@
 #
 
 import os
-from dolfin import cells, has_hdf5, has_hdf5_parallel, has_pybind11, Mesh, MeshFunction
-if has_pybind11():
-    from dolfin.cpp.log import log, LogLevel
-    DEBUG = LogLevel.DEBUG
-else:
-    from dolfin import DEBUG, log
+from mpi4py.MPI import MAX
+from dolfin import cells, has_hdf5, has_hdf5_parallel, Mesh, MeshFunction
+from dolfin.cpp.log import log, LogLevel
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.wrapping import FunctionSpace
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
@@ -30,7 +27,8 @@ from rbnics.utils.decorators import abstractmethod, BackendFor, get_reduced_prob
 from rbnics.utils.io import ExportableList, Folders
 from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test import PatchInstanceMethod
-from mpi4py.MPI import MAX
+
+DEBUG = LogLevel.DEBUG
 
 if not has_hdf5() or not has_hdf5_parallel():
     from dolfin import File as ASCIIFile
@@ -107,8 +105,6 @@ def BasicReducedMesh(backend, wrapping):
                 assert V[0].mesh().ufl_domain() == V[1].mesh().ufl_domain()
             self.mesh = V[0].mesh()
             self.mpi_comm = self.mesh.mpi_comm()
-            if not has_pybind11():
-                self.mpi_comm = self.mpi_comm.tompi4py()
             self.V = V
             self.subdomain_data = subdomain_data
             self.auxiliary_problems_and_components = auxiliary_problems_and_components

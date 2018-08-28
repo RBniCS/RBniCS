@@ -12,7 +12,7 @@ Several tutorials are provided. This software is also a companion of the introdu
 
 ### 1. Prerequisites
 **RBniCS** requires
-* **FEniCS** (>= 2017.2.0, python 3), with PETSc, SLEPc, petsc4py and slepc4py for computations during the offline stage;
+* **FEniCS** (>= 2018.1.0, python 3), with PETSc, SLEPc, petsc4py and slepc4py for computations during the offline stage;
 * **numpy** and **scipy** for computations during the online stage.
 
 Additional requirements are automatically handled during the setup.

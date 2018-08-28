@@ -16,61 +16,48 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import has_pybind11
-if has_pybind11():
-    from dolfin import compile_cpp_code
-else:
-    from dolfin import compile_extension_module
+from dolfin import compile_cpp_code
 
 cpp_code = """
-        std::string get_default_linear_solver()
+    #include <petscksp.h>
+    #include <dolfin/common/MPI.h>
+    #include <pybind11/pybind11.h>
+    
+    std::string get_default_linear_solver()
+    {
+        if (dolfin::MPI::size(MPI_COMM_WORLD) == 1)
         {
-            if (dolfin::MPI::size(MPI_COMM_WORLD) == 1)
-            {
-                #if PETSC_HAVE_UMFPACK || PETSC_HAVE_SUITESPARSE
-                return "umfpack";
-                #elif PETSC_HAVE_MUMPS
-                return "mumps";
-                #elif PETSC_HAVE_PASTIX
-                return "pastix";
-                #elif PETSC_HAVE_SUPERLU
-                return "superlu";
-                #elif PETSC_HAVE_SUPERLU_DIST
-                return "superlu_dist";
-                #else
-                throw std::logic_error("No suitable solver for serial LU found");
-                #endif
-            }
-            else
-            {
-                #if PETSC_HAVE_MUMPS
-                return "mumps";
-                #elif PETSC_HAVE_SUPERLU_DIST
-                return "superlu_dist";
-                #elif PETSC_HAVE_PASTIX
-                return "pastix";
-                #else
-                throw std::logic_error("No suitable solver for parallel LU found");
-                #endif
-            }
+            #if PETSC_HAVE_UMFPACK || PETSC_HAVE_SUITESPARSE
+            return "umfpack";
+            #elif PETSC_HAVE_MUMPS
+            return "mumps";
+            #elif PETSC_HAVE_PASTIX
+            return "pastix";
+            #elif PETSC_HAVE_SUPERLU
+            return "superlu";
+            #elif PETSC_HAVE_SUPERLU_DIST
+            return "superlu_dist";
+            #else
+            throw std::logic_error("No suitable solver for serial LU found");
+            #endif
         }
-"""
-
-if has_pybind11():
-    cpp_code = "".join([
-        """
-        #include <petscksp.h>
-        #include <dolfin/common/MPI.h>
-        #include <pybind11/pybind11.h>
-        """,
-        cpp_code,
-        """
-        PYBIND11_MODULE(SIGNATURE, m)
+        else
         {
-            m.def("get_default_linear_solver", &get_default_linear_solver);
+            #if PETSC_HAVE_MUMPS
+            return "mumps";
+            #elif PETSC_HAVE_SUPERLU_DIST
+            return "superlu_dist";
+            #elif PETSC_HAVE_PASTIX
+            return "pastix";
+            #else
+            throw std::logic_error("No suitable solver for parallel LU found");
+            #endif
         }
-        """
-    ])
-    get_default_linear_solver = compile_cpp_code(cpp_code).get_default_linear_solver
-else:
-    get_default_linear_solver = compile_extension_module(cpp_code, additional_system_headers=["petscksp.h", "dolfin/common/MPI.h"]).get_default_linear_solver
+    }
+    
+    PYBIND11_MODULE(SIGNATURE, m)
+    {
+        m.def("get_default_linear_solver", &get_default_linear_solver);
+    }
+    """
+get_default_linear_solver = compile_cpp_code(cpp_code).get_default_linear_solver

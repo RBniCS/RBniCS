@@ -17,7 +17,6 @@
 #
 
 import os
-from dolfin import has_pybind11
 from petsc4py import PETSc
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
@@ -27,8 +26,6 @@ from rbnics.utils.mpi import parallel_io
 def basic_tensor_load(backend, wrapping):
     def _basic_tensor_load(tensor, directory, filename):
         mpi_comm = tensor.mpi_comm()
-        if not has_pybind11():
-            mpi_comm = mpi_comm.tompi4py()
         form = tensor.generator._form
         # Read in generator
         full_filename_generator = os.path.join(str(directory), filename + ".generator")

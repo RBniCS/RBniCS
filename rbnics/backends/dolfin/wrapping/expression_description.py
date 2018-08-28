@@ -16,8 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from numpy import zeros
-from dolfin import Constant, has_pybind11
+from dolfin import Constant
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
 def basic_expression_description(backend, wrapping):
@@ -27,12 +26,8 @@ def basic_expression_description(backend, wrapping):
         for n in wrapping.expression_iterator(expression):
             if n in visited:
                 continue
-            if has_pybind11():
-                cppcode_attribute = "_cppcode"
-            else:
-                cppcode_attribute = "cppcode"
-            if hasattr(n, cppcode_attribute):
-                coefficients_repr[n] = str(getattr(n, cppcode_attribute))
+            if hasattr(n, "_cppcode"):
+                coefficients_repr[n] = str(n._cppcode)
                 visited.add(n)
             elif wrapping.is_problem_solution_type(n):
                 if wrapping.is_problem_solution(n):
@@ -56,12 +51,7 @@ def basic_expression_description(backend, wrapping):
                 for parent_n in wrapping.solution_iterator(preprocessed_n):
                     visited.add(parent_n)
             elif isinstance(n, Constant):
-                if has_pybind11():
-                    vals = n.values()
-                else:
-                    x = zeros(1)
-                    vals = zeros(n.value_size())
-                    n.eval(vals, x)
+                vals = n.values()
                 if len(vals) == 1:
                     coefficients_repr[n] = str(vals[0])
                 else:

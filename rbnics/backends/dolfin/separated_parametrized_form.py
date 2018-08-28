@@ -27,17 +27,14 @@ from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.indexsum import IndexSum
 from ufl.tensors import ComponentTensor, ListTensor
-from dolfin import Constant, has_pybind11
-if has_pybind11():
-    from dolfin.cpp.log import log, LogLevel
-    from dolfin.function.expression import BaseExpression
-    PROGRESS = LogLevel.PROGRESS
-else:
-    from dolfin import Expression as BaseExpression
-    from dolfin import log, PROGRESS
+from dolfin import Constant
+from dolfin.cpp.log import log, LogLevel
+from dolfin.function.expression import BaseExpression
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 from rbnics.backends.dolfin.wrapping import expand_sum_product, remove_complex_nodes, rewrite_quotients
 from rbnics.utils.decorators import BackendFor, get_problem_from_solution, get_problem_from_solution_dot, ModuleWrapper
+
+PROGRESS = LogLevel.PROGRESS
 
 def BasicSeparatedParametrizedForm(backend, wrapping):
     class _BasicSeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
@@ -133,10 +130,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                     log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized pulled back expression")
                                                     break
                                                 else:
-                                                    if has_pybind11():
-                                                        parameters = t._parameters
-                                                    else:
-                                                        parameters = t.user_parameters
+                                                    parameters = t._parameters
                                                     if "mu_0" not in parameters:
                                                         log(PROGRESS, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized expression")
                                                         break
@@ -289,10 +283,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                     for e in pre_traversal(integral.integrand()):
                         if isinstance(e, BaseExpression):
                             assert not (wrapping.is_pull_back_expression(e) and wrapping.is_pull_back_expression_parametrized(e)), "Form " + str(integral) + " still contains a parametrized pull back expression"
-                            if has_pybind11():
-                                parameters = e._parameters
-                            else:
-                                parameters = e.user_parameters
+                            parameters = e._parameters
                             assert "mu_0" not in parameters, "Form " + str(integral) + " still contains a parametrized expression"
             
             log(PROGRESS, "4. Prepare coefficients hash codes")

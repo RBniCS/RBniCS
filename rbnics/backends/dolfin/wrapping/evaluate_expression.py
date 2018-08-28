@@ -17,11 +17,8 @@
 #
 
 from ufl.core.operator import Operator
-from dolfin import assign, Function, has_pybind11, LagrangeInterpolator, project
-if has_pybind11():
-    from dolfin.function.expression import BaseExpression
-else:
-    from dolfin import Expression as BaseExpression
+from dolfin import assign, Function, LagrangeInterpolator, project
+from dolfin.function.expression import BaseExpression
 
 def evaluate_expression(expression, function, replaced_expression=None):
     if replaced_expression is None:

@@ -18,9 +18,7 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import as_backend_type, assemble, DirichletBC, Function, FunctionSpace, has_pybind11, PETScMatrix, PETScVector, SLEPcEigenSolver
-if has_pybind11():
-    from dolfin import compile_cpp_code
+from dolfin import as_backend_type, assemble, compile_cpp_code, DirichletBC, Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
@@ -117,43 +115,36 @@ class EigenSolver(AbstractEigenSolver):
     
     def get_eigenvector(self, i):
         # Helper functions
-        if has_pybind11():
-            cpp_code = """
-                #include <pybind11/pybind11.h>
-                #include <dolfin/la/PETScVector.h>
-                #include <dolfin/la/SLEPcEigenSolver.h>
-                
-                PetscInt get_converged(std::shared_ptr<dolfin::SLEPcEigenSolver> eigen_solver)
-                {
-                    PetscInt num_computed_eigenvalues;
-                    EPSGetConverged(eigen_solver->eps(), &num_computed_eigenvalues);
-                    return num_computed_eigenvalues;
-                }
-                
-                void get_eigen_pair(std::shared_ptr<dolfin::SLEPcEigenSolver> eigen_solver, std::size_t i, std::shared_ptr<dolfin::PETScVector> condensed_real_vector, std::shared_ptr<dolfin::PETScVector> condensed_imag_vector)
-                {
-                    const PetscInt ii = static_cast<PetscInt>(i);
-                    double real_value;
-                    double imag_value;
-                    EPSGetEigenpair(eigen_solver->eps(), ii, &real_value, &imag_value, condensed_real_vector->vec(), condensed_imag_vector->vec());
-                }
-                
-                PYBIND11_MODULE(SIGNATURE, m)
-                {
-                    m.def("get_converged", &get_converged);
-                    m.def("get_eigen_pair", &get_eigen_pair);
-                }
-            """
+        cpp_code = """
+            #include <pybind11/pybind11.h>
+            #include <dolfin/la/PETScVector.h>
+            #include <dolfin/la/SLEPcEigenSolver.h>
             
-            cpp_module = compile_cpp_code(cpp_code)
-            get_converged = cpp_module.get_converged
-            get_eigen_pair = cpp_module.get_eigen_pair
-        else:
-            def get_converged(eigen_solver):
-                return eigen_solver.eps().getConverged()
+            PetscInt get_converged(std::shared_ptr<dolfin::SLEPcEigenSolver> eigen_solver)
+            {
+                PetscInt num_computed_eigenvalues;
+                EPSGetConverged(eigen_solver->eps(), &num_computed_eigenvalues);
+                return num_computed_eigenvalues;
+            }
             
-            def get_eigen_pair(eigen_solver, i, condensed_real_vector, condensed_imag_vector):
-                eigen_solver.eps().getEigenpair(i, condensed_real_vector.vec(), condensed_imag_vector.vec())
+            void get_eigen_pair(std::shared_ptr<dolfin::SLEPcEigenSolver> eigen_solver, std::size_t i, std::shared_ptr<dolfin::PETScVector> condensed_real_vector, std::shared_ptr<dolfin::PETScVector> condensed_imag_vector)
+            {
+                const PetscInt ii = static_cast<PetscInt>(i);
+                double real_value;
+                double imag_value;
+                EPSGetEigenpair(eigen_solver->eps(), ii, &real_value, &imag_value, condensed_real_vector->vec(), condensed_imag_vector->vec());
+            }
+            
+            PYBIND11_MODULE(SIGNATURE, m)
+            {
+                m.def("get_converged", &get_converged);
+                m.def("get_eigen_pair", &get_eigen_pair);
+            }
+        """
+        
+        cpp_module = compile_cpp_code(cpp_code)
+        get_converged = cpp_module.get_converged
+        get_eigen_pair = cpp_module.get_eigen_pair
         
         # Get number of computed eigenvectors/values
         num_computed_eigenvalues = get_converged(self.eigen_solver)

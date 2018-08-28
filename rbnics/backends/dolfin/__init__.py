@@ -23,20 +23,6 @@ assert has_linear_algebra_backend("PETSc")
 assert parameters["linear_algebra_backend"] == "PETSc"
 assert has_slepc()
 
-# Patch DOLFIN with has_pybind11 function: remove after 2018.1.0 release TODO
-try:
-    from dolfin import has_pybind11
-except ImportError:
-    from dolfin import __version__ as dolfin_version
-    if dolfin_version.startswith("2018"):
-        def has_pybind11():
-            return True
-    else:
-        def has_pybind11():
-            return False
-    import dolfin
-    dolfin.has_pybind11 = has_pybind11
-
 # Import modules
 from rbnics.backends.dolfin.abs import abs
 from rbnics.backends.dolfin.adjoint import adjoint

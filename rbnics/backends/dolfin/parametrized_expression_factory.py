@@ -19,11 +19,8 @@
 from ufl.core.operator import Operator
 from ufl.domain import extract_domains
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import assemble, dx, FunctionSpace, has_pybind11, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
-if has_pybind11():
-    from dolfin.function.expression import BaseExpression
-else:
-    from dolfin import Expression as BaseExpression
+from dolfin import assemble, dx, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
+from dolfin.function.expression import BaseExpression
 from rbnics.backends.basic import ParametrizedExpressionFactory as BasicParametrizedExpressionFactory
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.functions_list import FunctionsList

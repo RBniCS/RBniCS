@@ -18,11 +18,8 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import assemble, DirichletBC, has_pybind11, PETScMatrix, PETScVector
-if has_pybind11():
-    from dolfin.cpp.la import GenericMatrix, GenericVector
-else:
-    from dolfin import GenericMatrix, GenericVector
+from dolfin import assemble, DirichletBC, PETScMatrix, PETScVector
+from dolfin.cpp.la import GenericMatrix, GenericVector
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.basic.wrapping.petsc_snes_solver import BasicPETScSNESSolver
 from rbnics.backends.dolfin.evaluate import evaluate

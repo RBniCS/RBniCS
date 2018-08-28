@@ -18,7 +18,6 @@
 
 import os
 from petsc4py import PETSc
-from dolfin import has_pybind11
 from mpi4py.MPI import Op
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import Folders, PickleIO
@@ -27,8 +26,6 @@ from rbnics.utils.mpi import parallel_io
 def basic_tensor_save(backend, wrapping):
     def _basic_tensor_save(tensor, directory, filename):
         mpi_comm = tensor.mpi_comm()
-        if not has_pybind11():
-            mpi_comm = mpi_comm.tompi4py()
         form = tensor.generator._form
         # Write out generator
         assert hasattr(tensor, "generator")

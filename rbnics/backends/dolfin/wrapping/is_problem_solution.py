@@ -23,11 +23,8 @@ from ufl.core.multiindex import IndexBase, MultiIndex
 from ufl.geometry import GeometricQuantity
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
-from dolfin import Constant, Function, has_pybind11, MixedElement, split, TensorElement
-if has_pybind11():
-    from dolfin.function.expression import BaseExpression
-else:
-    from dolfin import Expression as BaseExpression
+from dolfin import Constant, Function, MixedElement, split, TensorElement
+from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _get_sub_elements__recursive
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload

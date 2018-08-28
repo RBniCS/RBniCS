@@ -16,11 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import as_backend_type, Function, has_pybind11
-if has_pybind11():
-    from dolfin.cpp.la import GenericMatrix, GenericVector
-else:
-    from dolfin import GenericMatrix, GenericVector
+from dolfin import as_backend_type, Function
+from dolfin.cpp.la import GenericMatrix, GenericVector
 from rbnics.utils.decorators import overload
 
 @overload

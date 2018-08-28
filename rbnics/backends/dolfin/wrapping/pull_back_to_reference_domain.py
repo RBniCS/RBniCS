@@ -20,7 +20,7 @@ from collections import defaultdict, namedtuple, OrderedDict
 import itertools
 import numbers
 import re
-from numpy import allclose, isclose, ones as numpy_ones, zeros as numpy_zeros
+from numpy import allclose, isclose, ones as numpy_ones
 from mpi4py.MPI import Op
 from sympy import Basic as SympyBase, ccode, collect, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
 from ufl import as_tensor, FiniteElement, Form, Measure, sqrt, TensorElement, VectorElement
@@ -34,13 +34,9 @@ from ufl.corealg.multifunction import memoized_handler, MultiFunction
 from ufl.corealg.map_dag import map_expr_dag
 from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
 from ufl.indexed import Indexed
-from dolfin import assemble, cells, Constant, Expression, facets, has_pybind11
-if has_pybind11():
-    from dolfin import compile_cpp_code, CompiledExpression
-    from dolfin.cpp.la import GenericMatrix, GenericVector
-    from dolfin.function.expression import BaseExpression
-else:
-    from dolfin import Expression as BaseExpression, GenericMatrix, GenericVector
+from dolfin import assemble, cells, compile_cpp_code, CompiledExpression, Constant, Expression, facets
+from dolfin.cpp.la import GenericMatrix, GenericVector
+from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
@@ -366,96 +362,61 @@ def pull_back_geometric_quantities(shape_parametrization_expression_on_subdomain
     return map_expr_dag(PullBackGeometricQuantities(shape_parametrization_expression_on_subdomain, problem), integrand)
 
 # ===== Pull back expressions to reference domain: inspired by ufl/algorithms/apply_function_pullbacks.py ===== #
-if has_pybind11():
-    pull_back_expression_code = """
-        #include <Eigen/Core>
-        #include <pybind11/pybind11.h>
-        #include <pybind11/eigen.h>
-        #include <dolfin/function/Expression.h>
-        
-        namespace py = pybind11;
-        
-        class PullBackExpression : public dolfin::Expression
-        {
-        public:
-            PullBackExpression(std::shared_ptr<dolfin::Expression> f, std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain) :
-                Expression(),
-                f(f),
-                shape_parametrization_expression_on_subdomain(shape_parametrization_expression_on_subdomain) {}
+pull_back_expression_code = """
+    #include <Eigen/Core>
+    #include <pybind11/pybind11.h>
+    #include <pybind11/eigen.h>
+    #include <dolfin/function/Expression.h>
+    
+    namespace py = pybind11;
+    
+    class PullBackExpression : public dolfin::Expression
+    {
+    public:
+        PullBackExpression(std::shared_ptr<dolfin::Expression> f, std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain) :
+            Expression(),
+            f(f),
+            shape_parametrization_expression_on_subdomain(shape_parametrization_expression_on_subdomain) {}
 
-            void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& c) const
-            {
-                Eigen::VectorXd x_o(x.size());
-                shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
-                f->eval(values, x_o, c);
-            }
-        private:
-            std::shared_ptr<dolfin::Expression> f;
-            std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain;
-        };
-        
-        PYBIND11_MODULE(SIGNATURE, m)
+        void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& c) const
         {
-            py::class_<PullBackExpression, std::shared_ptr<PullBackExpression>,
-                       dolfin::Expression>(m, "PullBackExpression", py::dynamic_attr())
-              .def(py::init<std::shared_ptr<dolfin::Expression>, std::shared_ptr<dolfin::Expression>>());
+            Eigen::VectorXd x_o(x.size());
+            shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
+            f->eval(values, x_o, c);
         }
-    """
-else:
-    pull_back_expression_code = """
-        class PullBackExpression : public Expression
-        {
-        public:
-            PullBackExpression() : Expression() {}
-            
-            std::shared_ptr<Expression> f;
-            std::shared_ptr<Expression> shape_parametrization_expression_on_subdomain;
+    private:
+        std::shared_ptr<dolfin::Expression> f;
+        std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain;
+    };
+    
+    PYBIND11_MODULE(SIGNATURE, m)
+    {
+        py::class_<PullBackExpression, std::shared_ptr<PullBackExpression>,
+                   dolfin::Expression>(m, "PullBackExpression", py::dynamic_attr())
+          .def(py::init<std::shared_ptr<dolfin::Expression>, std::shared_ptr<dolfin::Expression>>());
+    }
+"""
 
-            void eval(Array<double>& values, const Array<double>& x, const ufc::cell& c) const
-            {
-                Array<double> x_o(x.size());
-                shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
-                f->eval(values, x_o, c);
-            }
-        };
-    """
 def PullBackExpression(shape_parametrization_expression_on_subdomain, f, problem):
     shape_parametrization_expression_on_subdomain = ShapeParametrizationMap(shape_parametrization_expression_on_subdomain, problem).ufl
-    if has_pybind11():
-        PullBackExpression = compile_cpp_code(pull_back_expression_code).PullBackExpression
-        pulled_back_f_cpp = PullBackExpression(f._cpp_object, shape_parametrization_expression_on_subdomain._cpp_object)
-        pulled_back_f_cpp.f_no_upcast = f
-        pulled_back_f_cpp.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
-        pulled_back_f_cpp._parameters = f._parameters
-        pulled_back_f = CompiledExpression(pulled_back_f_cpp, element=f.ufl_element())
-    else:
-        pulled_back_f = Expression(pull_back_expression_code, element=f.ufl_element())
-        pulled_back_f.f = f
-        pulled_back_f.shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain
-        pulled_back_f.f_no_upcast = f
-        pulled_back_f.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
-        pulled_back_f.user_parameters = f.user_parameters
+    PullBackExpression = compile_cpp_code(pull_back_expression_code).PullBackExpression
+    pulled_back_f_cpp = PullBackExpression(f._cpp_object, shape_parametrization_expression_on_subdomain._cpp_object)
+    pulled_back_f_cpp.f_no_upcast = f
+    pulled_back_f_cpp.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
+    pulled_back_f_cpp._parameters = f._parameters
+    pulled_back_f = CompiledExpression(pulled_back_f_cpp, element=f.ufl_element())
     return pulled_back_f
     
 def is_pull_back_expression(expression):
-    if has_pybind11():
-        return hasattr(expression, "shape_parametrization_expression_on_subdomain_no_upcast")
-    else:
-        return hasattr(expression, "shape_parametrization_expression_on_subdomain_no_upcast")
+    return hasattr(expression, "shape_parametrization_expression_on_subdomain_no_upcast")
 
 def is_pull_back_expression_parametrized(expression):
-    if has_pybind11():
-        parameters = expression.f_no_upcast._parameters
-    else:
-        parameters = expression.f_no_upcast.user_parameters
+    parameters = expression.f_no_upcast._parameters
     if "mu_0" in parameters:
         return True
     # mu[*] is provided by default to shape parametrization expressions, check if it is really used
     shape_parametrization_expression_on_subdomain = expression.shape_parametrization_expression_on_subdomain_no_upcast
-    if has_pybind11():
-        shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain._cppcode
-    else:
-        shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain.cppcode
+    shape_parametrization_expression_on_subdomain = shape_parametrization_expression_on_subdomain._cppcode
     for component_expression in shape_parametrization_expression_on_subdomain:
         assert isinstance(component_expression, str)
         if len(is_pull_back_expression_parametrized.regex.findall(component_expression)) > 0:
@@ -465,10 +426,7 @@ def is_pull_back_expression_parametrized(expression):
 is_pull_back_expression_parametrized.regex = re.compile(r"\bmu\[[0-9]+\]")
     
 def is_pull_back_expression_time_dependent(expression):
-    if has_pybind11():
-        parameters = expression.f_no_upcast._parameters
-    else:
-        parameters = expression.f_no_upcast.user_parameters
+    parameters = expression.f_no_upcast._parameters
     return "t" in parameters
         
 class PullBackExpressions(MultiFunction):
@@ -686,8 +644,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
             def _map_facet_id_to_subdomain_id(self, **kwargs):
                 mesh = self.V.mesh()
                 mpi_comm = mesh.mpi_comm()
-                if not has_pybind11():
-                    mpi_comm = mpi_comm.tompi4py()
                 assert "subdomains" in kwargs
                 subdomains = kwargs["subdomains"]
                 assert "boundaries" in kwargs
@@ -712,8 +668,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 mesh = self.V.mesh()
                 dim = mesh.topology().dim()
                 mpi_comm = mesh.mpi_comm()
-                if not has_pybind11():
-                    mpi_comm = mpi_comm.tompi4py()
                 assert "subdomains" in kwargs
                 subdomains = kwargs["subdomains"]
                 assert "boundaries" in kwargs
@@ -723,10 +677,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 for f in facets(mesh):
                     if boundaries[f] > 0: # skip unmarked facets
                         if f.exterior():
-                            if has_pybind11():
-                                facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal()[d] for d in range(dim)]))
-                            else:
-                                facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal(d) for d in range(dim)]))
+                            facet_id_to_normal_directions[boundaries[f]].add(tuple([f.normal()[d] for d in range(dim)]))
                         else:
                             cell_id_to_subdomain_id = dict()
                             for (c_id, c) in enumerate(cells(f)):
@@ -768,10 +719,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                 operand_0 = node.ufl_operands[0]
                                 if isinstance(operand_0, BaseExpression):
                                     assert isinstance(operand_0, Expression), "Other expression types are not handled yet"
-                                    if has_pybind11():
-                                        node_cppcode = operand_0._cppcode
-                                    else:
-                                        node_cppcode = operand_0.cppcode
+                                    node_cppcode = operand_0._cppcode
                                     for index in node.ufl_operands[1].indices():
                                         assert isinstance(index, FixedIndex)
                                         node_cppcode = node_cppcode[int(index)]
@@ -783,10 +731,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                 node.ufl_shape == () # expressions with multiple components are visited by Indexed
                             ):
                                 assert isinstance(node, Expression), "Other expression types are not handled yet"
-                                if has_pybind11():
-                                    node_cppcode = node._cppcode
-                                else:
-                                    node_cppcode = node.cppcode
+                                node_cppcode = node._cppcode
                                 if len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0:
                                     return False
                 # The pulled back form is not affine if it contains a boundary integral on a non-straight boundary,
@@ -864,21 +809,11 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     if len(constant.ufl_shape) is 0:
                         locals[str(constant)] = float(constant)
                     elif len(constant.ufl_shape) is 1:
-                        if has_pybind11():
-                            vals = constant.values()
-                        else:
-                            mesh_point = self.V.mesh().coordinates()[0]
-                            vals = numpy_zeros(constant.ufl_shape)
-                            constant.eval(vals, mesh_point)
+                        vals = constant.values()
                         for i in range(constant.ufl_shape[0]):
                             locals[str(constant) + "[" + str(i) + "]"] = vals[i]
                     elif len(constant.ufl_shape) is 2:
-                        if has_pybind11():
-                            vals = constant.values()
-                        else:
-                            mesh_point = self.V.mesh().coordinates()[0]
-                            vals = numpy_zeros(constant.ufl_shape).reshape((-1,))
-                            constant.eval(vals, mesh_point)
+                        vals = constant.values()
                         vals = vals.reshape(constant.ufl_shape)
                         for i in range(constant.ufl_shape[0]):
                             for j in range(constant.ufl_shape[1]):

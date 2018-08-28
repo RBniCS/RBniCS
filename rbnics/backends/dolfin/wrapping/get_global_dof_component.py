@@ -17,7 +17,6 @@
 #
 
 from mpi4py.MPI import MAX
-from dolfin import has_pybind11
 from rbnics.backends.dolfin.wrapping.get_global_dof_to_local_dof_map import get_global_dof_to_local_dof_map
 from rbnics.backends.dolfin.wrapping.get_local_dof_to_component_map import get_local_dof_to_component_map
 
@@ -28,8 +27,6 @@ def get_global_dof_component(global_dof, V, global_to_local=None, local_dof_to_c
         local_dof_to_component = get_local_dof_to_component_map(V)
     
     mpi_comm = V.mesh().mpi_comm()
-    if not has_pybind11():
-        mpi_comm = mpi_comm.tompi4py()
     dof_component = None
     dof_component_processor = -1
     if global_dof in global_to_local:

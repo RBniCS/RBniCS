@@ -22,13 +22,8 @@ import pytest
 from numpy import allclose, ndarray as array
 import matplotlib
 import matplotlib.pyplot as plt
-from dolfin import cells, facets, FiniteElement, FunctionSpace, has_pybind11, HDF5File, MeshFunction, MixedElement, MPI, UnitSquareMesh, VectorElement, vertices
-if has_pybind11():
-    from dolfin.cpp.log import log, LogLevel, set_log_level
-    PROGRESS = LogLevel.PROGRESS
-else:
-    from dolfin import log, PROGRESS, set_log_level
-set_log_level(PROGRESS)
+from dolfin import cells, facets, FiniteElement, FunctionSpace, HDF5File, MeshFunction, MixedElement, MPI, UnitSquareMesh, VectorElement, vertices
+from dolfin.cpp.log import log, LogLevel, set_log_level
 from dolfin_utils.test import fixture as module_fixture
 try:
     from fenicstools import DofMapPlotter as FEniCSToolsDofMapPlotter
@@ -37,6 +32,9 @@ except ImportError:
 else:
     has_fenicstools = True
 from rbnics.backends.dolfin.wrapping import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, map_functionspaces_between_mesh_and_submesh
+
+PROGRESS = LogLevel.PROGRESS
+set_log_level(PROGRESS)
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_create_submesh")
 
@@ -118,17 +116,14 @@ def dict_assert_equal(dic, directory, filename):
     assert isinstance(dic, dict)
     with open(os.path.join(directory, filename), "rb") as infile:
         dic_in = pickle.load(infile)
-    if has_pybind11():
-        assert dic.keys() == dic_in.keys()
-        for key in dic.keys():
-            dic_value = dic[key]
-            dic_in_value = dic_in[key]
-            if isinstance(dic_value, set) and isinstance(dic_in_value, array): # pybind11 has changed the return type of shared entities
-                assert dic_value == set(dic_in_value.tolist())
-            else:
-                assert dic_value == dic_in_value
-    else:
-        assert dic == dic_in
+    assert dic.keys() == dic_in.keys()
+    for key in dic.keys():
+        dic_value = dic[key]
+        dic_in_value = dic_in[key]
+        if isinstance(dic_value, set) and isinstance(dic_in_value, array): # pybind11 has changed the return type of shared entities
+            assert dic_value == set(dic_in_value.tolist())
+        else:
+            assert dic_value == dic_in_value
     
 # Auxiliary functions for list asserts
 def list_save(lis, directory, filename):

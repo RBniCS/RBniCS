@@ -19,11 +19,7 @@
 from numbers import Number
 from ufl import Measure
 from ufl.geometry import GeometricQuantity
-from dolfin import has_pybind11
-if has_pybind11():
-    from dolfin.function.argument import Argument
-else:
-    from dolfin import Argument
+from dolfin.function.argument import Argument
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_problem_from_solution_dot, get_reduced_problem_from_problem, is_training_finished, is_training_started

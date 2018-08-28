@@ -18,12 +18,7 @@
 
 import os
 from ufl import product
-from dolfin import assign, File as PVDFile, File as XMLFile, has_hdf5, has_hdf5_parallel, has_pybind11, XDMFFile
-if has_pybind11():
-    from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
-    WARNING = LogLevel.WARNING
-else:
-    from dolfin import get_log_level, set_log_level, WARNING
+from dolfin import assign, File as PVDFile, File as XMLFile, has_hdf5, has_hdf5_parallel, XDMFFile
 from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
 from rbnics.utils.mpi import parallel_io
@@ -142,9 +137,10 @@ else:
             try:
                 self._restart_file.read_checkpoint(self._function_container, name, index)
             except RuntimeError:
+                from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
                 self._update_function_container(function)
                 bak_log_level = get_log_level()
-                set_log_level(int(WARNING) + 1) # disable xdmf logs
+                set_log_level(int(LogLevel.WARNING) + 1) # disable xdmf logs
                 if self.append_attribute:
                     self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
                 else:

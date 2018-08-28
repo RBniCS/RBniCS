@@ -18,9 +18,6 @@
 
 from dolfin import MPI
 from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa
-from dolfin import has_pybind11 # added back to dolfin as a side effect of rbnics import
-if not has_pybind11():
-    from dolfin import mpi_comm_world
 
 # Customize item selection
 def pytest_collection_modifyitems(session, config, items):
@@ -103,7 +100,4 @@ def pytest_runtest_teardown(item, nextitem):
     # Do the normal teardown
     item.teardown()
     # Add a MPI barrier in parallel
-    if has_pybind11():
-        MPI.barrier(MPI.comm_world)
-    else:
-        MPI.barrier(mpi_comm_world())
+    MPI.barrier(MPI.comm_world)

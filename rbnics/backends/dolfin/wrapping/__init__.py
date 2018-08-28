@@ -158,18 +158,14 @@ __all__ = [
     'vectorized_matrix_inner_vectorized_matrix'
 ]
 
-from dolfin import has_pybind11
-if has_pybind11():
-    from dolfin.cpp.log import log, LogLevel
-    CRITICAL = LogLevel.CRITICAL
-    DEBUG = LogLevel.DEBUG
-    ERROR = LogLevel.ERROR
-    INFO = LogLevel.INFO
-    PROGRESS = LogLevel.PROGRESS
-    TRACE = LogLevel.TRACE
-    WARNING = LogLevel.WARNING
-else:
-    from dolfin import log, CRITICAL, ERROR, WARNING, INFO, PROGRESS, TRACE, DEBUG # easier to read in parallel  # noqa
+from dolfin.cpp.log import log, LogLevel  # noqa
+CRITICAL = LogLevel.CRITICAL
+DEBUG = LogLevel.DEBUG
+ERROR = LogLevel.ERROR
+INFO = LogLevel.INFO
+PROGRESS = LogLevel.PROGRESS
+TRACE = LogLevel.TRACE
+WARNING = LogLevel.WARNING
 
 __overridden__ = {
     'rbnics': [

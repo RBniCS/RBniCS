@@ -17,15 +17,10 @@
 #
 
 import pytest
+from mpi4py import MPI
 from numpy import array, isclose, nonzero, sort
-from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, has_pybind11, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitIntervalMesh, UnitSquareMesh, Vector, VectorElement
-if has_pybind11():
-    from mpi4py import MPI
-    from dolfin.cpp.log import log, LogLevel, set_log_level
-    PROGRESS = LogLevel.PROGRESS
-else:
-    from dolfin import log, mpi_comm_self, PROGRESS, set_log_level
-set_log_level(PROGRESS)
+from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitIntervalMesh, UnitSquareMesh, Vector, VectorElement
+from dolfin.cpp.log import log, LogLevel, set_log_level
 try:
     from mshr import generate_mesh, Rectangle
 except ImportError:
@@ -34,6 +29,9 @@ else:
     has_mshr = True
 from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
+
+PROGRESS = LogLevel.PROGRESS
+set_log_level(PROGRESS)
 
 # Meshes
 def structured_mesh_1d():
@@ -53,10 +51,7 @@ else:
 
 # Helper functions
 def nonzero_values(function):
-    if has_pybind11():
-        serialized_vector = Vector(MPI.COMM_SELF)
-    else:
-        serialized_vector = Vector(mpi_comm_self())
+    serialized_vector = Vector(MPI.COMM_SELF)
     function.vector().gather(serialized_vector, array(range(function.function_space().dim()), "intc"))
     indices = nonzero(serialized_vector.get_local())
     return sort(serialized_vector.get_local()[indices])

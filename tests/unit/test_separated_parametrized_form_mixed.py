@@ -18,15 +18,13 @@
 
 import pytest
 from mpi4py import MPI
-from dolfin import CellDiameter, Constant, det, div, dx, Expression, FiniteElement, Function, FunctionSpace, grad, has_pybind11, inner, MixedElement, split, TensorFunctionSpace, TestFunction, tr, TrialFunction, UnitSquareMesh, VectorElement, VectorFunctionSpace
-if has_pybind11():
-    from dolfin.cpp.log import log, LogLevel, set_log_level
-    PROGRESS = LogLevel.PROGRESS
-else:
-    from dolfin import log, PROGRESS, set_log_level
-set_log_level(PROGRESS)
+from dolfin import CellDiameter, Constant, det, div, dx, Expression, FiniteElement, Function, FunctionSpace, grad, inner, MixedElement, split, TensorFunctionSpace, TestFunction, tr, TrialFunction, UnitSquareMesh, VectorElement, VectorFunctionSpace
+from dolfin.cpp.log import log, LogLevel, set_log_level
 from rbnics.backends.dolfin import SeparatedParametrizedForm
 from rbnics.utils.decorators.store_map_from_solution_to_problem import _solution_to_problem_map
+
+PROGRESS = LogLevel.PROGRESS
+set_log_level(PROGRESS)
 
 # Common variables
 mesh = UnitSquareMesh(10, 10)
