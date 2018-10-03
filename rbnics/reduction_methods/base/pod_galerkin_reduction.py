@@ -139,7 +139,6 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.update_snapshots_matrix(snapshot)
 
                 print("")
-                mu_index += 1
                 
             print(TextLine("perform POD", fill="#"))
             self.compute_basis_functions()
