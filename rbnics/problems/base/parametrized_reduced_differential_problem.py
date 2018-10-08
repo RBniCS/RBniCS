@@ -482,7 +482,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             for component in components:
                 error_norm_squared_component = transpose(error_function)*inner_product[component]*error_function
                 assert error_norm_squared_component >= 0. or isclose(error_norm_squared_component, 0.)
-                error[component] = sqrt(error_norm_squared_component)
+                error[component] = sqrt(abs(error_norm_squared_component))
         # Simplify trivial case
         if len(components) == 1:
             error = error[components[0]]
