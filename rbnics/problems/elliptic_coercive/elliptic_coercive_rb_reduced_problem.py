@@ -72,3 +72,9 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
             + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
             + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
         )
+        
+    def get_stability_factor_lower_bound(self):
+        """
+        Return a lower bound for the stability factor.
+        """
+        return self.truth_problem.get_stability_factor_lower_bound()
