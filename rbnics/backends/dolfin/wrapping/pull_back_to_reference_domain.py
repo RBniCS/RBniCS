@@ -493,6 +493,7 @@ def _dict_collect(dict1, dict2, datatype):
 _dict_collect_op = Op.Create(_dict_collect, commute=True)
     
 # ===== Pull back forms decorator ===== #
+
 def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
     @ProblemDecoratorFor(PullBackFormsToReferenceDomain)
     def PullBackFormsToReferenceDomainDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
@@ -665,6 +666,23 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 return (facet_id_to_subdomain_ids, subdomain_id_to_facet_ids)
                 
             def _map_facet_id_to_normal_direction_if_straight(self, **kwargs):
+                # Auxiliary pybind11 wrapper
+                cpp_code = """
+                    #include <pybind11/pybind11.h>
+                    #include <dolfin/mesh/MeshEntity.h>
+                    
+                    std::size_t local_facet_index(std::shared_ptr<dolfin::MeshEntity> cell, std::shared_ptr<dolfin::MeshEntity> facet)
+                    {
+                        return cell->index(*facet);
+                    }
+                    
+                    PYBIND11_MODULE(SIGNATURE, m)
+                    {
+                        m.def("local_facet_index", &local_facet_index);
+                    }
+                """
+                local_facet_index = compile_cpp_code(cpp_code).local_facet_index
+                # Process input arguments
                 mesh = self.V.mesh()
                 dim = mesh.topology().dim()
                 mpi_comm = mesh.mpi_comm()
@@ -692,7 +710,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                 cell_id_to_restricted_sign[0] = "-"
                                 cell_id_to_restricted_sign[1] = "+"
                             for (c_id, c) in enumerate(cells(f)):
-                                facet_id_to_normal_directions[(boundaries[f], cell_id_to_restricted_sign[c_id])].add(tuple([c.normal(c.index(f), d) for d in range(dim)]))
+                                facet_id_to_normal_directions[(boundaries[f], cell_id_to_restricted_sign[c_id])].add(tuple([c.normal(local_facet_index(c, f))[d] for d in range(dim)]))
                 facet_id_to_normal_directions = dict(facet_id_to_normal_directions)
                 # Collect in parallel
                 facet_id_to_normal_directions = mpi_comm.allreduce(facet_id_to_normal_directions, op=_dict_collect_op)
