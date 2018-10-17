@@ -44,7 +44,7 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
-        alpha = self.get_stability_factor()
+        alpha = self.get_stability_factor_lower_bound()
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert alpha >= 0.
         return sqrt(abs(eps2)/alpha)

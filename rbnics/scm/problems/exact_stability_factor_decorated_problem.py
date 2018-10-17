@@ -57,7 +57,7 @@ def ExactStabilityFactorDecoratedProblem(
                 self.exact_stability_factor_calculator.init()
             
             # Return the lower bound for the stability factor.
-            def get_stability_factor(self):
+            def get_stability_factor_lower_bound(self):
                 (minimum_eigenvalue, _) = self.exact_stability_factor_calculator.solve()
                 return minimum_eigenvalue
                 

@@ -794,8 +794,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         lifting /= self.compute_theta(term)[i]
         return lifting
     
-    def get_stability_factor(self):
+    def get_stability_factor_lower_bound(self):
         """
         Return a lower bound for the stability factor.
         """
-        return self.truth_problem.get_stability_factor()
+        return self.truth_problem.get_stability_factor_lower_bound()

@@ -49,7 +49,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         return "EllipticOptimalControl2RB"
         
     # Return stability factor
-    def get_stability_factor(self):
+    def get_stability_factor_lower_bound(self):
         return 1.
     
     # Return theta multiplicative terms of the affine expansion of the problem.

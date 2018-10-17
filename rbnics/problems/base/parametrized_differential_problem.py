@@ -497,11 +497,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
         
-    def get_stability_factor(self):
+    def get_stability_factor_lower_bound(self):
         """
         Return a lower bound for the stability factor
         Example of implementation:
             return 1.0
         Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason for which it is not marked as @abstractmethod
         """
-        raise NotImplementedError("The method get_stability_factor() is problem-specific and needs to be overridden.")
+        raise NotImplementedError("The method get_stability_factor_lower_bound() is problem-specific and needs to be overridden.")

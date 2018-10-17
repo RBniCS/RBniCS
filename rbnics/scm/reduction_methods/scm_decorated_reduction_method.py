@@ -104,7 +104,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         def _init_error_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
-            self._replace_stability_factor_computation(**kwargs)
+            self._replace_stability_factor_lower_bound_computation(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
             
@@ -112,7 +112,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
             # Undo replacement of stability factor computation, if needed
-            self._undo_replace_stability_factor_computation(**kwargs)
+            self._undo_replace_stability_factor_lower_bound_computation(**kwargs)
             
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
@@ -133,7 +133,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             
         def _init_speedup_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
-            self._replace_stability_factor_computation(**kwargs)
+            self._replace_stability_factor_lower_bound_computation(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
             
@@ -141,37 +141,37 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
             # Undo replacement of stability factor computation, if needed
-            self._undo_replace_stability_factor_computation(**kwargs)
+            self._undo_replace_stability_factor_lower_bound_computation(**kwargs)
             
-        def _replace_stability_factor_computation(self, **kwargs):
-            self._replace_stability_factor_computation__get_stability_factor__original = self.reduced_problem.get_stability_factor
+        def _replace_stability_factor_lower_bound_computation(self, **kwargs):
+            self._replace_stability_factor_lower_bound_computation__get_stability_factor_lower_bound__original = self.reduced_problem.get_stability_factor_lower_bound
             if "SCM" not in kwargs:
                 if "with_respect_to" in kwargs:
                     assert inspect.isfunction(kwargs["with_respect_to"])
                     other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
                     # Assume that the user wants to disable SCM and use the exact stability factor
-                    self.replace_get_stability_factor = PatchInstanceMethod(
+                    self.replace_get_stability_factor_lower_bound = PatchInstanceMethod(
                         self.reduced_problem,
-                        "get_stability_factor",
-                        lambda self_: other_truth_problem.get_stability_factor()
+                        "get_stability_factor_lower_bound",
+                        lambda self_: other_truth_problem.get_stability_factor_lower_bound()
                     )
-                    self.replace_get_stability_factor.patch()
+                    self.replace_get_stability_factor_lower_bound.patch()
                 else:
-                    self.replace_get_stability_factor = None
+                    self.replace_get_stability_factor_lower_bound = None
             else:
                 assert isinstance(kwargs["SCM"], int)
                 # Assume that the user wants to use SCM with a prescribed number of basis functions
-                self.replace_get_stability_factor = PatchInstanceMethod(
+                self.replace_get_stability_factor_lower_bound = PatchInstanceMethod(
                     self.reduced_problem,
-                    "get_stability_factor",
-                    lambda self_: self_.truth_problem.SCM_approximation.get_stability_factor_lower_bound(kwargs["SCM"])
+                    "get_stability_factor_lower_bound",
+                    lambda self_: self_.truth_problem.SCM_approximation.get_stability_factor_lower_bound_lower_bound(kwargs["SCM"])
                 )
-                self.replace_get_stability_factor.patch()
+                self.replace_get_stability_factor_lower_bound.patch()
             
-        def _undo_replace_stability_factor_computation(self, **kwargs):
-            if self.replace_get_stability_factor is not None:
-                self.replace_get_stability_factor.unpatch()
-            del self.replace_get_stability_factor
+        def _undo_replace_stability_factor_lower_bound_computation(self, **kwargs):
+            if self.replace_get_stability_factor_lower_bound is not None:
+                self.replace_get_stability_factor_lower_bound.unpatch()
+            del self.replace_get_stability_factor_lower_bound
         
     # return value (a class) for the decorator
     return SCMDecoratedReductionMethod_Class

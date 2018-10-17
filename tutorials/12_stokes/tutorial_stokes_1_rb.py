@@ -47,7 +47,7 @@ class Stokes(StokesProblem):
         return "Stokes1RB"
         
     # Return the lower bound for inf-sup constant.
-    def get_stability_factor(self):
+    def get_stability_factor_lower_bound(self):
         return 1.
     
     # Return theta multiplicative terms of the affine expansion of the problem.

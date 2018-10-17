@@ -42,7 +42,7 @@ class Gaussian(EllipticCoerciveProblem):
         return "GaussianEIMOnlineExactOffline"
         
     # Return the alpha_lower bound.
-    def get_stability_factor(self):
+    def get_stability_factor_lower_bound(self):
         return 1.
     
     # Return theta multiplicative terms of the affine expansion of the problem.

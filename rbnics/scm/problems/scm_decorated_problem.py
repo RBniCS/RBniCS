@@ -74,7 +74,7 @@ def SCMDecoratedProblem(
                 self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"), **decorator_inputs)
                 
             # Return the lower bound for the stability factor.
-            def get_stability_factor(self):
+            def get_stability_factor_lower_bound(self):
                 return self.SCM_approximation.get_stability_factor_lower_bound()
 
         # return value (a class) for the decorator

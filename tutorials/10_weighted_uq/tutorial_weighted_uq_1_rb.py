@@ -44,7 +44,7 @@ class WeightedThermalBlock(EllipticCoerciveCompliantProblem):
         return "WeightedThermalBlock1RB"
     
     # Return the alpha_lower bound.
-    def get_stability_factor(self):
+    def get_stability_factor_lower_bound(self):
         return min(self.compute_theta("a"))
     
     # Return theta multiplicative terms of the affine expansion of the problem.
