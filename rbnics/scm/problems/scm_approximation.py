@@ -39,8 +39,8 @@ class SCMApproximation(ParametrizedProblem):
         self.truth_problem = truth_problem
                         
         # Define additional storage for SCM
-        self.B_min = BoundingBoxSideList() # minimum values of the bounding box mathcal{B}. Vector of size Q
-        self.B_max = BoundingBoxSideList() # maximum values of the bounding box mathcal{B}. Vector of size Q
+        self.bounding_box_min = BoundingBoxSideList() # minimum values of the bounding box. Vector of size Q
+        self.bounding_box_max = BoundingBoxSideList() # maximum values of the bounding box. Vector of size Q
         self.training_set = None # SCM algorithm needs the training set also in the online stage
         self.greedy_selected_parameters = GreedySelectedParametersList() # list storing the parameters selected during the training phase
         self.greedy_selected_parameters_complement = dict() # dict, over N, of list storing the complement of parameters selected during the training phase
@@ -104,8 +104,8 @@ class SCMApproximation(ParametrizedProblem):
         assert current_stage in ("online", "offline")
         # Read/Initialize reduced order data structures
         if current_stage == "online":
-            self.B_min.load(self.folder["reduced_operators"], "B_min")
-            self.B_max.load(self.folder["reduced_operators"], "B_max")
+            self.bounding_box_min.load(self.folder["reduced_operators"], "bounding_box_min")
+            self.bounding_box_max.load(self.folder["reduced_operators"], "bounding_box_max")
             self.training_set.load(self.folder["reduced_operators"], "training_set")
             self.greedy_selected_parameters.load(self.folder["reduced_operators"], "greedy_selected_parameters")
             self.upper_bound_vectors.load(self.folder["reduced_operators"], "upper_bound_vectors")
@@ -115,8 +115,8 @@ class SCMApproximation(ParametrizedProblem):
             self.truth_problem.init()
             # Properly resize structures related to operator
             Q = self.truth_problem.Q["stability_factor_left_hand_matrix"]
-            self.B_min = BoundingBoxSideList(Q)
-            self.B_max = BoundingBoxSideList(Q)
+            self.bounding_box_min = BoundingBoxSideList(Q)
+            self.bounding_box_max = BoundingBoxSideList(Q)
             # Save the training set, which was passed by the reduction method,
             # in order to use it online
             assert self.training_set is not None
@@ -151,8 +151,8 @@ class SCMApproximation(ParametrizedProblem):
         # 1. Constrain the Q variables to be in the bounding box
         bounds = list() # of Q pairs
         for q in range(Q):
-            assert self.B_min[q] <= self.B_max[q]
-            bounds.append((self.B_min[q], self.B_max[q]))
+            assert self.bounding_box_min[q] <= self.bounding_box_max[q]
+            bounds.append((self.bounding_box_min[q], self.bounding_box_max[q]))
             
         # 2. Add three different sets of constraints.
         #    Our constrains are of the form

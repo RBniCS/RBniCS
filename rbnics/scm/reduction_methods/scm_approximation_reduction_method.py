@@ -133,18 +133,18 @@ class SCMApproximationReductionMethod(ReductionMethod):
             # Compute the minimum eigenvalue
             minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "smallest", self.bounding_box_minimum_eigensolver_parameters, self.folder_prefix, expansion_index=q)
             minimum_eigenvalue_calculator.init()
-            (self.SCM_approximation.B_min[q], _) = minimum_eigenvalue_calculator.solve()
-            print("B_min[" + str(q) + "] = " + str(self.SCM_approximation.B_min[q]))
+            (self.SCM_approximation.bounding_box_min[q], _) = minimum_eigenvalue_calculator.solve()
+            print("bounding_box_min[" + str(q) + "] = " + str(self.SCM_approximation.bounding_box_min[q]))
             
             # Compute the maximum eigenvalue
             maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "largest", self.bounding_box_maximum_eigensolver_parameters, self.folder_prefix, expansion_index=q)
             maximum_eigenvalue_calculator.init()
-            (self.SCM_approximation.B_max[q], _) = maximum_eigenvalue_calculator.solve()
-            print("B_max[" + str(q) + "] = " + str(self.SCM_approximation.B_max[q]))
+            (self.SCM_approximation.bounding_box_max[q], _) = maximum_eigenvalue_calculator.solve()
+            print("bounding_box_max[" + str(q) + "] = " + str(self.SCM_approximation.bounding_box_max[q]))
         
         # Save to file
-        self.SCM_approximation.B_min.save(self.SCM_approximation.folder["reduced_operators"], "B_min")
-        self.SCM_approximation.B_max.save(self.SCM_approximation.folder["reduced_operators"], "B_max")
+        self.SCM_approximation.bounding_box_min.save(self.SCM_approximation.folder["reduced_operators"], "bounding_box_min")
+        self.SCM_approximation.bounding_box_max.save(self.SCM_approximation.folder["reduced_operators"], "bounding_box_max")
         
     # Store the greedy parameter
     def store_greedy_selected_parameters(self):
