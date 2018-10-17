@@ -22,9 +22,7 @@ from rbnics.problems.elliptic_coercive.elliptic_coercive_compliant_rb_reduced_pr
 from rbnics.problems.elliptic_coercive.elliptic_coercive_compliant_reduced_problem import EllipticCoerciveCompliantReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_pod_galerkin_reduced_problem import EllipticCoercivePODGalerkinReducedProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.elliptic_coercive.elliptic_coercive_problem_dual import EllipticCoerciveProblem_Dual
 from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem import EllipticCoerciveRBReducedProblem
-from rbnics.problems.elliptic_coercive.elliptic_coercive_rb_reduced_problem_dual import EllipticCoerciveRBReducedProblem_Dual
 from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 
 
@@ -35,8 +33,6 @@ __all__ = [
     'EllipticCoerciveCompliantReducedProblem',
     'EllipticCoercivePODGalerkinReducedProblem',
     'EllipticCoerciveProblem',
-    'EllipticCoerciveProblem_Dual',
     'EllipticCoerciveRBReducedProblem',
-    'EllipticCoerciveRBReducedProblem_Dual',
     'EllipticCoerciveReducedProblem'
 ]

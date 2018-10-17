@@ -16,8 +16,6 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base.dual_problem import DualProblem
-from rbnics.problems.base.dual_reduced_problem import DualReducedProblem
 from rbnics.problems.base.linear_pod_galerkin_reduced_problem import LinearPODGalerkinReducedProblem
 from rbnics.problems.base.linear_problem import LinearProblem
 from rbnics.problems.base.linear_rb_reduced_problem import LinearRBReducedProblem
@@ -38,7 +36,6 @@ from rbnics.problems.base.parametrized_differential_problem import ParametrizedD
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.problems.base.parametrized_reduced_differential_problem import ParametrizedReducedDifferentialProblem
 from rbnics.problems.base.pod_galerkin_reduced_problem import PODGalerkinReducedProblem
-from rbnics.problems.base.primal_dual_reduced_problem import PrimalDualReducedProblem
 from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
 from rbnics.problems.base.time_dependent_pod_galerkin_reduced_problem import TimeDependentPODGalerkinReducedProblem
 from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
@@ -47,8 +44,6 @@ from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentRed
 
 
 __all__ = [
-    'DualProblem',
-    'DualReducedProblem',
     'LinearPODGalerkinReducedProblem',
     'LinearProblem',
     'LinearRBReducedProblem',
@@ -69,7 +64,6 @@ __all__ = [
     'ParametrizedProblem',
     'ParametrizedReducedDifferentialProblem',
     'PODGalerkinReducedProblem',
-    'PrimalDualReducedProblem',
     'RBReducedProblem',
     'TimeDependentPODGalerkinReducedProblem',
     'TimeDependentProblem',

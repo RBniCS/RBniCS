@@ -19,7 +19,7 @@
 from math import sqrt
 from numpy import isclose
 from rbnics.backends import product, sum, transpose
-from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem, PrimalDualReducedProblem
+from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
 from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
@@ -72,18 +72,3 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
             + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
             + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
         )
-
-# Add dual reduced problem if an output is provided in the term "s"
-def _problem_has_output(truth_problem, reduction_method, **kwargs):
-    try:
-        truth_problem.compute_theta("s")
-    except ValueError:
-        return False
-    else:
-        return True
-        
-EllipticCoerciveRBReducedProblem_PrimalDual_Base = PrimalDualReducedProblem(EllipticCoerciveRBReducedProblem)
-
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoerciveRBReduction, replaces=EllipticCoerciveRBReducedProblem, replaces_if=_problem_has_output)
-class EllipticCoerciveRBReducedProblem_PrimalDual(EllipticCoerciveRBReducedProblem_PrimalDual_Base):
-    pass

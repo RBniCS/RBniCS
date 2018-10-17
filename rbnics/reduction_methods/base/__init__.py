@@ -30,7 +30,6 @@ from rbnics.reduction_methods.base.nonlinear_time_dependent_pod_galerkin_reducti
 from rbnics.reduction_methods.base.nonlinear_time_dependent_rb_reduction import NonlinearTimeDependentRBReduction
 from rbnics.reduction_methods.base.nonlinear_time_dependent_reduction_method import NonlinearTimeDependentReductionMethod
 from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
-from rbnics.reduction_methods.base.primal_dual_reduction_method import PrimalDualReductionMethod
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.reduction_method import ReductionMethod
 from rbnics.reduction_methods.base.time_dependent_pod_galerkin_reduction import TimeDependentPODGalerkinReduction
@@ -52,7 +51,6 @@ __all__ = [
     'NonlinearTimeDependentRBReduction',
     'NonlinearTimeDependentReductionMethod',
     'PODGalerkinReduction',
-    'PrimalDualReductionMethod',
     'RBReduction',
     'ReductionMethod',
     'TimeDependentPODGalerkinReduction',
