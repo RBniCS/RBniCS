@@ -92,7 +92,7 @@ class SCMApproximation(ParametrizedProblem):
         )
         
         # Stability factor eigen problem
-        self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(truth_problem, "a", True, "smallest", kwargs["stability_factor_eigensolver_parameters"], self.folder_prefix)
+        self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(truth_problem, "smallest", kwargs["stability_factor_eigensolver_parameters"], self.folder_prefix)
         
         # Store here input parameters provided by the user that are needed by the reduction method
         self._input_storage_for_SCM_reduction = dict()

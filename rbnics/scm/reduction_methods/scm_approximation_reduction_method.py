@@ -131,13 +131,13 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         for q in range(Q):
             # Compute the minimum eigenvalue
-            minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, "smallest", self.bounding_box_minimum_eigensolver_parameters, self.folder_prefix)
+            minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "smallest", self.bounding_box_minimum_eigensolver_parameters, self.folder_prefix, expansion_index=q)
             minimum_eigenvalue_calculator.init()
             (self.SCM_approximation.B_min[q], _) = minimum_eigenvalue_calculator.solve()
             print("B_min[" + str(q) + "] = " + str(self.SCM_approximation.B_min[q]))
             
             # Compute the maximum eigenvalue
-            maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, ("a", q), False, "largest", self.bounding_box_maximum_eigensolver_parameters, self.folder_prefix)
+            maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "largest", self.bounding_box_maximum_eigensolver_parameters, self.folder_prefix, expansion_index=q)
             maximum_eigenvalue_calculator.init()
             (self.SCM_approximation.B_max[q], _) = maximum_eigenvalue_calculator.solve()
             print("B_max[" + str(q) + "] = " + str(self.SCM_approximation.B_max[q]))

@@ -29,20 +29,13 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
     # Default initialization of members
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem, term, multiply_by_theta, spectrum, eigensolver_parameters, folder_prefix):
+    def __init__(self, truth_problem, spectrum, eigensolver_parameters, folder_prefix, expansion_index=None):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix) # this class does not export anything
         self.truth_problem = truth_problem
         
         # Matrices/vectors resulting from the truth discretization
-        self.term = term
-        assert isinstance(self.term, (tuple, str))
-        if isinstance(self.term, tuple):
-            assert len(self.term) == 2
-            isinstance(self.term[0], str)
-            isinstance(self.term[1], int)
-        self.multiply_by_theta = multiply_by_theta
-        assert isinstance(self.multiply_by_theta, bool)
+        self.expansion_index = expansion_index
         self.operator = None # AffineExpansionStorage
         self.inner_product = None # AffineExpansionStorage, even though it will contain only one matrix
         self.spectrum = spectrum
@@ -89,11 +82,10 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
     def init(self):
         # Store the symmetric part of the required term
         if self.operator is None: # init was not called already
-            if isinstance(self.term, tuple):
-                forms = (self.truth_problem.assemble_operator(self.term[0])[self.term[1]], )
+            if self.expansion_index is None:
+                forms = self.truth_problem.assemble_operator("a")
             else:
-                assert isinstance(self.term, str)
-                forms = self.truth_problem.assemble_operator(self.term)
+                forms = (self.truth_problem.assemble_operator("a")[self.expansion_index], )
             self.operator = AffineExpansionStorage(tuple(0.5*(f + adjoint(f)) for f in forms))
         
         # Store the inner product matrix
@@ -115,11 +107,9 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         return (self._eigenvalue, self._eigenvector)
         
     def _solve(self):
-        if self.multiply_by_theta:
-            assert isinstance(self.term, str) # method untested otherwise
-            O = sum(product(self.truth_problem.compute_theta(self.term), self.operator))  # noqa
+        if self.expansion_index is None:
+            O = sum(product(self.truth_problem.compute_theta("a"), self.operator))  # noqa
         else:
-            assert isinstance(self.term, tuple) # method untested otherwise
             assert len(self.operator) == 1
             O = self.operator[0]  # noqa
         assert len(self.inner_product) == 1
@@ -150,10 +140,10 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         assign(self._eigenvector, r_vector)
         
     def _cache_key(self):
-        if self.multiply_by_theta:
-            return (self.mu, self.term, self.spectrum)
+        if self.expansion_index is None:
+            return (self.mu, self.spectrum)
         else:
-            return (self.term, self.spectrum)
+            return (self.expansion_index, self.spectrum)
             
     def _cache_file(self, cache_key):
         return hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()

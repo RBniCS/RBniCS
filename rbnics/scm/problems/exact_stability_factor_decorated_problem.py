@@ -39,7 +39,7 @@ def ExactStabilityFactorDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 
-                self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "a", True, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_stability_factor"))
+                self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_stability_factor"))
                 
             # Initialize data structures required for the online phase
             def init(self):
