@@ -35,11 +35,12 @@ def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
             # Call parent: this will solve for supremizers at each time step
             snapshot_and_supremizer_over_time = AbstractCFDUnsteadyReductionMethod_Base.postprocess_snapshot(self, snapshot_over_time, snapshot_index)
             # Convert from a time series of tuple (snapshot, supremizer) to a tuple of two lists (snapshot over time, supremizer over time)
+            snapshot_over_time = TimeSeries(snapshot_over_time)
             supremizer_over_time = TimeSeries(snapshot_over_time)
             for (k, snapshot_and_supremizer) in enumerate(snapshot_and_supremizer_over_time):
                 assert isinstance(snapshot_and_supremizer, tuple)
                 assert len(snapshot_and_supremizer) is 2
-                assert snapshot_and_supremizer[0] is snapshot_over_time[k]
+                snapshot_over_time.append(snapshot_and_supremizer[0])
                 supremizer_over_time.append(snapshot_and_supremizer[1])
             # Return a tuple
             return (snapshot_over_time, supremizer_over_time)
