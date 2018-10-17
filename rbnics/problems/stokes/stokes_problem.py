@@ -139,7 +139,7 @@ class StokesProblem(StokesProblem_Base):
         assert component is None or isinstance(component, str)
         if component is None:
             component = "s"
-        self.export_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
+        self.export_solution(folder, filename, supremizer, component=component, suffix=suffix)
         
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         if folder is None:
@@ -151,7 +151,7 @@ class StokesProblem(StokesProblem_Base):
         assert component is None or isinstance(component, str)
         if component is None:
             component = "s"
-        self.import_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
+        self.import_solution(folder, filename, supremizer, component=component, suffix=suffix)
         
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):

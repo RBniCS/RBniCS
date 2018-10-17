@@ -164,14 +164,20 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 folder = self.folder_prefix
             if filename is None:
                 filename = "solution"
-            solution = Function(self.V)
             if solution_over_time is None:
                 solution_over_time = self._solution_over_time
-            assert suffix is None
-            solution_over_time.clear()
-            for (k, _) in enumerate(self._solution_over_time.expected_times()):
-                ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
-                solution_over_time.append(copy(solution))
+            if isinstance(solution_over_time, AbstractTimeSeries):
+                solution = Function(self.V)
+                assert suffix is None
+                solution_over_time.clear()
+                for (k, _) in enumerate(self._solution_over_time.expected_times()):
+                    ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
+                    solution_over_time.append(copy(solution))
+            else:
+                # Used only for cache import
+                solution = solution_over_time
+                assert suffix is not None
+                ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component=component, suffix=suffix)
                 
         def export_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
             if folder is None:
