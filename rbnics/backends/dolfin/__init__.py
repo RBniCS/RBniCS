@@ -25,7 +25,6 @@ assert has_slepc()
 
 # Import modules
 from rbnics.backends.dolfin.abs import abs
-from rbnics.backends.dolfin.adjoint import adjoint
 from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.dolfin.assign import assign
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
@@ -64,7 +63,6 @@ from rbnics.backends.dolfin.vector import Vector
 
 __all__ = [
     'abs',
-    'adjoint',
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',

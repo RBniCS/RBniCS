@@ -17,7 +17,6 @@
 #
 
 from rbnics.backends.abstract.abs import abs
-from rbnics.backends.abstract.adjoint import adjoint
 from rbnics.backends.abstract.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.abstract.assign import assign
 from rbnics.backends.abstract.basis_functions_matrix import BasisFunctionsMatrix
@@ -58,7 +57,6 @@ from rbnics.backends.abstract.vector import Vector
 
 __all__ = [
     'abs',
-    'adjoint',
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',

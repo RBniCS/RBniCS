@@ -17,7 +17,6 @@
 #
 
 from rbnics.backends.online.numpy.abs import abs
-from rbnics.backends.online.numpy.adjoint import adjoint
 from rbnics.backends.online.numpy.affine_expansion_storage import AffineExpansionStorage
 from rbnics.backends.online.numpy.assign import assign
 from rbnics.backends.online.numpy.basis_functions_matrix import BasisFunctionsMatrix
@@ -49,7 +48,6 @@ from rbnics.backends.online.numpy.vector import Vector
 
 __all__ = [
     'abs',
-    'adjoint',
     'AffineExpansionStorage',
     'assign',
     'BasisFunctionsMatrix',
