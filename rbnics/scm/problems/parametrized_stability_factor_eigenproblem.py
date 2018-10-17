@@ -20,7 +20,7 @@ import os
 import hashlib
 from numpy import isclose
 from rbnics.problems.base import ParametrizedProblem
-from rbnics.backends import adjoint, AffineExpansionStorage, assign, copy, EigenSolver, export, Function, import_, product, sum
+from rbnics.backends import AffineExpansionStorage, assign, copy, EigenSolver, export, Function, import_, product, sum
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 
@@ -86,7 +86,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
                 forms = self.truth_problem.assemble_operator("stability_factor_left_hand_matrix")
             else:
                 forms = (self.truth_problem.assemble_operator("stability_factor_left_hand_matrix")[self.expansion_index], )
-            self.operator = AffineExpansionStorage(tuple(0.5*(f + adjoint(f)) for f in forms))
+            self.operator = AffineExpansionStorage(forms)
         
         # Store the inner product matrix
         if self.inner_product is None: # init was not called already
