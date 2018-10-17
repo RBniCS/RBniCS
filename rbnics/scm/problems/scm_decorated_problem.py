@@ -76,6 +76,10 @@ def SCMDecoratedProblem(
             # Return the lower bound for the stability factor.
             def get_stability_factor_lower_bound(self):
                 return self.SCM_approximation.get_stability_factor_lower_bound()
+                
+            def evaluate_stability_factor(self):
+                (minimum_eigenvalue, _) = self.SCM_approximation.evaluate_stability_factor()
+                return minimum_eigenvalue
 
         # return value (a class) for the decorator
         return SCMDecoratedProblem_Class

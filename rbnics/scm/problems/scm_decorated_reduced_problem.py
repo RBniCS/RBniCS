@@ -24,10 +24,14 @@ def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCla
     
     @PreserveClassName
     class SCMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        # Default initialization of members
-        def __init__(self, truth_problem, **kwargs):
-            # Call the parent initialization
-            ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
+        # Return the lower bound for the stability factor.
+        def get_stability_factor_lower_bound(self):
+            # Call the exact evaluation, since its computational cost is low because we are dealing with
+            # left-hand and right-hand side matrices of small dimensions
+            return self.evaluate_stability_factor()
+                
+        def evaluate_stability_factor(self):
+            raise NotImplementedError("Evaluation of reduced stability factor not implemented yet")
         
     # return value (a class) for the decorator
     return SCMDecoratedReducedProblem_Class
