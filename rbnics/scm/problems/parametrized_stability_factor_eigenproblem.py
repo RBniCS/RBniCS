@@ -36,14 +36,17 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         
         # Matrices/vectors resulting from the truth discretization
         self.expansion_index = expansion_index
-        self.operator = None # AffineExpansionStorage
-        self.inner_product = None # AffineExpansionStorage, even though it will contain only one matrix
+        self.operator = {
+            "stability_factor_left_hand_matrix": None, # AffineExpansionStorage
+            "stability_factor_right_hand_matrix": None # AffineExpansionStorage, even though it will contain only one matrix
+        }
+        self.dirichlet_bc = None # AffineExpansionStorage
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
         
         # Avoid useless computations
         self._eigenvalue = 0.
-        self._eigenvector = Function(truth_problem.V)
+        self._eigenvector = Function(truth_problem.stability_factor_V)
         # I/O
         self.folder["cache"] = os.path.join(folder_prefix, "cache")
         def _eigenvalue_cache_key_generator(*args, **kwargs):
@@ -80,17 +83,22 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         )
     
     def init(self):
-        # Store the symmetric part of the required term
-        if self.operator is None: # init was not called already
+        # Store the left and right hand side operators
+        if self.operator["stability_factor_left_hand_matrix"] is None: # init was not called already
             if self.expansion_index is None:
-                forms = self.truth_problem.assemble_operator("stability_factor_left_hand_matrix")
+                self.operator["stability_factor_left_hand_matrix"] = self.truth_problem.operator["stability_factor_left_hand_matrix"]
             else:
-                forms = (self.truth_problem.assemble_operator("stability_factor_left_hand_matrix")[self.expansion_index], )
-            self.operator = AffineExpansionStorage(forms)
-        
-        # Store the inner product matrix
-        if self.inner_product is None: # init was not called already
-            self.inner_product = AffineExpansionStorage(self.truth_problem.assemble_operator("inner_product"))
+                self.operator["stability_factor_left_hand_matrix"] = AffineExpansionStorage((self.truth_problem.operator["stability_factor_left_hand_matrix"][self.expansion_index], ))
+        if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
+            self.operator["stability_factor_right_hand_matrix"] = self.truth_problem.operator["stability_factor_right_hand_matrix"]
+            assert len(self.operator["stability_factor_right_hand_matrix"]) is 1
+            
+        # Store Dirichlet boundary conditions
+        if self.dirichlet_bc is None: # init was not called already (or raised a trivial error)
+            try:
+                self.dirichlet_bc = AffineExpansionStorage(self.truth_problem.assemble_operator("stability_factor_dirichlet_bc")) # need to call assemble_operator because this special bc is not stored among the ones in self.truth_problem.dirichlet_bc
+            except ValueError: # there were no Dirichlet BCs
+                self.dirichlet_bc = None
             
         # Also make sure to create folder for cache
         self.folder.create()
@@ -108,18 +116,18 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         
     def _solve(self):
         if self.expansion_index is None:
-            O = sum(product(self.truth_problem.compute_theta("stability_factor_left_hand_matrix"), self.operator))  # noqa
+            A = sum(product(self.truth_problem.compute_theta("stability_factor_left_hand_matrix"), self.operator["stability_factor_left_hand_matrix"]))
         else:
-            assert len(self.operator) == 1
-            O = self.operator[0]  # noqa
-        assert len(self.inner_product) == 1
-        inner_product = self.inner_product[0]
+            assert len(self.operator["stability_factor_left_hand_matrix"]) == 1
+            A = self.operator["stability_factor_left_hand_matrix"][0]
+        assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
+        B = self.operator["stability_factor_right_hand_matrix"][0]
         
-        if self.truth_problem.dirichlet_bc is not None:
-            dirichlet_bcs_sum = sum(product((0., )*len(self.truth_problem.dirichlet_bc), self.truth_problem.dirichlet_bc))
-            eigensolver = EigenSolver(self.truth_problem.V, O, inner_product, dirichlet_bcs_sum)
+        if self.dirichlet_bc is not None:
+            dirichlet_bcs_sum = sum(product((0., )*len(self.dirichlet_bc), self.dirichlet_bc))
+            eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B, dirichlet_bcs_sum)
         else:
-            eigensolver = EigenSolver(self.truth_problem.V, O, inner_product)
+            eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B)
         eigensolver_parameters = dict()
         eigensolver_parameters["problem_type"] = "gen_hermitian"
         assert self.spectrum is "largest" or self.spectrum is "smallest"

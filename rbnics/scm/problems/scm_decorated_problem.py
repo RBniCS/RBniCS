@@ -55,6 +55,14 @@ def SCMDecoratedProblem(
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
+                # Additional terms required by stability factor computations
+                self.terms.extend(["stability_factor_left_hand_matrix", "stability_factor_right_hand_matrix"])
+                self.terms_order.update({"stability_factor_left_hand_matrix": 2, "stability_factor_right_hand_matrix": 2})
+                # Additional function space required by stability factor computations
+                try:
+                    self.stability_factor_V = kwargs["stability_factor_V"]
+                except KeyError:
+                    self.stability_factor_V = self.V
                 # Store input parameters from the decorator factory in a dict
                 decorator_inputs = dict()
                 decorator_inputs["M_e"] = M_e
@@ -64,9 +72,6 @@ def SCMDecoratedProblem(
                 decorator_inputs["stability_factor_eigensolver_parameters"] = stability_factor_eigensolver_parameters
                 # Storage for SCM reduced problems
                 self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"), **decorator_inputs)
-                # Additional terms required by stability factor computations
-                self.terms.extend(["stability_factor_left_hand_matrix"])
-                self.terms_order.update({"stability_factor_left_hand_matrix": 2})
                 
             # Return the lower bound for the stability factor.
             def get_stability_factor(self):

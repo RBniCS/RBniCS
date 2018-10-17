@@ -38,11 +38,16 @@ def ExactStabilityFactorDecoratedProblem(
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
-                
-                self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_stability_factor"))
                 # Additional terms required by stability factor computations
-                self.terms.extend(["stability_factor_left_hand_matrix"])
-                self.terms_order.update({"stability_factor_left_hand_matrix": 2})
+                self.terms.extend(["stability_factor_left_hand_matrix", "stability_factor_right_hand_matrix"])
+                self.terms_order.update({"stability_factor_left_hand_matrix": 2, "stability_factor_right_hand_matrix": 2})
+                # Additional function space required by stability factor computations
+                try:
+                    self.stability_factor_V = kwargs["stability_factor_V"]
+                except KeyError:
+                    self.stability_factor_V = self.V
+                # Stability factor eigen problem
+                self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_stability_factor"))
                 
             # Initialize data structures required for the online phase
             def init(self):

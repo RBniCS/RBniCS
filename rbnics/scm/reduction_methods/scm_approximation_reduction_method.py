@@ -158,12 +158,13 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     def compute_upper_bound_vector(self, u):
         Q = self.SCM_approximation.truth_problem.Q["stability_factor_left_hand_matrix"]
-        inner_product = self.SCM_approximation.truth_problem.inner_product[0]
+        A = self.SCM_approximation.truth_problem.operator["stability_factor_left_hand_matrix"]
+        B = self.SCM_approximation.truth_problem.operator["stability_factor_right_hand_matrix"]
+        assert len(B) is 1
+        normalization = transpose(u)*B[0]*u
         upper_bound_vector = OnlineVector(Q)
-        norm_S_squared = transpose(u)*inner_product*u
         for q in range(Q):
-            A_q = self.SCM_approximation.truth_problem.operator["stability_factor_left_hand_matrix"][q]
-            upper_bound_vector[q] = (transpose(u)*A_q*u)/norm_S_squared
+            upper_bound_vector[q] = (transpose(u)*A[q]*u)/normalization
         return upper_bound_vector
         
     def update_upper_bound_vectors(self, upper_bound_vector):

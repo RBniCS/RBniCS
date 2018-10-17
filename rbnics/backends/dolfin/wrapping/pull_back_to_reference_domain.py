@@ -513,6 +513,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for pull back
+                self._terms_blacklist = ["stability_factor_right_hand_matrix"] # terms not to be pulled back because they behave like inner products
                 self._pull_back_is_affine = dict()
                 self._pulled_back_operators = dict()
                 self._pulled_back_theta_factors = dict()
@@ -537,7 +538,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     PatchInstanceMethod(self, "_init_DEIM_approximations", _custom_init_DEIM_approximations).patch()
                 
             def _init_pull_back(self):
-                for term in self.terms:
+                for term in [term for term in self.terms if term not in self._terms_blacklist]:
                     assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
                     if term not in self._pulled_back_operators: # initialize only once
                         try:
