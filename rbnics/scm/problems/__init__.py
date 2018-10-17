@@ -20,18 +20,18 @@ from rbnics.scm.problems.scm import SCM
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 from rbnics.scm.problems.scm_decorated_problem import SCMDecoratedProblem
 from rbnics.scm.problems.scm_decorated_reduced_problem import SCMDecoratedReducedProblem
-from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
-from rbnics.scm.problems.exact_coercivity_constant_decorated_problem import ExactCoercivityConstantDecoratedProblem
-from rbnics.scm.problems.exact_coercivity_constant_decorated_reduced_problem import ExactCoercivityConstantDecoratedReducedProblem
-from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
+from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
+from rbnics.scm.problems.exact_stability_factor_decorated_problem import ExactStabilityFactorDecoratedProblem
+from rbnics.scm.problems.exact_stability_factor_decorated_reduced_problem import ExactStabilityFactorDecoratedReducedProblem
+from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import ParametrizedStabilityFactorEigenProblem
 
 __all__ = [
     'SCM',
     'SCMApproximation',
     'SCMDecoratedProblem',
     'SCMDecoratedReducedProblem',
-    'ExactCoercivityConstant',
-    'ExactCoercivityConstantDecoratedProblem',
-    'ExactCoercivityConstantDecoratedReducedProblem',
-    'ParametrizedCoercivityConstantEigenProblem'
+    'ExactStabilityFactor',
+    'ExactStabilityFactorDecoratedProblem',
+    'ExactStabilityFactorDecoratedReducedProblem',
+    'ParametrizedStabilityFactorEigenProblem'
 ]

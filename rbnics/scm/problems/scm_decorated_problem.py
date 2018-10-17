@@ -25,27 +25,27 @@ def SCMDecoratedProblem(
     M_p=None,
     bounding_box_minimum_eigensolver_parameters=None,
     bounding_box_maximum_eigensolver_parameters=None,
-    coercivity_eigensolver_parameters=None,
+    stability_factor_eigensolver_parameters=None,
     **decorator_kwargs
 ):
     if bounding_box_minimum_eigensolver_parameters is None:
         bounding_box_minimum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
     if bounding_box_maximum_eigensolver_parameters is None:
         bounding_box_maximum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e5)
-    if coercivity_eigensolver_parameters is None:
-        coercivity_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
+    if stability_factor_eigensolver_parameters is None:
+        stability_factor_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
     
-    from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
+    from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
     from rbnics.scm.problems.scm import SCM
     
     @ProblemDecoratorFor(
         SCM,
-        ExactAlgorithm=ExactCoercivityConstant,
+        ExactAlgorithm=ExactStabilityFactor,
         M_e=M_e,
         M_p=M_p,
         bounding_box_minimum_eigensolver_parameters=bounding_box_minimum_eigensolver_parameters,
         bounding_box_maximum_eigensolver_parameters=bounding_box_maximum_eigensolver_parameters,
-        coercivity_eigensolver_parameters=coercivity_eigensolver_parameters
+        stability_factor_eigensolver_parameters=stability_factor_eigensolver_parameters
     )
     def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
     
@@ -61,11 +61,11 @@ def SCMDecoratedProblem(
                 decorator_inputs["M_p"] = M_p
                 decorator_inputs["bounding_box_minimum_eigensolver_parameters"] = bounding_box_minimum_eigensolver_parameters
                 decorator_inputs["bounding_box_maximum_eigensolver_parameters"] = bounding_box_maximum_eigensolver_parameters
-                decorator_inputs["coercivity_eigensolver_parameters"] = coercivity_eigensolver_parameters
+                decorator_inputs["stability_factor_eigensolver_parameters"] = stability_factor_eigensolver_parameters
                 # Storage for SCM reduced problems
                 self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"), **decorator_inputs)
                 
-            # Return the alpha_lower bound.
+            # Return the lower bound for the stability factor.
             def get_stability_factor(self):
                 return self.SCM_approximation.get_stability_factor_lower_bound()
 

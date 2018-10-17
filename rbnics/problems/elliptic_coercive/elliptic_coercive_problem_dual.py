@@ -53,6 +53,6 @@ class EllipticCoerciveProblem_Dual(EllipticCoerciveProblem_Dual_Base):
         else:
             raise ValueError("Invalid term for assemble_operator().")
             
-    # Return a lower bound for the coercivity constant
+    # Return a lower bound for the stability factor
     def get_stability_factor(self):
         return self.primal_problem.get_stability_factor()

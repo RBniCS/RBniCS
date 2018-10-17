@@ -26,7 +26,6 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
 from rbnics.utils.test import PatchInstanceMethod
 
-# Base class containing the definition of elliptic coercive problems
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
@@ -500,7 +499,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         
     def get_stability_factor(self):
         """
-        Return a lower bound for the coercivity constant
+        Return a lower bound for the stability factor
         Example of implementation:
             return 1.0
         Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason for which it is not marked as @abstractmethod

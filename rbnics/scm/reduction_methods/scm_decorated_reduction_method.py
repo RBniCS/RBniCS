@@ -91,7 +91,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Perform first the SCM error analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
-                                                # an exact coercivity constant,
+                                                # an exact stability factor,
                                                 # so he probably is not interested in the error analysis of SCM
                     and
                 "SCM" not in kwargs             # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
@@ -120,7 +120,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Perform first the SCM speedup analysis, ...
             if (
                 "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
-                                                # an exact coercivity constant,
+                                                # an exact stability factor,
                                                 # so he probably is not interested in the speedup analysis of SCM
                     and
                 "SCM" not in kwargs             # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis

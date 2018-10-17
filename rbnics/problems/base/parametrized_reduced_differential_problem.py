@@ -31,7 +31,7 @@ from rbnics.utils.test import PatchInstanceMethod
 @StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
-    Base class containing the interface of a projection based ROM for elliptic coercive problems.
+    Base class containing the interface of a projection based ROM.
     Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
     
     :param truth_problem: class of the truth problem to be solved.
@@ -660,7 +660,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # Note that it would not be needed to return the loaded operator in
             # init(), since it has been already modified in-place. We do this, however,
             # because we want this interface to be compatible with the one in
-            # EllipticCoerciveProblem, i.e. we would like to be able to use a reduced
+            # ParametrizedDifferentialProblem, i.e. we would like to be able to use a reduced
             # problem also as a truth problem for a nested reduction
             if term in self.terms:
                 self.operator[term].load(self.folder["reduced_operators"], "operator_" + term)
@@ -796,6 +796,6 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     
     def get_stability_factor(self):
         """
-        Return a lower bound for the coercivity constant.
+        Return a lower bound for the stability factor.
         """
         return self.truth_problem.get_stability_factor()

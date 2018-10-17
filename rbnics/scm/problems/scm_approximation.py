@@ -25,9 +25,8 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 from rbnics.utils.io import GreedySelectedParametersList
 from rbnics.scm.utils.io import BoundingBoxSideList, UpperBoundsList
-from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
+from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import ParametrizedStabilityFactorEigenProblem
 
-# Successive constraint method for the approximation of the coercivity constant
 class SCMApproximation(ParametrizedProblem):
 
     # Default initialization of members
@@ -45,55 +44,55 @@ class SCMApproximation(ParametrizedProblem):
         self.training_set = None # SCM algorithm needs the training set also in the online stage
         self.greedy_selected_parameters = GreedySelectedParametersList() # list storing the parameters selected during the training phase
         self.greedy_selected_parameters_complement = dict() # dict, over N, of list storing the complement of parameters selected during the training phase
-        self.UB_vectors = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedily selected parameters
+        self.upper_bound_vectors = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedily selected parameters
         self.N = 0
         self.M_e = kwargs["M_e"] # integer denoting the number of constraints based on the exact eigenvalues, or None
         self.M_p = kwargs["M_p"] # integer denoting the number of constraints based on the previous lower bounds, or None
         
         # Storage for online computations
-        self._alpha_LB = 0.
-        self._alpha_UB = 0.
+        self._stability_factor_lower_bound = 0.
+        self._stability_factor_upper_bound = 0.
         
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "reduced_cache")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
-        def _alpha_cache_key_generator(*args, **kwargs):
+        def _stability_factor_cache_key_generator(*args, **kwargs):
             assert len(args) is 2
             assert args[0] == self.mu
             assert len(kwargs) is 0
             return self._cache_key(args[1])
-        def _alpha_cache_filename_generator(*args, **kwargs):
+        def _stability_factor_cache_filename_generator(*args, **kwargs):
             assert len(args) is 2
             assert args[0] == self.mu
             assert len(kwargs) is 0
             return self._cache_file(args[1])
-        def _alpha_LB_cache_import(filename):
+        def _stability_factor_lower_bound_cache_import(filename):
             self.import_stability_factor_lower_bound(self.folder["cache"], filename)
-            return self._alpha_LB
-        def _alpha_LB_cache_export(filename):
+            return self._stability_factor_lower_bound
+        def _stability_factor_lower_bound_cache_export(filename):
             self.export_stability_factor_lower_bound(self.folder["cache"], filename)
-        self._alpha_LB_cache = Cache(
+        self._stability_factor_lower_bound_cache = Cache(
             "SCM",
-            key_generator=_alpha_cache_key_generator,
-            import_=_alpha_LB_cache_import,
-            export=_alpha_LB_cache_export,
-            filename_generator=_alpha_cache_filename_generator
+            key_generator=_stability_factor_cache_key_generator,
+            import_=_stability_factor_lower_bound_cache_import,
+            export=_stability_factor_lower_bound_cache_export,
+            filename_generator=_stability_factor_cache_filename_generator
         )
-        def _alpha_UB_cache_import(filename):
+        def _stability_factor_upper_bound_cache_import(filename):
             self.import_stability_factor_upper_bound(self.folder["cache"], filename)
-            return self._alpha_UB
-        def _alpha_UB_cache_export(filename):
+            return self._stability_factor_upper_bound
+        def _stability_factor_upper_bound_cache_export(filename):
             self.export_stability_factor_upper_bound(self.folder["cache"], filename)
-        self._alpha_UB_cache = Cache(
+        self._stability_factor_upper_bound_cache = Cache(
             "SCM",
-            key_generator=_alpha_cache_key_generator,
-            import_=_alpha_UB_cache_import,
-            export=_alpha_UB_cache_export,
-            filename_generator=_alpha_cache_filename_generator
+            key_generator=_stability_factor_cache_key_generator,
+            import_=_stability_factor_upper_bound_cache_import,
+            export=_stability_factor_upper_bound_cache_export,
+            filename_generator=_stability_factor_cache_filename_generator
         )
         
-        # Coercivity constant eigen problem
-        self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(truth_problem, "a", True, "smallest", kwargs["coercivity_eigensolver_parameters"], self.folder_prefix)
+        # Stability factor eigen problem
+        self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(truth_problem, "a", True, "smallest", kwargs["stability_factor_eigensolver_parameters"], self.folder_prefix)
         
         # Store here input parameters provided by the user that are needed by the reduction method
         self._input_storage_for_SCM_reduction = dict()
@@ -109,7 +108,7 @@ class SCMApproximation(ParametrizedProblem):
             self.B_max.load(self.folder["reduced_operators"], "B_max")
             self.training_set.load(self.folder["reduced_operators"], "training_set")
             self.greedy_selected_parameters.load(self.folder["reduced_operators"], "greedy_selected_parameters")
-            self.UB_vectors.load(self.folder["reduced_operators"], "UB_vectors")
+            self.upper_bound_vectors.load(self.folder["reduced_operators"], "upper_bound_vectors")
             # Set the value of N
             self.N = len(self.greedy_selected_parameters)
         elif current_stage == "offline":
@@ -124,24 +123,24 @@ class SCMApproximation(ParametrizedProblem):
             self.training_set.save(self.folder["reduced_operators"], "training_set")
             # Properly initialize structures related to greedy selected parameters
             assert len(self.greedy_selected_parameters) is 0
-            # Init exact coercivity constant computations
-            self.exact_coercivity_constant_calculator.init()
+            # Init exact stability factor computations
+            self.exact_stability_factor_calculator.init()
         else:
             raise ValueError("Invalid stage in init().")
     
     def evaluate_stability_factor(self):
-        return self.exact_coercivity_constant_calculator.solve()
+        return self.exact_stability_factor_calculator.solve()
     
-    # Get a lower bound for alpha
+    # Get a lower bound for the stability factor
     def get_stability_factor_lower_bound(self, N=None):
         if N is None:
             N = self.N
         try:
-            self._alpha_LB = self._alpha_LB_cache[self.mu, N]
+            self._stability_factor_lower_bound = self._stability_factor_lower_bound_cache[self.mu, N]
         except KeyError:
             self._get_stability_factor_lower_bound(N)
-            self._alpha_LB_cache[self.mu, N] = self._alpha_LB
-        return self._alpha_LB
+            self._stability_factor_lower_bound_cache[self.mu, N] = self._stability_factor_lower_bound
+        return self._stability_factor_lower_bound
         
     def _get_stability_factor_lower_bound(self, N):
         assert N <= len(self.greedy_selected_parameters)
@@ -201,7 +200,7 @@ class SCMApproximation(ParametrizedProblem):
                 constraints_vector[M_e + j] = 0.
         self.set_mu(mu_bak)
         
-        # 2c. Add constraints: also constrain the coercivity constant for mu to be positive
+        # 2c. Add constraints: also constrain the stability factor for mu to be positive
         # Compute theta
         current_theta_a = self.truth_problem.compute_theta("a")
         
@@ -220,46 +219,46 @@ class SCMApproximation(ParametrizedProblem):
         # 4. Solve the linear programming problem
         linear_program = LinearProgramSolver(cost, constraints_matrix, constraints_vector, bounds)
         try:
-            alpha_LB = linear_program.solve()
+            stability_factor_lower_bound = linear_program.solve()
         except LinearProgramSolverError:
             print("SCM warning at mu = " + str(self.mu) + ": error occured while solving linear program.")
             print("Please consider switching to a different solver. A truth eigensolve will be performed.")
             
-            (alpha_LB, _) = self.evaluate_stability_factor()
+            (stability_factor_lower_bound, _) = self.evaluate_stability_factor()
         
-        self._alpha_LB = alpha_LB
+        self._stability_factor_lower_bound = stability_factor_lower_bound
         
-    # Get an upper bound for alpha
+    # Get an upper bound for the stability factor
     def get_stability_factor_upper_bound(self, N=None):
         if N is None:
             N = self.N
         try:
-            self._alpha_UB = self._alpha_UB_cache[self.mu, N]
+            self._stability_factor_upper_bound = self._stability_factor_upper_bound_cache[self.mu, N]
         except KeyError:
             self._get_stability_factor_upper_bound(N)
-            self._alpha_UB_cache[self.mu, N] = self._alpha_UB
-        return self._alpha_UB
+            self._stability_factor_upper_bound_cache[self.mu, N] = self._stability_factor_upper_bound
+        return self._stability_factor_upper_bound
         
     def _get_stability_factor_upper_bound(self, N):
         Q = self.truth_problem.Q["a"]
-        UB_vectors = self.UB_vectors
+        upper_bound_vectors = self.upper_bound_vectors
         
-        alpha_UB = None
+        stability_factor_upper_bound = None
         current_theta_a = self.truth_problem.compute_theta("a")
         
         for j in range(N):
-            UB_vector = UB_vectors[j]
+            upper_bound_vector = upper_bound_vectors[j]
             
             # Compute the cost function for fixed omega
             obj = 0.
             for q in range(Q):
-                obj += UB_vector[q]*current_theta_a[q]
+                obj += upper_bound_vector[q]*current_theta_a[q]
             
-            if alpha_UB is None or obj < alpha_UB:
-                alpha_UB = obj
+            if stability_factor_upper_bound is None or obj < stability_factor_upper_bound:
+                stability_factor_upper_bound = obj
         
-        assert alpha_UB is not None
-        self._alpha_UB = alpha_UB
+        assert stability_factor_upper_bound is not None
+        self._stability_factor_upper_bound = stability_factor_upper_bound
                     
     def _cache_key(self, N):
         return (self.mu, N)
@@ -280,31 +279,31 @@ class SCMApproximation(ParametrizedProblem):
             folder = self.folder_prefix
         if filename is None:
             filename = "stability_factor"
-        export([self._alpha_LB], folder, filename + "_LB")
+        export([self._stability_factor_lower_bound], folder, filename + "_lower_bound")
         
     def export_stability_factor_upper_bound(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
             filename = "stability_factor"
-        export([self._alpha_UB], folder, filename + "_UB")
+        export([self._stability_factor_upper_bound], folder, filename + "_upper_bound")
         
     def import_stability_factor_lower_bound(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
             filename = "stability_factor"
-        alpha_LB_storage = [0.]
-        import_(alpha_LB_storage, folder, filename + "_LB")
-        assert len(alpha_LB_storage) == 1
-        self._alpha_LB = alpha_LB_storage[0]
+        stability_factor_lower_bound_storage = [0.]
+        import_(stability_factor_lower_bound_storage, folder, filename + "_lower_bound")
+        assert len(stability_factor_lower_bound_storage) == 1
+        self._stability_factor_lower_bound = stability_factor_lower_bound_storage[0]
         
     def import_stability_factor_upper_bound(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
             filename = "stability_factor"
-        alpha_UB_storage = [0.]
-        import_(alpha_UB_storage, folder, filename + "_UB")
-        assert len(alpha_UB_storage) == 1
-        self._alpha_UB = alpha_UB_storage[0]
+        stability_factor_upper_bound_storage = [0.]
+        import_(stability_factor_upper_bound_storage, folder, filename + "_upper_bound")
+        assert len(stability_factor_upper_bound_storage) == 1
+        self._stability_factor_upper_bound = stability_factor_upper_bound_storage[0]

@@ -24,7 +24,7 @@ from rbnics.backends import adjoint, AffineExpansionStorage, assign, copy, Eigen
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 
-class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
+class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
 
     # Default initialization of members
     @sync_setters("truth_problem", "set_mu", "mu")
@@ -162,21 +162,21 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
-            filename = "coercivity_constant"
+            filename = "stability_factor"
         export([self._eigenvalue], folder, filename + "_eigenvalue")
         
     def export_eigenvector(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
-            filename = "coercivity_constant"
+            filename = "stability_factor"
         export(self._eigenvector, folder, filename + "_eigenvector")
         
     def import_eigenvalue(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
-            filename = "coercivity_constant"
+            filename = "stability_factor"
         eigenvalue_storage = [0.]
         import_(eigenvalue_storage, folder, filename + "_eigenvalue")
         assert len(eigenvalue_storage) == 1
@@ -186,5 +186,5 @@ class ParametrizedCoercivityConstantEigenProblem(ParametrizedProblem):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
-            filename = "coercivity_constant"
+            filename = "stability_factor"
         import_(self._eigenvector, folder, filename + "_eigenvector")

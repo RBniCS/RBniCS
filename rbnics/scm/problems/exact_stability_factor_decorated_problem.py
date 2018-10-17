@@ -18,43 +18,43 @@
 
 import os
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
-from rbnics.scm.problems.parametrized_coercivity_constant_eigenproblem import ParametrizedCoercivityConstantEigenProblem
+from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import ParametrizedStabilityFactorEigenProblem
 
-def ExactCoercivityConstantDecoratedProblem(
+def ExactStabilityFactorDecoratedProblem(
     eigensolver_parameters=None,
     **decorator_kwargs
 ):
     if eigensolver_parameters is None:
         eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
         
-    from rbnics.scm.problems.exact_coercivity_constant import ExactCoercivityConstant
+    from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
     
-    @ProblemDecoratorFor(ExactCoercivityConstant, eigensolver_parameters=eigensolver_parameters)
-    def ExactCoercivityConstantDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
+    @ProblemDecoratorFor(ExactStabilityFactor, eigensolver_parameters=eigensolver_parameters)
+    def ExactStabilityFactorDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
         @PreserveClassName
-        class ExactCoercivityConstantDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
+        class ExactStabilityFactorDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 
-                self.exact_coercivity_constant_calculator = ParametrizedCoercivityConstantEigenProblem(self, "a", True, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_coercivity_constant"))
+                self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "a", True, "smallest", eigensolver_parameters, os.path.join(self.name(), "exact_stability_factor"))
                 
             # Initialize data structures required for the online phase
             def init(self):
                 # Call to Parent
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
-                # Init exact coercivity constant computations
-                self.exact_coercivity_constant_calculator.init()
+                # Init exact stability factor computations
+                self.exact_stability_factor_calculator.init()
             
-            # Return the alpha_lower bound.
+            # Return the lower bound for the stability factor.
             def get_stability_factor(self):
-                (minimum_eigenvalue, _) = self.exact_coercivity_constant_calculator.solve()
+                (minimum_eigenvalue, _) = self.exact_stability_factor_calculator.solve()
                 return minimum_eigenvalue
                 
         # return value (a class) for the decorator
-        return ExactCoercivityConstantDecoratedProblem_Class
+        return ExactStabilityFactorDecoratedProblem_Class
         
     # return the decorator itself
-    return ExactCoercivityConstantDecoratedProblem_Decorator
+    return ExactStabilityFactorDecoratedProblem_Decorator

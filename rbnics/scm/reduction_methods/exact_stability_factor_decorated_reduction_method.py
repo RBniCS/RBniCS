@@ -17,13 +17,13 @@
 #
 
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
-from rbnics.scm.problems import ExactCoercivityConstant
+from rbnics.scm.problems import ExactStabilityFactor
 
-@ReductionMethodDecoratorFor(ExactCoercivityConstant)
-def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
+@ReductionMethodDecoratorFor(ExactStabilityFactor)
+def ExactStabilityFactorDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
     
     @PreserveClassName
-    class ExactCoercivityConstantDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
+    class ExactStabilityFactorDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
@@ -35,4 +35,4 @@ def ExactCoercivityConstantDecoratedReductionMethod(DifferentialProblemReduction
             return import_successful
         
     # return value (a class) for the decorator
-    return ExactCoercivityConstantDecoratedReductionMethod_Class
+    return ExactStabilityFactorDecoratedReductionMethod_Class
