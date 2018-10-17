@@ -114,7 +114,7 @@ class SCMApproximation(ParametrizedProblem):
         elif current_stage == "offline":
             self.truth_problem.init()
             # Properly resize structures related to operator
-            Q = self.truth_problem.Q["a"]
+            Q = self.truth_problem.Q["stability_factor_left_hand_matrix"]
             self.B_min = BoundingBoxSideList(Q)
             self.B_max = BoundingBoxSideList(Q)
             # Save the training set, which was passed by the reduction method,
@@ -144,7 +144,7 @@ class SCMApproximation(ParametrizedProblem):
         
     def _get_stability_factor_lower_bound(self, N):
         assert N <= len(self.greedy_selected_parameters)
-        Q = self.truth_problem.Q["a"]
+        Q = self.truth_problem.Q["stability_factor_left_hand_matrix"]
         M_e = min(self.M_e if self.M_e is not None else N, N, len(self.greedy_selected_parameters))
         M_p = min(self.M_p if self.M_p is not None else N, N, len(self.training_set) - len(self.greedy_selected_parameters))
         
@@ -168,11 +168,11 @@ class SCMApproximation(ParametrizedProblem):
             self.set_mu(omega)
             
             # Compute theta
-            current_theta_a = self.truth_problem.compute_theta("a")
+            current_theta = self.truth_problem.compute_theta("stability_factor_left_hand_matrix")
             
             # Assemble the LHS of the constraint
             for q in range(Q):
-                constraints_matrix[j, q] = current_theta_a[q]
+                constraints_matrix[j, q] = current_theta[q]
             
             # Assemble the RHS of the constraint
             (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call may be already cached
@@ -187,11 +187,11 @@ class SCMApproximation(ParametrizedProblem):
             self.set_mu(nu)
             
             # Compute theta
-            current_theta_a = self.truth_problem.compute_theta("a")
+            current_theta = self.truth_problem.compute_theta("stability_factor_left_hand_matrix")
             
             # Assemble the LHS of the constraint
             for q in range(Q):
-                constraints_matrix[M_e + j, q] = current_theta_a[q]
+                constraints_matrix[M_e + j, q] = current_theta[q]
                 
             # Assemble the RHS of the constraint
             if N > 1:
@@ -202,11 +202,11 @@ class SCMApproximation(ParametrizedProblem):
         
         # 2c. Add constraints: also constrain the stability factor for mu to be positive
         # Compute theta
-        current_theta_a = self.truth_problem.compute_theta("a")
+        current_theta = self.truth_problem.compute_theta("stability_factor_left_hand_matrix")
         
         # Assemble the LHS of the constraint
         for q in range(Q):
-            constraints_matrix[M_e + M_p, q] = current_theta_a[q]
+            constraints_matrix[M_e + M_p, q] = current_theta[q]
             
         # Assemble the RHS of the constraint
         constraints_vector[M_e + M_p] = 0.
@@ -214,7 +214,7 @@ class SCMApproximation(ParametrizedProblem):
         # 3. Add cost function coefficients
         cost = Vector(Q)
         for q in range(Q):
-            cost[q] = current_theta_a[q]
+            cost[q] = current_theta[q]
         
         # 4. Solve the linear programming problem
         linear_program = LinearProgramSolver(cost, constraints_matrix, constraints_vector, bounds)
@@ -240,11 +240,11 @@ class SCMApproximation(ParametrizedProblem):
         return self._stability_factor_upper_bound
         
     def _get_stability_factor_upper_bound(self, N):
-        Q = self.truth_problem.Q["a"]
+        Q = self.truth_problem.Q["stability_factor_left_hand_matrix"]
         upper_bound_vectors = self.upper_bound_vectors
         
         stability_factor_upper_bound = None
-        current_theta_a = self.truth_problem.compute_theta("a")
+        current_theta = self.truth_problem.compute_theta("stability_factor_left_hand_matrix")
         
         for j in range(N):
             upper_bound_vector = upper_bound_vectors[j]
@@ -252,7 +252,7 @@ class SCMApproximation(ParametrizedProblem):
             # Compute the cost function for fixed omega
             obj = 0.
             for q in range(Q):
-                obj += upper_bound_vector[q]*current_theta_a[q]
+                obj += upper_bound_vector[q]*current_theta[q]
             
             if stability_factor_upper_bound is None or obj < stability_factor_upper_bound:
                 stability_factor_upper_bound = obj

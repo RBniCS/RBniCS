@@ -83,9 +83,9 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         # Store the symmetric part of the required term
         if self.operator is None: # init was not called already
             if self.expansion_index is None:
-                forms = self.truth_problem.assemble_operator("a")
+                forms = self.truth_problem.assemble_operator("stability_factor_left_hand_matrix")
             else:
-                forms = (self.truth_problem.assemble_operator("a")[self.expansion_index], )
+                forms = (self.truth_problem.assemble_operator("stability_factor_left_hand_matrix")[self.expansion_index], )
             self.operator = AffineExpansionStorage(tuple(0.5*(f + adjoint(f)) for f in forms))
         
         # Store the inner product matrix
@@ -108,7 +108,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         
     def _solve(self):
         if self.expansion_index is None:
-            O = sum(product(self.truth_problem.compute_theta("a"), self.operator))  # noqa
+            O = sum(product(self.truth_problem.compute_theta("stability_factor_left_hand_matrix"), self.operator))  # noqa
         else:
             assert len(self.operator) == 1
             O = self.operator[0]  # noqa
