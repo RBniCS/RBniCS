@@ -1008,8 +1008,16 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
     collected_with_respect_to_form = collect(collected_sum_product, collected_with_respect_to_theta_ordered.values(), evaluate=False, exact=True)
     collected_with_respect_to_form_ordered = OrderedDict()
     for collected_form in collected_with_respect_to_theta_ordered.values():
-        assert collected_form in collected_with_respect_to_form
-        collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
+        if collected_form in collected_with_respect_to_form:
+            collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
+        else: # it may happen that factors get multiplied by a number during collection
+            ratios = tuple(simplify(collected_form/collected_with_respect_to_form_key) for collected_with_respect_to_form_key in collected_with_respect_to_form.keys())
+            is_numeric_ratio = tuple(isinstance(r, Number) for r in ratios)
+            assert sum(is_numeric_ratio) is 1
+            ratio = ratios[is_numeric_ratio.index(True)]
+            collected_form = collected_form/ratio
+            assert collected_form in collected_with_respect_to_form
+            collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
     # Convert back to ufl
     collected_forms = list()
     collected_theta_factors = list()
