@@ -21,8 +21,6 @@ from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
 
 def SCMDecoratedProblem(
-    M_e=None,
-    M_p=None,
     **decorator_kwargs
 ):
     from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
@@ -30,9 +28,7 @@ def SCMDecoratedProblem(
     
     @ProblemDecoratorFor(
         SCM,
-        ExactAlgorithm=ExactStabilityFactor,
-        M_e=M_e,
-        M_p=M_p,
+        ExactAlgorithm=ExactStabilityFactor
     )
     def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
     
@@ -57,12 +53,8 @@ def SCMDecoratedProblem(
                     self.stability_factor_V = kwargs["stability_factor_V"]
                 except KeyError:
                     self.stability_factor_V = self.V
-                # TODO remove
-                decorator_inputs = dict()
-                decorator_inputs["M_e"] = M_e
-                decorator_inputs["M_p"] = M_p
                 # Storage for SCM reduced problems
-                self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"), **decorator_inputs)
+                self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"))
                 
             # Return the lower bound for the stability factor.
             def get_stability_factor_lower_bound(self):

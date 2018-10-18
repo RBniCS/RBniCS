@@ -32,7 +32,7 @@ class SCMApproximation(ParametrizedProblem):
     # Default initialization of members
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
-    def __init__(self, truth_problem, folder_prefix, **kwargs):
+    def __init__(self, truth_problem, folder_prefix):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)
         # Store the parametrized problem object and the bc list
@@ -46,8 +46,6 @@ class SCMApproximation(ParametrizedProblem):
         self.greedy_selected_parameters_complement = dict() # dict, over N, of list storing the complement of parameters selected during the training phase
         self.upper_bound_vectors = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedily selected parameters
         self.N = 0
-        self.M_e = kwargs["M_e"] # integer denoting the number of constraints based on the exact eigenvalues, or None
-        self.M_p = kwargs["M_p"] # integer denoting the number of constraints based on the previous lower bounds, or None
         
         # Storage for online computations
         self._stability_factor_lower_bound = 0.
@@ -140,8 +138,8 @@ class SCMApproximation(ParametrizedProblem):
     def _get_stability_factor_lower_bound(self, N):
         assert N <= len(self.greedy_selected_parameters)
         Q = self.truth_problem.Q["stability_factor_left_hand_matrix"]
-        M_e = min(self.M_e if self.M_e is not None else N, N, len(self.greedy_selected_parameters))
-        M_p = min(self.M_p if self.M_p is not None else N, N, len(self.training_set) - len(self.greedy_selected_parameters))
+        M_e = N
+        M_p = min(N, len(self.training_set) - len(self.greedy_selected_parameters))
         
         # 1. Constrain the Q variables to be in the bounding box
         bounds = list() # of Q pairs
