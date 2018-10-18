@@ -16,22 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
+from rbnics.scm.problems.decorated_reduced_problem_with_stability_factor_evaluation import DecoratedReducedProblemWithStabilityFactorEvaluation
 from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
+from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 
 @ReducedProblemDecoratorFor(ExactStabilityFactor)
 def ExactStabilityFactorDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     
+    @DecoratedReducedProblemWithStabilityFactorEvaluation
     @PreserveClassName
     class ExactStabilityFactorDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        # Return the lower bound for the stability factor.
-        def get_stability_factor_lower_bound(self):
-            # Call the exact evaluation, since its computational cost is low because we are dealing with
-            # left-hand and right-hand side matrices of small dimensions
-            return self.evaluate_stability_factor()
-                
-        def evaluate_stability_factor(self):
-            raise NotImplementedError("Evaluation of reduced stability factor not implemented yet")
+        pass
         
     # return value (a class) for the decorator
     return ExactStabilityFactorDecoratedReducedProblem_Class
