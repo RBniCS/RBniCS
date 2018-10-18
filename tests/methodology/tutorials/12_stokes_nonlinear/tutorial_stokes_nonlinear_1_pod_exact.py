@@ -54,7 +54,7 @@ class Stokes(NavierStokesProblem):
         return "StokesNonlinear1PODExact"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
-    @compute_theta_for_restriction({"bt_restricted": "bt"})
+    @compute_theta_for_supremizers
     def compute_theta(self, term):
         if term in ("a", "c", "dc"):
             theta_a0 = 0.5
@@ -72,9 +72,7 @@ class Stokes(NavierStokesProblem):
             raise ValueError("Invalid term for compute_theta().")
                 
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
-    @assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")
-    @assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")
-    @assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")
+    @assemble_operator_for_supremizers
     def assemble_operator(self, term):
         dx = self.dx
         if term in ("a", "dc"):

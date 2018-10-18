@@ -49,7 +49,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         return "NonlinearEllipticExact"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
-    @compute_theta_for_derivative({"dc": "c"})
+    @compute_theta_for_derivatives
     def compute_theta(self, term):
         mu = self.mu
         if term == "a":
@@ -65,7 +65,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             raise ValueError("Invalid term for compute_theta().")
     
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
-    @assemble_operator_for_derivative({"dc": "c"})
+    @assemble_operator_for_derivatives
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
