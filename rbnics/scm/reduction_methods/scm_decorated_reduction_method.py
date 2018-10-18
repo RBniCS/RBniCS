@@ -151,7 +151,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
                     # Assume that the user wants to disable SCM and use the exact stability factor
                     self.replace_get_stability_factor_lower_bound = PatchInstanceMethod(
-                        self.reduced_problem,
+                        self.truth_problem,
                         "get_stability_factor_lower_bound",
                         lambda self_: other_truth_problem.get_stability_factor_lower_bound()
                     )
@@ -162,7 +162,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 assert isinstance(kwargs["SCM"], int)
                 # Assume that the user wants to use SCM with a prescribed number of basis functions
                 self.replace_get_stability_factor_lower_bound = PatchInstanceMethod(
-                    self.reduced_problem,
+                    self.truth_problem,
                     "get_stability_factor_lower_bound",
                     lambda self_: self_.truth_problem.SCM_approximation.get_stability_factor_lower_bound_lower_bound(kwargs["SCM"])
                 )

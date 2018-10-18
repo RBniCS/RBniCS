@@ -45,7 +45,7 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
-        alpha = self.get_stability_factor_lower_bound()
+        alpha = self.truth_problem.get_stability_factor_lower_bound()
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert alpha >= 0.
         return sqrt(abs(eps2))/alpha
@@ -72,9 +72,3 @@ class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
             + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
             + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
         )
-        
-    def get_stability_factor_lower_bound(self):
-        """
-        Return a lower bound for the stability factor.
-        """
-        return self.truth_problem.get_stability_factor_lower_bound()

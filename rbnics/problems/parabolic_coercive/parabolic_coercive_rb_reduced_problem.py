@@ -45,7 +45,7 @@ class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2_over_time = self.get_residual_norm_squared()
-        alpha = self.get_stability_factor_lower_bound()
+        alpha = self.truth_problem.get_stability_factor_lower_bound()
         # Compute error bound
         error_bound_over_time = TimeSeries(eps2_over_time)
         for (k, t) in enumerate(eps2_over_time.stored_times()):
