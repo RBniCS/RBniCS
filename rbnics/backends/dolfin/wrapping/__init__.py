@@ -20,11 +20,13 @@ from rbnics.backends.dolfin.wrapping.assemble import assemble
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivative import assemble_operator_for_derivative
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivatives import assemble_operator_for_derivatives
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import assemble_operator_for_restriction
+from rbnics.backends.dolfin.wrapping.assemble_operator_for_stability_factor import assemble_operator_for_stability_factor
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_supremizers import assemble_operator_for_supremizers
 from rbnics.backends.dolfin.wrapping.basis_functions_matrix_mul import basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector
 from rbnics.backends.dolfin.wrapping.compute_theta_for_derivative import compute_theta_for_derivative
 from rbnics.backends.dolfin.wrapping.compute_theta_for_derivatives import compute_theta_for_derivatives
 from rbnics.backends.dolfin.wrapping.compute_theta_for_restriction import compute_theta_for_restriction
+from rbnics.backends.dolfin.wrapping.compute_theta_for_stability_factor import compute_theta_for_stability_factor
 from rbnics.backends.dolfin.wrapping.compute_theta_for_supremizers import compute_theta_for_supremizers
 from rbnics.backends.dolfin.wrapping.counterclockwise import counterclockwise
 from rbnics.backends.dolfin.wrapping.create_submesh import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, map_functionspaces_between_mesh_and_submesh
@@ -90,6 +92,7 @@ __all__ = [
     'assemble_operator_for_derivative',
     'assemble_operator_for_derivatives',
     'assemble_operator_for_restriction',
+    'assemble_operator_for_stability_factor',
     'assemble_operator_for_supremizers',
     'basis_functions_matrix_mul_online_matrix',
     'basis_functions_matrix_mul_online_vector',
@@ -98,6 +101,7 @@ __all__ = [
     'compute_theta_for_derivative',
     'compute_theta_for_derivatives',
     'compute_theta_for_restriction',
+    'compute_theta_for_stability_factor',
     'compute_theta_for_supremizers',
     'counterclockwise',
     'convert_functionspace_to_submesh',
@@ -178,8 +182,10 @@ WARNING = LogLevel.WARNING
 __overridden__ = {
     'rbnics': [
         'assemble_operator_for_derivatives',
+        'assemble_operator_for_stability_factor',
         'assemble_operator_for_supremizers',
         'compute_theta_for_derivatives',
+        'compute_theta_for_stability_factor',
         'compute_theta_for_supremizers',
         'ParametrizedExpression',
         'plot',
