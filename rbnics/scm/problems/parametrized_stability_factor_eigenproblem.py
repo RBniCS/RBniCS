@@ -31,7 +31,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, spectrum, eigensolver_parameters, folder_prefix, expansion_index=None):
         # Call the parent initialization
-        ParametrizedProblem.__init__(self, folder_prefix) # this class does not export anything
+        ParametrizedProblem.__init__(self, folder_prefix)
         self.truth_problem = truth_problem
         
         # Matrices/vectors resulting from the truth discretization
@@ -44,7 +44,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
         
-        # Avoid useless computations
+        # Solution
         self._eigenvalue = 0.
         self._eigenvector = Function(truth_problem.stability_factor_V)
         # I/O
@@ -129,20 +129,16 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         else:
             eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B)
         eigensolver_parameters = dict()
-        eigensolver_parameters["problem_type"] = "gen_hermitian"
         assert self.spectrum is "largest" or self.spectrum is "smallest"
         eigensolver_parameters["spectrum"] = self.spectrum + " real"
-        if self.eigensolver_parameters is not None:
-            if "spectral_transform" in self.eigensolver_parameters and self.eigensolver_parameters["spectral_transform"] == "shift-and-invert":
-                eigensolver_parameters["spectrum"] = "target real"
-            eigensolver_parameters.update(self.eigensolver_parameters)
+        eigensolver_parameters.update(self.eigensolver_parameters)
         eigensolver.set_parameters(eigensolver_parameters)
         eigensolver.solve(1)
         
         r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
         r_vector, c_vector = eigensolver.get_eigenvector(0) # real and complex part of the eigenvectors
         
-        assert isclose(c, 0), "The required eigenvalue is not real"
+        assert isclose(c, 0.), "The required eigenvalue is not real"
         
         self._eigenvalue = r
         assign(self._eigenvector, r_vector)

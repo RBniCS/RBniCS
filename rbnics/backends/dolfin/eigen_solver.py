@@ -104,6 +104,8 @@ class EigenSolver(AbstractEigenSolver):
         return mat, PETScMatrix(condensed_mat)
     
     def set_parameters(self, parameters):
+        if "spectral_transform" in parameters and parameters["spectral_transform"] == "shift-and-invert":
+            parameters["spectrum"] = "target real"
         self.eigen_solver.parameters.update(parameters)
         
     def solve(self, n_eigs=None):

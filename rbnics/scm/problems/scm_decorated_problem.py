@@ -23,18 +23,8 @@ from rbnics.scm.problems.scm_approximation import SCMApproximation
 def SCMDecoratedProblem(
     M_e=None,
     M_p=None,
-    bounding_box_minimum_eigensolver_parameters=None,
-    bounding_box_maximum_eigensolver_parameters=None,
-    stability_factor_eigensolver_parameters=None,
     **decorator_kwargs
 ):
-    if bounding_box_minimum_eigensolver_parameters is None:
-        bounding_box_minimum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
-    if bounding_box_maximum_eigensolver_parameters is None:
-        bounding_box_maximum_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e5)
-    if stability_factor_eigensolver_parameters is None:
-        stability_factor_eigensolver_parameters = dict(spectral_transform="shift-and-invert", spectral_shift=1.e-5)
-    
     from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
     from rbnics.scm.problems.scm import SCM
     
@@ -43,9 +33,6 @@ def SCMDecoratedProblem(
         ExactAlgorithm=ExactStabilityFactor,
         M_e=M_e,
         M_p=M_p,
-        bounding_box_minimum_eigensolver_parameters=bounding_box_minimum_eigensolver_parameters,
-        bounding_box_maximum_eigensolver_parameters=bounding_box_maximum_eigensolver_parameters,
-        stability_factor_eigensolver_parameters=stability_factor_eigensolver_parameters
     )
     def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
     
@@ -53,6 +40,13 @@ def SCMDecoratedProblem(
         class SCMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             # Default initialization of members
             def __init__(self, V, **kwargs):
+                # Eigen solver parameters (to be initialized before calling parent initialization as it may
+                # update them).
+                self._eigen_solver_parameters = {
+                    "bounding_box_minimum": dict(),
+                    "bounding_box_maximum": dict(),
+                    "stability_factor": dict()
+                }
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Additional terms required by stability factor computations
@@ -63,13 +57,10 @@ def SCMDecoratedProblem(
                     self.stability_factor_V = kwargs["stability_factor_V"]
                 except KeyError:
                     self.stability_factor_V = self.V
-                # Store input parameters from the decorator factory in a dict
+                # TODO remove
                 decorator_inputs = dict()
                 decorator_inputs["M_e"] = M_e
                 decorator_inputs["M_p"] = M_p
-                decorator_inputs["bounding_box_minimum_eigensolver_parameters"] = bounding_box_minimum_eigensolver_parameters
-                decorator_inputs["bounding_box_maximum_eigensolver_parameters"] = bounding_box_maximum_eigensolver_parameters
-                decorator_inputs["stability_factor_eigensolver_parameters"] = stability_factor_eigensolver_parameters
                 # Storage for SCM reduced problems
                 self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"), **decorator_inputs)
                 

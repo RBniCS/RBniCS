@@ -39,11 +39,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
         self.greedy_selected_parameters = SCM_approximation.greedy_selected_parameters
         self.greedy_error_estimators = GreedyErrorEstimatorsList()
-        
-        # Get data that were temporarily store in the SCM_approximation
-        self.bounding_box_minimum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"]
-        self.bounding_box_maximum_eigensolver_parameters = self.SCM_approximation._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"]
-        del self.SCM_approximation._input_storage_for_SCM_reduction
 
     # OFFLINE: set the elements in the training set.
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
@@ -131,13 +126,13 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
         for q in range(Q):
             # Compute the minimum eigenvalue
-            minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "smallest", self.bounding_box_minimum_eigensolver_parameters, self.folder_prefix, expansion_index=q)
+            minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "smallest", self.SCM_approximation.truth_problem._eigen_solver_parameters["bounding_box_minimum"], self.folder_prefix, expansion_index=q)
             minimum_eigenvalue_calculator.init()
             (self.SCM_approximation.bounding_box_min[q], _) = minimum_eigenvalue_calculator.solve()
             print("bounding_box_min[" + str(q) + "] = " + str(self.SCM_approximation.bounding_box_min[q]))
             
             # Compute the maximum eigenvalue
-            maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "largest", self.bounding_box_maximum_eigensolver_parameters, self.folder_prefix, expansion_index=q)
+            maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "largest", self.SCM_approximation.truth_problem._eigen_solver_parameters["bounding_box_maximum"], self.folder_prefix, expansion_index=q)
             maximum_eigenvalue_calculator.init()
             (self.SCM_approximation.bounding_box_max[q], _) = maximum_eigenvalue_calculator.solve()
             print("bounding_box_max[" + str(q) + "] = " + str(self.SCM_approximation.bounding_box_max[q]))
@@ -196,9 +191,6 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     # Initialize data structures required for the error analysis phase
     def _init_error_analysis(self, **kwargs):
-        # Initialize the exact stability factor object
-        self.SCM_approximation.exact_stability_factor_calculator.init()
-        
         # Initialize reduced order data structures in the SCM online problem
         self.SCM_approximation.init("online")
     
@@ -277,8 +269,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
         # expression evaluation is actually carried out
         self.SCM_approximation._stability_factor_lower_bound_cache.clear()
         self.SCM_approximation._stability_factor_upper_bound_cache.clear()
-        self.SCM_approximation.exact_stability_factor_calculator._eigenvalue_cache.clear()
-        self.SCM_approximation.exact_stability_factor_calculator._eigenvector_cache.clear()
+        self.SCM_approximation.stability_factor_calculator._eigenvalue_cache.clear()
+        self.SCM_approximation.stability_factor_calculator._eigenvector_cache.clear()
         
     def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         if N_generator is None:

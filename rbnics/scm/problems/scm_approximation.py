@@ -92,12 +92,7 @@ class SCMApproximation(ParametrizedProblem):
         )
         
         # Stability factor eigen problem
-        self.exact_stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(truth_problem, "smallest", kwargs["stability_factor_eigensolver_parameters"], self.folder_prefix)
-        
-        # Store here input parameters provided by the user that are needed by the reduction method
-        self._input_storage_for_SCM_reduction = dict()
-        self._input_storage_for_SCM_reduction["bounding_box_minimum_eigensolver_parameters"] = kwargs["bounding_box_minimum_eigensolver_parameters"]
-        self._input_storage_for_SCM_reduction["bounding_box_maximum_eigensolver_parameters"] = kwargs["bounding_box_maximum_eigensolver_parameters"]
+        self.stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self.truth_problem, "smallest", self.truth_problem._eigen_solver_parameters["stability_factor"], self.folder_prefix)
         
     # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
@@ -123,13 +118,13 @@ class SCMApproximation(ParametrizedProblem):
             self.training_set.save(self.folder["reduced_operators"], "training_set")
             # Properly initialize structures related to greedy selected parameters
             assert len(self.greedy_selected_parameters) is 0
-            # Init exact stability factor computations
-            self.exact_stability_factor_calculator.init()
         else:
             raise ValueError("Invalid stage in init().")
+        # Init exact stability factor computations
+        self.stability_factor_calculator.init()
     
     def evaluate_stability_factor(self):
-        return self.exact_stability_factor_calculator.solve()
+        return self.stability_factor_calculator.solve()
     
     # Get a lower bound for the stability factor
     def get_stability_factor_lower_bound(self, N=None):
