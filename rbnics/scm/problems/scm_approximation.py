@@ -95,6 +95,10 @@ class SCMApproximation(ParametrizedProblem):
     # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         assert current_stage in ("online", "offline")
+        # Init truth problem, to setup stability_factor_{left,right}_hand_matrix operators
+        self.truth_problem.init()
+        # Init exact stability factor computations
+        self.stability_factor_calculator.init()
         # Read/Initialize reduced order data structures
         if current_stage == "online":
             self.bounding_box_min.load(self.folder["reduced_operators"], "bounding_box_min")
@@ -105,7 +109,6 @@ class SCMApproximation(ParametrizedProblem):
             # Set the value of N
             self.N = len(self.greedy_selected_parameters)
         elif current_stage == "offline":
-            self.truth_problem.init()
             # Properly resize structures related to operator
             Q = self.truth_problem.Q["stability_factor_left_hand_matrix"]
             self.bounding_box_min = BoundingBoxSideList(Q)
@@ -118,8 +121,6 @@ class SCMApproximation(ParametrizedProblem):
             assert len(self.greedy_selected_parameters) is 0
         else:
             raise ValueError("Invalid stage in init().")
-        # Init exact stability factor computations
-        self.stability_factor_calculator.init()
     
     def evaluate_stability_factor(self):
         return self.stability_factor_calculator.solve()

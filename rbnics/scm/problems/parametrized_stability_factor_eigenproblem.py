@@ -115,11 +115,13 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         return (self._eigenvalue, self._eigenvector)
         
     def _solve(self):
+        assert self.operator["stability_factor_left_hand_matrix"] is not None
         if self.expansion_index is None:
             A = sum(product(self.truth_problem.compute_theta("stability_factor_left_hand_matrix"), self.operator["stability_factor_left_hand_matrix"]))
         else:
             assert len(self.operator["stability_factor_left_hand_matrix"]) == 1
             A = self.operator["stability_factor_left_hand_matrix"][0]
+        assert self.operator["stability_factor_right_hand_matrix"] is not None
         assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
         B = self.operator["stability_factor_right_hand_matrix"][0]
         
