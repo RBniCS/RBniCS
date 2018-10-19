@@ -24,13 +24,13 @@ from rbnics.utils.config import config
 
 # Import the minimum subset of RBniCS required to run tutorials
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
-from rbnics.problems.elliptic_coercive import EllipticCoerciveCompliantProblem, EllipticCoerciveProblem
+from rbnics.problems.elliptic import EllipticCoerciveCompliantProblem, EllipticCoerciveProblem
 from rbnics.problems.elliptic_optimal_control import EllipticOptimalControlProblem
 from rbnics.problems.navier_stokes import NavierStokesProblem
 from rbnics.problems.navier_stokes_unsteady import NavierStokesUnsteadyProblem
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
 from rbnics.problems.nonlinear_parabolic import NonlinearParabolicProblem
-from rbnics.problems.parabolic_coercive import ParabolicCoerciveProblem
+from rbnics.problems.parabolic import ParabolicCoerciveProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
 from rbnics.problems.stokes_unsteady import StokesUnsteadyProblem

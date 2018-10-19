@@ -21,7 +21,7 @@ from dolfin import FunctionSpace
 from rbnics.utils.decorators import overload
 
 def generate_function_space_for_stability_factor(__init__):
-    from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+    from rbnics.problems.elliptic import EllipticCoerciveProblem
     from rbnics.problems.stokes import StokesProblem
     
     module = types.ModuleType("generate_function_space_for_stability_factor", "Storage for implementation of generate_function_space_for_stability_factor")

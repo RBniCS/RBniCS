@@ -16,9 +16,9 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
-from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
-from rbnics.reduction_methods.elliptic_coercive.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
+from rbnics.reduction_methods.elliptic.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
+from rbnics.reduction_methods.elliptic.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
+from rbnics.reduction_methods.elliptic.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 
 __all__ = [
     'EllipticCoercivePODGalerkinReduction',

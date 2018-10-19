@@ -18,12 +18,12 @@
 
 from math import sqrt
 from numpy import isclose
-from rbnics.problems.elliptic_coercive import EllipticCoerciveRBReducedProblem
-from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
+from rbnics.problems.elliptic import EllipticCoerciveRBReducedProblem
+from rbnics.problems.parabolic.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
 from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import LinearTimeDependentRBReducedProblem
-from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.reduction_methods.parabolic_coercive import ParabolicCoerciveRBReduction
+from rbnics.problems.parabolic.parabolic_coercive_problem import ParabolicCoerciveProblem
+from rbnics.reduction_methods.parabolic import ParabolicCoerciveRBReduction
 from rbnics.backends import assign, product, sum, TimeSeries, transpose
 
 ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))

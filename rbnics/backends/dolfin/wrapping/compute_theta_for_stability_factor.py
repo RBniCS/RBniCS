@@ -20,7 +20,7 @@ import types
 from rbnics.utils.decorators import overload
 
 def compute_theta_for_stability_factor(compute_theta):
-    from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+    from rbnics.problems.elliptic import EllipticCoerciveProblem
     
     module = types.ModuleType("compute_theta_for_stability_factor", "Storage for implementation of compute_theta_for_stability_factor")
     

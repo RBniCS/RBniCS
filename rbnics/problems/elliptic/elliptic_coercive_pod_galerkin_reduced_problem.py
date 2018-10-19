@@ -16,17 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic_coercive import EllipticCoercivePODGalerkinReducedProblem
-from rbnics.problems.parabolic_coercive.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
+from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
+from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.problems.elliptic.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
+from rbnics.reduction_methods.elliptic import EllipticCoercivePODGalerkinReduction
 from rbnics.utils.decorators import ReducedProblemFor
-from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
-from rbnics.problems.parabolic_coercive.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.reduction_methods.parabolic_coercive import ParabolicCoercivePODGalerkinReduction
 
-ParabolicCoercivePODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkinReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
+EllipticCoercivePODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem))
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoercivePODGalerkinReduction)
-class ParabolicCoercivePODGalerkinReducedProblem(ParabolicCoercivePODGalerkinReducedProblem_Base):
+@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoercivePODGalerkinReduction)
+class EllipticCoercivePODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem_Base):
     pass

@@ -20,9 +20,9 @@ from math import sqrt
 from numpy import isclose
 from rbnics.backends import product, sum, transpose
 from rbnics.problems.base import LinearRBReducedProblem, ParametrizedReducedDifferentialProblem
-from rbnics.problems.elliptic_coercive.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.elliptic_coercive.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from rbnics.reduction_methods.elliptic_coercive import EllipticCoerciveRBReduction
+from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.problems.elliptic.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
+from rbnics.reduction_methods.elliptic import EllipticCoerciveRBReduction
 from rbnics.utils.decorators import ReducedProblemFor
 
 EllipticCoerciveRBReducedProblem_Base = LinearRBReducedProblem(EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem))

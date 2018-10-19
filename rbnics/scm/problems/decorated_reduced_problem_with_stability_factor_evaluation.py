@@ -22,7 +22,7 @@ from rbnics.scm.problems.parametrized_stability_factor_reduced_eigenproblem impo
 from rbnics.utils.decorators import PreserveClassName
 
 def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDifferentialProblem_DerivedClass):
-    from rbnics.problems.elliptic_coercive import EllipticCoerciveRBReducedProblem
+    from rbnics.problems.elliptic import EllipticCoerciveRBReducedProblem
     from rbnics.problems.stokes import StokesRBReducedProblem
     
     @PreserveClassName

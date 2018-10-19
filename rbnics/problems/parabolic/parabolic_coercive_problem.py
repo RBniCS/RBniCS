@@ -17,7 +17,7 @@
 #
 
 from rbnics.problems.base import LinearTimeDependentProblem
-from rbnics.problems.elliptic_coercive import EllipticCoerciveProblem
+from rbnics.problems.elliptic import EllipticCoerciveProblem
 from rbnics.backends import product, sum
 
 ParabolicCoerciveProblem_Base = LinearTimeDependentProblem(EllipticCoerciveProblem)
