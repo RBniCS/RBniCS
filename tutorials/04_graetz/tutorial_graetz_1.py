@@ -28,6 +28,7 @@ from rbnics import *
 class Graetz(EllipticCoerciveProblem):
     
     # Default initialization of members
+    @generate_function_space_for_stability_factor
     def __init__(self, V, **kwargs):
         # Call the standard initialization
         EllipticCoerciveProblem.__init__(self, V, **kwargs)
@@ -41,12 +42,19 @@ class Graetz(EllipticCoerciveProblem):
         self.ds = Measure("ds")(subdomain_data=boundaries)
         # Store the velocity expression
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
+        # Customize eigen solver parameters
+        self._eigen_solver_parameters.update({
+            "bounding_box_minimum": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e-5},
+            "bounding_box_maximum": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e5},
+            "stability_factor": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e-5}
+        })
         
     # Return custom problem name
     def name(self):
         return "Graetz1"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
+    @compute_theta_for_stability_factor
     def compute_theta(self, term):
         mu = self.mu
         if term == "a":
@@ -63,6 +71,7 @@ class Graetz(EllipticCoerciveProblem):
             raise ValueError("Invalid term for compute_theta().")
                     
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
+    @assemble_operator_for_stability_factor
     def assemble_operator(self, term):
         v = self.v
         dx = self.dx
