@@ -57,6 +57,7 @@ from rbnics.backends.dolfin.wrapping.function_save import function_save
 from rbnics.backends.dolfin.wrapping.function_space import FunctionSpace
 from rbnics.backends.dolfin.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector
 from rbnics.backends.dolfin.wrapping.function_to_vector import function_to_vector
+from rbnics.backends.dolfin.wrapping.generate_function_space_for_stability_factor import generate_function_space_for_stability_factor
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
 from rbnics.backends.dolfin.wrapping.get_default_linear_solver import get_default_linear_solver
 from rbnics.backends.dolfin.wrapping.get_function_norm import get_function_norm
@@ -133,6 +134,7 @@ __all__ = [
     'functions_list_mul_online_vector',
     'FunctionSpace',
     'function_to_vector',
+    'generate_function_space_for_stability_factor',
     'get_auxiliary_problem_for_non_parametrized_function',
     'get_default_linear_solver',
     'get_function_norm',
@@ -187,6 +189,7 @@ __overridden__ = {
         'compute_theta_for_derivatives',
         'compute_theta_for_stability_factor',
         'compute_theta_for_supremizers',
+        'generate_function_space_for_stability_factor',
         'ParametrizedExpression',
         'plot',
         'PullBackFormsToReferenceDomain'

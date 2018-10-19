@@ -37,16 +37,14 @@ def ExactStabilityFactorDecoratedProblem(
                 self._eigen_solver_parameters = {
                     "stability_factor": dict()
                 }
+                # Additional function space required by stability factor computations (to be initialized before
+                # calling parent initialization as it will update them)
+                self.stability_factor_V = None
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Additional terms required by stability factor computations
                 self.terms.extend(["stability_factor_left_hand_matrix", "stability_factor_right_hand_matrix"])
                 self.terms_order.update({"stability_factor_left_hand_matrix": 2, "stability_factor_right_hand_matrix": 2})
-                # Additional function space required by stability factor computations
-                try:
-                    self.stability_factor_V = kwargs["stability_factor_V"]
-                except KeyError:
-                    self.stability_factor_V = self.V
                 # Stability factor eigen problem
                 self.stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "smallest", self._eigen_solver_parameters["stability_factor"], os.path.join(self.name(), "exact_stability_factor"))
                 

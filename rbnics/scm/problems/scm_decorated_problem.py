@@ -43,16 +43,14 @@ def SCMDecoratedProblem(
                     "bounding_box_maximum": dict(),
                     "stability_factor": dict()
                 }
+                # Additional function space required by stability factor computations (to be initialized before
+                # calling parent initialization as it will update them)
+                self.stability_factor_V = None
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Additional terms required by stability factor computations
                 self.terms.extend(["stability_factor_left_hand_matrix", "stability_factor_right_hand_matrix"])
                 self.terms_order.update({"stability_factor_left_hand_matrix": 2, "stability_factor_right_hand_matrix": 2})
-                # Additional function space required by stability factor computations
-                try:
-                    self.stability_factor_V = kwargs["stability_factor_V"]
-                except KeyError:
-                    self.stability_factor_V = self.V
                 # Storage for SCM reduced problems
                 self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"))
                 
