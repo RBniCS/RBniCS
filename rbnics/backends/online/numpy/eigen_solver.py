@@ -44,11 +44,13 @@ class EigenSolver(AbstractEigenSolver):
         self.parameters.update(parameters)
         
     def solve(self, n_eigs=None):
-        if self.parameters["problem_type"] == "hermitian":
+        assert "problem_type" in self.parameters
+        if self.parameters["problem_type"] in ("hermitian", "gen_hermitian"):
             eigs, eigv = eigh(self.A, self.B)
         else:
             eigs, eigv = eig(self.A, self.B)
             
+        assert "spectrum" in self.parameters
         if self.parameters["spectrum"] == "largest real":
             idx = eigs.argsort() # sort by increasing value
             idx = idx[::-1] # reverse the order
