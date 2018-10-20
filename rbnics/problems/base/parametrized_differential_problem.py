@@ -235,7 +235,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                         # that do not require an additional lifting functions.
                         # The user needs to implement the dirichlet_bc case for assemble_operator,
                         # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
-                        def generate_modified_compute_theta(component):
+                        def generate_modified_compute_theta(component, operator_bc):
                             standard_compute_theta = self.compute_theta
                             def modified_compute_theta(self_, term):
                                 if term == dirichlet_bc_string.format(c=component):
@@ -243,7 +243,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta
-                        PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component)).patch()
+                        PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component, operator_bc)).patch()
                         dirichlet_bc_are_homogeneous[component] = True
                     else:
                         dirichlet_bc_are_homogeneous[component] = False
