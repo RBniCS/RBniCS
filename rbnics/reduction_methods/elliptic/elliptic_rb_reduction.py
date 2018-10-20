@@ -16,16 +16,15 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
+from rbnics.problems.elliptic.elliptic_problem import EllipticProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
-from rbnics.reduction_methods.elliptic.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
+from rbnics.reduction_methods.elliptic.elliptic_reduction_method import EllipticReductionMethod
 from rbnics.utils.decorators import ReductionMethodFor
 
-EllipticCoerciveRBReduction_Base = LinearRBReduction(EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod))
+EllipticRBReduction_Base = LinearRBReduction(EllipticReductionMethod(DifferentialProblemReductionMethod))
 
 # Base class containing the interface of the RB method
-# for (compliant) elliptic coercive problems
-# The following implementation will be retained if no output is provided in the "s" term
-@ReductionMethodFor(EllipticCoerciveProblem, "ReducedBasis")
-class EllipticCoerciveRBReduction(EllipticCoerciveRBReduction_Base):
+# for elliptic problems
+@ReductionMethodFor(EllipticProblem, "ReducedBasis")
+class EllipticRBReduction(EllipticRBReduction_Base):
     pass

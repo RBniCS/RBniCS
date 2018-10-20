@@ -18,9 +18,9 @@
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 
-def NonlinearEllipticReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
+def NonlinearEllipticReductionMethod(EllipticReductionMethod_DerivedClass):
     
-    NonlinearEllipticReductionMethod_Base = NonlinearReductionMethod(EllipticCoerciveReductionMethod_DerivedClass)
+    NonlinearEllipticReductionMethod_Base = NonlinearReductionMethod(EllipticReductionMethod_DerivedClass)
     
     class NonlinearEllipticReductionMethod_Class(NonlinearEllipticReductionMethod_Base):
         pass

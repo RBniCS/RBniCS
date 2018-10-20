@@ -16,14 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic import EllipticCoercivePODGalerkinReducedProblem
+from rbnics.problems.elliptic import EllipticPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem import NonlinearEllipticReducedProblem
 from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.base import NonlinearPODGalerkinReducedProblem
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import NonlinearEllipticProblem
 from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGalerkinReduction
 
-NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(NonlinearEllipticReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
+NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(NonlinearEllipticReducedProblem(EllipticPODGalerkinReducedProblem))
 
 @ReducedProblemFor(NonlinearEllipticProblem, NonlinearEllipticPODGalerkinReduction)
 class NonlinearEllipticPODGalerkinReducedProblem(NonlinearEllipticPODGalerkinReducedProblem_Base):

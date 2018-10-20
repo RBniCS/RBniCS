@@ -27,8 +27,6 @@ from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalCon
 
 EllipticOptimalControlRBReducedProblem_Base = LinearRBReducedProblem(EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlRBReduction)
 class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProblem_Base):
 
@@ -43,10 +41,10 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
-        alpha = self.truth_problem.get_stability_factor_lower_bound()
+        beta = self.truth_problem.get_stability_factor_lower_bound()
         assert eps2 >= 0. or isclose(eps2, 0.)
-        assert alpha >= 0.
-        return sqrt(abs(eps2)/alpha)
+        assert beta >= 0.
+        return sqrt(abs(eps2)/beta)
         
     # Return a relative error bound for the current solution
     def estimate_relative_error(self):

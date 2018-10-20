@@ -17,10 +17,10 @@
 #
 
 from rbnics.problems.base import NonlinearProblem
-from rbnics.problems.elliptic import EllipticCoerciveProblem
+from rbnics.problems.elliptic import EllipticProblem
 from rbnics.backends import product, sum
 
-NonlinearEllipticProblem_Base = NonlinearProblem(EllipticCoerciveProblem)
+NonlinearEllipticProblem_Base = NonlinearProblem(EllipticProblem)
 
 class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
     

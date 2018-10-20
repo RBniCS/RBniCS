@@ -24,8 +24,6 @@ from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_
 
 EllipticOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
-# Base class containing the interface of a POD-Galerkin ROM
-# for elliptic coercive problems
 @ReductionMethodFor(EllipticOptimalControlProblem, "PODGalerkin")
 class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerkinReduction_Base):
     

@@ -16,16 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
 from rbnics.problems.elliptic.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from rbnics.reduction_methods.elliptic import EllipticCoercivePODGalerkinReduction
+from rbnics.problems.elliptic.elliptic_pod_galerkin_reduced_problem import EllipticPODGalerkinReducedProblem
+from rbnics.reduction_methods.elliptic import EllipticPODGalerkinReduction
 from rbnics.utils.decorators import ReducedProblemFor
 
-EllipticCoercivePODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem))
+EllipticCoercivePODGalerkinReducedProblem_Base = EllipticCoerciveReducedProblem(EllipticPODGalerkinReducedProblem)
 
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticCoercivePODGalerkinReduction)
+@ReducedProblemFor(EllipticCoerciveProblem, EllipticPODGalerkinReduction)
 class EllipticCoercivePODGalerkinReducedProblem(EllipticCoercivePODGalerkinReducedProblem_Base):
     pass

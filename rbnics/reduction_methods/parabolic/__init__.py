@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.parabolic.parabolic_coercive_pod_galerkin_reduction import ParabolicCoercivePODGalerkinReduction
-from rbnics.reduction_methods.parabolic.parabolic_coercive_rb_reduction import ParabolicCoerciveRBReduction
-from rbnics.reduction_methods.parabolic.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
+from rbnics.reduction_methods.parabolic.parabolic_pod_galerkin_reduction import ParabolicPODGalerkinReduction
+from rbnics.reduction_methods.parabolic.parabolic_rb_reduction import ParabolicRBReduction
+from rbnics.reduction_methods.parabolic.parabolic_reduction_method import ParabolicReductionMethod
 
 __all__ = [
-    'ParabolicCoercivePODGalerkinReduction',
-    'ParabolicCoerciveRBReduction',
-    'ParabolicCoerciveReductionMethod'
+    'ParabolicPODGalerkinReduction',
+    'ParabolicRBReduction',
+    'ParabolicReductionMethod'
 ]

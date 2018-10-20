@@ -17,15 +17,15 @@
 #
 
 from rbnics.utils.decorators import ReductionMethodFor
-from rbnics.problems.parabolic.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReduction
-from rbnics.reduction_methods.elliptic import EllipticCoercivePODGalerkinReduction
-from rbnics.reduction_methods.parabolic.parabolic_coercive_reduction_method import ParabolicCoerciveReductionMethod
+from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
+from rbnics.reduction_methods.base import LinearTimeDependentRBReduction
+from rbnics.reduction_methods.elliptic import EllipticRBReduction
+from rbnics.reduction_methods.parabolic.parabolic_reduction_method import ParabolicReductionMethod
 
-ParabolicCoercivePODGalerkinReduction_Base = LinearTimeDependentPODGalerkinReduction(ParabolicCoerciveReductionMethod(EllipticCoercivePODGalerkinReduction))
+ParabolicRBReduction_Base = LinearTimeDependentRBReduction(ParabolicReductionMethod(EllipticRBReduction))
 
-# Base class containing the interface of a POD-Galerkin ROM
-# for parabolic coercive problems
-@ReductionMethodFor(ParabolicCoerciveProblem, "PODGalerkin")
-class ParabolicCoercivePODGalerkinReduction(ParabolicCoercivePODGalerkinReduction_Base):
+# Base class containing the interface of a RB ROM
+# for parabolic problems
+@ReductionMethodFor(ParabolicProblem, "ReducedBasis")
+class ParabolicRBReduction(ParabolicRBReduction_Base):
     pass

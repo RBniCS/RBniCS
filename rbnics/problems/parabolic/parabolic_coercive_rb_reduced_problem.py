@@ -16,89 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from math import sqrt
-from numpy import isclose
 from rbnics.problems.elliptic import EllipticCoerciveRBReducedProblem
 from rbnics.problems.parabolic.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
 from rbnics.utils.decorators import ReducedProblemFor
-from rbnics.problems.base import LinearTimeDependentRBReducedProblem
+from rbnics.problems.parabolic.abstract_parabolic_rb_reduced_problem import AbstractParabolicRBReducedProblem
 from rbnics.problems.parabolic.parabolic_coercive_problem import ParabolicCoerciveProblem
-from rbnics.reduction_methods.parabolic import ParabolicCoerciveRBReduction
-from rbnics.backends import assign, product, sum, TimeSeries, transpose
+from rbnics.reduction_methods.parabolic import ParabolicRBReduction
 
-ParabolicCoerciveRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
+ParabolicCoerciveRBReducedProblem_Base = AbstractParabolicRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
 
 # Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
-@ReducedProblemFor(ParabolicCoerciveProblem, ParabolicCoerciveRBReduction)
+# for parabolic coercive problems.
+@ReducedProblemFor(ParabolicCoerciveProblem, ParabolicRBReduction)
 class ParabolicCoerciveRBReducedProblem(ParabolicCoerciveRBReducedProblem_Base):
-    
-    # Default initialization of members.
-    def __init__(self, truth_problem, **kwargs):
-        # Call to parent
-        ParabolicCoerciveRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
-        
-        # Skip useless Riesz products
-        self.riesz_terms.append("m")
-        self.error_estimation_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
-        
-    # Return an error bound for the current solution
-    def estimate_error(self):
-        eps2_over_time = self.get_residual_norm_squared()
-        alpha = self.truth_problem.get_stability_factor_lower_bound()
-        # Compute error bound
-        error_bound_over_time = TimeSeries(eps2_over_time)
-        for (k, t) in enumerate(eps2_over_time.stored_times()):
-            if not isclose(t, self.t0, self.dt/2.):
-                eps2 = eps2_over_time[k]
-                assert eps2 >= 0. or isclose(eps2, 0.)
-                assert alpha >= 0.
-                error_bound_over_time.append(sqrt(abs(eps2)/alpha))
-            else:
-                initial_error_estimate_squared = self.get_initial_error_estimate_squared()
-                assert initial_error_estimate_squared >= 0. or isclose(initial_error_estimate_squared, 0.)
-                error_bound_over_time.append(sqrt(abs(initial_error_estimate_squared)))
-        #
-        return error_bound_over_time
-        
-    # Return an error bound for the current solution
-    def estimate_relative_error(self):
-        return NotImplemented
-    
-    # Return an error bound for the current output
-    def estimate_error_output(self):
-        return NotImplemented
-        
-    # Return a relative error bound for the current output
-    def estimate_relative_error_output(self):
-        return NotImplemented
-
-    # Return the numerator of the error bound for the current solution
-    def get_residual_norm_squared(self):
-        residual_norm_squared_over_time = TimeSeries(self._solution_over_time)
-        assert len(self._solution_over_time) == len(self._solution_dot_over_time)
-        for (k, t) in enumerate(self._solution_over_time.stored_times()):
-            if not isclose(t, self.t0, self.dt/2.):
-                # Set current time
-                self.set_time(t)
-                # Set current solution and solution_dot
-                assign(self._solution, self._solution_over_time[k])
-                assign(self._solution_dot, self._solution_dot_over_time[k])
-                # Compute the numerator of the error bound at the current time, first
-                # by computing residual of elliptic part
-                elliptic_residual_norm_squared = ParabolicCoerciveRBReducedProblem_Base.get_residual_norm_squared(self)
-                # ... and then adding terms related to time derivative
-                N = self._solution.N
-                theta_m = self.compute_theta("m")
-                theta_a = self.compute_theta("a")
-                theta_f = self.compute_theta("f")
-                residual_norm_squared_over_time.append(
-                      elliptic_residual_norm_squared
-                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "f"][:N], theta_f)))
-                    + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "a"][:N, :N], theta_a))*self._solution)
-                    + transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "m"][:N, :N], theta_m))*self._solution_dot
-                )
-            else:
-                # Error estimator on initial condition does not use the residual
-                residual_norm_squared_over_time.append(0.)
-        return residual_norm_squared_over_time
+    pass

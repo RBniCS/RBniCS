@@ -16,12 +16,12 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.reduction_methods.elliptic.elliptic_coercive_pod_galerkin_reduction import EllipticCoercivePODGalerkinReduction
-from rbnics.reduction_methods.elliptic.elliptic_coercive_rb_reduction import EllipticCoerciveRBReduction
-from rbnics.reduction_methods.elliptic.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
+from rbnics.reduction_methods.elliptic.elliptic_pod_galerkin_reduction import EllipticPODGalerkinReduction
+from rbnics.reduction_methods.elliptic.elliptic_rb_reduction import EllipticRBReduction
+from rbnics.reduction_methods.elliptic.elliptic_reduction_method import EllipticReductionMethod
 
 __all__ = [
-    'EllipticCoercivePODGalerkinReduction',
-    'EllipticCoerciveRBReduction',
-    'EllipticCoerciveReductionMethod'
+    'EllipticPODGalerkinReduction',
+    'EllipticRBReduction',
+    'EllipticReductionMethod'
 ]

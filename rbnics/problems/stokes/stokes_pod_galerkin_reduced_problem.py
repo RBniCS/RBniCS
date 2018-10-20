@@ -24,8 +24,6 @@ from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 
 StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(StokesReducedProblem(ParametrizedReducedDifferentialProblem))
 
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
 @ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
 class StokesPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem_Base):
     pass

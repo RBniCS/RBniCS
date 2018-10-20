@@ -16,17 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic import EllipticCoercivePODGalerkinReducedProblem
-from rbnics.problems.parabolic.parabolic_coercive_reduced_problem import ParabolicCoerciveReducedProblem
+from rbnics.problems.elliptic import EllipticPODGalerkinReducedProblem
+from rbnics.problems.parabolic.parabolic_reduced_problem import ParabolicReducedProblem
 from rbnics.utils.decorators import ReducedProblemFor
 from rbnics.problems.parabolic.abstract_parabolic_pod_galerkin_reduced_problem import AbstractParabolicPODGalerkinReducedProblem
-from rbnics.problems.parabolic.parabolic_coercive_problem import ParabolicCoerciveProblem
+from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
 from rbnics.reduction_methods.parabolic import ParabolicPODGalerkinReduction
 
-ParabolicCoercivePODGalerkinReducedProblem_Base = AbstractParabolicPODGalerkinReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
+ParabolicPODGalerkinReducedProblem_Base = AbstractParabolicPODGalerkinReducedProblem(ParabolicReducedProblem(EllipticPODGalerkinReducedProblem))
 
 # Base class containing the interface of a projection based ROM
-# for parabolic coercive problems.
-@ReducedProblemFor(ParabolicCoerciveProblem, ParabolicPODGalerkinReduction)
-class ParabolicCoercivePODGalerkinReducedProblem(ParabolicCoercivePODGalerkinReducedProblem_Base):
+# for parabolic problems.
+@ReducedProblemFor(ParabolicProblem, ParabolicPODGalerkinReduction)
+class ParabolicPODGalerkinReducedProblem(ParabolicPODGalerkinReducedProblem_Base):
     pass

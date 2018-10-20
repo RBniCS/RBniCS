@@ -24,8 +24,6 @@ from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_
 
 EllipticOptimalControlRBReduction_Base = LinearRBReduction(EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
-# Base class containing the interface of a RB ROM
-# for elliptic coercive problems
 @ReductionMethodFor(EllipticOptimalControlProblem, "ReducedBasis")
 class EllipticOptimalControlRBReduction(EllipticOptimalControlRBReduction_Base):
     def update_basis_matrix(self, snapshot):

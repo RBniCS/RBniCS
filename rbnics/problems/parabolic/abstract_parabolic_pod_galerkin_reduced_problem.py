@@ -16,14 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.elliptic.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from rbnics.problems.elliptic.elliptic_rb_reduced_problem import EllipticRBReducedProblem
-from rbnics.reduction_methods.elliptic import EllipticRBReduction
-from rbnics.utils.decorators import ReducedProblemFor
+from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 
-EllipticCoerciveRBReducedProblem_Base = EllipticCoerciveReducedProblem(EllipticRBReducedProblem)
+def AbstractParabolicPODGalerkinReducedProblem(AbstractParabolicReducedProblem_DerivedClass):
+    AbstractParabolicPODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkinReducedProblem(AbstractParabolicReducedProblem_DerivedClass)
 
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticRBReduction)
-class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
-    pass
+    class AbstractParabolicPODGalerkinReducedProblem_Class(AbstractParabolicPODGalerkinReducedProblem_Base):
+        pass
+        
+    # return value (a class) for the decorator
+    return AbstractParabolicPODGalerkinReducedProblem_Class

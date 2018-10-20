@@ -16,41 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import LinearTimeDependentReducedProblem
-from rbnics.backends import product, sum
+from rbnics.problems.parabolic.abstract_parabolic_reduced_problem import AbstractParabolicReducedProblem
 
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.
 def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
     
-    ParabolicCoerciveReducedProblem_Base = LinearTimeDependentReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
+    ParabolicCoerciveReducedProblem_Base = AbstractParabolicReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
     
     class ParabolicCoerciveReducedProblem_Class(ParabolicCoerciveReducedProblem_Base):
-            
-        class ProblemSolver(ParabolicCoerciveReducedProblem_Base.ProblemSolver):
-            def residual_eval(self, t, solution, solution_dot):
-                problem = self.problem
-                N = self.N
-                assembled_operator = dict()
-                assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"][:N, :N]))
-                assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
-                assembled_operator["f"] = sum(product(problem.compute_theta("f"), problem.operator["f"][:N]))
-                return (
-                      assembled_operator["m"]*solution_dot
-                    + assembled_operator["a"]*solution
-                    - assembled_operator["f"]
-                )
-                
-            def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
-                problem = self.problem
-                N = self.N
-                assembled_operator = dict()
-                assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"][:N, :N]))
-                assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
-                return (
-                      assembled_operator["m"]*solution_dot_coefficient
-                    + assembled_operator["a"]
-                )
+        pass
             
     # return value (a class) for the decorator
     return ParabolicCoerciveReducedProblem_Class

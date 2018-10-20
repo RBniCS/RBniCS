@@ -26,8 +26,6 @@ from rbnics.reduction_methods.navier_stokes_unsteady import NavierStokesUnsteady
 
 NavierStokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGalerkinReducedProblem(NonlinearTimeDependentPODGalerkinReducedProblem(NavierStokesUnsteadyReducedProblem(NavierStokesPODGalerkinReducedProblem)))
 
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
 @ReducedProblemFor(NavierStokesUnsteadyProblem, NavierStokesUnsteadyPODGalerkinReduction)
 class NavierStokesUnsteadyPODGalerkinReducedProblem(NavierStokesUnsteadyPODGalerkinReducedProblem_Base):
     pass

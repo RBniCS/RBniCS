@@ -16,31 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.base import LinearReducedProblem
-from rbnics.backends import product, sum, transpose
-
-def EllipticCoerciveReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
+def EllipticCoerciveReducedProblem(EllipticReducedProblem_DerivedClass):
     
-    EllipticCoerciveReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
-
+    EllipticCoerciveReducedProblem_Base = EllipticReducedProblem_DerivedClass
+    
     # Base class containing the interface of a projection based ROM
     # for elliptic coercive problems.
     class EllipticCoerciveReducedProblem_Class(EllipticCoerciveReducedProblem_Base):
+        pass
         
-        class ProblemSolver(EllipticCoerciveReducedProblem_Base.ProblemSolver):
-            def matrix_eval(self):
-                problem = self.problem
-                N = self.N
-                return sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
-                
-            def vector_eval(self):
-                problem = self.problem
-                N = self.N
-                return sum(product(problem.compute_theta("f"), problem.operator["f"][:N]))
-            
-        # Perform an online evaluation of the output
-        def _compute_output(self, N):
-            self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"][:N]))
-            
     # return value (a class) for the decorator
     return EllipticCoerciveReducedProblem_Class

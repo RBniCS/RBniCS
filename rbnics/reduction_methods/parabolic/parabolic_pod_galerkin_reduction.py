@@ -16,15 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
-from rbnics.reduction_methods.elliptic.elliptic_coercive_reduction_method import EllipticCoerciveReductionMethod
 from rbnics.utils.decorators import ReductionMethodFor
+from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
+from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReduction
+from rbnics.reduction_methods.elliptic import EllipticPODGalerkinReduction
+from rbnics.reduction_methods.parabolic.parabolic_reduction_method import ParabolicReductionMethod
 
-EllipticCoercivePODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticCoerciveReductionMethod(DifferentialProblemReductionMethod))
+ParabolicPODGalerkinReduction_Base = LinearTimeDependentPODGalerkinReduction(ParabolicReductionMethod(EllipticPODGalerkinReduction))
 
 # Base class containing the interface of a POD-Galerkin ROM
-# for elliptic coercive problems
-@ReductionMethodFor(EllipticCoerciveProblem, "PODGalerkin")
-class EllipticCoercivePODGalerkinReduction(EllipticCoercivePODGalerkinReduction_Base):
+# for parabolic problems
+@ReductionMethodFor(ParabolicProblem, "PODGalerkin")
+class ParabolicPODGalerkinReduction(ParabolicPODGalerkinReduction_Base):
     pass

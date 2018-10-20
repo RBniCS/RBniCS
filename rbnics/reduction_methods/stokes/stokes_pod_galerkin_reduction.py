@@ -24,8 +24,6 @@ from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReduct
 
 StokesPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesReductionMethod(DifferentialProblemReductionMethod))
 
-# Base class containing the interface of a POD-Galerkin ROM
-# for elliptic coercive problems
 @ReductionMethodFor(StokesProblem, "PODGalerkin")
 class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
     

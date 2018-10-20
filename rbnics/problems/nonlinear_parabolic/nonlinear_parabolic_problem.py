@@ -22,7 +22,6 @@ from rbnics.backends import product, sum
 
 NonlinearParabolicProblem_Base = NonlinearTimeDependentProblem(NonlinearEllipticProblem)
 
-# Base class containing the definition of parabolic coercive problems
 class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
     
     # Default initialization of members

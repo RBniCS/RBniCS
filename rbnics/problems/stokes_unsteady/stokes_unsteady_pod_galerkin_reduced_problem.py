@@ -28,8 +28,6 @@ def AbstractCFDUnsteadyPODGalerkinReducedProblem(AbstractCFDUnsteadyPODGalerkinR
 
 StokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGalerkinReducedProblem(LinearTimeDependentPODGalerkinReducedProblem(StokesUnsteadyReducedProblem(StokesPODGalerkinReducedProblem)))
 
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
 @ReducedProblemFor(StokesUnsteadyProblem, StokesUnsteadyPODGalerkinReduction)
 class StokesUnsteadyPODGalerkinReducedProblem(StokesUnsteadyPODGalerkinReducedProblem_Base):
     pass

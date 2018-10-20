@@ -16,14 +16,16 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.elliptic.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from rbnics.problems.elliptic.elliptic_rb_reduced_problem import EllipticRBReducedProblem
-from rbnics.reduction_methods.elliptic import EllipticRBReduction
-from rbnics.utils.decorators import ReducedProblemFor
+from rbnics.reduction_methods.base import TimeDependentReductionMethod
 
-EllipticCoerciveRBReducedProblem_Base = EllipticCoerciveReducedProblem(EllipticRBReducedProblem)
-
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticRBReduction)
-class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
-    pass
+# Base class containing the interface of a projection based ROM
+# for parabolic problems.
+def ParabolicReductionMethod(EllipticReductionMethod_DerivedClass):
+    
+    ParabolicReductionMethod_Base = TimeDependentReductionMethod(EllipticReductionMethod_DerivedClass)
+    
+    class ParabolicReductionMethod_Class(ParabolicReductionMethod_Base):
+        pass
+        
+    # return value (a class) for the decorator
+    return ParabolicReductionMethod_Class

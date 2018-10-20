@@ -16,14 +16,17 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
-from rbnics.problems.elliptic.elliptic_coercive_reduced_problem import EllipticCoerciveReducedProblem
-from rbnics.problems.elliptic.elliptic_rb_reduced_problem import EllipticRBReducedProblem
-from rbnics.reduction_methods.elliptic import EllipticRBReduction
+from rbnics.problems.elliptic import EllipticRBReducedProblem
+from rbnics.problems.parabolic.parabolic_reduced_problem import ParabolicReducedProblem
 from rbnics.utils.decorators import ReducedProblemFor
+from rbnics.problems.parabolic.abstract_parabolic_rb_reduced_problem import AbstractParabolicRBReducedProblem
+from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
+from rbnics.reduction_methods.parabolic import ParabolicRBReduction
 
-EllipticCoerciveRBReducedProblem_Base = EllipticCoerciveReducedProblem(EllipticRBReducedProblem)
+ParabolicRBReducedProblem_Base = AbstractParabolicRBReducedProblem(ParabolicReducedProblem(EllipticRBReducedProblem))
 
-@ReducedProblemFor(EllipticCoerciveProblem, EllipticRBReduction)
-class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
+# Base class containing the interface of a projection based ROM
+# for elliptic coercive problems.
+@ReducedProblemFor(ParabolicProblem, ParabolicRBReduction)
+class ParabolicRBReducedProblem(ParabolicRBReducedProblem_Base):
     pass

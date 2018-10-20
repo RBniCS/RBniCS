@@ -19,9 +19,9 @@
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.backends import product, sum
 
-def NonlinearEllipticReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
+def NonlinearEllipticReducedProblem(EllipticReducedProblem_DerivedClass):
     
-    NonlinearEllipticReducedProblem_Base = NonlinearReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
+    NonlinearEllipticReducedProblem_Base = NonlinearReducedProblem(EllipticReducedProblem_DerivedClass)
     
     class NonlinearEllipticReducedProblem_Class(NonlinearEllipticReducedProblem_Base):
         

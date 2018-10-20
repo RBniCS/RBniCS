@@ -24,8 +24,6 @@ from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalCon
 
 EllipticOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
-# Base class containing the interface of a projection based ROM
-# for elliptic coercive problems.
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlPODGalerkinReduction)
 class EllipticOptimalControlPODGalerkinReducedProblem(EllipticOptimalControlPODGalerkinReducedProblem_Base):
     pass
