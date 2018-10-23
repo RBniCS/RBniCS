@@ -164,7 +164,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 self.replace_get_stability_factor_lower_bound = PatchInstanceMethod(
                     self.truth_problem,
                     "get_stability_factor_lower_bound",
-                    lambda self_: self_.truth_problem.SCM_approximation.get_stability_factor_lower_bound_lower_bound(kwargs["SCM"])
+                    lambda self_: self_.SCM_approximation.get_stability_factor_lower_bound(kwargs["SCM"])
                 )
                 self.replace_get_stability_factor_lower_bound.patch()
             

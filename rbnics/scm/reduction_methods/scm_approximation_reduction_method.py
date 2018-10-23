@@ -178,7 +178,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
             if ratio < 0. and not isclose(ratio, 0.): # if ratio << 0
                 print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
             if ratio > 1. and not isclose(ratio, 1.): # if ratio >> 1
-                print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor lower bound = " + str(stability_factor_upper_bound))
+                print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor upper bound = " + str(stability_factor_upper_bound))
                 
             error_estimator = 1. - ratio
             return error_estimator
@@ -235,7 +235,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
                     if ratio_lower_bound_to_upper_bound < 0. and not isclose(ratio_lower_bound_to_upper_bound, 0.): # if ratio_lower_bound_to_upper_bound << 0
                         print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
                     if ratio_lower_bound_to_upper_bound > 1. and not isclose(ratio_lower_bound_to_upper_bound, 1.): # if ratio_lower_bound_to_upper_bound >> 1
-                        print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor lower bound = " + str(stability_factor_upper_bound))
+                        print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor upper bound = " + str(stability_factor_upper_bound))
                     if ratio_lower_bound_to_exact > 1. and not isclose(ratio_lower_bound_to_exact, 1.): # if ratio_lower_bound_to_exact >> 1
                         print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > exact stability factor =" + str(exact_stability_factor))
                     
