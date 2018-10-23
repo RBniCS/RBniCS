@@ -123,9 +123,15 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Patch truth solve if with_respect_to kwarg is provided
         self._patch_truth_solve(False, **kwargs)
         
+        # Patch truth compute_output if with_respect_to kwarg is provided
+        self._patch_truth_compute_output(False, **kwargs)
+        
     def _finalize_error_analysis(self, **kwargs):
         # Undo patch to truth solve in case with_respect_to kwarg was provided
         self._undo_patch_truth_solve(False, **kwargs)
+        
+        # Undo patch to truth compute_output in case with_respect_to kwarg was provided
+        self._undo_patch_truth_compute_output(False, **kwargs)
         
     # Initialize data structures required for the speedup analysis phase
     def _init_speedup_analysis(self, **kwargs):
@@ -141,10 +147,16 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Patch truth solve if with_respect_to kwarg is provided
         self._patch_truth_solve(True, **kwargs)
         
+        # Patch truth compute_output if with_respect_to kwarg is provided
+        self._patch_truth_compute_output(True, **kwargs)
+        
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         # Undo patch to truth solve in case with_respect_to kwarg was provided
         self._undo_patch_truth_solve(True, **kwargs)
+        
+        # Undo patch to truth compute_output in case with_respect_to kwarg was provided
+        self._undo_patch_truth_compute_output(True, **kwargs)
         
     def _patch_truth_solve(self, force, **kwargs):
         if "with_respect_to" in kwargs:
@@ -172,18 +184,16 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             # Make sure to clean up problem and reduced problem solution cache to ensure that
             # solution and reduced solution are actually computed
             other_truth_problem._solution_cache.clear()
-            other_truth_problem._output_cache.clear()
             self.reduced_problem._solution_cache.clear()
-            self.reduced_problem._output_cache.clear()
             
             # Disable the capability of importing/exporting truth solutions
             def disable_import_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
                 raise OSError
             self.disable_import_solution = PatchInstanceMethod(other_truth_problem, "import_solution", disable_import_solution_method)
+            self.disable_import_solution.patch()
             def disable_export_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
                 pass
             self.disable_export_solution = PatchInstanceMethod(other_truth_problem, "export_solution", disable_export_solution_method)
-            self.disable_import_solution.patch()
             self.disable_export_solution.patch()
         
     def _undo_patch_truth_solve(self, force, **kwargs):
@@ -198,3 +208,54 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             self.disable_export_solution.unpatch()
             del self.disable_import_solution
             del self.disable_export_solution
+            
+    def _patch_truth_compute_output(self, force, **kwargs):
+        if "with_respect_to" in kwargs:
+            assert inspect.isfunction(kwargs["with_respect_to"])
+            other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+            def patched_truth_compute_output(self_):
+                other_truth_problem.compute_output()
+                self.truth_problem._output = other_truth_problem._output
+                return self.truth_problem._output
+                
+            self.patch_truth_compute_output = PatchInstanceMethod(
+                self.truth_problem,
+                "compute_output",
+                patched_truth_compute_output
+            )
+            self.patch_truth_compute_output.patch()
+            
+            # Initialize the affine expansion in the other truth problem
+            other_truth_problem.init()
+        else:
+            other_truth_problem = self.truth_problem
+            
+        # Clean up output caching and disable I/O
+        if force:
+            # Make sure to clean up problem and reduced problem output cache to ensure that
+            # output and reduced output are actually computed
+            other_truth_problem._output_cache.clear()
+            self.reduced_problem._output_cache.clear()
+            
+            # Disable the capability of importing/exporting truth outputs
+            def disable_import_output_method(self_, folder=None, filename=None, output=None, suffix=None):
+                raise OSError
+            self.disable_import_output = PatchInstanceMethod(other_truth_problem, "import_output", disable_import_output_method)
+            self.disable_import_output.patch()
+            def disable_export_output_method(self_, folder=None, filename=None, output=None, suffix=None):
+                pass
+            self.disable_export_output = PatchInstanceMethod(other_truth_problem, "export_output", disable_export_output_method)
+            self.disable_export_output.patch()
+        
+    def _undo_patch_truth_compute_output(self, force, **kwargs):
+        if "with_respect_to" in kwargs:
+            self.patch_truth_compute_output.unpatch()
+            del self.patch_truth_compute_output
+            
+        # Restore output I/O
+        if force:
+            # Restore the capability to import/export truth outputs
+            self.disable_import_output.unpatch()
+            self.disable_export_output.unpatch()
+            del self.disable_import_output
+            del self.disable_export_output
