@@ -19,6 +19,7 @@
 import os
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import ParametrizedStabilityFactorEigenProblem
+from rbnics.scm.problems.decorated_problem_with_stability_factor_evaluation import DecoratedProblemWithStabilityFactorEvaluation
 
 def ExactStabilityFactorDecoratedProblem(
     **decorator_kwargs
@@ -28,6 +29,7 @@ def ExactStabilityFactorDecoratedProblem(
     @ProblemDecoratorFor(ExactStabilityFactor)
     def ExactStabilityFactorDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
+        @DecoratedProblemWithStabilityFactorEvaluation
         @PreserveClassName
         class ExactStabilityFactorDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             # Default initialization of members
@@ -47,6 +49,7 @@ def ExactStabilityFactorDecoratedProblem(
                 self.terms_order.update({"stability_factor_left_hand_matrix": 2, "stability_factor_right_hand_matrix": 2})
                 # Stability factor eigen problem
                 self.stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "smallest", self._eigen_solver_parameters["stability_factor"], os.path.join(self.name(), "exact_stability_factor"))
+                self.stability_factor_lower_bound_calculator = None
                 
             # Initialize data structures required for the online phase
             def init(self):
@@ -55,14 +58,6 @@ def ExactStabilityFactorDecoratedProblem(
                 # Init exact stability factor computations
                 self.stability_factor_calculator.init()
             
-            # Return the lower bound for the stability factor.
-            def get_stability_factor_lower_bound(self):
-                return self.evaluate_stability_factor()
-                
-            def evaluate_stability_factor(self):
-                (minimum_eigenvalue, _) = self.stability_factor_calculator.solve()
-                return minimum_eigenvalue
-                
         # return value (a class) for the decorator
         return ExactStabilityFactorDecoratedProblem_Class
         
