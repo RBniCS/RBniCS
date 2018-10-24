@@ -130,10 +130,12 @@ def BasicSLEPcEPSSolver(backend, wrapping):
             assert self.eps.getConverged() >= n_eigs
                 
         def get_eigenvalue(self, i):
+            assert i < self.eps.getConverged()
             eig_i = self.eps.getEigenvalue(i)
             return eig_i.real, eig_i.imag
         
         def get_eigenvector(self, i, eigv_i_real, eigv_i_imag):
+            assert i < self.eps.getConverged()
             eigv_i_real_petsc4py = wrapping.to_petsc4py(eigv_i_real)
             eigv_i_imag_petsc4py = wrapping.to_petsc4py(eigv_i_imag)
             self.eps.getEigenvector(i, eigv_i_real_petsc4py, eigv_i_imag_petsc4py)

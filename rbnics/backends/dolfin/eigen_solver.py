@@ -111,8 +111,10 @@ class EigenSolver(AbstractEigenSolver):
     def solve(self, n_eigs=None):
         assert n_eigs is not None
         self.eigen_solver.solve(n_eigs)
+        assert self.eigen_solver.get_number_converged() >= n_eigs
     
     def get_eigenvalue(self, i):
+        assert i < self.eigen_solver.get_number_converged()
         return self.eigen_solver.get_eigenvalue(i)
     
     def get_eigenvector(self, i):
