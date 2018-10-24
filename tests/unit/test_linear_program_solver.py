@@ -16,16 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import pytest
 from numpy import isclose
-from rbnics.backends.common.linear_program_solver import linear_programming_backends, Matrix, Vector
-AllLinearProgramSolver = list()
-if linear_programming_backends["cvxopt"]:
-    from rbnics.backends.common.linear_program_solver import CVXOPTLinearProgramSolver
-    AllLinearProgramSolver.append(CVXOPTLinearProgramSolver)
-if linear_programming_backends["scipy"]:
-    from rbnics.backends.common.linear_program_solver import SciPyLinearProgramSolver
-    AllLinearProgramSolver.append(SciPyLinearProgramSolver)
+from rbnics.backends.common.linear_program_solver import LinearProgramSolver, Matrix, Vector
 
 """
 Solve
@@ -40,8 +32,7 @@ with cost
     0.625
 """
 
-@pytest.mark.parametrize("LinearProgramSolver", AllLinearProgramSolver)
-def test_linear_program_solver(LinearProgramSolver):
+def test_linear_program_solver():
     c = Vector(2)
     A = Matrix(2, 2)
     b = Vector(2)
