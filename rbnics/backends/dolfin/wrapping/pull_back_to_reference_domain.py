@@ -37,6 +37,8 @@ from ufl.indexed import Indexed
 from dolfin import assemble, cells, compile_cpp_code, CompiledExpression, Constant, Expression, facets
 from dolfin.cpp.la import GenericMatrix, GenericVector
 from dolfin.function.expression import BaseExpression
+from rbnics.backends.dolfin.wrapping.assemble_operator_for_stability_factor import assemble_operator_for_stability_factor
+from rbnics.backends.dolfin.wrapping.compute_theta_for_stability_factor import compute_theta_for_stability_factor
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
@@ -498,8 +500,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
     @ProblemDecoratorFor(PullBackFormsToReferenceDomain)
     def PullBackFormsToReferenceDomainDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
+        from rbnics.scm.problems import ExactStabilityFactor, SCM
         from rbnics.shape_parametrization.problems import AffineShapeParametrization, ShapeParametrization
-        assert all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "DEIM, EIM and ExactParametrizedFunctions should be applied after PullBackFormsToReferenceDomain"
+        assert all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor, SCM)]), "DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor and SCM should be applied after PullBackFormsToReferenceDomain"
         assert any([Algorithm in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (AffineShapeParametrization, ShapeParametrization)]), "PullBackFormsToReferenceDomain should be applied after AffineShapeParametrization or ShapeParametrization"
         
         from rbnics.backends.dolfin import SeparatedParametrizedForm
@@ -513,7 +516,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for pull back
-                self._terms_blacklist = ["stability_factor_right_hand_matrix"] # terms not to be pulled back because they behave like inner products
+                self._stability_factor_terms_blacklist = ["stability_factor_left_hand_matrix", "stability_factor_right_hand_matrix"]
+                self._stability_factor_decorated_assemble_operator = None
+                self._stability_factor_decorated_compute_theta = None
                 self._pull_back_is_affine = dict()
                 self._pulled_back_operators = dict()
                 self._pulled_back_theta_factors = dict()
@@ -538,7 +543,8 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     PatchInstanceMethod(self, "_init_DEIM_approximations", _custom_init_DEIM_approximations).patch()
                 
             def _init_pull_back(self):
-                for term in [term for term in self.terms if term not in self._terms_blacklist]:
+                terms_except_stability_factor_blacklist = [term for term in self.terms if term not in self._stability_factor_terms_blacklist]
+                for term in terms_except_stability_factor_blacklist:
                     assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
                     if term not in self._pulled_back_operators: # initialize only once
                         try:
@@ -625,7 +631,12 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                         assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
                                     # Restore mu
                                     self.set_mu(mu_bak)
-                                
+                # Re-apply stability factors decorators (if required, i.e. if @ExactStabilityFactor or @SCM was declared after @PullBackFormsToReferenceDomain)
+                # to make sure that pulled back operators (rather than original ones) are employed when defining lhs/rhs of stability factor eigenproblems
+                if len(self.terms) > len(terms_except_stability_factor_blacklist):
+                    self._stability_factor_decorated_assemble_operator = assemble_operator_for_stability_factor(PullBackFormsToReferenceDomainDecoratedProblem_Class.assemble_operator)
+                    self._stability_factor_decorated_compute_theta = compute_theta_for_stability_factor(PullBackFormsToReferenceDomainDecoratedProblem_Class.compute_theta)
+                    
             def _init_operators(self):
                 self._init_pull_back()
                 ParametrizedDifferentialProblem_DerivedClass._init_operators(self)
@@ -633,15 +644,19 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
             def assemble_operator(self, term):
                 if term in self._pulled_back_operators:
                     return tuple([pulled_back_operator for pulled_back_operators in self._pulled_back_operators[term] for pulled_back_operator in pulled_back_operators])
+                elif term in self._stability_factor_terms_blacklist:
+                    return self._stability_factor_decorated_assemble_operator(self, term)
                 else:
                     return ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                     
             def compute_theta(self, term):
-                thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                 if term in self._pulled_back_theta_factors:
+                    thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                     return tuple([sympy_eval(str(pulled_back_theta_factor), {"mu": self.mu})*thetas[q] for (q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]) for pulled_back_theta_factor in pulled_back_theta_factors])
+                elif term in self._stability_factor_terms_blacklist:
+                    return self._stability_factor_decorated_compute_theta(self, term)
                 else:
-                    return thetas
+                    return ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                     
             def _map_facet_id_to_subdomain_id(self, **kwargs):
                 mesh = self.V.mesh()
