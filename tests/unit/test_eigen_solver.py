@@ -70,6 +70,7 @@ def _test_eigen_solver_sparse(callback_type):
 
     # Solve the eigenproblem
     solver.set_parameters({
+        "linear_solver": "mumps",
         "problem_type": "gen_non_hermitian",
         "spectrum": "target real",
         "spectral_transform": "shift-and-invert",
