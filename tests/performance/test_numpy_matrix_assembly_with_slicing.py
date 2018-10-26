@@ -19,11 +19,10 @@
 import pytest
 from numpy import isclose
 from numpy.linalg import norm
-from numpy.random import randint
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
-from test_utils import RandomNumpyMatrix, RandomTuple
+from test_utils import RandomNumpyMatrix, RandomSize, RandomTuple
 
 product = None
 sum = None
@@ -43,8 +42,8 @@ class Data(object):
         # Genereate random theta
         theta = RandomTuple(self.Q)
         # Generate slice
-        N_stop = randint(1, self.Nmax + 1)
-        N_start = randint(0, N_stop)
+        N_stop = RandomSize(1, self.Nmax + 1)
+        N_start = RandomSize(0, N_stop)
         # Return
         return (theta, A, slice(N_start, N_stop))
         
