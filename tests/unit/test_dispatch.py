@@ -20,9 +20,9 @@ import pytest
 import sys
 import types
 import inspect
-import warnings  # noqa
+import warnings  # noqa: F401
 import urllib.request
-from multipledispatch.conflict import ambiguous, ambiguities, ordering  # noqa
+from multipledispatch.conflict import ambiguous, ambiguities, ordering  # noqa: F401
 from multipledispatch.utils import raises
 from rbnics.utils.decorators import dict_of, dispatch, iterable_of, list_of, overload, tuple_of
 from rbnics.utils.decorators.dispatch import AmbiguousSignatureError, consistent, Dispatcher, InvalidSignatureError, MethodDispatcher_Wrapper as MethodDispatcher, supercedes, UnavailableSignatureError

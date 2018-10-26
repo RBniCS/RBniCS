@@ -16,4 +16,4 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.basic.wrapping import function_to_vector
+from rbnics.backends.online.basic.wrapping import function_to_vector  # noqa: F401

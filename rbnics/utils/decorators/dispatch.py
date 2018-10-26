@@ -751,6 +751,6 @@ def powerset(types):
 # == Helper function to determine if function is a lambda function == #
 def islambda(arg):
     return isinstance(arg, _reference_lambda_type) and arg.__name__ == _reference_lambda_name
-_reference_lambda = lambda: 0
+_reference_lambda = lambda: 0  # noqa: E731
 _reference_lambda_type = type(_reference_lambda)
 _reference_lambda_name = _reference_lambda.__name__

@@ -46,7 +46,7 @@ from rbnics.backends.dolfin.wrapping.form_argument_replace import form_argument_
 from rbnics.backends.dolfin.wrapping.form_argument_space import form_argument_space
 from rbnics.backends.dolfin.wrapping.form_description import form_description
 from rbnics.backends.dolfin.wrapping.form_iterator import form_iterator
-import rbnics.backends.dolfin.wrapping.form_mul  # noqa
+import rbnics.backends.dolfin.wrapping.form_mul  # noqa: F401
 from rbnics.backends.dolfin.wrapping.form_name import form_name
 from rbnics.backends.dolfin.wrapping.form_replace import form_replace
 from rbnics.backends.dolfin.wrapping.function_copy import function_copy
@@ -172,7 +172,7 @@ __all__ = [
     'vectorized_matrix_inner_vectorized_matrix'
 ]
 
-from dolfin.cpp.log import log, LogLevel  # noqa
+from dolfin.cpp.log import log, LogLevel  # noqa: F401
 CRITICAL = LogLevel.CRITICAL
 DEBUG = LogLevel.DEBUG
 ERROR = LogLevel.ERROR

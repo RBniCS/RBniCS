@@ -17,7 +17,7 @@
 #
 
 try:
-    from ufl.algorithms.remove_complex_nodes import remove_complex_nodes  # noqa
+    from ufl.algorithms.remove_complex_nodes import remove_complex_nodes
 except ImportError:
     def remove_complex_nodes(expr):
         return expr

@@ -40,7 +40,7 @@ from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_stability_factor import assemble_operator_for_stability_factor
 from rbnics.backends.dolfin.wrapping.compute_theta_for_stability_factor import compute_theta_for_stability_factor
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
-import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa
+import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa: F401
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 from rbnics.utils.cache import Cache

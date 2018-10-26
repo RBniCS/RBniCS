@@ -16,7 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from rbnics.backends.online.basic.wrapping.tensor_copy import basic_tensor_copy
+from rbnics.backends.online.basic.wrapping.tensor_copy import basic_tensor_copy  # noqa: F401
     
 # No explicit instantiation for backend = rbnics.backends.online.numpy to avoid
 # circular dependencies. The concrete instatiation will be carried out in

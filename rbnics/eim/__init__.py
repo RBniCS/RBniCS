@@ -18,4 +18,4 @@
 
 # Force import of reduction methods package, so that @ReductionMethodDecoratorFor
 # decorators are processed
-import rbnics.eim.reduction_methods  # noqa
+import rbnics.eim.reduction_methods  # noqa: F401

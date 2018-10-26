@@ -17,7 +17,7 @@
 #
 
 from dolfin import MPI
-from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa
+from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa: F401
 
 # Customize item selection
 def pytest_collection_modifyitems(session, config, items):
