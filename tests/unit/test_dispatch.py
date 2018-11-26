@@ -51,6 +51,7 @@ tests_blacklist = {
     "test_core.py": [
         "test_competing_ambiguous", # patched version raises an error rather than a warning and this would stop the execution
         "test_namespaces", # we have replaced namespaces with modules so it makes no sense to test this
+        "test_multipledispatch", # has issues with recent pytest versions
     ],
     "test_dispatcher.py": [
         "test_register_instance_method", "test_register_stacking", "test_dispatch_method", # created a custom version of that replaces unallowed list with list_of(int) and tuple_of(int)
@@ -92,10 +93,10 @@ def download_multipledispatch_tests(file_name, start_from_line):
             code += line + "\n"
     # Blacklist tests that should not be run
     for test in tests_blacklist[file_name]:
-        code = code.replace("def " + test + "():", "def _disabled_" + test + "():")
+        code = code.replace("def " + test + "(", "def _disabled_" + test + "(")
     # Rename tests
     for (test_original_name, test_new_name) in test_renames[file_name].items():
-        code = code.replace("def " + test_original_name + "():", "def " + test_new_name + "():")
+        code = code.replace("def " + test_original_name + "(", "def " + test_new_name + "(")
     return code
 
 exec(download_multipledispatch_tests("test_conflict.py", 4))
