@@ -20,5 +20,5 @@ from rbnics.utils.decorators import abstract_backend
 
 # Evaluate a parametrized expression, possibly at a specific location
 @abstract_backend
-def evaluate(expression, at=None):
+def evaluate(expression, at=None, **kwargs):
     pass

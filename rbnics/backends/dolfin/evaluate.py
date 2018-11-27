@@ -60,20 +60,74 @@ def _evaluate(
     expression: (
         Matrix.Type(),
         Vector.Type(),
+        TensorsList
+    ),
+    at: ReducedMesh,
+    **kwargs
+):
+    assert len(kwargs) is 0
+    return evaluate_base(expression, at)
+    
+@overload
+def _evaluate(
+    expression: (
         Function.Type(),
-        TensorsList,
-        FunctionsList,
-        ParametrizedTensorFactory,
-        ParametrizedExpressionFactory
+        FunctionsList
     ),
     at: (
         ReducedMesh,
-        ReducedVertices,
-        None
-    ) = None,
+        ReducedVertices
+    ),
     **kwargs
 ):
-    return evaluate_base(expression, at, **kwargs)
+    assert len(kwargs) is 0
+    return evaluate_base(expression, at)
+    
+@overload
+def _evaluate(
+    expression: ParametrizedTensorFactory,
+    at: None,
+    **kwargs
+):
+    assert (
+        len(kwargs) is 0
+            or
+        (len(kwargs) is 1 and "tensor" in kwargs)
+    )
+    tensor = kwargs.get("tensor", None)
+    return evaluate_base(expression, at, tensor)
+    
+@overload
+def _evaluate(
+    expression: ParametrizedTensorFactory,
+    at: ReducedMesh,
+    **kwargs
+):
+    assert len(kwargs) is 0
+    return evaluate_base(expression, at)
+    
+@overload
+def _evaluate(
+    expression: ParametrizedExpressionFactory,
+    at: None,
+    **kwargs
+):
+    assert (
+        len(kwargs) is 0
+            or
+        (len(kwargs) is 1 and "function" in kwargs)
+    )
+    function = kwargs.get("function", None)
+    return evaluate_base(expression, at, function)
+    
+@overload
+def _evaluate(
+    expression: ParametrizedExpressionFactory,
+    at: ReducedVertices,
+    **kwargs
+):
+    assert len(kwargs) is 0
+    return evaluate_base(expression, at)
     
 @overload
 def _evaluate(
@@ -81,8 +135,8 @@ def _evaluate(
     at: (
         ReducedMesh,
         ReducedVertices,
-        None
-    ) = None,
+    ),
     **kwargs
 ):
-    return evaluate_base(function_from_ufl_operators(expression), at, **kwargs)
+    assert len(kwargs) is 0
+    return evaluate_base(function_from_ufl_operators(expression), at)
