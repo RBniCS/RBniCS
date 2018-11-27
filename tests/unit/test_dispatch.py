@@ -1112,29 +1112,6 @@ def test_method_lambda_function_change():
     assert raises(UnavailableSignatureError, lambda: F(3)*2.) # the Type has been already processed,
     assert F(3)*2 == 6 and isinstance(F(3)*2, int)            # so the internal signature is unchanged
     
-# Test class with lambda inputs and overrides
-def test_method_lambda_function_overrides():
-    class A(object):
-        def __init__(self, arg):
-            self.arg = arg
-        
-        @dispatch(int)
-        def __mul__(self, other):
-            return self.arg*other
-            
-    class B(object):
-        Type = int
-        
-        def __init__(self, arg):
-            A.__init__(self, arg)
-        
-        @dispatch(lambda cls: cls.Type)
-        def __mul__(self, other):
-            return 2*self.arg*other
-            
-    assert A(1)*2 == 2
-    assert B(1)*2 == 4
-    
 # Test class with lambda inputs and inheritance which does not override a method,
 # but changes the return value of the lambda function
 def test_method_lambda_function_no_overrides():
@@ -1151,15 +1128,9 @@ def test_method_lambda_function_no_overrides():
     class G(F):
         Type = float
         
-        def __init__(self, arg):
-            F.__init__(self, arg)
-            
     class H(F):
         Type = str
         
-        def __init__(self, arg):
-            F.__init__(self, arg)
-            
     assert F(1)*2 == 2
     assert raises(UnavailableSignatureError, lambda: G(1)*2)
     assert G(2)*2. == 4.
@@ -1167,6 +1138,98 @@ def test_method_lambda_function_no_overrides():
     assert raises(UnavailableSignatureError, lambda: H(1)*2)
     assert raises(UnavailableSignatureError, lambda: H(2)*2.)
     assert H(3)*"test" == "testtesttest"
+    
+# Test class with lambda inputs and overrides of a non-dispatched parent method
+def test_method_lambda_function_overrides_non_dispatched_parent_method():
+    class A(object):
+        def __init__(self, arg):
+            self.arg = arg
+        
+        def __mul__(self, other):
+            return self.arg*other
+            
+    class B(A):
+        Type = int
+        
+        @dispatch(lambda cls: cls.Type)
+        def __mul__(self, other):
+            return 2*self.arg*other
+            
+    class C(A):
+        Type = object
+        
+        @dispatch(lambda cls: cls.Type)
+        def __mul__(self, other):
+            return 2*self.arg*other
+            
+    assert A(1)*2 == 2
+    assert A(3)*"test" == "testtesttest"
+    assert B(1)*2 == 4
+    assert B(3)*"test" == "testtesttest"
+    assert C(1)*2 == 4
+    assert C(3)*"test" == "testtesttesttesttesttest"
+    
+# Test class with lambda inputs and overrides of a non-lambda parent dispatched method
+def test_method_lambda_function_overrides_non_lambda_parent_dispatched_method():
+    class A(object):
+        def __init__(self, arg):
+            self.arg = arg
+        
+        @dispatch(int)
+        def __mul__(self, other):
+            return self.arg*other
+            
+    class B(A):
+        Type = int
+        
+        @dispatch(lambda cls: cls.Type)
+        def __mul__(self, other):
+            return 2*self.arg*other
+            
+    assert A(1)*2 == 2
+    assert B(1)*2 == 4
+    
+# Test class with lambda inputs which is overriden by a non-lambda parent dispatched method
+def test_method_lambda_function_overriden_by_non_lambda_parent_dispatched_method():
+    class A(object):
+        Type = int
+        
+        def __init__(self, arg):
+            self.arg = arg
+        
+        @dispatch(lambda cls: cls.Type)
+        def __mul__(self, other):
+            return self.arg*other
+            
+    class B(A):
+        @dispatch(int)
+        def __mul__(self, other):
+            return 2*self.arg*other
+            
+    assert A(1)*2 == 2
+    assert B(1)*2 == 4
+    
+# Test class with lambda inputs and overrides of a lambda parent dispatched method
+def test_method_lambda_function_overrides_lambda_parent_dispatched_method():
+    class A(object):
+        Type = int
+        
+        def __init__(self, arg):
+            self.arg = arg
+        
+        @dispatch(lambda cls: cls.Type)
+        def __mul__(self, other):
+            return self.arg*other
+            
+    class B(A):
+        Type = int
+        
+        @dispatch(lambda cls: cls.Type)
+        def __mul__(self, other):
+            return 2*self.arg*other
+            
+    assert A(1)*2 == 2
+    assert B(1)*2 == 4
     
 # Test overload decorator
 def test_overload_decorator():

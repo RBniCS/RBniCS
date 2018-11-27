@@ -265,15 +265,40 @@ class MethodDispatcher(Dispatcher):
                 if isinstance(parent_func, MethodDispatcher):
                     parent_func = parent_func.origin
                     for (parent_standard_key_i, parent_standard_func_i) in parent_func.standard_funcs.items():
-                        if parent_standard_key_i not in standard_funcs:
+                        add_to_standard_funcs = True
+                        for standard_key_j in standard_funcs.keys():
+                            if parent_standard_key_i == standard_key_j:
+                                add_to_standard_funcs = False
+                        for lambda_key_j in lambda_funcs.keys():
+                            signature_lambda_key_j = tuple([typ(cls) if islambda(typ) else typ for typ in lambda_key_j])
+                            if parent_standard_key_i[0] == signature_lambda_key_j:
+                                add_to_standard_funcs = False
+                        if add_to_standard_funcs:
                             standard_funcs[parent_standard_key_i] = parent_standard_func_i
                     for (parent_lambda_key_i, parent_lambda_func_i) in parent_func.lambda_funcs.items():
-                        if parent_lambda_key_i not in lambda_funcs:
+                        add_to_lambda_funcs = True
+                        signature_parent_lambda_key_i = tuple([typ(cls) if islambda(typ) else typ for typ in parent_lambda_key_i])
+                        for standard_key_j in standard_funcs.keys():
+                            if signature_parent_lambda_key_i == standard_key_j[0]:
+                                add_to_lambda_funcs = False
+                        for lambda_key_j in lambda_funcs.keys():
+                            signature_lambda_key_j = tuple([typ(cls) if islambda(typ) else typ for typ in lambda_key_j])
+                            if signature_parent_lambda_key_i == signature_lambda_key_j:
+                                add_to_lambda_funcs = False
+                        if add_to_lambda_funcs:
                             lambda_funcs[parent_lambda_key_i] = parent_lambda_func_i
                 elif ismethod(parent_func) and not hasattr(parent_func, "__isabstractmethod__"):
+                    add_to_standard_funcs = True
                     parent_signature = (len(inspect.signature(parent_func).parameters) - 1)*(object, )
                     parent_standard_key = (parent_signature, parent_signature)
-                    if parent_standard_key not in standard_funcs:
+                    for standard_key in standard_funcs.keys():
+                        if parent_standard_key == standard_funcs:
+                            add_to_standard_funcs = False
+                    for lambda_key in lambda_funcs:
+                        signature_lambda_key = tuple([typ(cls) if islambda(typ) else typ for typ in lambda_key])
+                        if parent_signature == signature_lambda_key:
+                            add_to_standard_funcs = False
+                    if add_to_standard_funcs:
                         standard_funcs[parent_standard_key] = parent_func
                 else:
                     pass # This happens with slot wrapper, method wrapper and method descriptor types for builtin objects
