@@ -17,7 +17,7 @@
 #
 
 import os
-from ufl import product
+from ufl import MixedElement, TensorElement, VectorElement
 from dolfin import assign, File as PVDFile, File as XMLFile, has_hdf5, has_hdf5_parallel, XDMFFile
 from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
@@ -172,14 +172,8 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
         function_name = "function_" + "".join(components)
     else:
         function_name = "function"
-    fun_rank = fun.value_rank()
-    fun_dim = product(fun.value_shape())
-    assert fun_rank <= 2
-    if (
-        (fun_rank is 1 and fun_dim not in (2, 3))
-            or
-        (fun_rank is 2 and fun_dim not in (4, 9))
-    ):
+    fun_V_element = fun.function_space().ufl_element()
+    if isinstance(fun_V_element, MixedElement) and not isinstance(fun_V_element, (TensorElement, VectorElement)):
         funs = fun.split(deepcopy=True)
         for (i, fun_i) in enumerate(funs):
             if components is not None:
