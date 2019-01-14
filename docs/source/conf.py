@@ -56,8 +56,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'RBniCS'
-copyright = u'2015-2017, Francesco Ballarin, Gianluigi Rozza, Alberto Sartori'
-author = u'Francesco Ballarin, Gianluigi Rozza, Alberto Sartori'
+copyright = u'2015-2019, RBniCS authors and contributors'
+author = u'RBniCS authors and contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
