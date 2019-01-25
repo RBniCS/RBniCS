@@ -99,6 +99,7 @@ setup(name="RBniCS",
           "cvxopt>=1.2.0",
           "mpi4py",
           "multipledispatch>=0.5.0",
+          "pylru",
           "pytest-runner",
           "sympy>=1.0",
           "toposort"
