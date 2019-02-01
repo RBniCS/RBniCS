@@ -48,7 +48,7 @@ class NonHierarchicalBasisFunctionsMatrix(object):
         assert key.step is None
         assert isinstance(key.stop, (dict, int))
         if isinstance(key.stop, dict):
-            assert len(key.stop) is 1
+            assert len(key.stop) == 1
             assert "u" in key.stop
             N = key.stop["u"]
         else:

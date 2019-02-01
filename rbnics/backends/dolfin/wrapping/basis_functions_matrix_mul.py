@@ -44,7 +44,7 @@ def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vect
     assert isinstance(space, FunctionSpace)
     
     output = Function(space)
-    if sum(basis_functions_matrix._component_name_to_basis_component_length.values()) is 0:
+    if sum(basis_functions_matrix._component_name_to_basis_component_length.values()) == 0:
         return output
     else:
         i = 0

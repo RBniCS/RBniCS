@@ -91,7 +91,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
                 self.operator["stability_factor_left_hand_matrix"] = AffineExpansionStorage((self.truth_problem.operator["stability_factor_left_hand_matrix"][self.expansion_index], ))
         if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
             self.operator["stability_factor_right_hand_matrix"] = self.truth_problem.operator["stability_factor_right_hand_matrix"]
-            assert len(self.operator["stability_factor_right_hand_matrix"]) is 1
+            assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
             
         # Store Dirichlet boundary conditions
         if self.dirichlet_bc is None: # init was not called already (or raised a trivial error)
@@ -131,7 +131,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         else:
             eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B)
         eigensolver_parameters = dict()
-        assert self.spectrum is "largest" or self.spectrum is "smallest"
+        assert self.spectrum == "largest" or self.spectrum == "smallest"
         eigensolver_parameters["spectrum"] = self.spectrum + " real"
         eigensolver_parameters.update(self.eigensolver_parameters)
         eigensolver.set_parameters(eigensolver_parameters)

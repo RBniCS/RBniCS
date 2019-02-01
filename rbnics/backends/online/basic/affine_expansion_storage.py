@@ -64,7 +64,7 @@ def AffineExpansionStorage(backend, wrapping):
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
             full_directory.create()
             # Exit in the trivial case of empty affine expansion
-            if self._content.size is 0:
+            if self._content.size == 0:
                 return
             # Initialize iterator
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["c_index", "multi_index", "refs_ok"], op_flags=["readonly"])
@@ -172,7 +172,7 @@ def AffineExpansionStorage(backend, wrapping):
             # Get full directory name
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
             # Exit in the trivial case of empty affine expansion
-            if self._content.size is 0:
+            if self._content.size == 0:
                 return True
             # Load content item type and shape
             reference_item = self._load_content_item_type_shape(full_directory)
@@ -395,7 +395,7 @@ def AffineExpansionStorage(backend, wrapping):
                 assert current_key_1 == 0
             else:
                 expected_key_1 = (self._previous_key[1] + 1) % (self._largest_key[1] + 1)
-                if expected_key_1 is 0:
+                if expected_key_1 == 0:
                     expected_key_0 = (self._previous_key[0] + 1) % (self._largest_key[0] + 1)
                 else:
                     expected_key_0 = self._previous_key[0]

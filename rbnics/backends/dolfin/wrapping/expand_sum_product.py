@@ -131,7 +131,7 @@ class SympyExpander(MultiFunction):
         else:
             if o not in self.ufl_to_sympy:
                 sympy_id = "sympy" + str(len(self.ufl_to_sympy))
-                if len(o.ufl_shape) is 0:
+                if len(o.ufl_shape) == 0:
                     sympy_o = symbols(sympy_id)
                 else:
                     sympy_o = IndexedBase(sympy_id, shape=o.ufl_shape)

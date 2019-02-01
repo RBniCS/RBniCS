@@ -79,7 +79,7 @@ def _generate_space(expression: Operator):
     for t in traverse_unique_terminals(expression): # from ufl/domain.py, extract_domains
         if hasattr(t, "_mesh"):
             meshes.add(t._mesh)
-    assert len(meshes) is 1
+    assert len(meshes) == 1
     mesh = meshes.pop()
     # The EIM algorithm will evaluate the expression at vertices. However, since the Operator expression may
     # contain e.g. a gradient of a solution defined in a C^0 space, we resort to DG1 spaces.

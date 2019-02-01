@@ -183,7 +183,7 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
             _write_to_file(fun_i, directory, filename_i, suffix, None)
     else:
         if suffix is not None:
-            if suffix is 0:
+            if suffix == 0:
                 # Remove existing files if any, as new functions should not be appended, but rather overwrite existing functions
                 SolutionFile.remove_files(directory, filename)
                 # Remove from storage and re-create

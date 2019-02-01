@@ -24,9 +24,9 @@ def counterclockwise(triangle_vertices):
     """
     mshr utility function to reorder triangle vertices in counterclockwise order
     """
-    assert len(triangle_vertices) is 3
+    assert len(triangle_vertices) == 3
     triangle_vertices = list(triangle_vertices)
-    assert all([len(coordinates) is 2 for coordinates in triangle_vertices])
+    assert all([len(coordinates) == 2 for coordinates in triangle_vertices])
     triangle_vertices_float = [[float(coord) for coord in vertex] for vertex in triangle_vertices]
     cross_product = (
         (triangle_vertices_float[1][X] - triangle_vertices_float[0][X])*(triangle_vertices_float[2][Y] - triangle_vertices_float[0][Y])

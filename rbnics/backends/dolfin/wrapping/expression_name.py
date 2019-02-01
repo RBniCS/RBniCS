@@ -60,7 +60,7 @@ def basic_expression_name(backend, wrapping):
                 else:
                     (preprocessed_n, component, problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
                     coefficients_replacement[repr(preprocessed_n)] = "non parametrized function associated to auxiliary problem " + str(problem.name())
-                if len(component) is 1 and component[0] is not None:
+                if len(component) == 1 and component[0] is not None:
                     coefficients_replacement[repr(preprocessed_n)] += ", component " + str(component[0])
                 elif len(component) > 1:
                     coefficients_replacement[repr(preprocessed_n)] += ", component " + str(component)

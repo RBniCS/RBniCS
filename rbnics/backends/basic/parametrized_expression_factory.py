@@ -68,7 +68,7 @@ def ParametrizedExpressionFactory(backend, wrapping):
                     visited.add(preprocessed_node)
                     for parent_node in wrapping.solution_iterator(preprocessed_node):
                         visited.add(parent_node)
-            if len(auxiliary_problems_and_components) is 0:
+            if len(auxiliary_problems_and_components) == 0:
                 auxiliary_problems_and_components = None
             # Create reduced vertices container
             return backend.ReducedVertices(self._space, auxiliary_problems_and_components=auxiliary_problems_and_components)

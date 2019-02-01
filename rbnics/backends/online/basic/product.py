@@ -61,41 +61,41 @@ def product(backend, wrapping):
             from rbnics.backends import product, sum, transpose
             assert operators._type in ("error_estimation_operators_11", "error_estimation_operators_21", "error_estimation_operators_22", "operators")
             if operators._type.startswith("error_estimation_operators"):
-                assert operators.order() is 2
+                assert operators.order() == 2
                 assert thetas2 is not None
                 assert "inner_product_matrix" in operators._content
                 assert "delayed_functions" in operators._content
                 delayed_functions = operators._content["delayed_functions"]
-                assert len(delayed_functions) is 2
+                assert len(delayed_functions) == 2
                 output = transpose(sum(product(thetas, delayed_functions[0])))*operators._content["inner_product_matrix"]*sum(product(thetas2, delayed_functions[1]))
                 # Return
                 assert not isinstance(output, DelayedTranspose)
                 return ProductOutput(output)
             elif operators._type == "operators":
-                assert operators.order() is 1
+                assert operators.order() == 1
                 assert thetas2 is None
                 assert "truth_operators_as_expansion_storage" in operators._content
                 sum_product_truth_operators = sum(product(thetas, operators._content["truth_operators_as_expansion_storage"]))
                 assert "basis_functions" in operators._content
                 basis_functions = operators._content["basis_functions"]
                 assert len(basis_functions) in (0, 1, 2)
-                if len(basis_functions) is 0:
+                if len(basis_functions) == 0:
                     assert (
                         isinstance(sum_product_truth_operators, Number)
                             or
                         (
                             isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
                                 and
-                            len(sum_product_truth_operators._spaces) is 0
+                            len(sum_product_truth_operators._spaces) == 0
                         )
                     )
                     output = sum_product_truth_operators
-                elif len(basis_functions) is 1:
+                elif len(basis_functions) == 1:
                     assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
                     output = transpose(basis_functions[0])*sum_product_truth_operators
                     assert isinstance(output, DelayedTranspose)
                     output = wrapping.DelayedTransposeWithArithmetic(output)
-                elif len(basis_functions) is 2:
+                elif len(basis_functions) == 2:
                     assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
                     output = transpose(basis_functions[0])*sum_product_truth_operators*basis_functions[1]
                     assert isinstance(output, DelayedTranspose)

@@ -29,7 +29,7 @@ def get_function_subspace(function_space: FunctionSpace, component: (int, str)):
     
 @overload
 def get_function_subspace(function_space: FunctionSpace, component: list_of(str)):
-    assert len(set([function_space.component_to_index(c) for c in component])) is 1
+    assert len(set([function_space.component_to_index(c) for c in component])) == 1
     output = function_space.sub(component[0]).collapse()
     output._component_to_index.clear()
     for c in component:

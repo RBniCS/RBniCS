@@ -34,7 +34,7 @@ def preserve_solution_attributes(lhs, solution, rhs):
     if (
         solution.vector()._component_name_to_basis_component_index is not None
             and
-        len(solution.vector()._component_name_to_basis_component_index) is 1
+        len(solution.vector()._component_name_to_basis_component_index) == 1
     ):
         assert isinstance(solution.vector().N, (dict, int))
         if isinstance(solution.vector().N, dict):

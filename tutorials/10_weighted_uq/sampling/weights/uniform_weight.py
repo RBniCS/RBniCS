@@ -24,7 +24,7 @@ class UniformWeight(Weight):
         samples_density = list()
         for mu in samples:
             p_mu = 1.0
-            assert len(mu) is len(box)
+            assert len(mu) == len(box)
             for (mu_j, box_j) in zip(mu, box):
                 p_mu *= uniform.pdf(mu_j, box_j[0], box_j[1])
             samples_density.append(p_mu)

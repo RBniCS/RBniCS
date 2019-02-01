@@ -34,19 +34,19 @@ class OnlineNonHierarchicalAffineExpansionStorage(object):
         
     @overload(tuple_of(slice))
     def __getitem__(self, key):
-        assert len(key) is 2
+        assert len(key) == 2
         assert key[0] == key[1]
         return self.__getitem__(key[0])
         
     @overload(slice, OnlineAffineExpansionStorage)
     def __setitem__(self, key, item):
         N = self._convert_key(key)
-        assert len(item) is self._len
+        assert len(item) == self._len
         self._content[N] = item
         
     @overload(tuple_of(slice), OnlineAffineExpansionStorage)
     def __setitem__(self, key, item):
-        assert len(key) is 2
+        assert len(key) == 2
         assert key[0] == key[1]
         return self.__setitem__(key[0], item)
         
@@ -55,7 +55,7 @@ class OnlineNonHierarchicalAffineExpansionStorage(object):
         assert key.step is None
         assert isinstance(key.stop, (dict, int))
         if isinstance(key.stop, dict):
-            assert len(key.stop) is 1
+            assert len(key.stop) == 1
             assert "u" in key.stop
             N = key.stop["u"]
         else:
@@ -101,7 +101,7 @@ class OnlineNonHierarchicalAffineExpansionStorage(object):
     def _load_content(self, N, directory, filename):
         affine_expansion_N = OnlineAffineExpansionStorage(self._len)
         loaded = affine_expansion_N.load(directory, filename + "_N=" + str(N))
-        assert loaded is True
+        assert loaded
         return affine_expansion_N
         
     def __len__(self):

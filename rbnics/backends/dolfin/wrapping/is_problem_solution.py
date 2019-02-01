@@ -69,7 +69,7 @@ def _remove_all_indices(node: Indexed):
 @overload
 def _remove_all_indices(node: ListTensor):
     output = {_remove_all_indices(operand) for operand in node.ufl_operands}
-    assert len(output) is 1
+    assert len(output) == 1
     return output.pop()
         
 # the difference between this function and the one in function_extend_or_restrict is that the

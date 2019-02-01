@@ -70,7 +70,7 @@ def ParametrizedTensorFactory(backend, wrapping):
                     visited.add(preprocessed_node)
                     for parent_node in wrapping.solution_iterator(preprocessed_node):
                         visited.add(parent_node)
-            if len(auxiliary_problems_and_components) is 0:
+            if len(auxiliary_problems_and_components) == 0:
                 auxiliary_problems_and_components = None
             # Create reduced mesh
             assert "auxiliary_problems_and_components" not in kwargs
@@ -128,7 +128,7 @@ def ParametrizedTensorFactory(backend, wrapping):
         @overload(Number)
         def __add__(self, other):
             from rbnics.backends import evaluate
-            assert len(self._spaces) is 0
+            assert len(self._spaces) == 0
             return evaluate(self) + other
             
         @overload(Number)

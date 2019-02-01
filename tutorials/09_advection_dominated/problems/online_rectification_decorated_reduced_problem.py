@@ -63,7 +63,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             # * the coefficients of the reduced solution for different reduced sizes are definitely not hierarchical
             if current_stage == "online":
                 self.operator["projection_truth_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(1)
-                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
+                assert len(self.online_solve_kwargs_with_rectification) == len(self.online_solve_kwargs_without_rectification)
                 self.operator["projection_reduced_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
                 self.assemble_operator("projection_truth_snapshots", "online")
                 self.assemble_operator("projection_reduced_snapshots", "online")
@@ -74,7 +74,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 EllipticCoerciveReducedProblem_DerivedClass._init_operators(self, current_stage)
             elif current_stage == "offline_rectification_postprocessing":
                 self.operator["projection_truth_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(1)
-                assert len(self.online_solve_kwargs_with_rectification) is len(self.online_solve_kwargs_without_rectification)
+                assert len(self.online_solve_kwargs_with_rectification) == len(self.online_solve_kwargs_without_rectification)
                 self.operator["projection_reduced_snapshots"] = OnlineNonHierarchicalAffineExpansionStorage(len(self.online_solve_kwargs_with_rectification))
                 # We do not call Parent method as there is no need to re-initialize offline operators
             else:

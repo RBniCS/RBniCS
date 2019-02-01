@@ -106,7 +106,7 @@ class OnlineSizeDict(OrderedDict):
     # Override N += N_bc so that it is possible to increment online size due to boundary conditions (single component)
     @overload(int)
     def __iadd__(self, other):
-        assert len(self) is 1
+        assert len(self) == 1
         for key in self:
             self[key] += other
         return self
@@ -167,7 +167,7 @@ class OnlineSizeDict(OrderedDict):
         
     # Override __str__ to print an integer if all values are the same
     def __str__(self):
-        if len(set(self.values())) is 1:
+        if len(set(self.values())) == 1:
             for (_, value) in self.items():
                 break
             return str(value)

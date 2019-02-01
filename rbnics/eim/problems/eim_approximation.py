@@ -60,7 +60,7 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
         def _snapshot_cache_key_generator(*args, **kwargs):
             assert args == self.mu
-            assert len(kwargs) is 0
+            assert len(kwargs) == 0
             return self._cache_key()
         def _snapshot_cache_import(filename):
             snapshot = copy(self.snapshot)
@@ -70,7 +70,7 @@ class EIMApproximation(ParametrizedProblem):
             self.export_solution(self.folder["cache"], filename)
         def _snapshot_cache_filename_generator(*args, **kwargs):
             assert args == self.mu
-            assert len(kwargs) is 0
+            assert len(kwargs) == 0
             return self._cache_file()
         self._snapshot_cache = Cache(
             "EIM",

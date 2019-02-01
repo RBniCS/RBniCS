@@ -59,10 +59,10 @@ class TimeDependentEIMApproximation(EIMApproximation):
         
         # I/O
         def _snapshot_cache_key_generator(*args, **kwargs):
-            assert len(args) is 2
+            assert len(args) == 2
             assert args[0] == self.mu
             assert args[1] == self.t
-            assert len(kwargs) is 0
+            assert len(kwargs) == 0
             return self._cache_key()
         def _snapshot_cache_import(filename):
             snapshot = copy(self.snapshot)
@@ -71,10 +71,10 @@ class TimeDependentEIMApproximation(EIMApproximation):
         def _snapshot_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
         def _snapshot_cache_filename_generator(*args, **kwargs):
-            assert len(args) is 2
+            assert len(args) == 2
             assert args[0] == self.mu
             assert args[1] == self.t
-            assert len(kwargs) is 0
+            assert len(kwargs) == 0
             return self._cache_file()
         self._snapshot_cache = Cache(
             "EIM",

@@ -85,7 +85,7 @@ def test_eim_approximation_00(expression_type, basis_generation):
     # 5. Perform the offline phase
     parametrized_function_reduction_method.initialize_training_set(5, sampling=EquispacedDistribution())
     reduced_parametrized_function_approximation = parametrized_function_reduction_method.offline()
-    assert reduced_parametrized_function_approximation.N is 1
+    assert reduced_parametrized_function_approximation.N == 1
 
     # 6. Perform an online solve
     online_mu = (1., )

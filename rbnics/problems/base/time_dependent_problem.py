@@ -52,7 +52,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._output_over_time = None # TimeSeries of numbers
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
-                assert len(args) is 1
+                assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _solution_cache_import(filename):
@@ -62,7 +62,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             def _solution_cache_export(filename, solution, suffix):
                 self.export_solution(self.folder["cache"], filename, solution, suffix=suffix)
             def _solution_cache_filename_generator(*args, **kwargs):
-                assert len(args) is 1
+                assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
             self._solution_over_time_cache = TimeSeriesCache(
@@ -73,7 +73,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 filename_generator=_solution_cache_filename_generator
             )
             def _solution_dot_cache_key_generator(*args, **kwargs):
-                assert len(args) is 1
+                assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _solution_dot_cache_import(filename):
@@ -83,7 +83,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             def _solution_dot_cache_export(filename, solution_dot, suffix):
                 self.export_solution(self.folder["cache"], filename + "_dot", solution_dot, suffix=suffix)
             def _solution_dot_cache_filename_generator(*args, **kwargs):
-                assert len(args) is 1
+                assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
             self._solution_dot_over_time_cache = TimeSeriesCache(
@@ -95,7 +95,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             )
             del self._solution_cache
             def _output_cache_key_generator(*args, **kwargs):
-                assert len(args) is 1
+                assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
             def _output_cache_import(filename):
@@ -105,7 +105,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             def _output_cache_export(filename):
                 self.export_output(self.folder["cache"], filename)
             def _output_cache_filename_generator(*args, **kwargs):
-                assert len(args) is 1
+                assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
             self._output_over_time_cache = Cache(
@@ -202,7 +202,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             output_over_time.clear()
             for (k, _) in enumerate(self._output_over_time.expected_times()):
                 ParametrizedDifferentialProblem_DerivedClass.import_output(self, folder, filename, output, suffix=k)
-                assert len(output) is 1
+                assert len(output) == 1
                 output_over_time.append(output[0])
                 
         # Initialize data structures required for the offline phase
@@ -329,7 +329,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     del self._solution_over_time[-1]
                 assert len(self._solution_over_time) == len(self._solution_dot_over_time)
                 bak_t0 = self.t0
-                if len(self._solution_over_time) is 0:
+                if len(self._solution_over_time) == 0:
                     assign(self._solution, Function(self.V))
                     assign(self._solution_dot, Function(self.V))
                 else:

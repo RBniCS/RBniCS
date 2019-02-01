@@ -49,7 +49,7 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                 N = self.N
                 assembled_operator = dict()
                 for term in ("a", "b", "bt", "dc"):
-                    assert problem.terms_order[term] is 2
+                    assert problem.terms_order[term] == 2
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
                       assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]

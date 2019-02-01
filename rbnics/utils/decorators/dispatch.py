@@ -103,9 +103,9 @@ class Dispatcher(OriginalDispatcher):
         if replaces is None:
             if types in self.funcs:
                 len_types = len(types)
-                assert len_types is len(provided_signature)
+                assert len_types == len(provided_signature)
                 previously_provided_signature = self.signature_to_provided_signature[types]
-                assert len_types is len(previously_provided_signature)
+                assert len_types == len(previously_provided_signature)
                 old_one_matches = sum(supercedes((previously_provided_signature[i], ), (types[i], )) for i in range(len_types))
                 new_one_matches = sum(supercedes((provided_signature[i], ), (types[i], )) for i in range(len_types))
                 if old_one_matches > new_one_matches:
@@ -152,7 +152,7 @@ class Dispatcher(OriginalDispatcher):
     def _get_func(self, *args):
         if len(args) > 1:
             types = get_types(args)
-        elif len(args) is 1 and args[0] is not None:
+        elif len(args) == 1 and args[0] is not None:
             types = (get_type(args[0]), )
         else:
             types = tuple()
@@ -500,7 +500,7 @@ def _remove_repeated_types(types):
         for t in types:
             assert inspect.isclass(t) or isinstance(t, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of))
             all_types.add(t)
-        if len(all_types) is 0 or len(all_types) > 1:
+        if len(all_types) == 0 or len(all_types) > 1:
             return (tuple(all_types), frozenset(all_types))
         else:
             types = all_types.pop()

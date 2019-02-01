@@ -144,9 +144,9 @@ def test_tensor_load(mesh, generate_form_space, generate_form, load_tempdir):
     loaded_evaluated_tensor = zero_for_load(form)
     tensor_load(loaded_evaluated_tensor, load_tempdir, "evaluated_tensor")
     assert len(space) in (1, 2)
-    if len(space) is 1:
+    if len(space) == 1:
         assert isclose(loaded_evaluated_tensor.get_local(), expected_evaluated_tensor.get_local()).all()
-    elif len(space) is 2:
+    elif len(space) == 2:
         assert isclose(loaded_evaluated_tensor.array(), expected_evaluated_tensor.array()).all()
     
 @generate_form_spaces_and_forms

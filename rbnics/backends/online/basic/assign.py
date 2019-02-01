@@ -46,10 +46,10 @@ def assign(backend):
                     object_to.vector()[:to_N_dict] = object_from.vector()[:from_N_dict]
                     self._preserve_vector_attributes(object_to.vector(), object_from.vector(), len(components_only_in_from) > 0, len(components_only_in_to) > 0)
                 elif isinstance(object_from.vector().N, int) and isinstance(object_to.vector().N, dict):
-                    assert len(object_to.vector().N) is 1
+                    assert len(object_to.vector().N) == 1
                     raise ValueError("Refusing to assign a dict dimension N to an int dimension N")
                 elif isinstance(object_from.vector().N, dict) and isinstance(object_to.vector().N, int):
-                    assert len(object_from.vector().N) is 1
+                    assert len(object_from.vector().N) == 1
                     for (c, N_c) in object_from.vector().N.items():
                         break
                     assert N_c == object_to.vector().N

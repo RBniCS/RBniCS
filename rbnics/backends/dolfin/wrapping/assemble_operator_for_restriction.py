@@ -74,9 +74,9 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
                             args.extend(original_dirichlet_bc_i._domain)
                             kwargs = original_dirichlet_bc_i._kwargs
                             restricted_dirichlet_bc.append(DirichletBC(*args, **kwargs))
-                        assert len(restricted_dirichlet_bc) is len(original_dirichlet_bc)
+                        assert len(restricted_dirichlet_bc) == len(original_dirichlet_bc)
                         restricted_dirichlet_bcs.append(restricted_dirichlet_bc)
-                    assert len(restricted_dirichlet_bcs) is len(original_dirichlet_bcs)
+                    assert len(restricted_dirichlet_bcs) == len(original_dirichlet_bcs)
                     return tuple(restricted_dirichlet_bcs)
             
         return assemble_operator_for_restriction_decorator_impl

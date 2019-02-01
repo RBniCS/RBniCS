@@ -715,12 +715,12 @@ def BasicReducedMesh(backend, wrapping):
             pass
          
         def _auxiliary_key_to_folder(self, key):
-            assert len(key) is 2
+            assert len(key) == 2
             (auxiliary_problem, component) = key
             folder_path = [auxiliary_problem.name()]
             assert isinstance(component, tuple)
             assert len(component) > 0
-            if len(component) is 1:
+            if len(component) == 1:
                 if component[0] is not None:
                     folder_path.append("component_" + str(component[0]))
             else:
@@ -839,12 +839,12 @@ class ReducedMesh(ReducedMesh_Base):
         if component_as_int is None: # all components
             # Initialize a basis function matrix for all components
             components_name = auxiliary_reduced_problem.basis_functions._components_name
-        elif len(auxiliary_reduced_problem.basis_functions._components_name) is 1: # subcomponent of a problem with only one component
+        elif len(auxiliary_reduced_problem.basis_functions._components_name) == 1: # subcomponent of a problem with only one component
             # Initialize a basis function matrix for all components
             components_name = auxiliary_reduced_problem.basis_functions._components_name
         else:
             # Initialize a basis function matrix only for the required integer component
-            if len(auxiliary_reduced_V._index_to_components) is 1:
+            if len(auxiliary_reduced_V._index_to_components) == 1:
                 components_name = auxiliary_reduced_V.index_to_components(None)
             else:
                 assert isinstance(component_as_int, int)

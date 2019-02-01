@@ -51,7 +51,7 @@ def add_performance_options(parser):
 def process_gold_options(config):
     if config.option.action is not None:
         if config.option.data_dir.startswith("git@gitlab.com:RBniCS-test-data"):
-            assert config.option.action is not "regold", "Please provide a data directory"
+            assert config.option.action != "regold", "Please provide a data directory"
             data_dir = tempfile.mkdtemp()
             git.Repo.clone_from(config.option.data_dir, data_dir)
             config.option.data_dir = data_dir

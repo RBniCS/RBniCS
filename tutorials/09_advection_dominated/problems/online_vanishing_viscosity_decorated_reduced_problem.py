@@ -161,8 +161,8 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                     self.operator["vanishing_viscosity"].load(self.folder["reduced_operators"], "operator_vanishing_viscosity")
                     return self.operator["vanishing_viscosity"]
                 elif current_stage == "offline_vanishing_viscosity_postprocessing":
-                    assert len(self.vanishing_viscosity_eigenvalues) is self.N
-                    assert all([len(vanishing_viscosity_eigenvalues_n) is n + 1 for (n, vanishing_viscosity_eigenvalues_n) in enumerate(self.vanishing_viscosity_eigenvalues)])
+                    assert len(self.vanishing_viscosity_eigenvalues) == self.N
+                    assert all([len(vanishing_viscosity_eigenvalues_n) == n + 1 for (n, vanishing_viscosity_eigenvalues_n) in enumerate(self.vanishing_viscosity_eigenvalues)])
                     print("build reduced vanishing viscosity operator")
                     for n in range(1, self.N + 1):
                         vanishing_viscosity_expansion = OnlineAffineExpansionStorage(1)

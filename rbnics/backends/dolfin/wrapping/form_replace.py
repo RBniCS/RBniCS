@@ -25,9 +25,9 @@ def form_replace(form, replacements, replacement_type="nodes"):
         replaced_form = replace(form, replacements)
         for (integral, replaced_integral) in zip(form.integrals(), replaced_form.integrals()):
             replaced_integral_domains = extract_domains(replaced_integral.integrand())
-            assert len(replaced_integral_domains) is 1
+            assert len(replaced_integral_domains) == 1
             integral_domains = extract_domains(integral.integrand())
-            assert len(integral_domains) is 1
+            assert len(integral_domains) == 1
             assert replaced_integral_domains[0] is not integral_domains[0]
         return replaced_form
     elif replacement_type == "measures":

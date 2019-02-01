@@ -340,9 +340,9 @@ def MixedSpacesRestrictionAutomatic(mesh, sub_element):
     element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element)
     assert sub_element in (0, 1)
-    if sub_element is 0:
+    if sub_element == 0:
         W = FunctionSpace(mesh, element_0)
-    elif sub_element is 1:
+    elif sub_element == 1:
         W = FunctionSpace(mesh, element_1)
     return (V, W)
     
@@ -423,9 +423,9 @@ def MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, sub_element):
     element = MixedElement(element_0, element_1)
     V = FunctionSpace(mesh, element, components=["u", "p"])
     assert sub_element in (0, 1)
-    if sub_element is 0:
+    if sub_element == 0:
         W = FunctionSpace(mesh, element_0)
-    elif sub_element is 1:
+    elif sub_element == 1:
         W = FunctionSpace(mesh, element_1)
     return (V, W)
     

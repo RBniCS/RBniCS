@@ -66,7 +66,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             
             Neigs = len(self.snapshots_matrix)
             Nmax = min(Nmax, Neigs)
-            assert len(self.eigenvalues) is 0
+            assert len(self.eigenvalues) == 0
             for i in range(Neigs):
                 (eig_i_real, eig_i_complex) = eigensolver.get_eigenvalue(i)
                 assert isclose(eig_i_complex, 0.)
@@ -74,7 +74,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             
             total_energy = compute_total_energy([abs(e) for e in self.eigenvalues])
             retained_energy = compute_retained_energy([abs(e) for e in self.eigenvalues])
-            assert len(self.retained_energy) is 0
+            assert len(self.retained_energy) == 0
             if total_energy > 0.:
                 self.retained_energy.extend([retained_energy_i/total_energy for retained_energy_i in retained_energy])
             else:

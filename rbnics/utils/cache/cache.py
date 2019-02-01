@@ -140,10 +140,10 @@ class Cache(object):
         if self._key_generator is not None:
             storage_key = self._key_generator(*args, **kwargs)
         else:
-            assert len(kwargs) is 0
-            if len(args) is 0:
+            assert len(kwargs) == 0
+            if len(args) == 0:
                 storage_key = args
-            elif len(args) is 1:
+            elif len(args) == 1:
                 storage_key = args[0]
             else:
                 storage_key = args

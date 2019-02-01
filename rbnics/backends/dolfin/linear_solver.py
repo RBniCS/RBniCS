@@ -96,7 +96,7 @@ class LinearSolver(AbstractLinearSolver):
                 
     def set_parameters(self, parameters):
         assert len(parameters) in (0, 1)
-        if len(parameters) is 1:
+        if len(parameters) == 1:
             assert "linear_solver" in parameters
         self._linear_solver = parameters.get("linear_solver", "default")
         

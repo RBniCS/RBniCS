@@ -54,9 +54,9 @@ class DelayedLinearSolver(object):
             assert isinstance(addend._args[0], Number)
             assert isinstance(addend._args[1], AbstractParametrizedTensorFactory)
             thetas.append(addend._args[0])
-            if len(addend._args) is 2:
+            if len(addend._args) == 2:
                 operators.append(addend._args[1])
-            elif len(addend._args) is 3:
+            elif len(addend._args) == 3:
                 operators.append(addend._args[1]*addend._args[2])
             else:
                 raise ValueError("Invalid addend")
@@ -88,7 +88,7 @@ class DelayedLinearSolver(object):
             RHSIO.save_file((rhs_problem_name_0, rhs_term_0, rhs_index_0), full_directory, "rhs_arg_0")
         elif isinstance(self._rhs, DelayedProduct):
             RHSIO.save_file("DelayedProduct", full_directory, "rhs_type")
-            assert len(self._rhs._args) is 3
+            assert len(self._rhs._args) == 3
             rhs_arg_0 = self._rhs._args[0]
             assert rhs_arg_0 == -1.0
             RHSIO.save_file(rhs_arg_0, full_directory, "rhs_arg_0")
@@ -168,7 +168,7 @@ class DelayedLinearSolver(object):
         bcs_reduced_problem = get_reduced_problem_from_problem(bcs_problem)
         self._bcs = bcs_reduced_problem._riesz_solve_homogeneous_dirichlet_bc
         # Load parameters
-        assert len(self._parameters) is 0
+        assert len(self._parameters) == 0
         assert ParametersIO.exists_file(full_directory, "parameters")
         self._parameters = ParametersIO.load_file(full_directory, "parameters")
         # Return

@@ -69,7 +69,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self._output = 0.
         # I/O
         def _solution_cache_key_generator(*args, **kwargs):
-            assert len(args) is 2
+            assert len(args) == 2
             assert args[0] == self.mu
             return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
         self._solution_cache = Cache(
@@ -77,7 +77,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             key_generator=_solution_cache_key_generator
         )
         def _output_cache_key_generator(*args, **kwargs):
-            assert len(args) is 2
+            assert len(args) == 2
             assert args[0] == self.mu
             return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
         self._output_cache = Cache(

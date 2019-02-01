@@ -65,7 +65,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._output_over_time = None # TimeSeries of numbers
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
-                assert len(args) is 2
+                assert len(args) == 2
                 assert args[0] == self.mu
                 return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
             self._solution_over_time_cache = TimeSeriesCache(
@@ -78,7 +78,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             )
             del self._solution_cache
             def _output_cache_key_generator(*args, **kwargs):
-                assert len(args) is 2
+                assert len(args) == 2
                 assert args[0] == self.mu
                 return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
             self._output_over_time_cache = Cache(
@@ -313,9 +313,9 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 
             def solve(self):
                 problem = self.problem
-                assert len(problem._solution_over_time) is 0
+                assert len(problem._solution_over_time) == 0
                 problem._solution_over_time_cache[problem.mu, self.N, self.kwargs] = copy(problem._solution_over_time)
-                assert len(problem._solution_dot_over_time) is 0
+                assert len(problem._solution_dot_over_time) == 0
                 problem._solution_dot_over_time_cache[problem.mu, self.N, self.kwargs] = copy(problem._solution_dot_over_time)
                 solver = OnlineTimeStepping(self, problem._solution, problem._solution_dot)
                 solver.set_parameters(problem._time_stepping_parameters)

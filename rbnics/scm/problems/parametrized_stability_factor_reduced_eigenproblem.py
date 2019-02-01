@@ -64,7 +64,7 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
             self.operator["stability_factor_left_hand_matrix"] = self.reduced_problem.operator["stability_factor_left_hand_matrix"]
         if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
             self.operator["stability_factor_right_hand_matrix"] = self.reduced_problem.operator["stability_factor_right_hand_matrix"]
-            assert len(self.operator["stability_factor_right_hand_matrix"]) is 1
+            assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
             
     def solve(self, N=None, **kwargs):
         N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
@@ -89,7 +89,7 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
         
         eigensolver = OnlineEigenSolver(self.reduced_problem.stability_factor_basis_functions, A, B)
         eigensolver_parameters = dict()
-        assert self.spectrum is "largest" or self.spectrum is "smallest"
+        assert self.spectrum == "largest" or self.spectrum == "smallest"
         eigensolver_parameters["spectrum"] = self.spectrum + " real"
         eigensolver_parameters.update(self.eigensolver_parameters)
         eigensolver.set_parameters(eigensolver_parameters)

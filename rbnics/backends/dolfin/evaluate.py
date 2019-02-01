@@ -65,7 +65,7 @@ def _evaluate(
     at: ReducedMesh,
     **kwargs
 ):
-    assert len(kwargs) is 0
+    assert len(kwargs) == 0
     return evaluate_base(expression, at)
     
 @overload
@@ -80,7 +80,7 @@ def _evaluate(
     ),
     **kwargs
 ):
-    assert len(kwargs) is 0
+    assert len(kwargs) == 0
     return evaluate_base(expression, at)
     
 @overload
@@ -90,9 +90,9 @@ def _evaluate(
     **kwargs
 ):
     assert (
-        len(kwargs) is 0
+        len(kwargs) == 0
             or
-        (len(kwargs) is 1 and "tensor" in kwargs)
+        (len(kwargs) == 1 and "tensor" in kwargs)
     )
     tensor = kwargs.get("tensor", None)
     return evaluate_base(expression, at, tensor)
@@ -103,7 +103,7 @@ def _evaluate(
     at: ReducedMesh,
     **kwargs
 ):
-    assert len(kwargs) is 0
+    assert len(kwargs) == 0
     return evaluate_base(expression, at)
     
 @overload
@@ -113,9 +113,9 @@ def _evaluate(
     **kwargs
 ):
     assert (
-        len(kwargs) is 0
+        len(kwargs) == 0
             or
-        (len(kwargs) is 1 and "function" in kwargs)
+        (len(kwargs) == 1 and "function" in kwargs)
     )
     function = kwargs.get("function", None)
     return evaluate_base(expression, at, function)
@@ -126,7 +126,7 @@ def _evaluate(
     at: ReducedVertices,
     **kwargs
 ):
-    assert len(kwargs) is 0
+    assert len(kwargs) == 0
     return evaluate_base(expression, at)
     
 @overload
@@ -138,5 +138,5 @@ def _evaluate(
     ),
     **kwargs
 ):
-    assert len(kwargs) is 0
+    assert len(kwargs) == 0
     return evaluate_base(function_from_ufl_operators(expression), at)

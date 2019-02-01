@@ -33,15 +33,15 @@ def DelayedTransposeWithArithmetic(backend):
             self_args = self._arg._args
             other_args = other._arg._args
             assert len(self_args) in (2, 3)
-            assert len(self_args) is len(other_args)
+            assert len(self_args) == len(other_args)
             assert isinstance(self_args[0], AbstractBasisFunctionsMatrix)
             assert isinstance(other_args[0], AbstractBasisFunctionsMatrix)
             assert self_args[0] is other_args[0]
             assert isinstance(self_args[1], AbstractParametrizedTensorFactory)
             assert isinstance(other_args[1], AbstractParametrizedTensorFactory)
-            if len(self_args) is 2:
+            if len(self_args) == 2:
                 output = transpose(self_args[0])*(self_args[1] + other_args[1])
-            elif len(self_args) is 3:
+            elif len(self_args) == 3:
                 assert isinstance(self_args[2], AbstractBasisFunctionsMatrix)
                 assert isinstance(other_args[2], AbstractBasisFunctionsMatrix)
                 assert self_args[2] is other_args[2]
@@ -59,7 +59,7 @@ def DelayedTransposeWithArithmetic(backend):
         def __mul__(self, other):
             from rbnics.backends import transpose
             args = self._arg._args
-            assert len(args) is 3
+            assert len(args) == 3
             assert isinstance(args[0], AbstractBasisFunctionsMatrix)
             assert isinstance(args[1], AbstractParametrizedTensorFactory)
             assert isinstance(args[2], AbstractBasisFunctionsMatrix)
@@ -78,9 +78,9 @@ def DelayedTransposeWithArithmetic(backend):
             assert len(args) in (2, 3)
             assert isinstance(args[0], AbstractBasisFunctionsMatrix)
             assert isinstance(args[1], AbstractParametrizedTensorFactory)
-            if len(args) is 2:
+            if len(args) == 2:
                 output = transpose(args[0])*(other*args[1])
-            elif len(args) is 3:
+            elif len(args) == 3:
                 assert isinstance(args[2], AbstractBasisFunctionsMatrix)
                 output = transpose(args[0])*(other*args[1])*args[2]
             else:
@@ -97,9 +97,9 @@ def DelayedTransposeWithArithmetic(backend):
             assert len(args) in (2, 3)
             assert isinstance(args[0], AbstractBasisFunctionsMatrix)
             assert isinstance(args[1], AbstractParametrizedTensorFactory)
-            if len(args) is 2:
+            if len(args) == 2:
                 output = transpose(args[0])*evaluate(args[1])
-            elif len(args) is 3:
+            elif len(args) == 3:
                 assert isinstance(args[2], AbstractBasisFunctionsMatrix)
                 output = transpose(args[0])*evaluate(args[1])*args[2]
             else:

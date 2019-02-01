@@ -82,7 +82,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         }
         # I/O
         def _supremizer_cache_key_generator(*args, **kwargs):
-            assert len(args) is 1
+            assert len(args) == 1
             assert args[0] == self.mu
             return self._supremizer_cache_key_from_kwargs(**kwargs)
         def _supremizer_cache_import(component):
@@ -96,7 +96,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
                 self.export_supremizer(self.folder["cache"], filename, component=component)
             return _supremizer_cache_export_impl
         def _supremizer_cache_filename_generator(*args, **kwargs):
-            assert len(args) is 1
+            assert len(args) == 1
             assert args[0] == self.mu
             return self._supremizer_cache_file_from_kwargs(**kwargs)
         self._supremizer_cache = {

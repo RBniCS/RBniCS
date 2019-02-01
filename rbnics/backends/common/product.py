@@ -57,7 +57,7 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
             rhs = DelayedProduct(theta)
             rhs *= operator._rhs
         elif isinstance(operator._rhs, DelayedProduct):
-            assert len(operator._rhs._args) is 3
+            assert len(operator._rhs._args) == 3
             assert operator._rhs._args[0] == -1
             assert isinstance(operator._rhs._args[1], AbstractParametrizedTensorFactory)
             rhs = DelayedProduct(theta*operator._rhs._args[0])
@@ -92,7 +92,7 @@ def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix)
             operator_memory = operator._enrich_memory[component_name] # list (over basis functions index) for current theta
             if operator_memory_over_basis_functions_index is None:
                 operator_memory_over_basis_functions_index = [list() for _ in operator_memory]
-            assert len(operator_memory_over_basis_functions_index) is len(operator_memory)
+            assert len(operator_memory_over_basis_functions_index) == len(operator_memory)
             for (basis_functions_index, delayed_function) in enumerate(operator_memory):
                 operator_memory_over_basis_functions_index[basis_functions_index].append(delayed_function)
         for delayed_functions_over_theta in operator_memory_over_basis_functions_index:

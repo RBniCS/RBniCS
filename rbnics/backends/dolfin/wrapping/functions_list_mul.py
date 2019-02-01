@@ -38,7 +38,7 @@ def functions_list_mul_online_vector(functions_list, online_vector):
     assert isinstance(space, FunctionSpace)
     
     output = Function(space)
-    if len(functions_list) is 0:
+    if len(functions_list) == 0:
         return output
     else:
         for (i, fun_i) in enumerate(functions_list):

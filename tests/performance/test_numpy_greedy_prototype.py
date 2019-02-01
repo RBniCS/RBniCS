@@ -99,9 +99,9 @@ class Data(object):
         return result_backend
         
     def assert_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v, result_backend):
-        assert len(result_backend) is self.Ntrain
+        assert len(result_backend) == self.Ntrain
         result_builtin = self.evaluate_builtin(theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
-        assert len(result_builtin) is self.Ntrain
+        assert len(result_builtin) == self.Ntrain
         relative_error = builtins.sum([abs(result_builtin_t - result_backend_t)/abs(result_builtin_t) for (result_builtin_t, result_backend_t) in zip(result_builtin, result_backend)])/self.Ntrain
         assert isclose(relative_error, 0., atol=1e-10)
 

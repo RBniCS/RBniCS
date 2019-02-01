@@ -108,7 +108,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                     elif key_is_tuple_of_tuples_or_lists: # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
                         component_name_to_basis_component_length = [None, None]
                         for i in range(2):
-                            if len(self._component_name_to_basis_component_length[i]) is 1:
+                            if len(self._component_name_to_basis_component_length[i]) == 1:
                                 for (component_name, _) in self._component_name_to_basis_component_length[i].items():
                                     break
                                 component_name_to_basis_component_length_i = OnlineSizeDict()
@@ -281,22 +281,22 @@ def Matrix(backend, wrapping, MatrixBaseType):
             
         def _arithmetic_operations_assert_attributes(self, other, other_order=2):
             assert other_order in (0, 1, 2)
-            if other_order is 2:
+            if other_order == 2:
                 assert self.M == other.M
                 assert self.N == other.N
                 assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
-            elif other_order is 1:
+            elif other_order == 1:
                 assert self.N == other.N
                 assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
                 
         def _arithmetic_operations_preserve_attributes(self, output, other_order=2):
             assert other_order in (0, 1, 2)
-            if other_order is 0 or other_order is 2:
+            if other_order == 0 or other_order == 2:
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                 output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
-            elif other_order is 1:
+            elif other_order == 1:
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[0]
                 output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[0]
         

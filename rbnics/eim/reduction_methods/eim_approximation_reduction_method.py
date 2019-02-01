@@ -268,11 +268,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
         else:
             # Trivial case, greedy should stop after one iteration after having store a zero basis function
             assert len(self.greedy_errors) in (1, 2)
-            if len(self.greedy_errors) is 1:
+            if len(self.greedy_errors) == 1:
                 assert self.EIM_approximation.N == 0
                 # Tweak the tolerance to force getting in the greedy loop
                 self.tol = -1.
-            elif len(self.greedy_errors) is 2:
+            elif len(self.greedy_errors) == 2:
                 assert error_max == 0.
                 assert self.EIM_approximation.N == 1
                 # Tweak back the tolerance to force getting out of the greedy loop

@@ -38,7 +38,7 @@ def expression_replace(expression, replacements):
     expression_domains = extract_domains(expression)
     assert len(expression_domains) in (0, 1)
     assert len(expression_domains) == len(replaced_expression_domains)
-    if len(expression_domains) is 1:
+    if len(expression_domains) == 1:
         assert replaced_expression_domains[0] is not expression_domains[0]
     return replaced_expression
 

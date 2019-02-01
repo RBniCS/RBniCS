@@ -185,7 +185,7 @@ if has_fenicstools:
         def __init__(self, V, key):
             FEniCSToolsDofMapPlotter.__init__(self, V)
             self.plot()
-            assert len(self.plots) is 1
+            assert len(self.plots) == 1
             assert key in ("C", "T", "V", "D")
             if key in ("C", "T", "V"):
                 self.plots[0].mesh_entity_handler.__call__(Event(key))

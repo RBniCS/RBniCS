@@ -50,7 +50,7 @@ def _read_from_file(fun, directory, filename, suffix, components=None):
             assign(fun.sub(i), fun_i)
     else:
         if suffix is not None:
-            if suffix is 0:
+            if suffix == 0:
                 # Remove from storage and re-create
                 try:
                     del _all_solution_files[(directory, filename)]

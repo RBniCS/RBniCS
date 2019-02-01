@@ -42,16 +42,16 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
         # Extract spaces from forms
         len_spaces = len(form.arguments())
         assert len_spaces in (0, 1, 2)
-        if len_spaces is 2:
+        if len_spaces == 2:
             spaces = (
                 form_argument_space(form, 0),
                 form_argument_space(form, 1)
             )
-        elif len_spaces is 1:
+        elif len_spaces == 1:
             spaces = (
                 form_argument_space(form, 0),
             )
-        elif len_spaces is 0:
+        elif len_spaces == 0:
             spaces = ()
         else:
             raise ValueError("Invalid arguments")
@@ -62,7 +62,7 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
                 empty_snapshot.zero()
                 empty_snapshot.generator = self
                 return empty_snapshot
-        elif len_spaces is 0:
+        elif len_spaces == 0:
             def assemble_empty_snapshot():
                 return 0.
         else:
@@ -88,7 +88,7 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
         for integral in form_iterator(self._form, "integrals"):
             if integral.subdomain_data() is not None and integral.subdomain_data() not in subdomain_data:
                 subdomain_data.append(integral.subdomain_data())
-        if len(subdomain_data) is 0:
+        if len(subdomain_data) == 0:
             subdomain_data = None
         # Create reduced mesh
         return ParametrizedTensorFactory_Base.create_interpolation_locations_container(self, subdomain_data=subdomain_data)

@@ -63,7 +63,7 @@ def sympy_to_parametrized_expression(sympy_expression: (ImmutableMatrix, SympyMa
     Convert a sympy vector/matrix expression to a ParametrizedExpression
     """
     dim = problem.V.mesh().geometry().dim()
-    if sympy_expression.shape[1] is 1:
+    if sympy_expression.shape[1] == 1:
         cpp_expression = list()
         for i in range(dim):
             cpp_expression.append(
@@ -716,7 +716,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             cell_id_to_subdomain_id = dict()
                             for (c_id, c) in enumerate(cells(f)):
                                 cell_id_to_subdomain_id[c_id] = subdomains[c]
-                            assert len(cell_id_to_subdomain_id) is 2
+                            assert len(cell_id_to_subdomain_id) == 2
                             assert cell_id_to_subdomain_id[0] != cell_id_to_subdomain_id[1]
                             cell_id_to_restricted_sign = dict()
                             if cell_id_to_subdomain_id[0] > cell_id_to_subdomain_id[1]:
@@ -771,7 +771,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 # The pulled back form is not affine if it contains a boundary integral on a non-straight boundary,
                 # because the normal direction would depend on x
                 for form_with_placeholder in separated_pulled_back_form._form_with_placeholders:
-                    assert len(form_with_placeholder.integrals()) is 1
+                    assert len(form_with_placeholder.integrals()) == 1
                     integral = form_with_placeholder.integrals()[0]
                     integral_type = integral.integral_type()
                     integral_subdomain_id = integral.subdomain_id()
@@ -821,7 +821,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 return tuple(affine_parameter_dependent_theta_factors)
                 
             def _compute_affine_parameter_dependent_theta_factor(self, coefficient, placeholder, form_with_placeholder):
-                assert len(form_with_placeholder.integrals()) is 1
+                assert len(form_with_placeholder.integrals()) == 1
                 integral = form_with_placeholder.integrals()[0]
                 integral_type = integral.integral_type()
                 integral_subdomain_id = integral.subdomain_id()
@@ -840,13 +840,13 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 # ... add fake unity constants to locals
                 for constant in replacer.constants:
                     assert len(constant.ufl_shape) in (0, 1, 2)
-                    if len(constant.ufl_shape) is 0:
+                    if len(constant.ufl_shape) == 0:
                         locals[str(constant)] = float(constant)
-                    elif len(constant.ufl_shape) is 1:
+                    elif len(constant.ufl_shape) == 1:
                         vals = constant.values()
                         for i in range(constant.ufl_shape[0]):
                             locals[str(constant) + "[" + str(i) + "]"] = vals[i]
-                    elif len(constant.ufl_shape) is 2:
+                    elif len(constant.ufl_shape) == 2:
                         vals = constant.values()
                         vals = vals.reshape(constant.ufl_shape)
                         for i in range(constant.ufl_shape[0]):
@@ -925,7 +925,7 @@ class ComputeAffineParameterDependentThetaFactorReplacer(Transformer):
         return replaced_e
         
     def power(self, e, *ops):
-        assert len(ops) is 2
+        assert len(ops) == 2
         replaced_ops = list()
         assert ops[0] in self.contains_placeholder
         assert not isinstance(ops[0], MultiIndex)
@@ -1028,7 +1028,7 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
         else: # it may happen that factors get multiplied by a number during collection
             ratios = tuple(simplify(collected_form/collected_with_respect_to_form_key) for collected_with_respect_to_form_key in collected_with_respect_to_form.keys())
             is_numeric_ratio = tuple(isinstance(r, Number) for r in ratios)
-            assert sum(is_numeric_ratio) is 1
+            assert sum(is_numeric_ratio) == 1
             ratio = ratios[is_numeric_ratio.index(True)]
             collected_form = collected_form/ratio
             assert collected_form in collected_with_respect_to_form

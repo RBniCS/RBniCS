@@ -66,7 +66,7 @@ def slice_to_array(obj, key, length_dict, index_dict):
             slices.append(tuple(current_slice))
     
     assert len(slices) > 0
-    if len(slices) is 1:
+    if len(slices) == 1:
         return slices[0]
     else:
         return tuple(slices)

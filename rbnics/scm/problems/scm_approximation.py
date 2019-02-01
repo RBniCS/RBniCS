@@ -55,14 +55,14 @@ class SCMApproximation(ParametrizedProblem):
         self.folder["cache"] = os.path.join(self.folder_prefix, "reduced_cache")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
         def _stability_factor_cache_key_generator(*args, **kwargs):
-            assert len(args) is 2
+            assert len(args) == 2
             assert args[0] == self.mu
-            assert len(kwargs) is 0
+            assert len(kwargs) == 0
             return self._cache_key(args[1])
         def _stability_factor_cache_filename_generator(*args, **kwargs):
-            assert len(args) is 2
+            assert len(args) == 2
             assert args[0] == self.mu
-            assert len(kwargs) is 0
+            assert len(kwargs) == 0
             return self._cache_file(args[1])
         def _stability_factor_lower_bound_cache_import(filename):
             self.import_stability_factor_lower_bound(self.folder["cache"], filename)
@@ -118,7 +118,7 @@ class SCMApproximation(ParametrizedProblem):
             assert self.training_set is not None
             self.training_set.save(self.folder["reduced_operators"], "training_set")
             # Properly initialize structures related to greedy selected parameters
-            assert len(self.greedy_selected_parameters) is 0
+            assert len(self.greedy_selected_parameters) == 0
         else:
             raise ValueError("Invalid stage in init().")
     

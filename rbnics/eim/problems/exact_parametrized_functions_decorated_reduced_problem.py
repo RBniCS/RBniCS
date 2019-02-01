@@ -53,11 +53,11 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
                     if not isinstance(self.riesz, OfflineOnlineSwitch):
                         assert isinstance(self.riesz, dict)
-                        assert len(self.riesz) is 0
+                        assert len(self.riesz) == 0
                         self.riesz = OfflineOnlineExpansionStorage(self, "RieszExpansionStorage")
                     if not isinstance(self.error_estimation_operator, OfflineOnlineSwitch):
                         assert isinstance(self.error_estimation_operator, dict)
-                        assert len(self.error_estimation_operator) is 0
+                        assert len(self.error_estimation_operator) == 0
                         self.error_estimation_operator = OfflineOnlineExpansionStorage(self, "ErrorEstimationOperatorExpansionStorage")
                     if not isinstance(self.RieszSolver, OfflineOnlineSwitch):
                         assert inspect.isclass(self.RieszSolver)
@@ -137,11 +137,11 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
             if not isinstance(self.Q, OfflineOnlineSwitch):
                 assert isinstance(self.Q, dict)
-                assert len(self.Q) is 0
+                assert len(self.Q) == 0
                 self.Q = OfflineOnlineExpansionStorageSize()
             if not isinstance(self.operator, OfflineOnlineSwitch):
                 assert isinstance(self.operator, dict)
-                assert len(self.operator) is 0
+                assert len(self.operator) == 0
                 self.operator = OfflineOnlineExpansionStorage(self, "OperatorExpansionStorage")
             # Setup offline/online operators storage with exact operators
             assert current_stage in ("online", "offline")
@@ -180,7 +180,7 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             OfflineOnlineSwitch.set_current_stage(current_stage)
             
         def _cache_key_from_N_and_kwargs(self, N, **kwargs):
-            if len(self.truth_problem._apply_exact_evaluation_at_stages) is 1: # uses EIM/DEIM online and exact evaluation offline
+            if len(self.truth_problem._apply_exact_evaluation_at_stages) == 1: # uses EIM/DEIM online and exact evaluation offline
                 cache_key = ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(self, N, **kwargs)
                 # Append current stage to cache key
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch

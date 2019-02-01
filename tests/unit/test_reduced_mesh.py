@@ -204,7 +204,7 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     
     mesh_dim = V.mesh().geometry().dim()
     assert mesh_dim in (1, 2)
-    if mesh_dim is 1:
+    if mesh_dim == 1:
         e = Expression("1+x[0]", element=V.ufl_element())
     else:
         e = Expression("(1+x[0])*(1+x[1])", element=V.ufl_element())

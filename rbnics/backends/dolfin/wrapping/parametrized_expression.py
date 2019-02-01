@@ -142,7 +142,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
                     standard_set_time(t)
                     for expression_ in _truth_problem_to_parametrized_expressions[self]:
                         if hasattr(expression_, "t"):
-                            if expression_.t is not t:
+                            if expression_.t != t:
                                 assert isinstance(expression_.t, Number)
                                 expression_.t = t
                 return overridden_set_time

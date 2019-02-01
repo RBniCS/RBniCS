@@ -73,7 +73,7 @@ def Vector(backend, wrapping, VectorBaseType):
                     if isinstance(key, slice): # vector[:5]
                         output._component_name_to_basis_component_length = output_size[0]
                     elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
-                        if len(self._component_name_to_basis_component_length) is 1:
+                        if len(self._component_name_to_basis_component_length) == 1:
                             for (component_name, _) in self._component_name_to_basis_component_length.items():
                                 break
                             component_name_to_basis_component_length = OnlineSizeDict()
@@ -219,7 +219,7 @@ def Vector(backend, wrapping, VectorBaseType):
         
         def _arithmetic_operations_assert_attributes(self, other, other_order=1):
             assert other_order in (0, 1)
-            if other_order is 1:
+            if other_order == 1:
                 assert self.N == other.N
                 assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length

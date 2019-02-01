@@ -53,13 +53,13 @@ def patch_benchmark_plugin(benchmark_plugin):
                 may be expensive.
             """
             
-            assert len(args) is 0   # arguments will be provided by the setup function
+            assert len(args) == 0   # arguments will be provided by the setup function
             
             assert "setup" in kwargs
             setup = kwargs.pop("setup")
             teardown = kwargs.pop("teardown", _do_nothing)
             
-            assert len(kwargs) is 0 # no kwargs allowed, except setup and teardown
+            assert len(kwargs) == 0 # no kwargs allowed, except setup and teardown
             
             if not self.disabled:
                 # Choose how many time we must repeat the test, basing the timing on the setup + function + teardown
@@ -96,8 +96,8 @@ def patch_benchmark_plugin(benchmark_plugin):
                 teardown(*args, result)
             
         def _make_runner(self, setup, function_to_benchmark, teardown, args_, kwargs_):
-            assert len(args_) is 0   # arguments will be provided
-            assert len(kwargs_) is 0 # by the setup function
+            assert len(args_) == 0   # arguments will be provided
+            assert len(kwargs_) == 0 # by the setup function
             
             def runner(loops_range, timer=self._timer):
                 gc_enabled = gc.isenabled()
@@ -164,7 +164,7 @@ def patch_benchmark_plugin(benchmark_plugin):
                         builtin_mean_time = builtin_benchmark["stats"]["mean"]
                         key = (name, params_dict["test_type"], tuple(sorted(params_dict_without_test_type.items())))
                         if key not in speedups_tmp:
-                            assert idx is 0
+                            assert idx == 0
                             speedups_tmp[key] = list()
                         speedups_tmp[key].append(builtin_mean_time/backend_mean_time)
             # Convert speedups to overheads if the computed number is less than 1, and

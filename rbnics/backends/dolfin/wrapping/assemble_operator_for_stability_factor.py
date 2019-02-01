@@ -50,9 +50,9 @@ def assemble_operator_for_stability_factor(assemble_operator):
                     args.extend(original_dirichlet_bc_i._domain)
                     kwargs = original_dirichlet_bc_i._kwargs
                     zeroed_dirichlet_bc.append(DirichletBC(*args, **kwargs))
-                assert len(zeroed_dirichlet_bc) is len(original_dirichlet_bc)
+                assert len(zeroed_dirichlet_bc) == len(original_dirichlet_bc)
                 zeroed_dirichlet_bcs.append(zeroed_dirichlet_bc)
-            assert len(zeroed_dirichlet_bcs) is len(original_dirichlet_bcs)
+            assert len(zeroed_dirichlet_bcs) == len(original_dirichlet_bcs)
             return tuple(zeroed_dirichlet_bcs)
         else:
             return assemble_operator(self_, term)

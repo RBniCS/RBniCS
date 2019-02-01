@@ -61,7 +61,7 @@ def _enable_string_components(components, function_space):
         else:
             components = OrderedDict()
             if (
-                len(self_._index_to_components) is 1
+                len(self_._index_to_components) == 1
                     and
                 None in self_._index_to_components
             ):

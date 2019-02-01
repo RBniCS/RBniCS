@@ -36,7 +36,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self._supremizer = None # OnlineFunction
             # I/O
             def _supremizer_cache_key_generator(*args, **kwargs):
-                assert len(args) is 2
+                assert len(args) == 2
                 assert args[0] == self.mu
                 return self._supremizer_cache_key_from_N_and_kwargs(args[1], **kwargs)
             self._supremizer_cache = Cache(

@@ -155,7 +155,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         Q = self.SCM_approximation.truth_problem.Q["stability_factor_left_hand_matrix"]
         A = self.SCM_approximation.truth_problem.operator["stability_factor_left_hand_matrix"]
         B = self.SCM_approximation.truth_problem.operator["stability_factor_right_hand_matrix"]
-        assert len(B) is 1
+        assert len(B) == 1
         normalization = transpose(u)*B[0]*u
         upper_bound_vector = OnlineVector(Q)
         for q in range(Q):

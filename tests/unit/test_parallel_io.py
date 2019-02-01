@@ -30,7 +30,7 @@ def test_parallel_io_with_return_value():
     def task():
         return COMM_WORLD.rank
     return_value = parallel_io(task)
-    assert return_value is 0
+    assert return_value == 0
     
 def test_parallel_io_with_error_1():
     exception_message = "This test will fail"

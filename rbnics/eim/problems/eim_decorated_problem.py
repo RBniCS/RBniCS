@@ -148,11 +148,11 @@ def EIMDecoratedProblem(
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
                 if not isinstance(self.Q, OfflineOnlineSwitch):
                     assert isinstance(self.Q, dict)
-                    assert len(self.Q) is 0
+                    assert len(self.Q) == 0
                     self.Q = OfflineOnlineExpansionStorageSize()
                 if not isinstance(self.operator, OfflineOnlineSwitch):
                     assert isinstance(self.operator, dict)
-                    assert len(self.operator) is 0
+                    assert len(self.operator) == 0
                     self.operator = OfflineOnlineExpansionStorage(self, "OperatorExpansionStorage")
                 if not isinstance(self.assemble_operator, OfflineOnlineSwitch):
                     assert inspect.ismethod(self.assemble_operator)

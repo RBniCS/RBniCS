@@ -213,7 +213,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                             return preprocess_candidate(candidate.ufl_operands[0])
                                         elif isinstance(candidate, ListTensor):
                                             candidates = set([preprocess_candidate(component) for component in candidate.ufl_operands])
-                                            if len(candidates) is 1:
+                                            if len(candidates) == 1:
                                                 preprocessed_candidate = candidates.pop()
                                                 log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with a unique preprocessed component, resulting in a candidate " + str(preprocessed_candidate) + " of type " + str(type(preprocessed_candidate)))
                                                 return preprocess_candidate(preprocessed_candidate)
@@ -229,7 +229,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                     candidates_from_components.append(preprocess_candidate(component.ufl_operands[0]))
                                                 if at_least_one_mute_index:
                                                     candidates_from_components = set(candidates_from_components)
-                                                    assert len(candidates_from_components) is 1
+                                                    assert len(candidates_from_components) == 1
                                                     preprocessed_candidate = candidates_from_components.pop()
                                                     log(PROGRESS, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with multiple preprocessed components with at least one mute index, resulting in a candidate " + str(preprocessed_candidate) + " of type " + str(type(preprocessed_candidate)))
                                                     return preprocess_candidate(preprocessed_candidate)

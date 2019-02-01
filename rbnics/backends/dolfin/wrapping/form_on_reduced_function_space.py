@@ -101,11 +101,11 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                             # Define and store the replacement
                             assert preprocessed_node not in replacements # as it is related to a new truth solution component
                             replacements[preprocessed_node] = backend.Function(auxiliary_reduced_V)
-                            if time_derivative is 0:
+                            if time_derivative == 0:
                                 if truth_problem not in truth_problem_to_reduced_mesh_solution:
                                     truth_problem_to_reduced_mesh_solution[truth_problem] = list()
                                 truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
-                            elif time_derivative is 1:
+                            elif time_derivative == 1:
                                 if truth_problem not in truth_problem_to_reduced_mesh_solution_dot:
                                     truth_problem_to_reduced_mesh_solution_dot[truth_problem] = list()
                                 truth_problem_to_reduced_mesh_solution_dot[truth_problem].append(replacements[preprocessed_node])

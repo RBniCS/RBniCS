@@ -56,7 +56,7 @@ class DelayedBasisFunctionsMatrix(object):
             memory.enrich_patch = PatchInstanceMethod(memory, "enrich", patched_delayed_functions_list_enrich)
             memory.enrich_patch.patch()
             
-        assert len(self._components_name) is 0
+        assert len(self._components_name) == 0
         self._components_name = components_name
         for (basis_component_index, component_name) in enumerate(components_name):
             self._component_name_to_basis_component_index[component_name] = basis_component_index

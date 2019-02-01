@@ -23,12 +23,12 @@ from rbnics.utils.decorators import ProblemDecoratorFor
 def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_mappings, **decorator_kwargs):
     
     if "shape_parametrization_vertices_mappings" in decorator_kwargs:
-        assert len(shape_parametrization_vertices_mappings) is 0
+        assert len(shape_parametrization_vertices_mappings) == 0
         shape_parametrization_vertices_mappings = decorator_kwargs["shape_parametrization_vertices_mappings"]
     
     # Possibly read vertices mappings from file
     if (
-        len(shape_parametrization_vertices_mappings) is 1
+        len(shape_parametrization_vertices_mappings) == 1
             and
         isinstance(shape_parametrization_vertices_mappings[0], str)
     ):
@@ -46,16 +46,16 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
         else:
             assert isinstance(vertices_mapping, dict)
             assert len(vertices_mapping) in (3, 4)
-            if len(vertices_mapping) is 3:
+            if len(vertices_mapping) == 3:
                 if dim is None:
                     dim = 2
                 else:
-                    assert dim is 2
-            elif len(vertices_mapping) is 4:
+                    assert dim == 2
+            elif len(vertices_mapping) == 4:
                 if dim is None:
                     dim = 3
                 else:
-                    assert dim is 3
+                    assert dim == 3
     assert dim is not None, "It does not make any sense to use this of all your subdomains are not parametrized"
         
     # Get the shape parametrization expression from vertices mappings

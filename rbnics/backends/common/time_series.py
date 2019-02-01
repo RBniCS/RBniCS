@@ -25,7 +25,7 @@ from rbnics.utils.decorators import BackendFor, overload, tuple_of
 class TimeSeries(AbstractTimeSeries):
     def __init__(self, *args):
         assert len(args) in (1, 2)
-        if len(args) is 1:
+        if len(args) == 1:
             other_time_series, = args
             assert isinstance(other_time_series, TimeSeries)
             self._time_interval = other_time_series._time_interval

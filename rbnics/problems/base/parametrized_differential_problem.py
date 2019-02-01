@@ -66,7 +66,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
         def _solution_cache_key_generator(*args, **kwargs):
-            assert len(args) is 1
+            assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_key_from_kwargs(**kwargs)
         def _solution_cache_import(filename):
@@ -76,7 +76,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         def _solution_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
         def _solution_cache_filename_generator(*args, **kwargs):
-            assert len(args) is 1
+            assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_file_from_kwargs(**kwargs)
         self._solution_cache = Cache(
@@ -87,18 +87,18 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             filename_generator=_solution_cache_filename_generator
         )
         def _output_cache_key_generator(*args, **kwargs):
-            assert len(args) is 1
+            assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_key_from_kwargs(**kwargs)
         def _output_cache_import(filename):
             output = [0.]
             self.import_output(self.folder["cache"], filename, output)
-            assert len(output) is 1
+            assert len(output) == 1
             return output[0]
         def _output_cache_export(filename):
             self.export_output(self.folder["cache"], filename)
         def _output_cache_filename_generator(*args, **kwargs):
-            assert len(args) is 1
+            assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_file_from_kwargs(**kwargs)
         self._output_cache = Cache(
@@ -428,7 +428,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             output = [self._output]
         else:
             assert isinstance(output, list)
-            assert len(output) is 1
+            assert len(output) == 1
         export(output, folder, filename + "_output", suffix)
             
     def import_output(self, folder=None, filename=None, output=None, suffix=None):
@@ -442,12 +442,12 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         if output is None:
             output = [0.]
             import_(output, folder, filename + "_output", suffix)
-            assert len(output) is 1
+            assert len(output) == 1
             assert isinstance(output[0], Number)
             self._output = output[0]
         else:
             assert isinstance(output, list)
-            assert len(output) is 1
+            assert len(output) == 1
             assert isinstance(output[0], Number)
             import_(output, folder, filename + "_output", suffix)
     
