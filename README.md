@@ -56,12 +56,7 @@ Several tutorials are provided the [**tutorials** subfolder](https://gitlab.com/
 * **Tutorial 19**: POD-Galerkin methods for unsteady Navier-Stokes problems [[tutorial files](https://gitlab.com/RBniCS/RBniCS/tree/master/tutorials/19_navier_stokes_unsteady)].
 
 ### 4. Authors and contributors
-**RBniCS** is currently developed and mantained at [SISSA mathLab](http://mathlab.sissa.it/) by
-* [Dr. Francesco Ballarin](http://people.sissa.it/~fballarin/)
-* [Dr. Alberto Sartori](https://scholar.google.it/citations?user=rdoHp_EAAAAJ&hl=en)
-* [Prof. Gianluigi Rozza](http://people.sissa.it/~grozza/)
-
-in the framework of the [AROMA-CFD ERC CoG project](http://people.sissa.it/~grozza/aroma-cfd/). Please see the [AUTHORS file](https://gitlab.com/RBniCS/RBniCS/raw/master/AUTHORS) for a list of contributors.
+**RBniCS** is currently developed and maintained at [SISSA mathLab](http://mathlab.sissa.it/) by [Dr. Francesco Ballarin](http://people.sissa.it/~fballarin/), under the supervision of [Prof. Gianluigi Rozza](http://people.sissa.it/~grozza/) in the framework of the [AROMA-CFD ERC CoG project](http://people.sissa.it/~grozza/aroma-cfd/). We acknowledge [Dr. Alberto Sartori](https://scholar.google.it/citations?user=rdoHp_EAAAAJ&hl=en) for his efforts in the early development stage of the library, and all contributors listed in the [AUTHORS file](https://gitlab.com/RBniCS/RBniCS/blob/master/AUTHORS).
 
 Contact us by [email](mailto:francesco.ballarin@sissa.it) for further information or questions about **RBniCS**, or open an issue on [our issue tracker](https://gitlab.com/RBniCS/RBniCS/issues). **RBniCS** is at an early development stage, so contributions improving either the code or the documentation are welcome, both as patches or [merge requests](https://gitlab.com/RBniCS/RBniCS/merge_requests).
 
@@ -79,7 +74,7 @@ If you use **RBniCS** in your work, please use the following citations to refere
 ```
 and cite the [RBniCS website](http://mathlab.sissa.it/rbnics).
 
-A forthcoming publication will also provide more details on **RBniCS**.
+A list of scientific publications involving **RBniCS** is available [at this link](https://gitlab.com/RBniCS/RBniCS/blob/master/docs/source/publications.rst). Contact us by [email](mailto:francesco.ballarin@sissa.it) to have your publication added to the list.
 
 ### 6. License
 Like all core **FEniCS** components, **RBniCS** is freely available under the GNU LGPL, version 3.
