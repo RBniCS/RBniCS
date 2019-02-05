@@ -24,4 +24,4 @@ Publications
 
 2015
 ----
-2. J S Hesthaven, G Rozza, and B Stamm, Certified Reduced Basis Methods for Parametrized Partial Differential Equations, 1st ed., Springer, 2015. 
+1. J S Hesthaven, G Rozza, and B Stamm, Certified Reduced Basis Methods for Parametrized Partial Differential Equations, 1st ed., Springer, 2015.
