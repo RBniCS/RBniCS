@@ -17,6 +17,7 @@
 #
 
 from rbnics.utils.decorators import ReductionMethodFor
+from rbnics.problems.parabolic.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
 from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReduction
 from rbnics.reduction_methods.elliptic import EllipticPODGalerkinReduction
@@ -27,5 +28,6 @@ ParabolicPODGalerkinReduction_Base = LinearTimeDependentPODGalerkinReduction(Par
 # Base class containing the interface of a POD-Galerkin ROM
 # for parabolic problems
 @ReductionMethodFor(ParabolicProblem, "PODGalerkin")
+@ReductionMethodFor(ParabolicCoerciveProblem, "PODGalerkin")
 class ParabolicPODGalerkinReduction(ParabolicPODGalerkinReduction_Base):
     pass
