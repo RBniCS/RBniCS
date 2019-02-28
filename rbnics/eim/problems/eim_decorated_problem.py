@@ -71,7 +71,7 @@ def EIMDecoratedProblem(
                 assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
                 assert stages == "online"
                 self._apply_EIM_at_stages = (stages, )
-                assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") after @EIM(\"online\") decorator"
+                assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") below @EIM(\"online\") decorator"
                 assert self._apply_exact_evaluation_at_stages == ("offline", )
                 
             @overload(tuple_of(str))

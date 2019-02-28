@@ -502,8 +502,8 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
         from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
         from rbnics.scm.problems import ExactStabilityFactor, SCM
         from rbnics.shape_parametrization.problems import AffineShapeParametrization, ShapeParametrization
-        assert all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor, SCM)]), "DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor and SCM should be applied after PullBackFormsToReferenceDomain"
-        assert any([Algorithm in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (AffineShapeParametrization, ShapeParametrization)]), "PullBackFormsToReferenceDomain should be applied after AffineShapeParametrization or ShapeParametrization"
+        assert all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor, SCM)]), "DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor and SCM should be applied above PullBackFormsToReferenceDomain"
+        assert any([Algorithm in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators for Algorithm in (AffineShapeParametrization, ShapeParametrization)]), "PullBackFormsToReferenceDomain should be applied above AffineShapeParametrization or ShapeParametrization"
         
         from rbnics.backends.dolfin import SeparatedParametrizedForm
         from rbnics.shape_parametrization.utils.symbolic import sympy_eval

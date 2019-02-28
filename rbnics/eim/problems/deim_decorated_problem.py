@@ -69,7 +69,7 @@ def DEIMDecoratedProblem(
                 assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
                 assert stages == "online"
                 self._apply_DEIM_at_stages = (stages, )
-                assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") after @DEIM(\"online\") decorator"
+                assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") below @DEIM(\"online\") decorator"
                 assert self._apply_exact_evaluation_at_stages == ("offline", )
                 
             @overload(tuple_of(str))
