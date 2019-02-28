@@ -19,13 +19,11 @@
 from sympy import ccode, MatrixSymbol, sympify
 from mpi4py.MPI import MAX, MIN
 from dolfin import ALE, cells, Function, FunctionSpace, LagrangeInterpolator, VectorFunctionSpace
-from dolfin.cpp.log import log, LogLevel
 from dolfin.cpp.mesh import MeshFunctionSizet
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression
 from rbnics.utils.decorators import BackendFor, tuple_of
-
-PROGRESS = LogLevel.PROGRESS
+from rbnics.utils.mpi import DEBUG, log
 
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
@@ -100,12 +98,12 @@ class MeshMotion(AbstractMeshMotion):
                 )
         
     def move_mesh(self):
-        log(PROGRESS, "moving mesh")
+        log(DEBUG, "moving mesh")
         displacement = self.compute_displacement()
         ALE.move(self.mesh, displacement)
         
     def reset_reference(self):
-        log(PROGRESS, "back to the reference mesh")
+        log(DEBUG, "back to the reference mesh")
         self.mesh.coordinates()[:] = self.reference_coordinates
         
     # Auxiliary method to deform the domain

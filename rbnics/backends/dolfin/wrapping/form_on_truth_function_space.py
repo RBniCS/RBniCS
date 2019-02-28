@@ -21,7 +21,7 @@ from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_fro
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_problem_from_solution_dot, get_reduced_problem_from_problem, is_training_finished, is_training_started
-from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.mpi import DEBUG, log
 
 def basic_form_on_truth_function_space(backend, wrapping):
     def _basic_form_on_truth_function_space(form_wrapper, tensor=None):
@@ -243,13 +243,13 @@ def basic_form_on_truth_function_space(backend, wrapping):
                 # Solve (if necessary)
                 truth_problem.set_mu(mu)
                 if not truth_problem_is_solving:
-                    log(PROGRESS, "In form_on_truth_function_space, requiring truth problem solve for problem " + truth_problem.name())
+                    log(DEBUG, "In form_on_truth_function_space, requiring truth problem solve for problem " + truth_problem.name())
                     truth_problem.solve()
                 else:
-                    log(PROGRESS, "In form_on_truth_function_space, loading current truth problem solution for problem " + truth_problem.name())
+                    log(DEBUG, "In form_on_truth_function_space, loading current truth problem solution for problem " + truth_problem.name())
             else:
                 reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                log(PROGRESS, "In form_on_truth_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
+                log(DEBUG, "In form_on_truth_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
             # Assign to truth_solution
             if truth_problem in truth_problem_to_truth_solution:
                 truth_solution = truth_problem_to_truth_solution[truth_problem]
@@ -291,10 +291,10 @@ def basic_form_on_truth_function_space(backend, wrapping):
             # Solve (if necessary)
             reduced_problem.set_mu(mu)
             if not is_solving:
-                log(PROGRESS, "In form_on_truth_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
+                log(DEBUG, "In form_on_truth_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
-                log(PROGRESS, "In form_on_truth_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
+                log(DEBUG, "In form_on_truth_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
             # Assign to truth_solution
             if reduced_problem in reduced_problem_to_truth_solution:
                 truth_solution = reduced_problem_to_truth_solution[reduced_problem]

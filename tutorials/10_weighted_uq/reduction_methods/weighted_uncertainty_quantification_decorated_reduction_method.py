@@ -18,7 +18,7 @@
 
 from math import sqrt
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
-from rbnics.utils.mpi import log, DEBUG
+from rbnics.utils.mpi import DEBUG, log
 from problems import WeightedUncertaintyQuantification
 
 @ReductionMethodDecoratorFor(WeightedUncertaintyQuantification)

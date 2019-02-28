@@ -19,7 +19,7 @@
 from rbnics.utils.decorators.customize_reduction_method_for import _cache as customize_reduction_method_cache
 from rbnics.utils.decorators.reduction_method_for import _cache as reduction_method_cache
 from rbnics.utils.decorators.reduction_method_decorator_for import _cache as reduction_method_decorator_cache
-from rbnics.utils.mpi import log, DEBUG
+from rbnics.utils.mpi import DEBUG, log
 
 # Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
 def ReductionMethodFactory(truth_problem, category, **kwargs):

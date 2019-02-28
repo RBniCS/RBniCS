@@ -19,7 +19,7 @@
 from collections import MutableMapping
 from functools import wraps
 from pylru import lrucache
-from rbnics.utils.mpi import log, PROGRESS
+from rbnics.utils.mpi import DEBUG, log
 
 class Cache(object):
     def __init__(self, config_section=None, key_generator=None, import_=None, export=None, filename_generator=None):
@@ -96,16 +96,16 @@ class Cache(object):
                 try:
                     self._storage[storage_key] = self._import(storage_filename)
                 except OSError:
-                    log(PROGRESS, "Could not load key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache or disk")
+                    log(DEBUG, "Could not load key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache or disk")
                     raise key_error
                 else:
-                    log(PROGRESS, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from disk")
+                    log(DEBUG, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from disk")
                     return self._storage[storage_key]
             else:
-                log(PROGRESS, "Could not load key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
+                log(DEBUG, "Could not load key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
                 raise key_error
         else:
-            log(PROGRESS, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
+            log(DEBUG, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
             return storage_value
         
     def __setitem__(self, key, value):

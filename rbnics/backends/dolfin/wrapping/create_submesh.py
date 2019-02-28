@@ -21,9 +21,7 @@ from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
 from dolfin import Cell, cells, compile_cpp_code, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction, Vertex, vertices
 from dolfin.cpp.mesh import MeshFunctionBool
-from dolfin.cpp.log import log, LogLevel
-
-DEBUG = LogLevel.DEBUG
+from rbnics.utils.mpi import DEBUG, log
 
 # Implement an extended version of cbcpost create_submesh that:
 # a) as cbcpost version (and in contrast to standard dolfin) also works in parallel

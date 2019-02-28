@@ -17,15 +17,23 @@
 #
 
 
-from logging import log, CRITICAL, ERROR, WARNING, INFO, DEBUG
+from logging import CRITICAL, DEBUG, ERROR, getLogger, INFO, log, WARNING
 from rbnics.utils.mpi.parallel_io import parallel_io
 from rbnics.utils.mpi.parallel_max import parallel_max
 from rbnics.utils.mpi.print import print
-PROGRESS = 16 # compatability with DOLFIN
-TRACE = 13 # compatability with DOLFIN
+
+def set_log_level(log_level):
+    getLogger().setLevel(log_level)
 
 __all__ = [
-    'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG',
-    'parallel_io', 'parallel_max',
-    'print'
+    'CRITICAL',
+    'DEBUG',
+    'ERROR',
+    'INFO',
+    'log',
+    'parallel_io',
+    'parallel_max',
+    'print',
+    'set_log_level',
+    'WARNING'
 ]

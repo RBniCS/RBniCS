@@ -172,15 +172,6 @@ __all__ = [
     'vectorized_matrix_inner_vectorized_matrix'
 ]
 
-from dolfin.cpp.log import log, LogLevel  # noqa: F401
-CRITICAL = LogLevel.CRITICAL
-DEBUG = LogLevel.DEBUG
-ERROR = LogLevel.ERROR
-INFO = LogLevel.INFO
-PROGRESS = LogLevel.PROGRESS
-TRACE = LogLevel.TRACE
-WARNING = LogLevel.WARNING
-
 __overridden__ = {
     'rbnics': [
         'assemble_operator_for_derivatives',
@@ -194,7 +185,4 @@ __overridden__ = {
         'plot',
         'PullBackFormsToReferenceDomain'
     ],
-    'rbnics.utils.mpi': [
-        'log', 'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'PROGRESS', 'TRACE', 'DEBUG'
-    ]
 }

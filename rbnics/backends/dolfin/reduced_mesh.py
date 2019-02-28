@@ -19,16 +19,13 @@
 import os
 from mpi4py.MPI import MAX
 from dolfin import cells, has_hdf5, has_hdf5_parallel, Mesh, MeshFunction
-from dolfin.cpp.log import log, LogLevel
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
 from rbnics.backends.dolfin.wrapping import FunctionSpace
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.utils.decorators import abstractmethod, BackendFor, get_reduced_problem_from_problem, get_reduction_method_from_problem, is_training_finished, ModuleWrapper
 from rbnics.utils.io import ExportableList, Folders
-from rbnics.utils.mpi import parallel_io
+from rbnics.utils.mpi import DEBUG, log, parallel_io
 from rbnics.utils.test import PatchInstanceMethod
-
-DEBUG = LogLevel.DEBUG
 
 if not has_hdf5() or not has_hdf5_parallel():
     from dolfin import File as ASCIIFile

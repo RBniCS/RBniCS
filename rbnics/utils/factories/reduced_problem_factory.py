@@ -19,7 +19,7 @@
 from rbnics.utils.decorators.customize_reduced_problem_for import _cache as customize_reduced_problem_cache
 from rbnics.utils.decorators.reduced_problem_for import _cache as reduced_problem_cache
 from rbnics.utils.decorators.reduced_problem_decorator_for import _cache as reduced_problem_decorator_cache
-from rbnics.utils.mpi import log, DEBUG
+from rbnics.utils.mpi import DEBUG, log
 
 # Factory to generate a reduced problem corresponding to a given reduction method and truth problem
 def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
