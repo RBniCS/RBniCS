@@ -18,6 +18,7 @@
 
 from rbnics.utils.test.attach_instance_method import AttachInstanceMethod
 from rbnics.utils.test.diff import diff
+from rbnics.utils.test.enable_logging import enable_logging
 from rbnics.utils.test.matplotlib import disable_matplotlib, enable_matplotlib
 from rbnics.utils.test.options import add_gold_options, add_performance_options, process_gold_options
 from rbnics.utils.test.patch_benchmark_plugin import patch_benchmark_plugin
@@ -32,6 +33,7 @@ __all__ = [
     'AttachInstanceMethod',
     'diff',
     'disable_matplotlib',
+    'enable_logging',
     'enable_matplotlib',
     'load_tempdir',
     'patch_benchmark_plugin',
