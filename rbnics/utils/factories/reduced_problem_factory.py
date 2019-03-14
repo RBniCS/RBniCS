@@ -16,31 +16,31 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from logging import DEBUG, getLogger
 from rbnics.utils.decorators.customize_reduced_problem_for import _cache as customize_reduced_problem_cache
 from rbnics.utils.decorators.reduced_problem_for import _cache as reduced_problem_cache
 from rbnics.utils.decorators.reduced_problem_decorator_for import _cache as reduced_problem_decorator_cache
-from rbnics.utils.mpi import DEBUG, log
+
+logger = getLogger("rbnics/utils/factories/reduced_problem_factory.py")
 
 # Factory to generate a reduced problem corresponding to a given reduction method and truth problem
 def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     
-    log(DEBUG,
-        "In ReducedProblemFactory with\n" +
-        "\ttruth problem = " + str(type(truth_problem)) + "\n" +
-        "\treduction_method = " + str(type(reduction_method)) + "\n" +
-        "\tkwargs = " + str(kwargs)
-        )
+    logger.log(DEBUG, "In ReducedProblemFactory with")
+    logger.log(DEBUG, "\ttruth problem = " + str(type(truth_problem)))
+    logger.log(DEBUG, "\treduction_method = " + str(type(reduction_method)))
+    logger.log(DEBUG, "\tkwargs = " + str(kwargs))
+    
     if hasattr(type(truth_problem), "ProblemDecorators"):
-        log(DEBUG,
-            "\ttruth problem decorators = " +
-            "\n\t\t".join([str(Decorator) for Decorator in type(truth_problem).ProblemDecorators]) +
-            "\n"
-            )
+        logger.log(DEBUG, "\ttruth problem decorators = ")
+        for Decorator in type(truth_problem).ProblemDecorators:
+            logger.log(DEBUG, "\t\t" + str(Decorator))
+        logger.log(DEBUG, "")
 
     TypesList = list()
     
     # Generate ReducedProblem types based on Problem and ReductionMethod type
-    log(DEBUG, "Generate ReducedProblem types based on Problem and ReductionMethod type")
+    logger.log(DEBUG, "Generate ReducedProblem types based on Problem and ReductionMethod type")
     ReducedProblemGenerator = getattr(reduced_problem_cache, "ReducedProblem")
     TypesList.append(ReducedProblemGenerator(truth_problem, reduction_method))
     
@@ -51,16 +51,16 @@ def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
     
     # Append ReducedProblemDecorator types based on Algorithm type
     if hasattr(type(truth_problem), "ProblemDecorators"):
-        log(DEBUG, "Append ReducedProblemDecorator types based on Algorithm type")
+        logger.log(DEBUG, "Append ReducedProblemDecorator types based on Algorithm type")
         for Decorator in type(truth_problem).ProblemDecorators:
             ReducedProblemDecoratorGenerator = getattr(reduced_problem_decorator_cache, Decorator.__name__)
             TypesList.append(ReducedProblemDecoratorGenerator(truth_problem, reduction_method, **kwargs))
     
     # Log
-    log(DEBUG, "The reduced problem is a composition of the following types:")
+    logger.log(DEBUG, "The reduced problem is a composition of the following types:")
     for t in range(len(TypesList) - 1, -1, -1):
-        log(DEBUG, str(TypesList[t]))
-    log(DEBUG, "\n")
+        logger.log(DEBUG, str(TypesList[t]))
+    logger.log(DEBUG, "")
     
     # Compose all types
     assert len(TypesList) > 0
