@@ -17,9 +17,11 @@
 #
 
 from math import sqrt
+from logging import DEBUG, getLogger
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
-from rbnics.utils.mpi import DEBUG, log
 from problems import WeightedUncertaintyQuantification
+
+logger = getLogger("tutorials/10_weighted_uq/reduction_methods/weighted_uncertainty_quantification_decorated_reduction_method.py")
 
 @ReductionMethodDecoratorFor(WeightedUncertaintyQuantification)
 def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
@@ -72,8 +74,8 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
                     self.reduced_problem.solve()
                     error_estimator = self.reduced_problem.estimate_error()
                     weighted_error_estimator = weight(mu)*error_estimator
-                    log(DEBUG, "(Weighted) error estimator for mu = " + str(mu) + " is " + str(weighted_error_estimator))
-                    log(DEBUG, "Non-weighted error estimator for mu = " + str(mu) + " is " + str(error_estimator))
+                    logger.log(DEBUG, "(Weighted) error estimator for mu = " + str(mu) + " is " + str(weighted_error_estimator))
+                    logger.log(DEBUG, "Non-weighted error estimator for mu = " + str(mu) + " is " + str(error_estimator))
                     return weighted_error_estimator
                 
                 print("find next mu")
