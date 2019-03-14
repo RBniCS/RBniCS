@@ -16,12 +16,14 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from logging import DEBUG, getLogger
 from numpy import array, uintp, unique, where
 from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
 from dolfin import Cell, cells, compile_cpp_code, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction, Vertex, vertices
 from dolfin.cpp.mesh import MeshFunctionBool
-from rbnics.utils.mpi import DEBUG, log
+
+logger = getLogger("rbnics/backends/dolfin/wrapping/create_submesh.py")
 
 # Implement an extended version of cbcpost create_submesh that:
 # a) as cbcpost version (and in contrast to standard dolfin) also works in parallel
@@ -341,8 +343,8 @@ def create_submesh(mesh, markers):
             for (submesh_entity_local_index, other_processors) in submesh_shared_entities.items():
                 set_shared_entities(submesh, submesh_entity_local_index, other_processors, dim)
                 
-            log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(list(submesh.topology().shared_entities(0).keys())))
-            log(DEBUG, "Global indices of shared entities for dimension " + str(dim) + ": " + str([class_(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(dim).keys()]))
+            logger.log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(list(submesh.topology().shared_entities(0).keys())))
+            logger.log(DEBUG, "Global indices of shared entities for dimension " + str(dim) + ": " + str([class_(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(dim).keys()]))
     
     # == 5. Also initialize submesh facets global indices, now that shared facets have been computed == #
     initialize_global_indices(submesh, submesh.topology().dim() - 1) # note that DOLFIN might change the numbering when compared to the one at 3bis

@@ -16,11 +16,13 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from logging import DEBUG, getLogger
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_problem_from_solution_dot, get_reduced_problem_from_problem, is_training_finished, is_training_started
-from rbnics.utils.mpi import DEBUG, log
+
+logger = getLogger("rbnics/backends/dolfin/expression_on_truth_mesh.py")
 
 def basic_expression_on_truth_mesh(backend, wrapping):
     def _basic_expression_on_truth_mesh(expression_wrapper, function=None):
@@ -243,13 +245,13 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                 # Solve (if necessary)
                 truth_problem.set_mu(mu)
                 if not truth_problem_is_solving:
-                    log(DEBUG, "In expression_on_truth_mesh, requiring truth problem solve for problem " + truth_problem.name())
+                    logger.log(DEBUG, "In expression_on_truth_mesh, requiring truth problem solve for problem " + truth_problem.name())
                     truth_problem.solve()
                 else:
-                    log(DEBUG, "In expression_on_truth_mesh, loading current truth problem solution for problem " + truth_problem.name())
+                    logger.log(DEBUG, "In expression_on_truth_mesh, loading current truth problem solution for problem " + truth_problem.name())
             else:
                 reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                log(DEBUG, "In expression_on_truth_mesh, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In expression_on_truth_mesh, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
             # Assign to truth_solution
             if truth_problem in truth_problem_to_truth_solution:
                 truth_solution = truth_problem_to_truth_solution[truth_problem]
@@ -291,10 +293,10 @@ def basic_expression_on_truth_mesh(backend, wrapping):
             # Solve (if necessary)
             reduced_problem.set_mu(mu)
             if not is_solving:
-                log(DEBUG, "In expression_on_truth_mesh, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In expression_on_truth_mesh, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
-                log(DEBUG, "In expression_on_truth_mesh, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In expression_on_truth_mesh, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
             # Assign to truth_solution
             if reduced_problem in reduced_problem_to_truth_solution:
                 truth_solution = reduced_problem_to_truth_solution[reduced_problem]

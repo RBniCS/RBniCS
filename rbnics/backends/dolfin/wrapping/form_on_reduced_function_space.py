@@ -17,6 +17,7 @@
 #
 
 from numbers import Number
+from logging import DEBUG, getLogger
 from ufl import Measure
 from ufl.geometry import GeometricQuantity
 from dolfin.function.argument import Argument
@@ -24,7 +25,8 @@ from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_problem_from_solution_dot, get_reduced_problem_from_problem, is_training_finished, is_training_started
 from rbnics.utils.io import OnlineSizeDict
-from rbnics.utils.mpi import DEBUG, log
+
+logger = getLogger("rbnics/backends/dolfin/form_on_reduced_function_space.py")
 
 def basic_form_on_reduced_function_space(backend, wrapping, online_backend, online_wrapping):
     def _basic_form_on_reduced_function_space(form_wrapper, at):
@@ -292,13 +294,13 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 # Solve (if necessary)
                 truth_problem.set_mu(mu)
                 if not truth_problem_is_solving:
-                    log(DEBUG, "In form_on_reduced_function_space, requiring truth problem solve for problem " + truth_problem.name())
+                    logger.log(DEBUG, "In form_on_reduced_function_space, requiring truth problem solve for problem " + truth_problem.name())
                     truth_problem.solve()
                 else:
-                    log(DEBUG, "In form_on_reduced_function_space, loading current truth problem solution for problem " + truth_problem.name())
+                    logger.log(DEBUG, "In form_on_reduced_function_space, loading current truth problem solution for problem " + truth_problem.name())
             else:
                 reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                log(DEBUG, "In form_on_reduced_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In form_on_reduced_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
             # Assign to reduced_mesh_solution
             if truth_problem in truth_problem_to_reduced_mesh_solution:
                 for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution[truth_problem], truth_problem_to_reduced_mesh_interpolator[0][truth_problem]):
@@ -336,10 +338,10 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             # Solve (if necessary)
             reduced_problem.set_mu(mu)
             if not is_solving:
-                log(DEBUG, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
-                log(DEBUG, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
             # Assign to reduced_mesh_solution
             if reduced_problem in reduced_problem_to_reduced_mesh_solution:
                 for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[0][reduced_problem]):

@@ -16,9 +16,11 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from logging import DEBUG, getLogger
 from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload
-from rbnics.utils.mpi import DEBUG, log
+
+logger = getLogger("rbnics/backends/basic/transpose.py")
 
 def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None, AdditionalIsVector=None, ConvertAdditionalVectorTypes=None, AdditionalIsMatrix=None, ConvertAdditionalMatrixTypes=None):
     # Preprocess optional inputs
@@ -118,9 +120,9 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping, Additio
         
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
-            log(DEBUG, "Begin v^T w")
+            logger.log(DEBUG, "Begin v^T w")
             output = wrapping.vector_mul_vector(self.vector, wrapping.function_to_vector(function))
-            log(DEBUG, "End v^T w")
+            logger.log(DEBUG, "End v^T w")
             return output
         
         @overload(backend.Matrix.Type(), )
@@ -130,9 +132,9 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping, Additio
         
         @overload(backend.Vector.Type(), )
         def __mul__(self, other_vector):
-            log(DEBUG, "Begin v^T w")
+            logger.log(DEBUG, "Begin v^T w")
             output = wrapping.vector_mul_vector(self.vector, other_vector)
-            log(DEBUG, "End v^T w")
+            logger.log(DEBUG, "End v^T w")
             return output
         
         @overload(object, )
@@ -174,16 +176,16 @@ def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wr
             
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
-            log(DEBUG, "Begin v^T A w")
+            logger.log(DEBUG, "Begin v^T A w")
             output = wrapping.vector_mul_vector(self.vector, wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(function)))
-            log(DEBUG, "End v^T A w")
+            logger.log(DEBUG, "End v^T A w")
             return output
             
         @overload(backend.Vector.Type(), )
         def __mul__(self, other_vector):
-            log(DEBUG, "Begin v^T A w")
+            logger.log(DEBUG, "Begin v^T A w")
             output = wrapping.vector_mul_vector(self.vector, wrapping.matrix_mul_vector(self.matrix, other_vector))
-            log(DEBUG, "End v^T A w")
+            logger.log(DEBUG, "End v^T A w")
             return output
             
         @overload(object, )
@@ -207,11 +209,11 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, 
         
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
-            log(DEBUG, "Begin S^T w")
+            logger.log(DEBUG, "Begin S^T w")
             output = online_backend.OnlineVector(len(self.functions_list))
             for (i, fun_i) in enumerate(self.functions_list):
                 output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
-            log(DEBUG, "End S^T w")
+            logger.log(DEBUG, "End S^T w")
             return output
         
         @overload(backend.Matrix.Type(), )
@@ -221,11 +223,11 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, 
         
         @overload(backend.Vector.Type(), )
         def __mul__(self, vector):
-            log(DEBUG, "Begin S^T w")
+            logger.log(DEBUG, "Begin S^T w")
             output = online_backend.OnlineVector(len(self.functions_list))
             for (i, fun_i) in enumerate(self.functions_list):
                 output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), vector)
-            log(DEBUG, "End S^T w")
+            logger.log(DEBUG, "End S^T w")
             return output
         
         @overload(object, )
@@ -253,33 +255,33 @@ def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, on
         
         @overload(backend.FunctionsList)
         def __mul__(self, other_functions_list):
-            log(DEBUG, "Begin S^T*A*S")
+            logger.log(DEBUG, "Begin S^T*A*S")
             output = online_backend.OnlineMatrix(len(self.functions_list), len(other_functions_list))
             for (j, fun_j) in enumerate(other_functions_list):
                 matrix_times_fun_j = wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(fun_j))
                 for (i, fun_i) in enumerate(self.functions_list):
                     output[i, j] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_fun_j)
-            log(DEBUG, "End S^T*A*S")
+            logger.log(DEBUG, "End S^T*A*S")
             return output
         
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
-            log(DEBUG, "Begin S^T*A*v")
+            logger.log(DEBUG, "Begin S^T*A*v")
             output = online_backend.OnlineVector(len(self.functions_list))
             matrix_times_function = wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(function))
             for (i, fun_i) in enumerate(self.functions_list):
                 output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_function)
-            log(DEBUG, "End S^T*A*v")
+            logger.log(DEBUG, "End S^T*A*v")
             return output
             
         @overload(backend.Vector.Type(), )
         def __mul__(self, vector):
-            log(DEBUG, "Begin S^T*A*v")
+            logger.log(DEBUG, "Begin S^T*A*v")
             output = online_backend.OnlineVector(len(self.functions_list))
             matrix_times_vector = wrapping.matrix_mul_vector(self.matrix, vector)
             for (i, fun_i) in enumerate(self.functions_list):
                 output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_vector)
-            log(DEBUG, "End S^T*A*v")
+            logger.log(DEBUG, "End S^T*A*v")
             return output
         
         @overload(object, )
@@ -305,14 +307,14 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
         
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
-            log(DEBUG, "Begin Z^T w")
+            logger.log(DEBUG, "Begin Z^T w")
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             i = 0
             for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
                     i += 1
-            log(DEBUG, "End Z^T w")
+            logger.log(DEBUG, "End Z^T w")
             # Assert consistency of private attributes storing the order of components and their basis length.
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
@@ -325,14 +327,14 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
         
         @overload(backend.Vector.Type(), )
         def __mul__(self, vector):
-            log(DEBUG, "Begin Z^T w")
+            logger.log(DEBUG, "Begin Z^T w")
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             i = 0
             for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), vector)
                     i += 1
-            log(DEBUG, "End Z^T w")
+            logger.log(DEBUG, "End Z^T w")
             # Assert consistency of private attributes storing the order of components and their basis length.
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
@@ -374,7 +376,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
         
         @overload(backend.BasisFunctionsMatrix)
         def __mul__(self, other_basis_functions_matrix):
-            log(DEBUG, "Begin Z^T*A*Z")
+            logger.log(DEBUG, "Begin Z^T*A*Z")
             output = online_backend.OnlineMatrix(self.basis_functions_matrix._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
             j = 0
             for other_component_name in other_basis_functions_matrix._components_name:
@@ -386,7 +388,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                             output[i, j] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_fun_j)
                             i += 1
                     j += 1
-            log(DEBUG, "End Z^T*A*Z")
+            logger.log(DEBUG, "End Z^T*A*Z")
             # Assert consistency of private attributes storing the order of components and their basis length.
             assert output._component_name_to_basis_component_index == (self._component_name_to_basis_component_index, other_basis_functions_matrix._component_name_to_basis_component_index)
             assert output._component_name_to_basis_component_length == (self._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
@@ -395,7 +397,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
         
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
-            log(DEBUG, "Begin Z^T*A*v")
+            logger.log(DEBUG, "Begin Z^T*A*v")
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             matrix_times_function = wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(function))
             i = 0
@@ -403,7 +405,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_function)
                     i += 1
-            log(DEBUG, "End Z^T*A*v")
+            logger.log(DEBUG, "End Z^T*A*v")
             # Assert consistency of private attributes storing the order of components and their basis length.
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
@@ -412,7 +414,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
             
         @overload(backend.Vector.Type(), )
         def __mul__(self, vector):
-            log(DEBUG, "Begin Z^T*A*v")
+            logger.log(DEBUG, "Begin Z^T*A*v")
             output = online_backend.OnlineVector(self.basis_functions_matrix._component_name_to_basis_component_length)
             matrix_times_vector = wrapping.matrix_mul_vector(self.matrix, vector)
             i = 0
@@ -420,7 +422,7 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                 for fun_i in self.basis_functions_matrix._components[component_name]:
                     output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_vector)
                     i += 1
-            log(DEBUG, "End Z^T*A*v")
+            logger.log(DEBUG, "End Z^T*A*v")
             # Assert consistency of private attributes storing the order of components and their basis length.
             assert output._component_name_to_basis_component_index == self._component_name_to_basis_component_index
             assert output._component_name_to_basis_component_length == self._component_name_to_basis_component_length
@@ -455,9 +457,9 @@ def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrappin
         
         @overload(backend.Matrix.Type(), )
         def __mul__(self, other_matrix):
-            log(DEBUG, "Begin A : B")
+            logger.log(DEBUG, "Begin A : B")
             output = wrapping.vectorized_matrix_inner_vectorized_matrix(self.matrix, other_matrix)
-            log(DEBUG, "End A : B")
+            logger.log(DEBUG, "End A : B")
             return output
             
         @overload(object, )
@@ -478,14 +480,14 @@ def TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping, _V
         
         @overload(backend.TensorsList, )
         def __mul__(self, other_tensors_list):
-            log(DEBUG, "Begin T^T S")
+            logger.log(DEBUG, "Begin T^T S")
             assert len(self.tensors_list) == len(other_tensors_list)
             dim = len(self.tensors_list)
             output = online_backend.OnlineMatrix(dim, dim)
             for i in range(dim):
                 for j in range(dim):
                     output[i, j] = self._transpose(self.tensors_list[i])*other_tensors_list[j]
-            log(DEBUG, "End T^T S")
+            logger.log(DEBUG, "End T^T S")
             return output
             
         @overload(backend.Vector.Type())

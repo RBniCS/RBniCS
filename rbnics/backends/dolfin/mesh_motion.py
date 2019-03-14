@@ -23,7 +23,6 @@ from dolfin.cpp.mesh import MeshFunctionSizet
 from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression
 from rbnics.utils.decorators import BackendFor, tuple_of
-from rbnics.utils.mpi import DEBUG, log
 
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
@@ -98,12 +97,10 @@ class MeshMotion(AbstractMeshMotion):
                 )
         
     def move_mesh(self):
-        log(DEBUG, "moving mesh")
         displacement = self.compute_displacement()
         ALE.move(self.mesh, displacement)
         
     def reset_reference(self):
-        log(DEBUG, "back to the reference mesh")
         self.mesh.coordinates()[:] = self.reference_coordinates
         
     # Auxiliary method to deform the domain
