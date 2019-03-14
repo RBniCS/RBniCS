@@ -18,6 +18,7 @@
 
 import pytest
 from mpi4py import MPI
+from logging import DEBUG, getLogger
 from numpy import array, isclose, nonzero, sort
 from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitIntervalMesh, UnitSquareMesh, Vector, VectorElement
 try:
@@ -28,9 +29,11 @@ else:
     has_mshr = True
 from rbnics.backends.dolfin import ReducedMesh
 from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
-from rbnics.utils.mpi import DEBUG, log, set_log_level
+from rbnics.utils.test import enable_logging
 
-set_log_level(DEBUG)
+# Logger
+test_logger = getLogger("tests/unit/test_reduced_mesh.py")
+enable_reduced_mesh_logging = enable_logging({test_logger: DEBUG})
 
 # Meshes
 def structured_mesh_1d():
@@ -61,19 +64,21 @@ def EllipticFunctionSpace(mesh):
 
 # === Matrix computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_elliptic_matrix(mesh, tempdir):
     test_reduced_mesh_save_elliptic_matrix(mesh, tempdir)
     test_reduced_mesh_load_elliptic_matrix(mesh, tempdir)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_elliptic_matrix(mesh, save_tempdir):
-    log(DEBUG, "*** Elliptic case, matrix, offline computation ***")
+    test_logger.log(DEBUG, "*** Elliptic case, matrix, offline computation ***")
     V = EllipticFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, V))
     dofs = [(1, 2), (11, 12), (48, 12), (41, 41)]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_elliptic_matrix")
@@ -81,8 +86,9 @@ def test_reduced_mesh_save_elliptic_matrix(mesh, save_tempdir):
     _test_reduced_mesh_elliptic_matrix(V, reduced_mesh)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_elliptic_matrix(mesh, load_tempdir):
-    log(DEBUG, "*** Elliptic case, matrix, online computation ***")
+    test_logger.log(DEBUG, "*** Elliptic case, matrix, online computation ***")
     V = EllipticFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, V))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_matrix")
@@ -108,27 +114,32 @@ def _test_reduced_mesh_elliptic_matrix(V, reduced_mesh):
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
 
-    log(DEBUG, "A at dofs:\n" + str(A_dofs))
-    log(DEBUG, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
-    log(DEBUG, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
+    test_logger.log(DEBUG, "A at dofs:")
+    test_logger.log(DEBUG, str(A_dofs))
+    test_logger.log(DEBUG, "A_N at reduced dofs:")
+    test_logger.log(DEBUG, str(A_N_reduced_dofs))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(A_dofs - A_N_reduced_dofs))
     
     assert isclose(A_dofs, A_N_reduced_dofs).all()
     
 # === Vector computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_elliptic_vector(mesh, tempdir):
     test_reduced_mesh_save_elliptic_vector(mesh, tempdir)
     test_reduced_mesh_load_elliptic_vector(mesh, tempdir)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_elliptic_vector(mesh, save_tempdir):
-    log(DEBUG, "*** Elliptic case, vector, offline computation ***")
+    test_logger.log(DEBUG, "*** Elliptic case, vector, offline computation ***")
     V = EllipticFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, ))
     dofs = [(1, ), (11, ), (48, ), (41, )]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_elliptic_vector")
@@ -136,8 +147,9 @@ def test_reduced_mesh_save_elliptic_vector(mesh, save_tempdir):
     _test_reduced_mesh_elliptic_vector(V, reduced_mesh)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_elliptic_vector(mesh, load_tempdir):
-    log(DEBUG, "*** Elliptic case, vector, online computation ***")
+    test_logger.log(DEBUG, "*** Elliptic case, vector, online computation ***")
     V = EllipticFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, ))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_vector")
@@ -160,27 +172,32 @@ def _test_reduced_mesh_elliptic_vector(V, reduced_mesh):
     b_dofs = evaluate_sparse_vector_at_dofs(b, dofs)
     b_N_reduced_dofs = evaluate_sparse_vector_at_dofs(b_N, reduced_dofs)
     
-    log(DEBUG, "b at dofs:\n" + str(b_dofs))
-    log(DEBUG, "b_N at reduced dofs:\n" + str(b_N_reduced_dofs))
-    log(DEBUG, "Error:\n" + str(b_dofs - b_N_reduced_dofs))
+    test_logger.log(DEBUG, "b at dofs:")
+    test_logger.log(DEBUG, str(b_dofs))
+    test_logger.log(DEBUG, "b_N at reduced dofs:")
+    test_logger.log(DEBUG, str(b_N_reduced_dofs))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(b_dofs - b_N_reduced_dofs))
     
     assert isclose(b_dofs, b_N_reduced_dofs).all()
 
 # === Function computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_elliptic_function(mesh, tempdir):
     test_reduced_mesh_save_elliptic_function(mesh, tempdir)
     test_reduced_mesh_load_elliptic_function(mesh, tempdir)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_elliptic_function(mesh, save_tempdir):
-    log(DEBUG, "*** Elliptic case, function, offline computation ***")
+    test_logger.log(DEBUG, "*** Elliptic case, function, offline computation ***")
     V = EllipticFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, ))
     dofs = [(1, ), (11, ), (48, ), (41, )]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_elliptic_function")
@@ -188,8 +205,9 @@ def test_reduced_mesh_save_elliptic_function(mesh, save_tempdir):
     _test_reduced_mesh_elliptic_function(V, reduced_mesh)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_elliptic_function(mesh, load_tempdir):
-    log(DEBUG, "*** Elliptic case, function, online computation ***")
+    test_logger.log(DEBUG, "*** Elliptic case, function, online computation ***")
     V = EllipticFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, ))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_function")
@@ -215,11 +233,16 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     f_reduced_dofs = evaluate_sparse_function_at_dofs(f, dofs, reduced_V[0], reduced_dofs)
     f_N_reduced_dofs = evaluate_sparse_function_at_dofs(f_N, reduced_dofs, reduced_V[0], reduced_dofs)
     
-    log(DEBUG, "f at dofs:\n" + str(nonzero_values(f_dofs)))
-    log(DEBUG, "f at reduced dofs:\n" + str(nonzero_values(f_reduced_dofs)))
-    log(DEBUG, "f_N at reduced dofs:\n" + str(nonzero_values(f_N_reduced_dofs)))
-    log(DEBUG, "Error:\n" + str(nonzero_values(f_dofs) - nonzero_values(f_reduced_dofs)))
-    log(DEBUG, "Error:\n" + str(f_reduced_dofs.vector().get_local() - f_N_reduced_dofs.vector().get_local()))
+    test_logger.log(DEBUG, "f at dofs:")
+    test_logger.log(DEBUG, str(nonzero_values(f_dofs)))
+    test_logger.log(DEBUG, "f at reduced dofs:")
+    test_logger.log(DEBUG, str(nonzero_values(f_reduced_dofs)))
+    test_logger.log(DEBUG, "f_N at reduced dofs:")
+    test_logger.log(DEBUG, str(nonzero_values(f_N_reduced_dofs)))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(nonzero_values(f_dofs) - nonzero_values(f_reduced_dofs)))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(f_reduced_dofs.vector().get_local() - f_N_reduced_dofs.vector().get_local()))
     
     assert isclose(nonzero_values(f_dofs), nonzero_values(f_reduced_dofs)).all()
     assert isclose(f_reduced_dofs.vector().get_local(), f_N_reduced_dofs.vector().get_local()).all()
@@ -233,19 +256,21 @@ def MixedFunctionSpace(mesh):
 
 # === Matrix computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_mixed_matrix(mesh, tempdir):
     test_reduced_mesh_save_mixed_matrix(mesh, tempdir)
     test_reduced_mesh_load_mixed_matrix(mesh, tempdir)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_mixed_matrix(mesh, save_tempdir):
-    log(DEBUG, "*** Mixed case, matrix, offline computation ***")
+    test_logger.log(DEBUG, "*** Mixed case, matrix, offline computation ***")
     V = MixedFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, V))
     dofs = [(1, 2), (31, 33), (48, 12), (42, 42)]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_mixed_matrix")
@@ -253,8 +278,9 @@ def test_reduced_mesh_save_mixed_matrix(mesh, save_tempdir):
     _test_reduced_mesh_mixed_matrix(V, reduced_mesh)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_mixed_matrix(mesh, load_tempdir):
-    log(DEBUG, "*** Mixed case, matrix, online computation ***")
+    test_logger.log(DEBUG, "*** Mixed case, matrix, online computation ***")
     V = MixedFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, V))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_mixed_matrix")
@@ -284,27 +310,32 @@ def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
 
-    log(DEBUG, "A at dofs:\n" + str(A_dofs))
-    log(DEBUG, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
-    log(DEBUG, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
+    test_logger.log(DEBUG, "A at dofs:")
+    test_logger.log(DEBUG, str(A_dofs))
+    test_logger.log(DEBUG, "A_N at reduced dofs:")
+    test_logger.log(DEBUG, str(A_N_reduced_dofs))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(A_dofs - A_N_reduced_dofs))
     
     assert isclose(A_dofs, A_N_reduced_dofs).all()
     
 # === Vector computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_mixed_vector(mesh, tempdir):
     test_reduced_mesh_save_mixed_vector(mesh, tempdir)
     test_reduced_mesh_load_mixed_vector(mesh, tempdir)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_mixed_vector(mesh, save_tempdir):
-    log(DEBUG, "*** Mixed case, vector, offline computation ***")
+    test_logger.log(DEBUG, "*** Mixed case, vector, offline computation ***")
     V = MixedFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, ))
     dofs = [(2, ), (33, ), (48, ), (42, )]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_mixed_vector")
@@ -312,8 +343,9 @@ def test_reduced_mesh_save_mixed_vector(mesh, save_tempdir):
     _test_reduced_mesh_mixed_vector(V, reduced_mesh)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_mixed_vector(mesh, load_tempdir):
-    log(DEBUG, "*** Mixed case, vector, online computation ***")
+    test_logger.log(DEBUG, "*** Mixed case, vector, online computation ***")
     V = MixedFunctionSpace(mesh)
     reduced_mesh = ReducedMesh((V, ))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_mixed_vector")
@@ -338,9 +370,12 @@ def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
     b_dofs = evaluate_sparse_vector_at_dofs(b, dofs)
     b_N_reduced_dofs = evaluate_sparse_vector_at_dofs(b_N, reduced_dofs)
     
-    log(DEBUG, "b at dofs:\n" + str(b_dofs))
-    log(DEBUG, "b_N at reduced dofs:\n" + str(b_N_reduced_dofs))
-    log(DEBUG, "Error:\n" + str(b_dofs - b_N_reduced_dofs))
+    test_logger.log(DEBUG, "b at dofs:")
+    test_logger.log(DEBUG, str(b_dofs))
+    test_logger.log(DEBUG, "b_N at reduced dofs:")
+    test_logger.log(DEBUG, str(b_N_reduced_dofs))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(b_dofs - b_N_reduced_dofs))
     
     assert isclose(b_dofs, b_N_reduced_dofs).all()
 
@@ -355,19 +390,21 @@ def CollapsedFunctionSpaces(mesh):
 
 # === Matrix computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_collapsed_matrix(mesh, tempdir):
     test_reduced_mesh_save_collapsed_matrix(mesh, tempdir)
     test_reduced_mesh_load_collapsed_matrix(mesh, tempdir)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_collapsed_matrix(mesh, save_tempdir):
-    log(DEBUG, "*** Collapsed case, matrix, offline computation ***")
+    test_logger.log(DEBUG, "*** Collapsed case, matrix, offline computation ***")
     (V, U) = CollapsedFunctionSpaces(mesh)
     reduced_mesh = ReducedMesh((V, U))
     dofs = [(2, 1), (48, 33), (40, 12), (31, 39)]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_collapsed_matrix")
@@ -375,8 +412,9 @@ def test_reduced_mesh_save_collapsed_matrix(mesh, save_tempdir):
     _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_collapsed_matrix(mesh, load_tempdir):
-    log(DEBUG, "*** Collapsed case, matrix, online computation ***")
+    test_logger.log(DEBUG, "*** Collapsed case, matrix, online computation ***")
     (V, U) = CollapsedFunctionSpaces(mesh)
     reduced_mesh = ReducedMesh((V, U))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_collapsed_matrix")
@@ -404,27 +442,32 @@ def _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh):
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
 
-    log(DEBUG, "A at dofs:\n" + str(A_dofs))
-    log(DEBUG, "A_N at reduced dofs:\n" + str(A_N_reduced_dofs))
-    log(DEBUG, "Error:\n" + str(A_dofs - A_N_reduced_dofs))
+    test_logger.log(DEBUG, "A at dofs:")
+    test_logger.log(DEBUG, str(A_dofs))
+    test_logger.log(DEBUG, "A_N at reduced dofs:")
+    test_logger.log(DEBUG, str(A_N_reduced_dofs))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(A_dofs - A_N_reduced_dofs))
     
     assert isclose(A_dofs, A_N_reduced_dofs).all()
     
 # === Vector computation === #
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_io_collapsed_vector(mesh, tempdir):
     test_reduced_mesh_save_collapsed_vector(mesh, tempdir)
     test_reduced_mesh_load_collapsed_vector(mesh, tempdir)
     
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_save_collapsed_vector(mesh, save_tempdir):
-    log(DEBUG, "*** Collapsed case, vector, offline computation ***")
+    test_logger.log(DEBUG, "*** Collapsed case, vector, offline computation ***")
     (V, _) = CollapsedFunctionSpaces(mesh)
     reduced_mesh = ReducedMesh((V, ))
     dofs = [(2, ), (48, ), (40, ), (11, )]
 
     for pair in dofs:
-        log(DEBUG, "Adding " + str(pair))
+        test_logger.log(DEBUG, "Adding " + str(pair))
         reduced_mesh.append(pair)
         
         reduced_mesh.save(save_tempdir, "test_reduced_mesh_collapsed_vector")
@@ -432,8 +475,9 @@ def test_reduced_mesh_save_collapsed_vector(mesh, save_tempdir):
     _test_reduced_mesh_collapsed_vector(V, reduced_mesh)
 
 @generate_meshes
+@enable_reduced_mesh_logging
 def test_reduced_mesh_load_collapsed_vector(mesh, load_tempdir):
-    log(DEBUG, "*** Collapsed case, vector, online computation ***")
+    test_logger.log(DEBUG, "*** Collapsed case, vector, online computation ***")
     (V, _) = CollapsedFunctionSpaces(mesh)
     reduced_mesh = ReducedMesh((V, ))
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_collapsed_vector")
@@ -456,6 +500,9 @@ def _test_reduced_mesh_collapsed_vector(V, reduced_mesh):
     b_dofs = evaluate_sparse_vector_at_dofs(b, dofs)
     b_N_reduced_dofs = evaluate_sparse_vector_at_dofs(b_N, reduced_dofs)
     
-    log(DEBUG, "b at dofs:\n" + str(b_dofs))
-    log(DEBUG, "b_N at reduced dofs:\n" + str(b_N_reduced_dofs))
-    log(DEBUG, "Error:\n" + str(b_dofs - b_N_reduced_dofs))
+    test_logger.log(DEBUG, "b at dofs:")
+    test_logger.log(DEBUG, str(b_dofs))
+    test_logger.log(DEBUG, "b_N at reduced dofs:")
+    test_logger.log(DEBUG, str(b_N_reduced_dofs))
+    test_logger.log(DEBUG, "Error:")
+    test_logger.log(DEBUG, str(b_dofs - b_N_reduced_dofs))

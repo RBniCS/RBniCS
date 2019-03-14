@@ -19,6 +19,7 @@
 import os
 import pickle
 import pytest
+from logging import DEBUG, getLogger
 from numpy import allclose, ndarray as array
 import matplotlib
 import matplotlib.pyplot as plt
@@ -31,11 +32,15 @@ except ImportError:
 else:
     has_fenicstools = True
 from rbnics.backends.dolfin.wrapping import convert_functionspace_to_submesh, convert_meshfunctions_to_submesh, create_submesh, map_functionspaces_between_mesh_and_submesh
-from rbnics.utils.mpi import DEBUG, log, set_log_level
+from rbnics.backends.dolfin.wrapping.create_submesh import logger as create_submesh_logger
+from rbnics.utils.test import enable_logging
 
-set_log_level(DEBUG)
-
+# Data directory
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_create_submesh")
+
+# Logger
+test_logger = getLogger("tests/unit/test_create_submesh.py")
+enable_create_submesh_logging = enable_logging({create_submesh_logger: DEBUG, test_logger: DEBUG})
 
 # Mesh
 @module_fixture
@@ -223,24 +228,26 @@ else:
 # ===       DofMapPlotter and compare its internal state.             === #
 
 # Test mesh to submesh global cell indices
+@enable_create_submesh_logging
 def test_mesh_to_submesh_global_cell_indices(mesh, submesh, tempdir):
-    log(DEBUG, "Mesh to submesh global cell indices:")
+    test_logger.log(DEBUG, "Mesh to submesh global cell indices:")
     for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_cell_local_indices.items():
         mesh_global_index = mesh.topology().global_indices(mesh.topology().dim())[mesh_local_index]
         submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
-        log(DEBUG, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
+        test_logger.log(DEBUG, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
     assert_mesh_plotter(mesh, submesh, "C", tempdir, "test_mesh_to_submesh_global_cell_indices")
     filename = "test_mesh_to_submesh_global_cell_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh.mesh_to_submesh_cell_local_indices, tempdir, filename)
     dict_assert_equal(submesh.mesh_to_submesh_cell_local_indices, data_dir, filename)
     
 # Test submesh to mesh global cell indices
+@enable_create_submesh_logging
 def test_submesh_to_mesh_global_cell_indices(mesh, submesh, tempdir):
-    log(DEBUG, "Submesh to mesh global cell indices:")
+    test_logger.log(DEBUG, "Submesh to mesh global cell indices:")
     for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_cell_local_indices):
         submesh_global_index = submesh.topology().global_indices(submesh.topology().dim())[submesh_local_index]
         mesh_global_index = mesh.topology().global_indices(mesh.topology().dim())[mesh_local_index]
-        log(DEBUG, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+        test_logger.log(DEBUG, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
     assert_mesh_plotter(mesh, submesh, "C", tempdir, "test_submesh_to_mesh_global_cell_indices")
     filename = "test_submesh_to_mesh_global_cell_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     array_save(submesh.submesh_to_mesh_cell_local_indices, tempdir, filename)
@@ -248,6 +255,7 @@ def test_submesh_to_mesh_global_cell_indices(mesh, submesh, tempdir):
     
 # Test that the cell numbering is independent on the number of processors, and that
 # fake cells have the largest numbering
+@enable_create_submesh_logging
 def test_submesh_global_cell_numbering_independent_on_mpi(mesh, submesh_markers, submesh, tempdir):
     cell_markers = dict()
     cell_centroids = dict()
@@ -271,54 +279,59 @@ def test_submesh_global_cell_numbering_independent_on_mpi(mesh, submesh_markers,
             assert not cell_markers[submesh_global_index]
     
 # Test mesh to submesh global facet indices
+@enable_create_submesh_logging
 def test_mesh_to_submesh_global_facet_indices(mesh, submesh, tempdir):
-    log(DEBUG, "Mesh to submesh global facet indices:")
+    test_logger.log(DEBUG, "Mesh to submesh global facet indices:")
     for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_facet_local_indices.items():
         mesh_global_index = mesh.topology().global_indices(mesh.topology().dim() - 1)[mesh_local_index]
         submesh_global_index = submesh.topology().global_indices(submesh.topology().dim() - 1)[submesh_local_index]
-        log(DEBUG, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
+        test_logger.log(DEBUG, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
     assert_mesh_plotter(mesh, submesh, "T", tempdir, "test_mesh_to_submesh_global_facet_indices")
     filename = "test_mesh_to_submesh_global_facet_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh.mesh_to_submesh_facet_local_indices, tempdir, filename)
     dict_assert_equal(submesh.mesh_to_submesh_facet_local_indices, data_dir, filename)
     
 # Test submesh to mesh global facet indices
+@enable_create_submesh_logging
 def test_submesh_to_mesh_global_facet_indices(mesh, submesh, tempdir):
-    log(DEBUG, "Submesh to mesh global facet indices:")
+    test_logger.log(DEBUG, "Submesh to mesh global facet indices:")
     for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_facet_local_indices):
         submesh_global_index = submesh.topology().global_indices(submesh.topology().dim() - 1)[submesh_local_index]
         mesh_global_index = mesh.topology().global_indices(mesh.topology().dim() - 1)[mesh_local_index]
-        log(DEBUG, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+        test_logger.log(DEBUG, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
     assert_mesh_plotter(mesh, submesh, "T", tempdir, "test_submesh_to_mesh_global_facet_indices")
     filename = "test_submesh_to_mesh_global_facet_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     list_save(submesh.submesh_to_mesh_facet_local_indices, tempdir, filename)
     list_assert_equal(submesh.submesh_to_mesh_facet_local_indices, data_dir, filename)
     
 # Test mesh to submesh global vertex indices
+@enable_create_submesh_logging
 def test_mesh_to_submesh_global_vertex_indices(mesh, submesh, tempdir):
-    log(DEBUG, "Mesh to submesh global vertex indices:")
+    test_logger.log(DEBUG, "Mesh to submesh global vertex indices:")
     for (mesh_local_index, submesh_local_index) in submesh.mesh_to_submesh_vertex_local_indices.items():
         mesh_global_index = mesh.topology().global_indices(0)[mesh_local_index]
         submesh_global_index = submesh.topology().global_indices(0)[submesh_local_index]
-        log(DEBUG, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
+        test_logger.log(DEBUG, "\t" + str(mesh_global_index) + " -> " + str(submesh_global_index))
     assert_mesh_plotter(mesh, submesh, "V", tempdir, "test_mesh_to_submesh_global_vertex_indices")
     filename = "test_mesh_to_submesh_global_vertex_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh.mesh_to_submesh_vertex_local_indices, tempdir, filename)
     dict_assert_equal(submesh.mesh_to_submesh_vertex_local_indices, data_dir, filename)
     
 # Test submesh to mesh global vertex indices
+@enable_create_submesh_logging
 def test_submesh_to_mesh_global_vertex_indices(mesh, submesh, tempdir):
-    log(DEBUG, "Submesh to mesh global vertex indices:")
+    test_logger.log(DEBUG, "Submesh to mesh global vertex indices:")
     for (submesh_local_index, mesh_local_index) in enumerate(submesh.submesh_to_mesh_vertex_local_indices):
         submesh_global_index = submesh.topology().global_indices(0)[submesh_local_index]
         mesh_global_index = mesh.topology().global_indices(0)[mesh_local_index]
-        log(DEBUG, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
+        test_logger.log(DEBUG, "\t" + str(submesh_global_index) + " -> " + str(mesh_global_index))
     assert_mesh_plotter(mesh, submesh, "V", tempdir, "test_submesh_to_mesh_global_vertex_indices")
     filename = "test_submesh_to_mesh_global_vertex_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     array_save(submesh.submesh_to_mesh_vertex_local_indices, tempdir, filename)
     array_assert_equal(submesh.submesh_to_mesh_vertex_local_indices, data_dir, filename)
     
 # Test shared entities detection
+@enable_create_submesh_logging
 def test_shared_entities_detection(mesh, submesh, tempdir):
     dim_to_text = {
         submesh.topology().dim(): "cells",
@@ -327,37 +340,39 @@ def test_shared_entities_detection(mesh, submesh, tempdir):
     }
     for dim in [submesh.topology().dim(), submesh.topology().dim() - 1, 0]:
         shared_entities = submesh.topology().shared_entities(dim)
-        log(DEBUG, "Submesh shared indices for " + str(dim_to_text[dim]))
-        log(DEBUG, str(shared_entities))
+        test_logger.log(DEBUG, "Submesh shared indices for " + str(dim_to_text[dim]))
+        test_logger.log(DEBUG, str(shared_entities))
         filename = "test_shared_entities_detection__dim_" + str(dim) + "__size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
         dict_save(shared_entities, tempdir, filename)
         dict_assert_equal(shared_entities, data_dir, filename)
 
 # Test mesh to submesh dof map
+@enable_create_submesh_logging
 @pytest.mark.parametrize("FunctionSpace", (EllipticFunctionSpace, StokesFunctionSpace))
 def test_mesh_to_submesh_dof_map(mesh, FunctionSpace, submesh_markers, submesh, tempdir):
-    log(DEBUG, "Mesh to submesh dofs")
+    test_logger.log(DEBUG, "Mesh to submesh dofs")
     V = FunctionSpace(mesh)
     submesh_V = convert_functionspace_to_submesh(V, submesh)
     (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = map_functionspaces_between_mesh_and_submesh(V, mesh, submesh_V, submesh)
-    log(DEBUG, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
+    test_logger.log(DEBUG, "Local mesh dofs ownership range: " + str(V.dofmap().ownership_range()))
     for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs.items():
-        log(DEBUG, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
+        test_logger.log(DEBUG, "\t" + str(mesh_dof) + " -> " + str(submesh_dof))
     assert_dof_map_plotter(V, submesh_V, "D", tempdir, "test_mesh_to_submesh_dof_map_" + FunctionSpace.__name__)
     filename = "test_mesh_to_submesh_dof_map_" + FunctionSpace.__name__ + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(mesh_dofs_to_submesh_dofs, tempdir, filename)
     dict_assert_equal(mesh_dofs_to_submesh_dofs, data_dir, filename)
     
 # Test submesh to mesh dof map
+@enable_create_submesh_logging
 @pytest.mark.parametrize("FunctionSpace", (EllipticFunctionSpace, StokesFunctionSpace))
 def test_submesh_to_mesh_dof_map(mesh, FunctionSpace, submesh_markers, submesh, tempdir):
-    log(DEBUG, "Submesh to mesh dofs")
+    test_logger.log(DEBUG, "Submesh to mesh dofs")
     V = FunctionSpace(mesh)
     submesh_V = convert_functionspace_to_submesh(V, submesh)
     (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs) = map_functionspaces_between_mesh_and_submesh(V, mesh, submesh_V, submesh)
-    log(DEBUG, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
+    test_logger.log(DEBUG, "Local submesh dofs ownership range: " + str(submesh_V.dofmap().ownership_range()))
     for (submesh_dof, mesh_dof) in submesh_dofs_to_mesh_dofs.items():
-        log(DEBUG, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
+        test_logger.log(DEBUG, "\t" + str(submesh_dof) + " -> " + str(mesh_dof))
     assert_dof_map_plotter(V, submesh_V, "D", tempdir, "test_submesh_to_mesh_dof_map_" + FunctionSpace.__name__)
     filename = "test_submesh_to_mesh_dof_map_" + FunctionSpace.__name__ + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh_dofs_to_mesh_dofs, tempdir, filename)
