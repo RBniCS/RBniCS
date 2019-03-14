@@ -18,12 +18,14 @@
 
 from math import sqrt
 from numbers import Number
+from logging import DEBUG, getLogger
 from rbnics.backends import ProperOrthogonalDecomposition, SnapshotsMatrix, TimeQuadrature
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDependentReductionMethod
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
-from rbnics.utils.mpi import log, DEBUG
+
+logger = getLogger("rbnics/reduction_methods/base/time_dependent_rb_reduction.py")
 
 @RequiredBaseDecorators(RBReduction, TimeDependentReductionMethod)
 def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
@@ -274,7 +276,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
                 time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_estimator_squared_over_time)
                 error_estimator = sqrt(time_quadrature.integrate())
-                log(DEBUG, "Error estimator for mu = " + str(mu) + " is " + str(error_estimator))
+                logger.log(DEBUG, "Error estimator for mu = " + str(mu) + " is " + str(error_estimator))
                 return error_estimator
                 
             if self.reduced_problem.N == 0:

@@ -18,10 +18,12 @@
 
 import os
 from math import sqrt
+from logging import DEBUG, getLogger
 from rbnics.backends import GramSchmidt
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, snapshot_links_to_cache
 from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
-from rbnics.utils.mpi import log, DEBUG
+
+logger = getLogger("rbnics/reduction_methods/base/rb_reduction.py")
 
 @RequiredBaseDecorators(None)
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
@@ -174,7 +176,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 self.reduced_problem.set_mu(mu)
                 self.reduced_problem.solve()
                 error_estimator = self.reduced_problem.estimate_error()
-                log(DEBUG, "Error estimator for mu = " + str(mu) + " is " + str(error_estimator))
+                logger.log(DEBUG, "Error estimator for mu = " + str(mu) + " is " + str(error_estimator))
                 return error_estimator
                 
             if self.reduced_problem.N == 0:
