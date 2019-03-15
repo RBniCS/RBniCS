@@ -17,8 +17,8 @@
 #
 
 from ufl import MixedElement, TensorElement, VectorElement
-from dolfin import assign, Function
-from rbnics.backends.dolfin.wrapping.function_save import _all_solution_files, SolutionFile
+from dolfin import assign, Function, has_hdf5, has_hdf5_parallel
+from rbnics.backends.dolfin.wrapping.function_save import _all_solution_files, SolutionFileXDMF, SolutionFileXML
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace
 
 def function_load(fun, directory, filename, suffix=None):
@@ -49,6 +49,13 @@ def _read_from_file(fun, directory, filename, suffix, components=None):
             _read_from_file(fun_i, directory, filename_i, suffix, None)
             assign(fun.sub(i), fun_i)
     else:
+        if fun_V_element.family() == "Real":
+            SolutionFile = SolutionFileXML
+        else:
+            if has_hdf5() and has_hdf5_parallel():
+                SolutionFile = SolutionFileXDMF
+            else:
+                SolutionFile = SolutionFileXML
         if suffix is not None:
             if suffix == 0:
                 # Remove from storage and re-create

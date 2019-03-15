@@ -63,100 +63,99 @@ class SolutionFile_Base(object):
         # Write out current index
         IndexIO.save_file(index, self._directory, self._filename + "_index.sfx")
 
-if not has_hdf5() or not has_hdf5_parallel():
-    class SolutionFile(SolutionFile_Base):
-        def __init__(self, directory, filename):
-            SolutionFile_Base.__init__(self, directory, filename)
-            self._visualization_file = PVDFile(self._full_filename + ".pvd", "compressed")
+class SolutionFileXML(SolutionFile_Base):
+    def __init__(self, directory, filename):
+        SolutionFile_Base.__init__(self, directory, filename)
+        self._visualization_file = PVDFile(self._full_filename + ".pvd", "compressed")
             
-        @staticmethod
-        def remove_files(directory, filename):
-            SolutionFile_Base.remove_files(directory, filename)
-            # No need to remove further files, PVD and XML will get automatically truncated
+    @staticmethod
+    def remove_files(directory, filename):
+        SolutionFile_Base.remove_files(directory, filename)
+        # No need to remove further files, PVD and XML will get automatically truncated
             
-        def write(self, function, name, index):
-            assert index in (self._last_index, self._last_index + 1)
-            if index == self._last_index + 1: # writing out solutions after time stepping
-                self._update_function_container(function)
-                self._visualization_file << self._function_container
-                restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
-                restart_file << self._function_container
-                # Once solutions have been written to file, update last written index
-                self._write_last_index(index)
-            elif index == self._last_index:
-                # corner case for problems with two (or more) unknowns which are written separately to file;
-                # one unknown was written to file, while the other was not: since the problem might be coupled,
-                # a recomputation of both is required, but there is no need to update storage
-                pass
-            else:
-                raise ValueError("Invalid index")
-            
-        def read(self, function, name, index):
-            if index <= self._last_index:
-                restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
-                restart_file >> function
-            else:
-                raise OSError
-else:
-    class SolutionFile(SolutionFile_Base):
-        # DOLFIN 2018.1.0.dev added (throughout the developement cycle) an optional append
-        # attribute to XDMFFile.write_checkpoint, which should be set to its non-default value,
-        # thus breaking backwards compatibility
-        append_attribute = XDMFFile.write_checkpoint.__doc__.find("append: bool") > - 1
-        
-        def __init__(self, directory, filename):
-            SolutionFile_Base.__init__(self, directory, filename)
-            self._visualization_file = XDMFFile(self._full_filename + ".xdmf")
-            self._visualization_file.parameters["flush_output"] = True
-            self._restart_file = XDMFFile(self._full_filename + "_checkpoint.xdmf")
-            self._restart_file.parameters["flush_output"] = True
-            
-        @staticmethod
-        def remove_files(directory, filename):
-            SolutionFile_Base.remove_files(directory, filename)
-            #
-            full_filename = os.path.join(str(directory), filename)
-            def remove_files_task():
-                if os.path.exists(full_filename + ".xdmf"):
-                    os.remove(full_filename + ".xdmf")
-                    os.remove(full_filename + ".h5")
-                    os.remove(full_filename + "_checkpoint.xdmf")
-                    os.remove(full_filename + "_checkpoint.h5")
-            parallel_io(remove_files_task)
-            
-        def write(self, function, name, index):
-            time = float(index)
-            # Write visualization file (no append available, will overwrite)
+    def write(self, function, name, index):
+        assert index in (self._last_index, self._last_index + 1)
+        if index == self._last_index + 1: # writing out solutions after time stepping
             self._update_function_container(function)
-            self._visualization_file.write(self._function_container, time)
-            # Write restart file. It might be possible that the solution was written to file in a previous run
-            # and the execution was interrupted before last written index was updated. In this corner case
-            # there would be two functions corresponding to the same time, with two consecutive indices.
-            # For now the inelegant way is to try to read: if that works, assume that we are in the corner case;
-            # otherwise, we are in the standard case and we should write to file.
-            try:
-                self._restart_file.read_checkpoint(self._function_container, name, index)
-            except RuntimeError:
-                from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
-                self._update_function_container(function)
-                bak_log_level = get_log_level()
-                set_log_level(int(LogLevel.WARNING) + 1) # disable xdmf logs
-                if self.append_attribute:
-                    self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
-                else:
-                    self._restart_file.write_checkpoint(self._function_container, name, time)
-                set_log_level(bak_log_level)
+            self._visualization_file << self._function_container
+            restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
+            restart_file << self._function_container
             # Once solutions have been written to file, update last written index
             self._write_last_index(index)
+        elif index == self._last_index:
+            # corner case for problems with two (or more) unknowns which are written separately to file;
+            # one unknown was written to file, while the other was not: since the problem might be coupled,
+            # a recomputation of both is required, but there is no need to update storage
+            pass
+        else:
+            raise ValueError("Invalid index")
             
-        def read(self, function, name, index):
-            if index <= self._last_index:
-                time = float(index)
-                self._restart_file.read_checkpoint(function, name, index)
-                self._update_function_container(function)
-                self._visualization_file.write(self._function_container, time) # because there is no append option available
+    def read(self, function, name, index):
+        if index <= self._last_index:
+            restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
+            restart_file >> function
+        else:
+            raise OSError
+
+class SolutionFileXDMF(SolutionFile_Base):
+    # DOLFIN 2018.1.0.dev added (throughout the developement cycle) an optional append
+    # attribute to XDMFFile.write_checkpoint, which should be set to its non-default value,
+    # thus breaking backwards compatibility
+    append_attribute = XDMFFile.write_checkpoint.__doc__.find("append: bool") > - 1
+        
+    def __init__(self, directory, filename):
+        SolutionFile_Base.__init__(self, directory, filename)
+        self._visualization_file = XDMFFile(self._full_filename + ".xdmf")
+        self._visualization_file.parameters["flush_output"] = True
+        self._restart_file = XDMFFile(self._full_filename + "_checkpoint.xdmf")
+        self._restart_file.parameters["flush_output"] = True
+            
+    @staticmethod
+    def remove_files(directory, filename):
+        SolutionFile_Base.remove_files(directory, filename)
+        #
+        full_filename = os.path.join(str(directory), filename)
+        def remove_files_task():
+            if os.path.exists(full_filename + ".xdmf"):
+                os.remove(full_filename + ".xdmf")
+                os.remove(full_filename + ".h5")
+                os.remove(full_filename + "_checkpoint.xdmf")
+                os.remove(full_filename + "_checkpoint.h5")
+        parallel_io(remove_files_task)
+            
+    def write(self, function, name, index):
+        time = float(index)
+        # Write visualization file (no append available, will overwrite)
+        self._update_function_container(function)
+        self._visualization_file.write(self._function_container, time)
+        # Write restart file. It might be possible that the solution was written to file in a previous run
+        # and the execution was interrupted before last written index was updated. In this corner case
+        # there would be two functions corresponding to the same time, with two consecutive indices.
+        # For now the inelegant way is to try to read: if that works, assume that we are in the corner case;
+        # otherwise, we are in the standard case and we should write to file.
+        try:
+            self._restart_file.read_checkpoint(self._function_container, name, index)
+        except RuntimeError:
+            from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
+            self._update_function_container(function)
+            bak_log_level = get_log_level()
+            set_log_level(int(LogLevel.WARNING) + 1) # disable xdmf logs
+            if self.append_attribute:
+                self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
             else:
-                raise OSError
+                self._restart_file.write_checkpoint(self._function_container, name, time)
+            set_log_level(bak_log_level)
+            # Once solutions have been written to file, update last written index
+        self._write_last_index(index)
+            
+    def read(self, function, name, index):
+        if index <= self._last_index:
+            time = float(index)
+            self._restart_file.read_checkpoint(function, name, index)
+            self._update_function_container(function)
+            self._visualization_file.write(self._function_container, time) # because there is no append option available
+        else:
+            raise OSError
 
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
@@ -182,6 +181,13 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
                 filename_i = filename + "_component_" + str(i)
             _write_to_file(fun_i, directory, filename_i, suffix, None)
     else:
+        if fun_V_element.family() == "Real":
+            SolutionFile = SolutionFileXML
+        else:
+            if has_hdf5() and has_hdf5_parallel():
+                SolutionFile = SolutionFileXDMF
+            else:
+                SolutionFile = SolutionFileXML
         if suffix is not None:
             if suffix == 0:
                 # Remove existing files if any, as new functions should not be appended, but rather overwrite existing functions
@@ -200,5 +206,5 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
             # Write function to file
             file_ = SolutionFile(directory, filename)
             file_.write(fun, function_name, 0)
-        
+            
 _all_solution_files = Cache()
