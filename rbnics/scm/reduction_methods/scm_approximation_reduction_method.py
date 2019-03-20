@@ -205,16 +205,20 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     def _error_analysis(self, N_generator=None, filename=None, **kwargs):
         if N_generator is None:
-            def N_generator(n):
-                return n
-                
-        N = self.SCM_approximation.N
-        
+            def N_generator():
+                N = self.SCM_approximation.N
+                for n in range(1, N + 1): # n = 1, ... N
+                    yield n
+                    
+        def N_generator_max():
+            *_, Nmax = N_generator()
+            return Nmax
+            
         print(TextBox("SCM error analysis begins", fill="="))
         print("")
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
-        error_analysis_table.set_Nmax(N)
+        error_analysis_table.set_Nmax(N_generator_max())
         error_analysis_table.add_column("normalized_error", group_name="scm", operations=("min", "mean", "max"))
         
         for (mu_index, mu) in enumerate(self.testing_set):
@@ -223,25 +227,20 @@ class SCMApproximationReductionMethod(ReductionMethod):
             self.SCM_approximation.set_mu(mu)
             
             (exact_stability_factor, _) = self.SCM_approximation.evaluate_stability_factor()
-            for n in range(1, N + 1): # n = 1, ... N
-                n_arg = N_generator(n)
+            for n in N_generator():
+                stability_factor_lower_bound = self.SCM_approximation.get_stability_factor_lower_bound(n)
+                stability_factor_upper_bound = self.SCM_approximation.get_stability_factor_upper_bound(n)
+                ratio_lower_bound_to_upper_bound = stability_factor_lower_bound/stability_factor_upper_bound
+                ratio_lower_bound_to_exact = stability_factor_lower_bound/exact_stability_factor
                 
-                if n_arg is not None:
-                    stability_factor_lower_bound = self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
-                    stability_factor_upper_bound = self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
-                    ratio_lower_bound_to_upper_bound = stability_factor_lower_bound/stability_factor_upper_bound
-                    ratio_lower_bound_to_exact = stability_factor_lower_bound/exact_stability_factor
-                    
-                    if ratio_lower_bound_to_upper_bound < 0. and not isclose(ratio_lower_bound_to_upper_bound, 0.): # if ratio_lower_bound_to_upper_bound << 0
-                        print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
-                    if ratio_lower_bound_to_upper_bound > 1. and not isclose(ratio_lower_bound_to_upper_bound, 1.): # if ratio_lower_bound_to_upper_bound >> 1
-                        print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor upper bound = " + str(stability_factor_upper_bound))
-                    if ratio_lower_bound_to_exact > 1. and not isclose(ratio_lower_bound_to_exact, 1.): # if ratio_lower_bound_to_exact >> 1
-                        print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > exact stability factor =" + str(exact_stability_factor))
-                    
-                    error_analysis_table["normalized_error", n, mu_index] = (exact_stability_factor - stability_factor_lower_bound)/stability_factor_upper_bound
-                else:
-                    error_analysis_table["normalized_error", n, mu_index] = NotImplemented
+                if ratio_lower_bound_to_upper_bound < 0. and not isclose(ratio_lower_bound_to_upper_bound, 0.): # if ratio_lower_bound_to_upper_bound << 0
+                    print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
+                if ratio_lower_bound_to_upper_bound > 1. and not isclose(ratio_lower_bound_to_upper_bound, 1.): # if ratio_lower_bound_to_upper_bound >> 1
+                    print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor upper bound = " + str(stability_factor_upper_bound))
+                if ratio_lower_bound_to_exact > 1. and not isclose(ratio_lower_bound_to_exact, 1.): # if ratio_lower_bound_to_exact >> 1
+                    print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > exact stability factor =" + str(exact_stability_factor))
+                
+                error_analysis_table["normalized_error", n, mu_index] = (exact_stability_factor - stability_factor_lower_bound)/stability_factor_upper_bound
         
         # Print
         print("")
@@ -274,16 +273,20 @@ class SCMApproximationReductionMethod(ReductionMethod):
         
     def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         if N_generator is None:
-            def N_generator(n):
-                return n
-                
-        N = self.SCM_approximation.N
+            def N_generator():
+                N = self.SCM_approximation.N
+                for n in range(1, N + 1): # n = 1, ... N
+                    yield n
+                    
+        def N_generator_max():
+            *_, Nmax = N_generator()
+            return Nmax
                 
         print(TextBox("SCM speedup analysis begins", fill="="))
         print("")
         
         speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
-        speedup_analysis_table.set_Nmax(N)
+        speedup_analysis_table.set_Nmax(N_generator_max())
         speedup_analysis_table.add_column("speedup", group_name="speedup", operations=("min", "mean", "max"))
         
         exact_timer = Timer("parallel")
@@ -298,17 +301,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
             self.SCM_approximation.evaluate_stability_factor()
             elapsed_exact = exact_timer.stop()
             
-            for n in range(1, N + 1): # n = 1, ... N
-                n_arg = N_generator(n)
-                
-                if n_arg is not None:
-                    SCM_timer.start()
-                    self.SCM_approximation.get_stability_factor_lower_bound(n_arg)
-                    self.SCM_approximation.get_stability_factor_upper_bound(n_arg)
-                    elapsed_SCM = SCM_timer.stop()
-                    speedup_analysis_table["speedup", n, mu_index] = elapsed_exact/elapsed_SCM
-                else:
-                    speedup_analysis_table["speedup", n, mu_index] = NotImplemented
+            for n in N_generator():
+                SCM_timer.start()
+                self.SCM_approximation.get_stability_factor_lower_bound(n)
+                self.SCM_approximation.get_stability_factor_upper_bound(n)
+                elapsed_SCM = SCM_timer.stop()
+                speedup_analysis_table["speedup", n, mu_index] = elapsed_exact/elapsed_SCM
         
         # Print
         print("")

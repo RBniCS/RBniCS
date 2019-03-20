@@ -291,10 +291,15 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     def _error_analysis(self, N_generator=None, filename=None, **kwargs):
         if N_generator is None:
-            def N_generator(n):
-                return n
-                
-        N = self.EIM_approximation.N
+            def N_generator():
+                N = self.EIM_approximation.N
+                for n in range(1, N + 1): # n = 1, ... N
+                    yield n
+                    
+        def N_generator_max():
+            *_, Nmax = N_generator()
+            return Nmax
+            
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -302,7 +307,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("")
         
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
-        error_analysis_table.set_Nmax(N)
+        error_analysis_table.set_Nmax(N_generator_max())
         error_analysis_table.add_column("error", group_name="eim", operations=("mean", "max"))
         error_analysis_table.add_column("relative_error", group_name="eim", operations=("mean", "max"))
         
@@ -314,18 +319,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
             # Evaluate the exact function on the truth grid
             self.EIM_approximation.evaluate_parametrized_expression()
             
-            for n in range(1, N + 1): # n = 1, ... N
-                n_arg = N_generator(n)
-                
-                if n_arg is not None:
-                    self.EIM_approximation.solve(n_arg)
-                    (_, error, _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
-                    (_, relative_error, _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
-                    error_analysis_table["error", n, mu_index] = abs(error)
-                    error_analysis_table["relative_error", n, mu_index] = abs(relative_error)
-                else:
-                    error_analysis_table["error", n, mu_index] = NotImplemented
-                    error_analysis_table["relative_error", n, mu_index] = NotImplemented
+            for n in N_generator():
+                self.EIM_approximation.solve(n)
+                (_, error, _) = self.EIM_approximation.compute_maximum_interpolation_error(n)
+                (_, relative_error, _) = self.EIM_approximation.compute_maximum_interpolation_relative_error(n)
+                error_analysis_table["error", n, mu_index] = abs(error)
+                error_analysis_table["relative_error", n, mu_index] = abs(relative_error)
         
         # Print
         print("")
@@ -364,10 +363,15 @@ class EIMApproximationReductionMethod(ReductionMethod):
         
     def _speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         if N_generator is None:
-            def N_generator(n):
-                return n
-                
-        N = self.EIM_approximation.N
+            def N_generator():
+                N = self.EIM_approximation.N
+                for n in range(1, N + 1): # n = 1, ... N
+                    yield n
+                    
+        def N_generator_max():
+            *_, Nmax = N_generator()
+            return Nmax
+            
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
         
@@ -375,7 +379,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print("")
         
         speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
-        speedup_analysis_table.set_Nmax(N)
+        speedup_analysis_table.set_Nmax(N_generator_max())
         speedup_analysis_table.add_column("speedup", group_name="speedup", operations=("min", "mean", "max"))
         
         evaluate_timer = Timer("parallel")
@@ -391,16 +395,11 @@ class EIMApproximationReductionMethod(ReductionMethod):
             self.EIM_approximation.evaluate_parametrized_expression()
             elapsed_evaluate = evaluate_timer.stop()
             
-            for n in range(1, N + 1): # n = 1, ... N
-                n_arg = N_generator(n)
-                
-                if n_arg is not None:
-                    EIM_timer.start()
-                    self.EIM_approximation.solve(n_arg)
-                    elapsed_EIM = EIM_timer.stop()
-                    speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate/elapsed_EIM
-                else:
-                    speedup_analysis_table["speedup", n, mu_index] = NotImplemented
+            for n in N_generator():
+                EIM_timer.start()
+                self.EIM_approximation.solve(n)
+                elapsed_EIM = EIM_timer.stop()
+                speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate/elapsed_EIM
         
         # Print
         print("")

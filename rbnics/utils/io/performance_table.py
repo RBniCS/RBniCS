@@ -161,7 +161,7 @@ class PerformanceTable(object):
                     # Compute the required operation of each column over the second index (testing set)
                     table_content[current_table_index] = Content((self._Nmax - self._Nmin + 1,))
                     for n in range(self._Nmin, self._Nmax + 1):
-                        assert self._rows_not_implemented[column][n - self._Nmin] in (True, False)
+                        assert self._rows_not_implemented[column][n - self._Nmin] in (None, True, False)
                         if self._rows_not_implemented[column][n - self._Nmin] is False:
                             if operation == "min":
                                 current_table_content = min(self._columns[column][n - self._Nmin, :])
