@@ -220,7 +220,7 @@ advection_diffusion_pod_galerkin_method.set_Nmax(25, DEIM=50)
 # 5b. Perform the offline phase
 lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
 advection_diffusion_problem.set_mu(lifting_mu)
-advection_diffusion_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=100)
+advection_diffusion_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=150)
 reduced_advection_diffusion_problem = advection_diffusion_pod_galerkin_method.offline()
 
 # 6b. Perform an online solve
@@ -233,7 +233,7 @@ stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependen
 stokes_pod_galerkin_method.error_analysis()
 
 # 7b. Perform an error analysis
-advection_diffusion_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=100)
+advection_diffusion_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), DEIM=150)
 advection_diffusion_pod_galerkin_method.error_analysis()
 
 # 8a. Perform a speedup analysis

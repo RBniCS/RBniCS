@@ -166,7 +166,7 @@ pod_galerkin_method.set_Nmax(10, DEIM=20)
 # 5. Perform the offline phase
 lifting_mu = (1.0,)
 navier_stokes_problem.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(100, DEIM=100, sampling=EquispacedDistribution())
+pod_galerkin_method.initialize_training_set(100, DEIM=144, sampling=EquispacedDistribution())
 reduced_navier_stokes_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
@@ -176,7 +176,7 @@ reduced_navier_stokes_problem.solve()
 reduced_navier_stokes_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(16, DEIM=16, sampling=EquispacedDistribution())
+pod_galerkin_method.initialize_testing_set(16, DEIM=25, sampling=EquispacedDistribution())
 pod_galerkin_method.error_analysis()
 
 # 8. Perform a speedup analysis
