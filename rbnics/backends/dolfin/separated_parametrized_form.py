@@ -146,12 +146,14 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                     break
                                                 elif self._strict: # solutions are not allowed, break
                                                     if wrapping.is_problem_solution(t):
-                                                        (_, _, solution) = wrapping.solution_identify_component(t)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution of " + get_problem_from_solution(solution).name() + "and strict mode is on")
+                                                        (_, component, solution) = wrapping.solution_identify_component(t)
+                                                        problem = get_problem_from_solution(solution)
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ") and strict mode is on")
                                                         break
                                                     elif wrapping.is_problem_solution_dot(t):
-                                                        (_, _, solution_dot) = wrapping.solution_dot_identify_component(t)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution_dot of " + get_problem_from_solution_dot(solution_dot).name() + "and strict mode is on")
+                                                        (_, component, solution_dot) = wrapping.solution_dot_identify_component(t)
+                                                        problem = get_problem_from_solution_dot(solution_dot)
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution_dot of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ") and strict mode is on")
                                                     else:
                                                         raise RuntimeError("Unidentified solution found")
                                         else:
@@ -164,13 +166,15 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                 elif wrapping.is_problem_solution_type(t):
                                                     if wrapping.is_problem_solution(t):
                                                         at_least_one_expression_or_solution = True
-                                                        (_, _, solution) = wrapping.solution_identify_component(t)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution of " + get_problem_from_solution(solution).name())
+                                                        (_, component, solution) = wrapping.solution_identify_component(t)
+                                                        problem = get_problem_from_solution(solution)
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")")
                                                         break
                                                     elif wrapping.is_problem_solution_dot(t):
                                                         at_least_one_expression_or_solution = True
-                                                        (_, _, solution_dot) = wrapping.solution_dot_identify_component(t)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution_dot of " + get_problem_from_solution_dot(solution_dot).name())
+                                                        (_, component, solution_dot) = wrapping.solution_dot_identify_component(t)
+                                                        problem = get_problem_from_solution_dot(solution_dot)
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution_dot of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")")
                                                         break
                                             if at_least_one_expression_or_solution:
                                                 all_candidates.append(d)

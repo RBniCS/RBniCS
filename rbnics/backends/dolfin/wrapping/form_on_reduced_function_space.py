@@ -68,11 +68,13 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             }
             
             # Look for terminals on truth mesh
+            logger.log(DEBUG, "Traversing terminals of form " + form_name)
             for node in wrapping.form_iterator(form, "nodes"):
                 if node in visited:
                     continue
                 # ... test and trial functions
                 elif isinstance(node, Argument):
+                    logger.log(DEBUG, "\tFound argument, number: " + str(node.number()) + ", part: " + str(node.part()))
                     replacements[node] = wrapping.form_argument_replace(node, reduced_V)
                     visited.add(node)
                 # ... problem solutions related to nonlinear terms
@@ -83,11 +85,13 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         if node_is_problem_solution:
                             (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                             truth_problem = get_problem_from_solution(truth_solution)
+                            logger.log(DEBUG, "\tFound problem solution of truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ", component: " + str(component) + ")")
                             # Time derivative key for components and interpolator dicts
                             time_derivative = 0
                         elif node_is_problem_solution_dot:
                             (preprocessed_node, component, truth_solution_dot) = wrapping.solution_dot_identify_component(node)
                             truth_problem = get_problem_from_solution_dot(truth_solution_dot)
+                            logger.log(DEBUG, "\tFound problem solution dot of truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ", component: " + str(component) + ")")
                             # Time derivative key for components and interpolator dicts
                             time_derivative = 1
                         # Store truth problem
@@ -117,6 +121,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                             truth_problem_to_reduced_mesh_interpolator[time_derivative][truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
                         (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
+                        logger.log(DEBUG, "\tFound non parametrized function " + str(preprocessed_node) + " associated to auxiliary problem " + str(auxiliary_problem.name()) + ", component: " + str(component))
                         if preprocessed_node not in replacements:
                             # Get interpolator on reduced mesh
                             auxiliary_truth_problem_to_reduced_mesh_interpolator = at.get_auxiliary_function_interpolator(auxiliary_problem, component)
@@ -129,6 +134,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         visited.add(parent_node)
                 # ... geometric quantities
                 elif isinstance(node, GeometricQuantity):
+                    logger.log(DEBUG, "\tFound geometric quantity " + str(node))
                     if len(reduced_V) == 2:
                         assert reduced_V[0].mesh().ufl_domain() == reduced_V[1].mesh().ufl_domain()
                     replacements[node] = type(node)(reduced_V[0].mesh())
@@ -200,6 +206,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 reduced_problem_is_solving = False
             if not truth_problem_is_solving:
                 if is_training_finished(truth_problem):
+                    logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is not currently solving, and its offline stage has finished: truth problem will be replaced by reduced problem")
                     # Store the replacement for solution
                     if (
                         reduced_problem not in reduced_problem_to_reduced_mesh_solution
@@ -238,11 +245,13 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                             and
                         not hasattr(truth_problem, "_apply_DEIM_at_stages")
                     ):
+                        logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is not currently solving, its offline stage has not finished, and only @ExactParametrizedFunctions has been used: truth solve of this truth problem instance will be called")
                         # Init truth problem (if required), as it may not have been initialized
                         truth_problem.init()
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((truth_problem, False, reduced_problem_is_solving))
                     else:
+                        logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is not currently solving, its offline stage has not finished, and either @ExactParametrizedFunctions has not been used or it has been used in combination with @DEIM or @EIM: truth solve on an auxiliary instance (with exact problem decorator) will be called, to prevent early initialization of DEIM/EIM data structures")
                         # Store the corresponding exact truth problem
                         if truth_problem not in truth_problem_to_exact_truth_problem:
                             exact_truth_problem = exact_problem(truth_problem)
@@ -284,6 +293,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((exact_truth_problem, False, reduced_problem_is_solving))
             else:
+                logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is currently solving: current truth solution will be loaded")
                 assert not reduced_problem_is_solving
                 # Append to list of required truth problems which are currently solving
                 required_truth_problems.append((truth_problem, True, False))
@@ -294,13 +304,13 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 # Solve (if necessary)
                 truth_problem.set_mu(mu)
                 if not truth_problem_is_solving:
-                    logger.log(DEBUG, "In form_on_reduced_function_space, requiring truth problem solve for problem " + truth_problem.name())
+                    logger.log(DEBUG, "Requiring truth problem solve for problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ")")
                     truth_problem.solve()
                 else:
-                    logger.log(DEBUG, "In form_on_reduced_function_space, loading current truth problem solution for problem " + truth_problem.name())
+                    logger.log(DEBUG, "Loading current truth problem solution for problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ")")
             else:
                 reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                logger.log(DEBUG, "In form_on_reduced_function_space, replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "Replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
             # Assign to reduced_mesh_solution
             if truth_problem in truth_problem_to_reduced_mesh_solution:
                 for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution[truth_problem], truth_problem_to_reduced_mesh_interpolator[0][truth_problem]):
@@ -338,10 +348,10 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             # Solve (if necessary)
             reduced_problem.set_mu(mu)
             if not is_solving:
-                logger.log(DEBUG, "In form_on_reduced_function_space, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "Requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
-                logger.log(DEBUG, "In form_on_reduced_function_space, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "Loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
             # Assign to reduced_mesh_solution
             if reduced_problem in reduced_problem_to_reduced_mesh_solution:
                 for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[0][reduced_problem]):
