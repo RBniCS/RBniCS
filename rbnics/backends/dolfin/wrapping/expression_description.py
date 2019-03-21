@@ -33,11 +33,11 @@ def basic_expression_description(backend, wrapping):
                 if wrapping.is_problem_solution(n):
                     (preprocessed_n, component, truth_solution) = wrapping.solution_identify_component(n)
                     problem = get_problem_from_solution(truth_solution)
-                    coefficients_repr[preprocessed_n] = "solution of " + str(problem.name())
+                    coefficients_repr[preprocessed_n] = "solution of " + str(problem.name()) + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")"
                 elif wrapping.is_problem_solution_dot(n):
                     (preprocessed_n, component, truth_solution_dot) = wrapping.solution_dot_identify_component(n)
                     problem = get_problem_from_solution_dot(truth_solution_dot)
-                    coefficients_repr[preprocessed_n] = "solution_dot of " + str(problem.name())
+                    coefficients_repr[preprocessed_n] = "solution_dot of " + str(problem.name()) + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")"
                 else:
                     (preprocessed_n, component, problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
                     coefficients_repr[preprocessed_n] = "non parametrized function associated to auxiliary problem " + str(problem.name())
