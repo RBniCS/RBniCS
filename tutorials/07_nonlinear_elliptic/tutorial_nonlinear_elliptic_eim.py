@@ -50,7 +50,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         return "NonlinearEllipticEIM"
         
     # Return theta multiplicative terms of the affine expansion of the problem.
-    @compute_theta_for_derivative({"dc": "c"})
+    @compute_theta_for_derivatives
     def compute_theta(self, term):
         mu = self.mu
         if term == "a":
