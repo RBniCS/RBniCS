@@ -61,14 +61,14 @@ class DelayedFunctionsList(object):
         if key.stop is not None:
             stop = key.stop
         else:
-            stop = len(self._list)
+            stop = len(self._enrich_memory)
             
         assert start <= stop
         if start < stop:
             assert start >= 0
-            assert start < len(self._list)
+            assert start < len(self._enrich_memory)
             assert stop > 0
-            assert stop <= len(self._list)
+            assert stop <= len(self._enrich_memory)
         # elif start == stop
         #    trivial case which will result in an empty FunctionsList
         

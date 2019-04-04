@@ -77,7 +77,7 @@ class DelayedBasisFunctionsMatrix(object):
         
     @overload(None)
     def _update_component_name_to_basis_component_length(self, component):
-        assert len(self._components) == 1
+        assert len(self._enrich_memory) == 1
         assert len(self._components_name) == 1
         component_0 = self._components_name[0]
         self._component_name_to_basis_component_length[component_0] = len(self._enrich_memory[component_0])
@@ -87,7 +87,7 @@ class DelayedBasisFunctionsMatrix(object):
         self._component_name_to_basis_component_length[component] = len(self._enrich_memory[component])
         
     def _prepare_trivial_precomputed_slice(self):
-        if len(self._components) == 1:
+        if len(self._enrich_memory) == 1:
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             precomputed_slice_key_start = 0
