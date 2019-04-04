@@ -63,10 +63,11 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
                 def weight(mu):
                     return sqrt(self.training_set_density[mu])
                 
-                # Print some additional information on the consistency of the reduced basis
-                print("absolute error for current mu =", self.reduced_problem.compute_error())
-                print("absolute (weighted) error estimator for current mu =", weight(self.truth_problem.mu)*self.reduced_problem.estimate_error())
-                print("absolute non-weighted error estimator for current mu =", self.reduced_problem.estimate_error())
+                if self.reduced_problem.N > 0: # skip during initialization
+                    # Print some additional information on the consistency of the reduced basis
+                    print("absolute error for current mu =", self.reduced_problem.compute_error())
+                    print("absolute (weighted) error estimator for current mu =", weight(self.truth_problem.mu)*self.reduced_problem.estimate_error())
+                    print("absolute non-weighted error estimator for current mu =", self.reduced_problem.estimate_error())
                 
                 # Carry out the actual greedy search
                 def solve_and_estimate_error(mu):
