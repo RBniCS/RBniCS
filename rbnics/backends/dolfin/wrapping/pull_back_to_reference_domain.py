@@ -745,6 +745,18 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     
             def _is_affine_parameter_dependent(self, separated_pulled_back_form):
                 # The pulled back form is not affine if any of its coefficients depend on x
+                def is_space_dependent_coefficient(node, multiindex=None):
+                    assert isinstance(node, (CompiledExpression, Expression)), "Other expression types are not handled yet"
+                    if isinstance(node, Expression):
+                        node_cppcode = node._cppcode
+                        if multiindex is not None:
+                            for index in multiindex.indices():
+                                assert isinstance(index, FixedIndex)
+                                node_cppcode = node_cppcode[int(index)]
+                        return len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0
+                    elif isinstance(node, CompiledExpression):
+                        assert is_pull_back_expression(node), "Only the case of pulled back expressions is currently handled"
+                        return True
                 for addend in separated_pulled_back_form.coefficients:
                     for factor in addend:
                         assert factor.ufl_shape == ()
@@ -752,21 +764,15 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             if isinstance(node, Indexed):
                                 operand_0 = node.ufl_operands[0]
                                 if isinstance(operand_0, BaseExpression):
-                                    assert isinstance(operand_0, Expression), "Other expression types are not handled yet"
-                                    node_cppcode = operand_0._cppcode
-                                    for index in node.ufl_operands[1].indices():
-                                        assert isinstance(index, FixedIndex)
-                                        node_cppcode = node_cppcode[int(index)]
-                                    if len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0:
+                                    operand_1 = node.ufl_operands[1]
+                                    if is_space_dependent_coefficient(operand_0, operand_1):
                                         return False
                             elif (
                                 isinstance(node, BaseExpression)
                                     and
                                 node.ufl_shape == () # expressions with multiple components are visited by Indexed
                             ):
-                                assert isinstance(node, Expression), "Other expression types are not handled yet"
-                                node_cppcode = node._cppcode
-                                if len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0:
+                                if is_space_dependent_coefficient(node):
                                     return False
                 # The pulled back form is not affine if it contains a boundary integral on a non-straight boundary,
                 # because the normal direction would depend on x

@@ -24,7 +24,7 @@ from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from dolfin import assign, CellDiameter, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
-from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, ParametrizedExpression, PullBackFormsToReferenceDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.base import ParametrizedProblem
@@ -70,18 +70,22 @@ def raises(ExceptionType):
         return not_raises()
     
 def check_affine_and_non_affine_shape_parametrizations(*decorator_args):
-    decorators = list()
-    decorators.append(
-        pytest.mark.parametrize("shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message", [
+    default_decorator_args = (
+        "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message",
+        [
             (keep_shape_parametrization_affine, NoDecorator, None, None),
             (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
             (make_shape_parametrization_non_affine, DEIM, None, None),
             (make_shape_parametrization_non_affine, EIM, None, None),
             (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None)
-        ])
+        ]
     )
-    for decorator_arg in decorator_args:
-        decorators.append(pytest.mark.parametrize(decorator_arg[0], decorator_arg[1]))
+    decorator_args_contains_default = [decorator_arg[0].startswith(default_decorator_args[0]) for decorator_arg in decorator_args]
+    if not any(decorator_args_contains_default):
+        decorators = [pytest.mark.parametrize(default_decorator_args[0], default_decorator_args[1])]
+    else:
+        decorators = []
+    decorators.extend(pytest.mark.parametrize(decorator_arg[0], decorator_arg[1]) for decorator_arg in decorator_args)
     
     def check_affine_and_non_affine_shape_parametrizations_decorator(original_test):
         @pytest.mark.pull_back_to_reference_domain
@@ -471,8 +475,30 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
         assert forms_are_close(f_on_reference_domain, f_pull_back)
 
 # Test forms pull back to reference domain for tutorial 04
-@check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def ExpressionOnDeformedDomainGenerator_NonParametrized(problem, cppcode, **kwargs):
+    return Expression(cppcode, element=kwargs["element"])
+    
+def ExpressionOnDeformedDomainGenerator_Parametrized(problem, cppcode, **kwargs):
+    return ParametrizedExpression(problem, cppcode, **kwargs)
+    
+@check_affine_and_non_affine_shape_parametrizations((
+    "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator",
+    [
+        # non-parametrized expression
+        (keep_shape_parametrization_affine, NoDecorator, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
+        (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_NonParametrized),
+        (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
+        (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
+        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
+        # parametrized expression
+        (keep_shape_parametrization_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_Parametrized),
+        (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_Parametrized),
+        (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
+        (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
+        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_Parametrized)
+    ]
+))
+def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "graetz.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "graetz_physical_region.xml"))
@@ -490,7 +516,6 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
     u = TrialFunction(V)
     v = TestFunction(V)
     dx = Measure("dx")(subdomain_data=subdomains)
-    vel = Expression("x[1]*(1-x[1])", element=V.ufl_element())
     ff = Constant(1.)
     
     # Define base problem
@@ -527,6 +552,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             Graetz.__init__(self, "GraetzOnReferenceDomain")
             self.V = V
             self._solution = Function(V)
+            self.vel = Expression("x[1]*(1-x[1])", element=V.ufl_element())
             
         def compute_theta(self, term):
             mu = self.mu
@@ -548,7 +574,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
                 a0 = inner(grad(u), grad(v))*dx(1)
                 a1 = u.dx(0)*v.dx(0)*dx(2)
                 a2 = u.dx(1)*v.dx(1)*dx(2)
-                a3 = vel*u.dx(0)*v*dx(1) + vel*u.dx(0)*v*dx(2)
+                a3 = self.vel*u.dx(0)*v*dx(1) + self.vel*u.dx(0)*v*dx(2)
                 return (a0, a1, a2, a3)
             elif term == "f":
                 f0 = ff*v*dx(1)
@@ -566,6 +592,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             Graetz.__init__(self, "GraetzPullBack")
             self.V = V
             self._solution = Function(V)
+            self.vel = ExpressionOnDeformedDomainGenerator(self, "x[1]*(1-x[1])", mu=(1.0, 1.0), element=V.ufl_element())
             
         def compute_theta(self, term):
             mu = self.mu
@@ -582,7 +609,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         def assemble_operator(self, term):
             if term == "a":
                 a0 = inner(grad(u), grad(v))*dx
-                a1 = vel*u.dx(0)*v*dx
+                a1 = self.vel*u.dx(0)*v*dx
                 return (a0, a1)
             elif term == "f":
                 f0 = ff*v*dx
