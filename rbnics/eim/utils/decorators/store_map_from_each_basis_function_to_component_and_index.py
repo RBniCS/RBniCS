@@ -33,8 +33,6 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
             # Patch BasisFunctionsMatrix._update_component_name_to_basis_component_length so that it also updates the map
             # from each basis function to component and index after BasisFunctionsMatrix.enrich() has been called.
             if not hasattr(self.basis_functions, "_update_component_name_to_basis_component_length_patched"):
-                original_update_component_name_to_basis_component_length = self.basis_functions._update_component_name_to_basis_component_length
-                
                 @overload(AbstractBasisFunctionsMatrix, None)
                 def patched_update_component_name_to_basis_component_length(self_, component):
                     assert len(self_._components) == 1
@@ -56,7 +54,7 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
                     
                 def _add_new_basis_functions_to_map_from_basis_function_to_component_and_index(self_, component):
                     old_component_length = self_._component_name_to_basis_component_length[component]
-                    original_update_component_name_to_basis_component_length(component)
+                    self_._component_name_to_basis_component_length[component] = len(self_._components[component])
                     new_component_length = self_._component_name_to_basis_component_length[component]
                     for index in range(old_component_length, new_component_length):
                         add_to_map_from_basis_function_to_component_and_index(self_._components[component][index], component, index)
