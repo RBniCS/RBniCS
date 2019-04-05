@@ -24,7 +24,7 @@ from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from dolfin import assign, CellDiameter, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
-from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, ParametrizedExpression, PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, ParametrizedExpression, PullBackFormsToReferenceDomain, PushForwardToDeformedDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.base import ParametrizedProblem
@@ -481,6 +481,9 @@ def ExpressionOnDeformedDomainGenerator_NonParametrized(problem, cppcode, **kwar
 def ExpressionOnDeformedDomainGenerator_Parametrized(problem, cppcode, **kwargs):
     return ParametrizedExpression(problem, cppcode, **kwargs)
     
+def ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized(problem, cppcode, **kwargs):
+    return PushForwardToDeformedDomain(problem, Expression(cppcode, element=kwargs["element"]))
+    
 @check_affine_and_non_affine_shape_parametrizations((
     "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator",
     [
@@ -495,7 +498,13 @@ def ExpressionOnDeformedDomainGenerator_Parametrized(problem, cppcode, **kwargs)
         (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_Parametrized),
         (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
         (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
-        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_Parametrized)
+        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
+        # push forward expression, non-parametrized
+        (keep_shape_parametrization_affine, NoDecorator, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
+        (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
+        (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
+        (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
+        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized)
     ]
 ))
 def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator):

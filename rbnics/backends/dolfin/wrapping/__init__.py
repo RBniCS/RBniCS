@@ -78,7 +78,7 @@ from rbnics.backends.dolfin.wrapping.matrix_mul import matrix_mul_vector, vector
 from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, ParametrizedConstant, parametrized_constant_to_float
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.backends.dolfin.wrapping.plot import plot
-from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized, PullBackFormsToReferenceDomain
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized, PullBackFormsToReferenceDomain, PushForwardToDeformedDomain
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 from rbnics.backends.dolfin.wrapping.rewrite_quotients import rewrite_quotients
 from rbnics.backends.dolfin.wrapping.solution_dot_identify_component import solution_dot_identify_component
@@ -161,6 +161,7 @@ __all__ = [
     'ParametrizedExpression',
     'plot',
     'PullBackFormsToReferenceDomain',
+    'PushForwardToDeformedDomain',
     'remove_complex_nodes',
     'rewrite_quotients',
     'solution_dot_identify_component',
@@ -183,6 +184,7 @@ __overridden__ = {
         'generate_function_space_for_stability_factor',
         'ParametrizedExpression',
         'plot',
-        'PullBackFormsToReferenceDomain'
+        'PullBackFormsToReferenceDomain',
+        'PushForwardToDeformedDomain'
     ],
 }

@@ -430,7 +430,19 @@ is_pull_back_expression_parametrized.regex = re.compile(r"\bmu\[[0-9]+\]")
 def is_pull_back_expression_time_dependent(expression):
     parameters = expression.f_no_upcast._parameters
     return "t" in parameters
-        
+    
+def PushForwardToDeformedDomain(problem, expression):
+    assert isinstance(expression, Expression), "Other expression types are not handled yet"
+    expression._is_push_forward = True
+    return expression
+    
+def is_push_forward_expression(expression):
+    if hasattr(expression, "_is_push_forward"):
+        assert expression._is_push_forward is True
+        return True
+    else:
+        return False
+    
 class PullBackExpressions(MultiFunction):
     def __init__(self, shape_parametrization_expression_on_subdomain, problem):
         MultiFunction.__init__(self)
@@ -442,7 +454,10 @@ class PullBackExpressions(MultiFunction):
     def terminal(self, o):
         if isinstance(o, BaseExpression):
             assert isinstance(o, Expression), "Other expression types are not handled yet"
-            return PullBackExpression(self.shape_parametrization_expression_on_subdomain, o, self.problem)
+            if not is_push_forward_expression(o):
+                return PullBackExpression(self.shape_parametrization_expression_on_subdomain, o, self.problem)
+            else:
+                return o
         else:
             return o
 
