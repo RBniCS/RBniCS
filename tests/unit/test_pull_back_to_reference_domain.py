@@ -23,12 +23,13 @@ import functools
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from logging import DEBUG
-from dolfin import assign, CellDiameter, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import assign, CellDiameter, Constant, cos, div, exp, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, ParametrizedExpression, PullBackFormsToReferenceDomain, PushForwardToDeformedDomain
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close, logger as pull_back_to_reference_domain_logger
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.base import ParametrizedProblem
+from rbnics.utils.decorators import StoreMapFromSolutionToProblem
 from rbnics.utils.test import enable_logging
 
 enable_pull_back_to_reference_domain_logging = enable_logging({pull_back_to_reference_domain_logger: DEBUG})
@@ -661,6 +662,209 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
         a_pull_back = theta_times_operator(problem_pull_back, "a")
         assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
+        f_pull_back = theta_times_operator(problem_pull_back, "f")
+        assert forms_are_close(f_on_reference_domain, f_pull_back)
+        
+# Test forms pull back to reference domain for tutorial 07
+@enable_pull_back_to_reference_domain_logging
+@check_affine_and_non_affine_shape_parametrizations((
+    "nonlinear_theta_on_reference_domain, nonlinear_theta_on_deformed_domain, nonlinear_operator, initial_guess", [
+        (
+            lambda mu: (mu[2]*mu[3], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (u*v*dx, ),
+            "1 + 2*x[0] + 3*x[1]"
+        ),
+        (
+            lambda mu: (mu[2]*mu[3], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (mu[0]*u*v*dx, ),
+            "1 + 2*x[0] + 3*x[1]"
+        ),
+        (
+            lambda mu: (mu[2]*mu[3], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (u**2*v*dx, ),
+            "1 + 2*x[0] + 3*x[1]"
+        ),
+        (
+            lambda mu: (mu[2]*mu[3], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (mu[0]*u**(1 + mu[1])*v*dx, ),
+            "1 + 2*x[0] + 3*x[1]"
+        ),
+        (
+            lambda mu: (mu[3]/mu[2], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (u.dx(0)**2*v*dx, ),
+            "x[0] + pow(x[0], 2) + 3*x[0]*x[1]"
+        ),
+        (
+            lambda mu: (mu[2]**(- mu[1])*mu[3], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (mu[0]*u.dx(0)**(1 + mu[1])*v*dx, ),
+            "x[0] + pow(x[0], 2) + 3*x[0]*x[1]"
+        ),
+        (
+            lambda mu: (mu[2]**(- mu[0])*mu[3], mu[2]*mu[3]**(- mu[1])),
+            lambda mu: (1.0, 1.0),
+            lambda mu, u, v, dx: (u.dx(0)**(1 + mu[0])*v*dx, u.dx(1)**(1 + mu[1])*v*dx, ),
+            "x[0] + x[1] + pow(x[0], 2) + 3*x[0]*x[1]"
+        ),
+        (
+            lambda mu: (mu[2]*mu[3], ),
+            lambda mu: (1.0, ),
+            lambda mu, u, v, dx: (mu[0]*((exp(mu[1]*u) - 1)/mu[1])*v*dx, ),
+            "0.1*(2 + sin(2*pi*x[0] + 6*pi*x[1]))"
+        )
+    ]
+), is_affine=False)
+def test_pull_back_to_reference_domain_nonlinear_elliptic(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, nonlinear_theta_on_reference_domain, nonlinear_theta_on_deformed_domain, nonlinear_operator, initial_guess):
+    # Read the mesh for this problem
+    mesh = Mesh(os.path.join(data_dir, "square.xml"))
+    subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "square_physical_region.xml"))
+    boundaries = MeshFunction("size_t", mesh, os.path.join(data_dir, "square_facet_region.xml"))
+    
+    # Reset all subdomains to have id 1, as the original tutorial does not account for shape parametrization
+    subdomains.set_all(1)
+    
+    # Define shape parametrization
+    shape_parametrization_expression = [
+        ("mu[2]*x[0]", "mu[3]*x[1]") # subdomain 1
+    ]
+    shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
+    
+    # Define function space, test/trial functions, measures, auxiliary expressions
+    V = FunctionSpace(mesh, "Lagrange", 1)
+    du = TrialFunction(V)
+    u = project(Expression(initial_guess, element=V.ufl_element()), V)
+    v = TestFunction(V)
+    dx = Measure("dx")(subdomain_data=subdomains)
+    ff = Constant(1)
+    
+    # Define base problem
+    class NonlinearElliptic(ParametrizedProblem, metaclass=ABCMeta):
+        def __init__(self, folder_prefix):
+            ParametrizedProblem.__init__(self, folder_prefix)
+            self.mu = (1.0, 1.0, 1.0, 1.0)
+            self.mu_range = [(0.01, 10.0), (0.01, 10.0), (0.5, 2.0), (0.5, 2.0)]
+            self.terms = ["a", "c", "dc", "f"]
+            self.operator = dict()
+            self.Q = dict()
+            
+        def name(self):
+            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            
+        def init(self):
+            self._init_operators()
+            
+        def _init_operators(self):
+            pass
+            
+        @abstractmethod
+        def compute_theta(self, term):
+            pass
+            
+        @abstractmethod
+        def assemble_operator(self, term):
+            pass
+            
+    # Define problem with forms written on reference domain
+    @ShapeParametrization(*shape_parametrization_expression)
+    class NonlinearEllipticOnReferenceDomain(NonlinearElliptic):
+        def __init__(self, V, **kwargs):
+            NonlinearElliptic.__init__(self, "NonlinearEllipticOnReferenceDomain")
+            self.V = V
+            self._solution = u
+            
+        @compute_theta_for_derivative({"dc": "c"})
+        def compute_theta(self, term):
+            mu = self.mu
+            if term == "a":
+                theta_a0 = mu[3]/mu[2]
+                theta_a1 = mu[2]/mu[3]
+                return (theta_a0, theta_a1)
+            elif term == "c":
+                return nonlinear_theta_on_reference_domain(mu)
+            elif term == "f":
+                theta_f0 = mu[2]*mu[3]
+                return (theta_f0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        @assemble_operator_for_derivative({"dc": "c"})
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = du.dx(0)*v.dx(0)*dx
+                a1 = du.dx(1)*v.dx(1)*dx
+                return (a0, a1)
+            elif term == "c":
+                return nonlinear_operator(self.mu, u, v, dx)
+            elif term == "f":
+                f0 = ff*v*dx
+                return (f0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+    
+    # Define problem with forms pulled back reference domain
+    @AdditionalProblemDecorator()
+    @PullBackFormsToReferenceDomain()
+    @ShapeParametrization(*shape_parametrization_expression)
+    @StoreMapFromSolutionToProblem
+    class NonlinearEllipticPullBack(NonlinearElliptic):
+        def __init__(self, V, **kwargs):
+            NonlinearElliptic.__init__(self, "NonlinearEllipticPullBack")
+            self.V = V
+            self._solution = u
+            
+        @compute_theta_for_derivative({"dc": "c"})
+        def compute_theta(self, term):
+            if term == "a":
+                theta_a0 = 1.0
+                return (theta_a0, )
+            elif term == "c":
+                return nonlinear_theta_on_deformed_domain(self.mu)
+            elif term == "f":
+                theta_f0 = 1.0
+                return (theta_f0, )
+            else:
+                raise ValueError("Invalid term for compute_theta().")
+                
+        @assemble_operator_for_derivative({"dc": "c"})
+        def assemble_operator(self, term):
+            if term == "a":
+                a0 = inner(grad(du), grad(v))*dx
+                return (a0, )
+            elif term == "c":
+                return nonlinear_operator(self.mu, u, v, dx)
+            elif term == "f":
+                f0 = ff*v*dx
+                return (f0, )
+            else:
+                raise ValueError("Invalid term for assemble_operator().")
+                
+    # Check forms
+    problem_on_reference_domain = NonlinearEllipticOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_pull_back = NonlinearEllipticPullBack(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain.init()
+    problem_pull_back.init()
+    for mu in itertools.product(*problem_on_reference_domain.mu_range):
+        problem_on_reference_domain.set_mu(mu)
+        problem_pull_back.set_mu(mu)
+        
+        a_on_reference_domain = theta_times_operator(problem_on_reference_domain, "a")
+        a_pull_back = theta_times_operator(problem_pull_back, "a")
+        assert forms_are_close(a_on_reference_domain, a_pull_back)
+        
+        c_on_reference_domain = theta_times_operator(problem_on_reference_domain, "c")
+        c_pull_back = theta_times_operator(problem_pull_back, "c")
+        assert forms_are_close(c_on_reference_domain, c_pull_back)
+        
+        dc_on_reference_domain = theta_times_operator(problem_on_reference_domain, "dc")
+        dc_pull_back = theta_times_operator(problem_pull_back, "dc")
+        assert forms_are_close(dc_on_reference_domain, dc_pull_back)
         
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
