@@ -631,7 +631,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                         for (q, theta) in enumerate(thetas_pull_back):
                                             print("\tpulled_back_theta_" + str(q), "=", theta)
                                         print("Operators on parametrized domain")
-                                        for (q, form) in enumerate(forms_pull_back):
+                                        for (q, form) in enumerate(forms_parametrized_domain):
                                             print("\toperator_" + str(q), "=", form)
                                         print("Affinity of pulled back operators")
                                         q = 0
