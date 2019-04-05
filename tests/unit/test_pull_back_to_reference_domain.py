@@ -22,12 +22,16 @@ import itertools
 import functools
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
+from logging import DEBUG
 from dolfin import assign, CellDiameter, Constant, cos, div, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
 from rbnics import ShapeParametrization
 from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, ParametrizedExpression, PullBackFormsToReferenceDomain, PushForwardToDeformedDomain
-from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close, logger as pull_back_to_reference_domain_logger
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.base import ParametrizedProblem
+from rbnics.utils.test import enable_logging
+
+enable_pull_back_to_reference_domain_logging = enable_logging({pull_back_to_reference_domain_logger: DEBUG})
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_pull_back_to_reference_domain")
 
@@ -103,6 +107,7 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args):
     return check_affine_and_non_affine_shape_parametrizations_decorator
 
 # Test forms pull back to reference domain for tutorial 03
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -232,7 +237,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class HolePullBack(Hole):
         def __init__(self, V, **kwargs):
@@ -281,6 +286,7 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
         assert forms_are_close(f_on_reference_domain, f_pull_back)
         
 # Test forms pull back to reference domain for tutorial 03 rotation
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -426,7 +432,7 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class HoleRotationPullBack(HoleRotation):
         def __init__(self, V, **kwargs):
@@ -484,6 +490,7 @@ def ExpressionOnDeformedDomainGenerator_Parametrized(problem, cppcode, **kwargs)
 def ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized(problem, cppcode, **kwargs):
     return PushForwardToDeformedDomain(problem, Expression(cppcode, element=kwargs["element"]))
     
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
     "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator",
     [
@@ -594,7 +601,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class GraetzPullBack(Graetz):
         def __init__(self, V, **kwargs):
@@ -644,6 +651,7 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         assert forms_are_close(f_on_reference_domain, f_pull_back)
         
 # Test forms pull back to reference domain for tutorial 09
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
     "CellDiameter, cell_diameter_pull_back", [
         (lambda mesh: Constant(0.), lambda mu: 0),
@@ -753,7 +761,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class AdvectionDominatedPullBack(AdvectionDominated):
         def __init__(self, V, **kwargs):
@@ -802,6 +810,7 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
         assert forms_are_close(f_on_reference_domain, f_pull_back)
         
 # Test forms pull back to reference domain for tutorial 12
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -962,7 +971,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesPullBack(Stokes):
         def __init__(self, V, **kwargs):
@@ -1035,6 +1044,7 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         assert forms_are_close(g_on_reference_domain, g_pull_back)
         
 # Test forms pull back to reference domain for stabilization of Stokes problem
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
     "CellDiameter, cell_diameter_pull_back", [
         (lambda mesh: Constant(0.), lambda mu: 0),
@@ -1156,7 +1166,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesStabilizationPullBack(StokesStabilization):
         def __init__(self, V, **kwargs):
@@ -1239,6 +1249,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
         assert forms_are_close(g_on_reference_domain, g_pull_back)
         
 # Test forms pull back to reference domain for tutorial 13
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -1377,7 +1388,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class EllipticOptimalControlPullBack(EllipticOptimalControl):
         def __init__(self, V, **kwargs):
@@ -1492,6 +1503,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
         assert forms_are_close(h_on_reference_domain, h_pull_back)
         
 # Test forms pull back to reference domain for tutorial 14
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -1643,7 +1655,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesOptimalControlPullBack(StokesOptimalControl):
         def __init__(self, V, **kwargs):
@@ -1794,6 +1806,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
         assert forms_are_close(h_on_reference_domain, h_pull_back)
         
 # Test forms pull back to reference domain for tutorial 16
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -1945,7 +1958,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
                 
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class AdvectionDiffusionPullBack(AdvectionDiffusion):
         def __init__(self, V, **kwargs):
@@ -1991,6 +2004,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
         assert forms_are_close(f_on_reference_domain, f_pull_back)
         
 # Test forms pull back to reference domain for tutorial 17
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -2122,7 +2136,7 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class NavierStokesPullBack(NavierStokes):
         def __init__(self, V, **kwargs):
@@ -2211,6 +2225,7 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
         assert forms_are_close(g_on_reference_domain, g_pull_back)
         
 # Test forms pull back to reference domain for tutorial 18
+@enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
 def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
@@ -2322,7 +2337,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
     
     # Define problem with forms pulled back reference domain
     @AdditionalProblemDecorator()
-    @PullBackFormsToReferenceDomain(debug=True)
+    @PullBackFormsToReferenceDomain()
     @ShapeParametrization(*shape_parametrization_expression)
     class StokesUnsteadyPullBack(StokesUnsteady):
         def __init__(self, V, **kwargs):

@@ -20,6 +20,7 @@ from collections import defaultdict, namedtuple, OrderedDict
 import itertools
 import numbers
 import re
+from logging import DEBUG, getLogger
 from numpy import allclose, isclose, ones as numpy_ones
 from mpi4py.MPI import Op
 from sympy import Basic as SympyBase, ccode, collect, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix, Number, preorder_traversal, simplify, symbols, sympify
@@ -46,6 +47,8 @@ from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, ReducedProblemDecoratorFor, ReductionMethodDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
+
+logger = getLogger("rbnics/backends/dolfin/wrapping/pull_back_to_reference_domain.py")
 
 # ===== Helper function for sympy/ufl conversion ===== #
 @overload
@@ -542,7 +545,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 self._is_affine_parameter_dependent_regex = re.compile(r"\bx\[[0-9]+\]")
                 self._shape_parametrization_expressions_sympy_to_ufl = dict()
                 self._shape_parametrization_expressions_ufl_to_sympy = dict()
-                self.debug = decorator_kwargs.get("debug", False)
                 # Customize EIM and DEIM decorators so that forms are pulled back to the reference domain before applying EIM or DEIM.
                 if hasattr(self, "_init_EIM_approximations"):
                     _original_init_EIM_approximations = self._init_EIM_approximations
@@ -598,7 +600,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                 self._pulled_back_theta_factors[term] = postprocessed_pulled_back_theta_factors
                                 # If debug is enabled, deform the mesh for a few representative values of the parameters to check the the form assembled
                                 # on the parametrized domain results in the same tensor as the pulled back one
-                                if self.debug:
+                                if logger.isEnabledFor(DEBUG):
                                     # Init mesh motion object
                                     self.mesh_motion.init(self)
                                     # Backup current mu
@@ -616,32 +618,32 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                         forms_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
                                         tensor_parametrized_domain = tensor_assemble(sum([Constant(theta)*discard_inexact_terms(operator) for (theta, operator) in zip(thetas_parametrized_domain, forms_parametrized_domain)]))
                                         self.mesh_motion.reset_reference()
-                                        # Print thetas and forms
-                                        print("=== DEBUGGING PULL BACK FOR TERM", term, "AND mu =", mu, "===")
-                                        print("Thetas on parametrized domain")
+                                        # Log thetas and forms
+                                        logger.log(DEBUG, "=== DEBUGGING PULL BACK FOR TERM " + term + " AND mu = " + str(mu) + "===")
+                                        logger.log(DEBUG, "Thetas on parametrized domain")
                                         for (q, theta) in enumerate(thetas_parametrized_domain):
-                                            print("\ttheta_" + str(q), "=", theta)
-                                        print("Theta factors for pull back")
+                                            logger.log(DEBUG, "\ttheta_" + str(q)+ " = " + str(theta))
+                                        logger.log(DEBUG, "Theta factors for pull back")
                                         q = 0
                                         for (parametrized_q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]):
                                             for pulled_back_theta_factor in pulled_back_theta_factors:
-                                                print("\ttheta_factor_" + str(q), "=", pulled_back_theta_factor, "(evals to " + str(sympy_eval(str(pulled_back_theta_factor), {"mu": mu})) + ") associated to theta_" + str(parametrized_q))
+                                                logger.log(DEBUG, "\ttheta_factor_" + str(q) + " = " + str(pulled_back_theta_factor) + " (evals to " + str(sympy_eval(str(pulled_back_theta_factor), {"mu": mu})) + ") associated to theta_" + str(parametrized_q))
                                                 q += 1
-                                        print("Pulled back thetas")
+                                        logger.log(DEBUG, "Pulled back thetas")
                                         for (q, theta) in enumerate(thetas_pull_back):
-                                            print("\tpulled_back_theta_" + str(q), "=", theta)
-                                        print("Operators on parametrized domain")
+                                            logger.log(DEBUG, "\tpulled_back_theta_" + str(q) + " = " + str(theta))
+                                        logger.log(DEBUG, "Operators on parametrized domain")
                                         for (q, form) in enumerate(forms_parametrized_domain):
-                                            print("\toperator_" + str(q), "=", form)
-                                        print("Affinity of pulled back operators")
+                                            logger.log(DEBUG, "\toperator_" + str(q) + " = " + str(form))
+                                        logger.log(DEBUG, "Affinity of pulled back operators")
                                         q = 0
                                         for pull_back_is_affine in self._pull_back_is_affine[term]:
                                             for pull_back_is_affine_q in pull_back_is_affine:
-                                                print("\tis_affine(pulled_back_operator_" + str(q) + ") =", pull_back_is_affine_q)
+                                                logger.log(DEBUG, "\tis_affine(pulled_back_operator_" + str(q) + ") = " + str(pull_back_is_affine_q))
                                                 q += 1
-                                        print("Pulled back operators")
+                                        logger.log(DEBUG, "Pulled back operators")
                                         for (q, form) in enumerate(forms_pull_back):
-                                            print("\tpulled_back_operator_" + str(q), "=", form)
+                                            logger.log(DEBUG, "\tpulled_back_operator_" + str(q) + " = " + str(form))
                                         # Assert
                                         assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
                                     # Restore mu
