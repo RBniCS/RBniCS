@@ -83,7 +83,6 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     # Initialize expression
     expression = Expression(parametrized_expression_code, *args, **kwargs)
     expression._mu = mu # to avoid repeated assignments
-    expression.problem = truth_problem
     
     # Store mesh
     expression._mesh = mesh
