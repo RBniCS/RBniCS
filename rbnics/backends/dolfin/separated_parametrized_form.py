@@ -60,9 +60,9 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             #   than one coefficient, and the candidate is accepted as the coefficient which contain both parametrized and non parametrized leaves.
             # * solutions are considered as parametrized
             # If True
-            # * coefficient is split in order to assure that all coefficients only containt parametrized terms, at the expense of
+            # * coefficient is split in order to assure that all coefficients only contains parametrized terms, at the expense of
+            #   a larger number of coefficients
             # * solutions and geometric quantities (except normals) are prevented for being collected in coefficients
-            # a larger number of coefficients
             self._strict = strict
         
         def separate(self):
