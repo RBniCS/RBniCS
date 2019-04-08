@@ -18,10 +18,11 @@
 
 import os
 import inspect
-from rbnics.backends import ParametrizedTensorFactory, SymbolicParameters
+from rbnics.backends import ParametrizedTensorFactory
 from rbnics.eim.backends import OfflineOnlineBackend
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
+from rbnics.eim.utils.decorators import DefineSymbolicParameters
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -41,6 +42,7 @@ def DEIMDecoratedProblem(
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
+        @DefineSymbolicParameters
         @PreserveClassName
         class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
             
@@ -48,8 +50,6 @@ def DEIMDecoratedProblem(
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
-                # Storage for symbolic parameters
-                self.mu_symbolic = None
                 # Storage for DEIM reduced problems
                 self.DEIM_approximations = dict() # from term to dict of DEIMApproximation
                 self.non_DEIM_forms = dict() # from term to dict of forms
@@ -96,13 +96,9 @@ def DEIMDecoratedProblem(
                     (len(self.non_DEIM_forms) == 0)
                 )
                 if len(self.DEIM_approximations) == 0: # initialize DEIM approximations only once
-                    # Initialize symbolic parameters only once (may be shared between DEIM and exact evaluation)
-                    if self.mu_symbolic is None:
-                        self.mu_symbolic = SymbolicParameters(self, self.V, self.mu)
                     # Temporarily replace float parameters with symbols, so that we can detect if operators
                     # are parametrized
-                    mu_float = self.mu
-                    self.mu = self.mu_symbolic
+                    self.attach_symbolic_parameters()
                     # Loop over each term
                     for term in self.terms:
                         try:
@@ -123,7 +119,7 @@ def DEIMDecoratedProblem(
                                 else:
                                     self.non_DEIM_forms[term][q] = form_q
                     # Restore float parameters
-                    self.mu = mu_float
+                    self.detach_symbolic_parameters()
                     
             def init(self):
                 # Call parent's method (enforcing an empty parent call to _init_operators)

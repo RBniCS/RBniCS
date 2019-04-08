@@ -17,9 +17,8 @@
 #
 
 import inspect
-from rbnics.backends import SymbolicParameters
 from rbnics.eim.backends import OfflineOnlineBackend
-from rbnics.eim.utils.decorators import StoreMapFromParametrizedOperatorsToProblem, StoreMapFromParametrizedOperatorsToTermAndIndex
+from rbnics.eim.utils.decorators import DefineSymbolicParameters, StoreMapFromParametrizedOperatorsToProblem, StoreMapFromParametrizedOperatorsToTermAndIndex
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -47,6 +46,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
     @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline, stages=stages)
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
         
+        @DefineSymbolicParameters
         @StoreMapFromParametrizedOperatorsToProblem
         @StoreMapFromParametrizedOperatorsToTermAndIndex
         @PreserveClassName
@@ -56,8 +56,6 @@ def ExactParametrizedFunctionsDecoratedProblem(
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
-                # Storage for symbolic parameters
-                self.mu_symbolic = None
                 
                 # Store values passed to decorator
                 self._store_exact_evaluation_stages(stages)
@@ -94,9 +92,6 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 self._init_operators_exact()
             
             def _init_operators_exact(self):
-                # Initialize symbolic parameters only once
-                if self.mu_symbolic is None:
-                    self.mu_symbolic = SymbolicParameters(self, self.V, self.mu)
                 # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
                 OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
@@ -118,10 +113,9 @@ def ExactParametrizedFunctionsDecoratedProblem(
                     assert inspect.ismethod(self.compute_theta)
                     self._compute_theta_exact = self.compute_theta
                     self.compute_theta = OfflineOnlineClassMethod(self, "compute_theta")
-                # Temporarily replace float parameters with symbols, so that the forms do not hardcode
-                # the current value of the parameter while assemblying.
-                mu_float = self.mu
-                self.mu = self.mu_symbolic
+                # Temporarily replace float parameters with symbols, so that we can detect if operators
+                # are parametrized
+                self.attach_symbolic_parameters()
                 # Setup offline/online switches
                 former_stage = OfflineOnlineSwitch.get_current_stage()
                 for stage_exact in self._apply_exact_evaluation_at_stages:
@@ -136,7 +130,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 # Restore former stage in offline/online switch storage
                 OfflineOnlineSwitch.set_current_stage(former_stage)
                 # Restore float parameters
-                self.mu = mu_float
+                self.detach_symbolic_parameters()
                 
             def solve(self, **kwargs):
                 # Exact operators should be used regardless of the current stage

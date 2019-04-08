@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from rbnics.eim.utils.decorators.define_symbolic_parameters import DefineSymbolicParameters
 from rbnics.eim.utils.decorators.store_map_from_basis_functions_to_reduced_problem import add_to_map_from_basis_functions_to_reduced_problem, get_reduced_problem_from_basis_functions, StoreMapFromBasisFunctionsToReducedProblem
 from rbnics.eim.utils.decorators.store_map_from_each_basis_function_to_component_and_index import add_to_map_from_basis_function_to_component_and_index, get_component_and_index_from_basis_function, StoreMapFromEachBasisFunctionToComponentAndIndex
 from rbnics.eim.utils.decorators.store_map_from_parametrized_expression_to_problem import add_to_map_from_parametrized_expression_to_problem, get_problem_from_parametrized_expression, StoreMapFromParametrizedExpressionToProblem
@@ -33,6 +34,7 @@ __all__ = [
     'add_to_map_from_riesz_solve_homogeneous_dirichlet_bc_to_reduced_problem',
     'add_to_map_from_riesz_solve_inner_product_to_reduced_problem',
     'add_to_map_from_riesz_solve_storage_to_reduced_problem',
+    'DefineSymbolicParameters',
     'get_component_and_index_from_basis_function',
     'get_problem_from_parametrized_operator',
     'get_problem_from_parametrized_expression',
