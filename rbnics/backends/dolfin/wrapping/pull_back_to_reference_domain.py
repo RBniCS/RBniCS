@@ -41,6 +41,7 @@ from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_stability_factor import assemble_operator_for_stability_factor
 from rbnics.backends.dolfin.wrapping.compute_theta_for_stability_factor import compute_theta_for_stability_factor
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
+from rbnics.backends.dolfin.wrapping.form_description import form_description
 from rbnics.backends.dolfin.wrapping.form_iterator import form_iterator
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa: F401
 from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
@@ -649,7 +650,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             logger.log(DEBUG, "=== DEBUGGING PULL BACK FOR TERM " + term + " AND mu = " + str(mu) + " ===")
                             logger.log(DEBUG, "Thetas on parametrized domain")
                             for (q, theta) in enumerate(thetas_parametrized_domain):
-                                logger.log(DEBUG, "\ttheta_" + str(q)+ " = " + str(theta))
+                                logger.log(DEBUG, "\ttheta_" + str(q) + " = " + str(theta))
                             logger.log(DEBUG, "Theta factors for pull back")
                             q = 0
                             for (parametrized_q, pulled_back_theta_factors) in enumerate(self._pulled_back_theta_factors[term]):
@@ -661,7 +662,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                 logger.log(DEBUG, "\tpulled_back_theta_" + str(q) + " = " + str(theta))
                             logger.log(DEBUG, "Operators on parametrized domain")
                             for (q, form) in enumerate(forms_parametrized_domain):
-                                logger.log(DEBUG, "\toperator_" + str(q) + " = " + str(form))
+                                expanded_form = expand_derivatives(form)
+                                description = form_description(expanded_form)
+                                logger.log(DEBUG, "\toperator_" + str(q) + " = " + str(expanded_form) + ", where " + ", ".join(str(k) + ": " + str(v) for (k, v) in description.items()))
                             logger.log(DEBUG, "Affinity of pulled back operators")
                             q = 0
                             for pull_back_is_affine in self._pull_back_is_affine[term]:
@@ -670,7 +673,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                     q += 1
                             logger.log(DEBUG, "Pulled back operators")
                             for (q, form) in enumerate(forms_pull_back):
-                                logger.log(DEBUG, "\tpulled_back_operator_" + str(q) + " = " + str(form))
+                                expanded_form = expand_derivatives(form)
+                                description = form_description(expanded_form)
+                                logger.log(DEBUG, "\tpulled_back_operator_" + str(q) + " = " + str(expanded_form) + ", where " + ", ".join(str(k) + ": " + str(v) for (k, v) in description.items()))
                             # Assert
                             assert tensors_are_close(tensor_pull_back, tensor_parametrized_domain)
                     # Restore mu
