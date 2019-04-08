@@ -451,6 +451,20 @@ def is_push_forward_expression(expression):
         return True
     else:
         return False
+        
+def is_space_dependent_coefficient(expression, multiindex=None):
+    assert isinstance(expression, (CompiledExpression, Expression)), "Other expression types are not handled yet"
+    if isinstance(expression, Expression):
+        expression_cppcode = expression._cppcode
+        if multiindex is not None:
+            for index in multiindex.indices():
+                assert isinstance(index, FixedIndex)
+                expression_cppcode = expression_cppcode[int(index)]
+        return len(is_space_dependent_coefficient._regex.findall(expression_cppcode)) > 0
+    elif isinstance(expression, CompiledExpression):
+        assert is_pull_back_expression(expression), "Only the case of pulled back expressions is currently handled"
+        return True
+is_space_dependent_coefficient._regex = re.compile(r"\bx\[[0-9]+\]")
     
 class PullBackExpressions(MultiFunction):
     def __init__(self, shape_parametrization_expression_on_subdomain, problem):
@@ -463,10 +477,10 @@ class PullBackExpressions(MultiFunction):
     def terminal(self, o):
         if isinstance(o, BaseExpression):
             assert isinstance(o, Expression), "Other expression types are not handled yet"
-            if not is_push_forward_expression(o):
-                return PullBackExpression(self.shape_parametrization_expression_on_subdomain, o, self.problem)
-            else:
+            if is_push_forward_expression(o) or not is_space_dependent_coefficient(o):
                 return o
+            else:
+                return PullBackExpression(self.shape_parametrization_expression_on_subdomain, o, self.problem)
         else:
             return o
 
@@ -549,7 +563,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 self._pulled_back_theta_factors = dict()
                 (self._facet_id_to_subdomain_ids, self._subdomain_id_to_facet_ids) = self._map_facet_id_to_subdomain_id(**kwargs)
                 self._facet_id_to_normal_direction_if_straight = self._map_facet_id_to_normal_direction_if_straight(**kwargs)
-                self._is_affine_parameter_dependent_regex = re.compile(r"\bx\[[0-9]+\]")
                 self._shape_parametrization_expressions_sympy_to_ufl = dict()
                 self._shape_parametrization_expressions_ufl_to_sympy = dict()
                 # Customize DEIM, EIM and ExactParametrizedFunctions decorators so that forms are pulled back to the reference domain before applying DEIM, EIM or exact initialization.
@@ -789,18 +802,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     
             def _is_affine_parameter_dependent(self, separated_pulled_back_form):
                 # The pulled back form is not affine if any of its coefficients depend on x
-                def is_space_dependent_coefficient(node, multiindex=None):
-                    assert isinstance(node, (CompiledExpression, Expression)), "Other expression types are not handled yet"
-                    if isinstance(node, Expression):
-                        node_cppcode = node._cppcode
-                        if multiindex is not None:
-                            for index in multiindex.indices():
-                                assert isinstance(index, FixedIndex)
-                                node_cppcode = node_cppcode[int(index)]
-                        return len(self._is_affine_parameter_dependent_regex.findall(node_cppcode)) > 0
-                    elif isinstance(node, CompiledExpression):
-                        assert is_pull_back_expression(node), "Only the case of pulled back expressions is currently handled"
-                        return True
                 for addend in separated_pulled_back_form.coefficients:
                     for factor in addend:
                         assert factor.ufl_shape == ()
