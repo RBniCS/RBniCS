@@ -73,23 +73,58 @@ def raises(ExceptionType):
                 raise e
         return not_raises()
     
-def check_affine_and_non_affine_shape_parametrizations(*decorator_args):
-    default_decorator_args = (
-        "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message",
-        [
-            (keep_shape_parametrization_affine, NoDecorator, None, None),
-            (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
-            (make_shape_parametrization_non_affine, DEIM, None, None),
-            (make_shape_parametrization_non_affine, EIM, None, None),
-            (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None)
-        ]
-    )
-    decorator_args_contains_default = [decorator_arg[0].startswith(default_decorator_args[0]) for decorator_arg in decorator_args]
-    if not any(decorator_args_contains_default):
-        decorators = [pytest.mark.parametrize(default_decorator_args[0], default_decorator_args[1])]
+def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decorator_kwargs):
+    def generate_default_decorator_args(is_affine):
+        header = "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message"
+        if is_affine:
+            return (
+                header,
+                [
+                    (keep_shape_parametrization_affine, NoDecorator, None, None),
+                    (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
+                    (make_shape_parametrization_non_affine, DEIM, None, None),
+                    (make_shape_parametrization_non_affine, EIM, None, None),
+                    (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None)
+                ]
+            )
+        else:
+            return (
+                header,
+                [
+                    (keep_shape_parametrization_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
+                    (keep_shape_parametrization_affine, DEIM, None, None),
+                    (keep_shape_parametrization_affine, EIM, None, None),
+                    (keep_shape_parametrization_affine, ExactParametrizedFunctions, None, None)
+                ]
+            )
+    global_is_affine = decorator_kwargs.get("is_affine", True)
+    decorator_args_change_affinity = None
+    for (decorator_arg_id, decorator_arg) in enumerate(decorator_args):
+        assert len(decorator_arg) in (2, 3)
+        if len(decorator_arg) == 3:
+            assert decorator_args_change_affinity is None
+            decorator_args_change_affinity = decorator_arg_id
+    if decorator_args_change_affinity is None:
+        decorator_args_list = [generate_default_decorator_args(is_affine=global_is_affine)]
+        decorator_args_list.extend(decorator_args)
     else:
-        decorators = []
-    decorators.extend(pytest.mark.parametrize(decorator_arg[0], decorator_arg[1]) for decorator_arg in decorator_args)
+        default_decorator_args = dict()
+        default_decorator_args[True] = generate_default_decorator_args(is_affine=True)
+        default_decorator_args[False] = generate_default_decorator_args(is_affine=False)
+        combined_default_decorator_args = (
+            default_decorator_args[True][0] + ", " + decorator_args[decorator_arg_id][0],
+            []
+        )
+        assert len(decorator_args[decorator_arg_id][1]) == len(decorator_args[decorator_arg_id][2])
+        for (decorator_arg_1, decorator_arg_2) in zip(decorator_args[decorator_arg_id][1], decorator_args[decorator_arg_id][2]):
+            for default_decorator_arg_1 in default_decorator_args[decorator_arg_2][1]:
+                combined_default_decorator_args[1].append(default_decorator_arg_1 + decorator_arg_1)
+        combined_default_decorator_args = tuple(combined_default_decorator_args)
+        decorator_args_list = [combined_default_decorator_args]
+        for (decorator_arg_id, decorator_arg) in enumerate(decorator_args):
+            if decorator_arg_id != decorator_args_change_affinity:
+                decorator_args_list.append(decorator_arg)
+    decorators = [pytest.mark.parametrize(decorator_arg[0], decorator_arg[1]) for decorator_arg in decorator_args_list]
     
     def check_affine_and_non_affine_shape_parametrizations_decorator(original_test):
         @pytest.mark.pull_back_to_reference_domain
@@ -481,37 +516,18 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
         assert forms_are_close(f_on_reference_domain, f_pull_back)
 
 # Test forms pull back to reference domain for tutorial 04
-def ExpressionOnDeformedDomainGenerator_NonParametrized(problem, cppcode, **kwargs):
-    return Expression(cppcode, element=kwargs["element"])
-    
-def ExpressionOnDeformedDomainGenerator_Parametrized(problem, cppcode, **kwargs):
-    return ParametrizedExpression(problem, cppcode, **kwargs)
-    
-def ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized(problem, cppcode, **kwargs):
-    return PushForwardToDeformedDomain(problem, Expression(cppcode, element=kwargs["element"]))
-    
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
-    "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator",
-    [
-        # non-parametrized expression
-        (keep_shape_parametrization_affine, NoDecorator, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
-        (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_NonParametrized),
-        (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
-        (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
-        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_NonParametrized),
-        # parametrized expression
-        (keep_shape_parametrization_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_Parametrized),
-        (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_Parametrized),
-        (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
-        (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
-        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_Parametrized),
-        # push forward expression, non-parametrized
-        (keep_shape_parametrization_affine, NoDecorator, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
-        (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions", ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
-        (make_shape_parametrization_non_affine, DEIM, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
-        (make_shape_parametrization_non_affine, EIM, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized),
-        (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None, ExpressionOnDeformedDomainGenerator_PushForward_NonParametrized)
+    "ExpressionOnDeformedDomainGenerator", [
+        (lambda problem, cppcode, **kwargs: Expression(cppcode, element=kwargs["element"]), ),
+        (lambda problem, cppcode, **kwargs: ParametrizedExpression(problem, cppcode, **kwargs), ),
+        (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, Expression(cppcode, element=kwargs["element"])), ),
+        (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, ParametrizedExpression(problem, cppcode, **kwargs)), )
+    ], [ # is_affine:
+        True,
+        False,
+        True,
+        False
     ]
 ))
 def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator):
