@@ -39,7 +39,7 @@ is_parametrized_constant.regex = re.compile("^mu_[0-9]+$")
 def parametrized_constant_to_float(expr, point=None):
     if point is None:
         point = expr._mesh.coordinates()[0]
-    return expr(point)
+    return float(expr(point))
     
 def expression_float(self):
     if is_parametrized_constant(self):
