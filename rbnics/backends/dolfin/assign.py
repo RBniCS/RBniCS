@@ -44,6 +44,11 @@ def _assign(object_to: list_of(Function.Type()), object_from: list_of(Function.T
         object_to.extend(object_from)
         
 @overload
-def _assign(object_to: (Matrix.Type(), Vector.Type()), object_from: (Matrix.Type(), Vector.Type())):
+def _assign(object_to: Matrix.Type(), object_from: Matrix.Type()):
     if object_from is not object_to:
         to_petsc4py(object_from).copy(to_petsc4py(object_to), to_petsc4py(object_to).Structure.SAME_NONZERO_PATTERN)
+        
+@overload
+def _assign(object_to: Vector.Type(), object_from: Vector.Type()):
+    if object_from is not object_to:
+        to_petsc4py(object_from).copy(to_petsc4py(object_to))
