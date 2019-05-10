@@ -460,6 +460,8 @@ def is_space_dependent_coefficient(expression, multiindex=None):
             for index in multiindex.indices():
                 assert isinstance(index, FixedIndex)
                 expression_cppcode = expression_cppcode[int(index)]
+        if isinstance(expression_cppcode, tuple):
+            expression_cppcode = " ".join(expression_cppcode)
         return len(is_space_dependent_coefficient._regex.findall(expression_cppcode)) > 0
     elif isinstance(expression, CompiledExpression):
         assert is_pull_back_expression(expression), "Only the case of pulled back expressions is currently handled"
