@@ -44,7 +44,6 @@ def DefineSymbolicParameters(ParametrizedDifferentialProblem_DerivedClass):
             def detach_symbolic_parameters(self):
                 # Restore original storage
                 self.mu = self.mu_float
-                self.mu_float = None
     else:
         DefineSymbolicParameters_Class = ParametrizedDifferentialProblem_DerivedClass
         
