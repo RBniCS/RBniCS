@@ -373,44 +373,54 @@ def pull_back_geometric_quantities(shape_parametrization_expression_on_subdomain
     return map_expr_dag(PullBackGeometricQuantities(shape_parametrization_expression_on_subdomain, problem), integrand)
 
 # ===== Pull back expressions to reference domain: inspired by ufl/algorithms/apply_function_pullbacks.py ===== #
-pull_back_expression_code = """
-    #include <Eigen/Core>
-    #include <pybind11/pybind11.h>
-    #include <pybind11/eigen.h>
-    #include <dolfin/function/Expression.h>
-    
-    namespace py = pybind11;
-    
-    class PullBackExpression : public dolfin::Expression
-    {
-    public:
-        PullBackExpression(std::shared_ptr<dolfin::Expression> f, std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain) :
-            Expression(),
-            f(f),
-            shape_parametrization_expression_on_subdomain(shape_parametrization_expression_on_subdomain) {}
-
-        void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& c) const
+def pull_back_expression_code(pull_back_expression_name, expression_constructor):
+    return """
+        #include <Eigen/Core>
+        #include <pybind11/pybind11.h>
+        #include <pybind11/eigen.h>
+        #include <dolfin/function/Expression.h>
+        
+        namespace py = pybind11;
+        
+        class PULL_BACK_EXPRESSION_NAME : public dolfin::Expression
         {
-            Eigen::VectorXd x_o(x.size());
-            shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
-            f->eval(values, x_o, c);
+        public:
+            PULL_BACK_EXPRESSION_NAME(std::shared_ptr<dolfin::Expression> f, std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain) :
+                EXPRESSION_CONSTRUCTOR,
+                f(f),
+                shape_parametrization_expression_on_subdomain(shape_parametrization_expression_on_subdomain) {}
+
+            void eval(Eigen::Ref<Eigen::VectorXd> values, Eigen::Ref<const Eigen::VectorXd> x, const ufc::cell& c) const
+            {
+                Eigen::VectorXd x_o(x.size());
+                shape_parametrization_expression_on_subdomain->eval(x_o, x, c);
+                f->eval(values, x_o, c);
+            }
+        private:
+            std::shared_ptr<dolfin::Expression> f;
+            std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain;
+        };
+        
+        PYBIND11_MODULE(SIGNATURE, m)
+        {
+            py::class_<PULL_BACK_EXPRESSION_NAME, std::shared_ptr<PULL_BACK_EXPRESSION_NAME>,
+                       dolfin::Expression>(m, "PULL_BACK_EXPRESSION_NAME", py::dynamic_attr())
+              .def(py::init<std::shared_ptr<dolfin::Expression>, std::shared_ptr<dolfin::Expression>>());
         }
-    private:
-        std::shared_ptr<dolfin::Expression> f;
-        std::shared_ptr<dolfin::Expression> shape_parametrization_expression_on_subdomain;
-    };
-    
-    PYBIND11_MODULE(SIGNATURE, m)
-    {
-        py::class_<PullBackExpression, std::shared_ptr<PullBackExpression>,
-                   dolfin::Expression>(m, "PullBackExpression", py::dynamic_attr())
-          .def(py::init<std::shared_ptr<dolfin::Expression>, std::shared_ptr<dolfin::Expression>>());
-    }
-"""
+    """.replace("PULL_BACK_EXPRESSION_NAME", pull_back_expression_name).replace("EXPRESSION_CONSTRUCTOR", expression_constructor)
 
 def PullBackExpression(shape_parametrization_expression_on_subdomain, f, problem):
     shape_parametrization_expression_on_subdomain = ShapeParametrizationMap(shape_parametrization_expression_on_subdomain, problem).ufl
-    PullBackExpression = compile_cpp_code(pull_back_expression_code).PullBackExpression
+    assert len(f.ufl_shape) in (0, 1)
+    if len(f.ufl_shape) == 0:
+        pull_back_expression_name = "PullBackExpressionScalar"
+        expression_constructor = "Expression()"
+    elif len(f.ufl_shape) == 1:
+        pull_back_expression_name = "PullBackExpressionVector" + str(f.ufl_shape[0])
+        expression_constructor = "Expression(" + str(f.ufl_shape[0]) + ")"
+    else:
+        raise ValueError("Invalid shape")
+    PullBackExpression = getattr(compile_cpp_code(pull_back_expression_code(pull_back_expression_name, expression_constructor)), pull_back_expression_name)
     pulled_back_f_cpp = PullBackExpression(f._cpp_object, shape_parametrization_expression_on_subdomain._cpp_object)
     pulled_back_f_cpp.f_no_upcast = f
     pulled_back_f_cpp.shape_parametrization_expression_on_subdomain_no_upcast = shape_parametrization_expression_on_subdomain
