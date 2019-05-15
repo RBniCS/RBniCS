@@ -32,18 +32,25 @@ def DefineSymbolicParameters(ParametrizedDifferentialProblem_DerivedClass):
                 # Storage for symbolic parameters
                 self.mu_float = None
                 self.mu_symbolic = None
+                self.attach_symbolic_parameters__calls = 0
 
             def attach_symbolic_parameters(self):
                 # Initialize symbolic parameters only once (may be shared between DEIM/EIM and exact evaluation)
                 if self.mu_symbolic is None:
                     self.mu_symbolic = SymbolicParameters(self, self.V, self.mu)
                 # Swap storage
-                self.mu_float = self.mu
-                self.mu = self.mu_symbolic
+                if self.attach_symbolic_parameters__calls == 0:
+                    self.mu_float = self.mu
+                    self.mu = self.mu_symbolic
+                self.attach_symbolic_parameters__calls += 1
                 
             def detach_symbolic_parameters(self):
+                self.attach_symbolic_parameters__calls -= 1
+                assert self.attach_symbolic_parameters__calls >= 0
                 # Restore original storage
-                self.mu = self.mu_float
+                if self.attach_symbolic_parameters__calls == 0:
+                    self.mu = self.mu_float
+                    self.mu_float = None
     else:
         DefineSymbolicParameters_Class = ParametrizedDifferentialProblem_DerivedClass
         
