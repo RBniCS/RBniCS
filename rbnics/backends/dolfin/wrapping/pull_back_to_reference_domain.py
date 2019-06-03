@@ -42,11 +42,7 @@ from rbnics.backends.dolfin.wrapping.assemble_operator_for_stability_factor impo
 from rbnics.backends.dolfin.wrapping.compute_theta_for_stability_factor import compute_theta_for_stability_factor
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 from rbnics.backends.dolfin.wrapping.form_description import form_description
-from rbnics.backends.dolfin.wrapping.form_iterator import form_iterator
 import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa: F401
-from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
-from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
-from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 from rbnics.eim.utils.decorators import DefineSymbolicParameters
@@ -616,25 +612,32 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                 # Pull back forms
                                 forms = [remove_complex_nodes(form) for form in forms] # TODO support forms in the complex field
                                 pulled_back_forms = [pull_back_form(self.shape_parametrization_expression, self, form) for form in forms]
-                                # Preprocess pulled back forms via SeparatedParametrizedForm
-                                separated_pulled_back_forms = [SeparatedParametrizedForm(expand(pulled_back_form), strict=True) for pulled_back_form in pulled_back_forms]
-                                for separated_pulled_back_form in separated_pulled_back_forms:
-                                    separated_pulled_back_form.separate()
+                                # Preprocess pulled back forms via SeparatedParametrizedForm for affinity check
+                                separated_pulled_back_forms = dict()
+                                for (q, pulled_back_form) in enumerate(pulled_back_forms):
+                                    pulled_back_form_description = form_description(pulled_back_form)
+                                    for (_, v) in pulled_back_form_description.items():
+                                        if v.startswith("solution of") or v.startswith("solution_dot of"):
+                                            break
+                                    else: # a nonlinear form is obviously non-affine, so skip the (possibly expensive) affinity check initialized below
+                                        separated_pulled_back_form = SeparatedParametrizedForm(expand(pulled_back_form), strict=True)
+                                        separated_pulled_back_form.separate()
+                                        separated_pulled_back_forms[q] = separated_pulled_back_form
                                 # Check if the dependence is affine on the parameters. If so, move parameter dependent coefficients to compute_theta
                                 pull_back_is_affine = list()
                                 postprocessed_pulled_back_forms = list()
                                 postprocessed_pulled_back_theta_factors = list()
-                                for (q, separated_pulled_back_form) in enumerate(separated_pulled_back_forms):
-                                    if self._is_affine_parameter_dependent(separated_pulled_back_form):
-                                        postprocessed_pulled_back_forms.append(self._get_affine_parameter_dependent_forms(separated_pulled_back_form))
-                                        postprocessed_pulled_back_theta_factors.append(self._get_affine_parameter_dependent_theta_factors(separated_pulled_back_form))
+                                for (q, pulled_back_form) in enumerate(pulled_back_forms):
+                                    if q in separated_pulled_back_forms and self._is_affine_parameter_dependent(separated_pulled_back_forms[q]):
+                                        postprocessed_pulled_back_forms.append(self._get_affine_parameter_dependent_forms(separated_pulled_back_forms[q]))
+                                        postprocessed_pulled_back_theta_factors.append(self._get_affine_parameter_dependent_theta_factors(separated_pulled_back_forms[q]))
                                         assert len(postprocessed_pulled_back_forms) == q + 1
                                         assert len(postprocessed_pulled_back_theta_factors) == q + 1
                                         (postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q]) = collect_common_forms_theta_factors(postprocessed_pulled_back_forms[q], postprocessed_pulled_back_theta_factors[q])
                                         pull_back_is_affine.append((True, )*len(postprocessed_pulled_back_forms[q]))
                                     else:
                                         assert any([Algorithm in self.ProblemDecorators for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"
-                                        postprocessed_pulled_back_forms.append((pulled_back_forms[q], ))
+                                        postprocessed_pulled_back_forms.append((pulled_back_form, ))
                                         postprocessed_pulled_back_theta_factors.append((1, ))
                                         pull_back_is_affine.append((False, ))
                                 # Store resulting pulled back forms and theta factors
@@ -852,14 +855,6 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             return False
                     else:
                         raise ValueError("Unknown integral type {}, don't know how to check for affinity.".format(integral_type))
-                # The pulled back form is not affine if it contains a solution
-                for form_with_placeholder in separated_pulled_back_form._form_with_placeholders:
-                    for n in form_iterator(form_with_placeholder):
-                        if is_problem_solution_type(n):
-                            if is_problem_solution(n):
-                                return False
-                            elif is_problem_solution_dot(n):
-                                return False
                 # Otherwise, the pulled back form is affine
                 return True
                 
