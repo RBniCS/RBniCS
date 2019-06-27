@@ -76,9 +76,9 @@ class egg_info(setuptools_egg_info):
 setup(name="RBniCS",
       description="Reduced order modelling in FEniCS",
       long_description="Reduced order modelling in FEniCS",
-      author="Francesco Ballarin, Gianluigi Rozza, Alberto Sartori (and contributors)",
-      author_email="francesco.ballarin@sissa.it, gianluigi.rozza@sissa.it, alberto.sartori@sissa.it",
-      version="0.0.dev2",
+      author="Francesco Ballarin (and contributors)",
+      author_email="francesco.ballarin@sissa.it",
+      version="0.1.0",
       license="GNU Library or Lesser General Public License (LGPL)",
       url="http://mathlab.sissa.it/rbnics",
       classifiers=[
