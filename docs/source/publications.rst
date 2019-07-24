@@ -3,13 +3,14 @@ Publications
 
 2019
 ----
-1. C Bigoni, J S Hesthaven, "Simulation-Based Anomaly Detection and Damage Localization: an Application to Structural Health Monitoring", 2019. https://infoscience.epfl.ch/record/265231
+1. C Bigoni, and J S Hesthaven, "Simulation-Based Anomaly Detection and Damage Localization: an Application to Structural Health Monitoring", 2019. https://infoscience.epfl.ch/record/265231
 2. E N Karatzas, F Ballarin, and G Rozza, "Projection-based reduced order models for a cut finite element method in parametrized domains", 2019. https://arxiv.org/abs/1901.03846
-3. L Venturi, D Torlo, F Ballarin, and G Rozza, "Weighted Reduced Order Methods for Parametrized Partial Differential Equations with Random Inputs", in Uncertainty Modeling for Engineering Applications, F Canavero (ed.), Springer International Publishing, pp. 27-40, 2019.
+3. F Pichi, A Quaini, and G Rozza, "A Reduced Order technique to study bifurcating phenomena: application to the Gross-Pitaevskii equation", 2019. https://arxiv.org/abs/1907.07082
+4. L Venturi, D Torlo, F Ballarin, and G Rozza, "Weighted Reduced Order Methods for Parametrized Partial Differential Equations with Random Inputs", in Uncertainty Modeling for Engineering Applications, F Canavero (ed.), Springer International Publishing, pp. 27-40, 2019.
 
 2018
 ----
-1. S Ali, “Stabilized reduced basis methods for the approximation of parametrized viscous flows“. Ph.D. thesis in Mathematical Analysis, Modelling, and Applications, SISSA, Italy, 2018.
+1. S Ali, "Stabilized reduced basis methods for the approximation of parametrized viscous flows". Ph.D. thesis in Mathematical Analysis, Modelling, and Applications, SISSA, Italy, 2018.
 2. F Ballarin, A D'Amario, S Perotto, and G Rozza, "A POD-selective inverse distance weighting method for fast parametrized shape morphing", International Journal for Numerical Methods in Engineering, 117(8), pp. 860-884, 2018.
 3. S Hijazi, S Ali, G Stabile, F Ballarin, and G Rozza, "The Effort of Increasing Reynolds Number in Projection-Based Reduced Order Methods: from Laminar to Turbulent Flows", 2018. https://arxiv.org/abs/1807.11370
 4. M Gunzburger, M Schneier, C Webster, and C Zhang, "An Improved Discrete Least-Squares/Reduced-Basis Method for Parameterized Elliptic PDEs", Journal of Scientific Computing, 2018.
