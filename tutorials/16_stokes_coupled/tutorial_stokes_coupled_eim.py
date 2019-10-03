@@ -38,7 +38,7 @@ class Stokes(StokesProblem):
         (self.v, self.q) = split(vq)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
-        #
+        # ...
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
         
@@ -121,7 +121,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         self.d = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.ds = Measure("ds")(subdomain_data=boundaries)
-        #
+        # ...
         (self.vel, _) = split(self.stokes_problem._solution)
         self.f = Constant(0.0)
         
@@ -228,16 +228,16 @@ reduced_advection_diffusion_problem.set_mu(online_mu)
 reduced_advection_diffusion_problem.solve()
 reduced_advection_diffusion_problem.export_solution(filename="online_solution")
 
-# 7a. Perform an error analysis
+# 7a. Perform an error analysis for Stokes
 stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
 stokes_pod_galerkin_method.error_analysis()
 
-# 7b. Perform an error analysis
+# 7b. Perform an error analysis for Advection
 advection_diffusion_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution(), EIM=150)
 advection_diffusion_pod_galerkin_method.error_analysis()
 
-# 8a. Perform a speedup analysis
+# 8a. Perform a speedup analysis for Stokes
 stokes_pod_galerkin_method.speedup_analysis()
 
-# 8b. Perform a speedup analysis
+# 8b. Perform a speedup analysis for Advection
 advection_diffusion_pod_galerkin_method.speedup_analysis()
