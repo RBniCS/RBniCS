@@ -39,7 +39,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
         (self.v, self.q) = split(vq)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
-        # ...
+        # ... as well as forcing terms and boundary conditions
         self.bc1 = Constant((1.0, 0.0))
         self.bc2 = Expression(("0.0 + 1.0*(x[1] == 1.0)", "0.0"), element=self.V.sub(0).ufl_element())
         self.f = Constant((0.0, 0.0))

@@ -38,7 +38,7 @@ class Stokes(StokesProblem):
         (self.v, self.q) = split(vq)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
-        # ...
+        # ... as well as forcing terms
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
         

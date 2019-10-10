@@ -38,7 +38,7 @@ class Stokes(StokesProblem):
         (self.v, self.q) = split(vq)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
-        # ...
+        # ... as well as forcing terms
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
         
@@ -121,7 +121,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         self.d = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.ds = Measure("ds")(subdomain_data=boundaries)
-        # ...
+        # ... as well as forcing and solution of the Stokes problem
         (self.vel, _) = split(self.stokes_problem._solution)
         self.f = Constant(0.0)
         
