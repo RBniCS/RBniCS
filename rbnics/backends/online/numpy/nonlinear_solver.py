@@ -16,6 +16,7 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from mpi4py.MPI import COMM_WORLD
 from numpy import dot
 from numpy.linalg import solve
 from scipy.optimize.nonlin import Jacobian, nonlin_solve
@@ -56,7 +57,10 @@ class NonlinearSolver(AbstractNonlinearSolver):
             elif key == "relative_tolerance":
                 self._relative_tolerance = value
             elif key == "report":
-                self._report = value
+                if COMM_WORLD.rank == 0:
+                    self._report = value
+                else: # scipy's nonlin_solve outputs residuals to sys.stdout, which is not filtered in parallel by the customization in rbnics.utils.mpi.print
+                    self._report = False
             elif key == "solution_tolerance":
                 self._solution_tolerance = value
             else:
