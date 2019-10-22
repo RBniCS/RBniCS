@@ -27,7 +27,7 @@ class NumpyIO(object):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
         def save_file_task():
-            numpy.save(os.path.join(str(directory), filename), content)
+            numpy.save(os.path.join(str(directory), filename), content, allow_pickle=True)
         parallel_io(save_file_task)
     
     # Load a variable from file
@@ -35,7 +35,7 @@ class NumpyIO(object):
     def load_file(directory, filename):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
-        return numpy.load(os.path.join(str(directory), filename))
+        return numpy.load(os.path.join(str(directory), filename), allow_pickle=True)
             
     # Check if the file exists
     @staticmethod
