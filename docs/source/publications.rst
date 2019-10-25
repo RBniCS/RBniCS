@@ -5,15 +5,17 @@ Publications
 ----
 1. D Baroli, and A Zilian, "Model order reduction applied to ALE‐fluid dynamics". Proceeding in Applied Mathematics and Mechanics, in press, 2019. doi:10.1002/pamm.201900437
 2. C Bigoni, and J S Hesthaven, "Simulation-Based Anomaly Detection and Damage Localization: an Application to Structural Health Monitoring", 2019. https://infoscience.epfl.ch/record/265231
-3. M Gunzburger, M Schneier, C Webster, and C Zhang, "An Improved Discrete Least-Squares/Reduced-Basis Method for Parameterized Elliptic PDEs", Journal of Scientific Computing, 81(1), pp. 76-91, 2019.
-4. E N Karatzas, F Ballarin, and G Rozza, "Projection-based reduced order models for a cut finite element method in parametrized domains", Computers & Mathematics with Applications, in press, 2019. doi:10.1016/j.camwa.2019.08.003
-5. F Pichi, A Quaini, and G Rozza, "A Reduced Order technique to study bifurcating phenomena: application to the Gross-Pitaevskii equation", 2019. https://arxiv.org/abs/1907.07082
-6. F Pichi and G Rozza, "Reduced basis approaches for parametrized bifurcation problems held by non-linear Von Kármán equations", Journal of Scientific Computing, 81(1), pp. 112-135, 2019.
-7. G Stabile, F Ballarin, G Zuccarino, and G Rozza, "A reduced order variational multiscale approach for turbulent flows", Advances in Computational Mathematics, in press, 2019. doi:10.1007/s10444-019-09712-x
-8. M Strazzullo, F Ballarin, and G Rozza, "POD-Galerkin Model Order Reduction for Parametrized Time Dependent Linear Quadratic Optimal Control Problems in Saddle Point Formulation", 2019. https://arxiv.org/abs/1909.09631
-9. L Venturi, D Torlo, F Ballarin, and G Rozza, "Weighted Reduced Order Methods for Parametrized Partial Differential Equations with Random Inputs", in Uncertainty Modeling for Engineering Applications, F Canavero (ed.), Springer International Publishing, pp. 27-40, 2019.
-10. L Venturi, F Ballarin, and G Rozza, "A Weighted POD Method for Elliptic PDEs with Random Inputs", Journal of Scientific Computing, 81(1), pp. 136-153, 2019.
-11. M Zancanaro, F Ballarin, S Perotto, and G Rozza, "Hierarchical Model Reduction Techniques for Flow Modeling in a Parametrized Setting", 2019. https://arxiv.org/abs/1909.01668
+3. J Genovese, "Reduced order methods for uncertainty quantification in computational fluid dynamics". Master thesis in Mathematical Engineering, Politecnico di Torino, Italy, 2019.
+4. M Gunzburger, M Schneier, C Webster, and C Zhang, "An Improved Discrete Least-Squares/Reduced-Basis Method for Parameterized Elliptic PDEs", Journal of Scientific Computing, 81(1), pp. 76-91, 2019.
+5. E N Karatzas, F Ballarin, and G Rozza, "Projection-based reduced order models for a cut finite element method in parametrized domains", Computers & Mathematics with Applications, in press, 2019. doi:10.1016/j.camwa.2019.08.003
+6. F Pichi, A Quaini, and G Rozza, "A Reduced Order technique to study bifurcating phenomena: application to the Gross-Pitaevskii equation", 2019. https://arxiv.org/abs/1907.07082
+7. F Pichi and G Rozza, "Reduced basis approaches for parametrized bifurcation problems held by non-linear Von Kármán equations", Journal of Scientific Computing, 81(1), pp. 112-135, 2019.
+8. G Stabile, F Ballarin, G Zuccarino, and G Rozza, "A reduced order variational multiscale approach for turbulent flows", Advances in Computational Mathematics, in press, 2019. doi:10.1007/s10444-019-09712-x
+9. M Strazzullo, F Ballarin, and G Rozza, "POD-Galerkin Model Order Reduction for Parametrized Time Dependent Linear Quadratic Optimal Control Problems in Saddle Point Formulation", 2019. https://arxiv.org/abs/1909.09631
+10. L Venturi, D Torlo, F Ballarin, and G Rozza, "Weighted Reduced Order Methods for Parametrized Partial Differential Equations with Random Inputs", in Uncertainty Modeling for Engineering Applications, F Canavero (ed.), Springer International Publishing, pp. 27-40, 2019.
+11. L Venturi, F Ballarin, and G Rozza, "A Weighted POD Method for Elliptic PDEs with Random Inputs", Journal of Scientific Computing, 81(1), pp. 136-153, 2019.
+12. Z Zainib, "Reduced order parametrized viscous optimal flow control problems and applications in coronary artery bypass grafts with patient-specific geometrical reconstruction and data assimilation". Ph.D. thesis in Mathematical Analysis, Modelling, and Applications, SISSA, Italy, 2019.
+13. M Zancanaro, F Ballarin, S Perotto, and G Rozza, "Hierarchical Model Reduction Techniques for Flow Modeling in a Parametrized Setting", 2019. https://arxiv.org/abs/1909.01668
 
 2018
 ----
