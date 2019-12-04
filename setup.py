@@ -51,7 +51,7 @@ class install(setuptools_install):
         egg_info = self.get_finalized_command("egg_info")
         egg_info.additional_backends = self.additional_backends
         egg_info.additional_backends_directory = self.additional_backends_directory
-        setuptools_install.run(self)
+        setuptools_install.do_egg_install(self)
         if self.additional_backends_directory_cloned:
             shutil.rmtree(self.additional_backends_directory)
         if self.additional_backends is not None:
@@ -116,6 +116,6 @@ setup(name="RBniCS",
       zip_safe=False,
       cmdclass={
           "egg_info": egg_info,
-          "install": install,
+          "install": install
       }
       )
