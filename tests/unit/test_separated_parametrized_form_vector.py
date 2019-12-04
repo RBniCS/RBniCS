@@ -206,10 +206,10 @@ def test_separated_parametrized_forms_vector_3():
     test_logger.log(DEBUG, "\t\t" + str(a3_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep.coefficients[5][0]))
     
-    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = ({ A | A_{i_{29}, i_{30}} = sum_{i_{31}} f_7[i_{29}, i_{31}] * f_7[i_{31}, i_{30}]  })[i_{32}, i_{33}] * f_7[0, 0] * f_7[1, 1] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[0][0])
-    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = f_8[i_{32}, i_{33}] * f_7[1, 0] * -1 * f_7[0, 1] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[1][0])
-    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = f_8[i_{32}, i_{33}] * f_7[0, 0] * f_7[1, 1] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[2][0])
-    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = ({ A | A_{i_{29}, i_{30}} = sum_{i_{31}} f_7[i_{29}, i_{31}] * f_7[i_{31}, i_{30}]  })[i_{32}, i_{33}] * f_7[1, 0] * -1 * f_7[0, 1] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[3][0])
+    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = ({ A | A_{i_{29}, i_{30}} = sum_{i_{31}} f_7[i_{31}, i_{30}] * f_7[i_{29}, i_{31}]  })[i_{32}, i_{33}] * f_7[0, 0] * f_7[1, 1] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[0][0])
+    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = -1 * f_7[0, 1] * f_7[1, 0] * f_8[i_{32}, i_{33}] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[1][0])
+    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = -1 * f_7[0, 1] * f_7[1, 0] * ({ A | A_{i_{29}, i_{30}} = sum_{i_{31}} f_7[i_{31}, i_{30}] * f_7[i_{29}, i_{31}]  })[i_{32}, i_{33}] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[2][0])
+    assert "{ A | A_{i_{34}, i_{35}} = ({ A | A_{i_{32}, i_{33}} = f_8[i_{32}, i_{33}] * f_7[0, 0] * f_7[1, 1] })[i_{34}, i_{35}] * f_5 }" == str(a3_sep.coefficients[3][0])
     assert "f_6" == str(a3_sep.coefficients[4][0])
     assert "f_5" == str(a3_sep.coefficients[5][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
@@ -274,7 +274,7 @@ def test_separated_parametrized_forms_vector_4():
     
     assert "{ A | A_{i_{42}, i_{43}} = diameter * f_7[i_{42}, i_{43}] }" == str(a4_sep.coefficients[0][0])
     assert "f_6" == str(a4_sep.coefficients[1][0])
-    assert "diameter * f_5" == str(a4_sep.coefficients[2][0])
+    assert "f_5" == str(a4_sep.coefficients[2][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[1][0]))
@@ -290,7 +290,7 @@ def test_separated_parametrized_forms_vector_4():
     
     assert "sum_{i_{51}} sum_{i_{50}} ({ A | A_{i_{44}, i_{45}} = sum_{i_{46}} f_48[i_{44}, i_{46}] * (grad(v_1))[i_{46}, i_{45}]  })[i_{50}, i_{51}] * (grad(v_0))[i_{50}, i_{51}]  " == str(a4_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{52}} ({ A | A_{i_{49}} = diameter * ({ A | A_{i_{47}} = sum_{i_{48}} f_49[i_{48}] * (grad(v_1))[i_{47}, i_{48}]  })[i_{49}] })[i_{52}] * v_0[i_{52}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
-    assert "f_50 * (sum_{i_{53}} v_0[i_{53}] * v_1[i_{53}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
+    assert "diameter * f_50 * (sum_{i_{53}} v_0[i_{53}] * v_1[i_{53}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep._form_unchanged)))
     
@@ -325,7 +325,7 @@ def test_separated_parametrized_forms_vector_5():
     
     assert "{ A | A_{i_{54}, i_{55}} = diameter * f_7[i_{54}, i_{55}] }" == str(a5_sep.coefficients[0][0])
     assert "{ A | A_{i_{59}} = diameter * f_6[i_{59}] }" == str(a5_sep.coefficients[1][0])
-    assert "diameter * f_5" == str(a5_sep.coefficients[2][0])
+    assert "f_5" == str(a5_sep.coefficients[2][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[1][0]))
@@ -341,7 +341,7 @@ def test_separated_parametrized_forms_vector_5():
     
     assert "sum_{i_{63}} sum_{i_{62}} ({ A | A_{i_{56}, i_{57}} = sum_{i_{58}} f_51[i_{56}, i_{58}] * (grad(v_1))[i_{58}, i_{57}]  })[i_{62}, i_{63}] * (grad(v_0))[i_{62}, i_{63}]  " == str(a5_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{64}} ({ A | A_{i_{60}} = sum_{i_{61}} f_52[i_{61}] * (grad(v_1))[i_{60}, i_{61}]  })[i_{64}] * v_0[i_{64}] " == str(a5_sep._form_with_placeholders[1].integrals()[0].integrand())
-    assert "f_53 * (sum_{i_{65}} v_0[i_{65}] * v_1[i_{65}] )" == str(a5_sep._form_with_placeholders[2].integrals()[0].integrand())
+    assert "diameter * f_53 * (sum_{i_{65}} v_0[i_{65}] * v_1[i_{65}] )" == str(a5_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep._form_unchanged)))
     
