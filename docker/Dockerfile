@@ -38,7 +38,7 @@ RUN python3 setup.py -q install
 USER fenics
 WORKDIR $FENICS_HOME
 RUN mkdir RBniCS && \
-    ln -s $FENICS_PREFIX/lib/python3.6/dist-packages/rbnics RBniCS/source && \
+    ln -s $FENICS_PREFIX/lib/python3.6/dist-packages/RBniCS*egg/rbnics RBniCS/source && \
     mv /tmp/RBniCS/tests RBniCS/ && \
     mv /tmp/RBniCS/tutorials RBniCS
     
