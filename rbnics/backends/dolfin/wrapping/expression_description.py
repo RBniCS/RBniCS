@@ -16,7 +16,8 @@
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from dolfin import Constant
+from dolfin import CompiledExpression, Constant, Expression
+from dolfin.function.expression import BaseExpression
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
 def basic_expression_description(backend, wrapping):
@@ -26,8 +27,14 @@ def basic_expression_description(backend, wrapping):
         for n in wrapping.expression_iterator(expression):
             if n in visited:
                 continue
-            if hasattr(n, "_cppcode"):
-                coefficients_repr[n] = str(n._cppcode)
+            if isinstance(n, BaseExpression):
+                assert isinstance(n, (CompiledExpression, Expression)), "Other expression types are not handled yet"
+                if isinstance(n, Expression):
+                    coefficients_repr[n] = str(n._cppcode)
+                elif isinstance(n, CompiledExpression):
+                    assert hasattr(n, "f_no_upcast"), "Only the case of pulled back expressions is currently handled"
+                    assert hasattr(n, "shape_parametrization_expression_on_subdomain_no_upcast"), "Only the case of pulled back expressions is currently handled"
+                    coefficients_repr[n] = "PullBackExpression(" + str(n.shape_parametrization_expression_on_subdomain_no_upcast._cppcode) + ", " + str(n.f_no_upcast._cppcode) + ")"
                 visited.add(n)
             elif wrapping.is_problem_solution_type(n):
                 if wrapping.is_problem_solution(n):
