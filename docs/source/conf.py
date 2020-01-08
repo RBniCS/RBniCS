@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'RBniCS'
-copyright = u'2015-2019, RBniCS authors and contributors'
+copyright = u'2015-2020, RBniCS authors and contributors'
 author = u'RBniCS authors and contributors'
 
 # The version info for the project you're documenting, acts as replacement for
