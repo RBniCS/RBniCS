@@ -24,29 +24,33 @@ import shutil
 import subprocess
 import tempfile
 
+def AdditionalBackendsOptions(SetuptoolsClass):
+    class AdditionalBackendsOptions_Class(SetuptoolsClass):
+        user_options = SetuptoolsClass.user_options + [
+            ('additional-backends=', None, 'Desired additional backends'),
+            ('additional-backends-directory=', None, 'Additional backends directory')
+        ]
+
+        def initialize_options(self):
+            SetuptoolsClass.initialize_options(self)
+            self.additional_backends = None
+            self.additional_backends_directory = None
+            self.additional_backends_directory_cloned = False
+
+        def finalize_options(self):
+            if self.additional_backends is not None:
+                self.additional_backends = set(self.additional_backends.split())
+                if len(self.additional_backends) > 0 and self.additional_backends_directory is None:
+                    self.additional_backends_directory = tempfile.mkdtemp()
+                    for additional_backend in self.additional_backends:
+                        additional_backend = additional_backend.replace("online/", "")
+                        subprocess.check_call(["git", "clone", "git@gitlab.com:RBniCS-backends/" + additional_backend + ".git"], cwd=self.additional_backends_directory)
+                    self.additional_backends_directory_cloned = True
+            SetuptoolsClass.finalize_options(self)
+    return AdditionalBackendsOptions_Class
+
+@AdditionalBackendsOptions
 class install(setuptools_install):
-    user_options = setuptools_install.user_options + [
-        ('additional-backends=', None, 'Desired additional backends'),
-        ('additional-backends-directory=', None, 'Additional backends directory')
-    ]
-
-    def initialize_options(self):
-        setuptools_install.initialize_options(self)
-        self.additional_backends = None
-        self.additional_backends_directory = None
-        self.additional_backends_directory_cloned = False
-
-    def finalize_options(self):
-        if self.additional_backends is not None:
-            self.additional_backends = set(self.additional_backends.split())
-            if len(self.additional_backends) > 0 and self.additional_backends_directory is None:
-                self.additional_backends_directory = tempfile.mkdtemp()
-                for additional_backend in self.additional_backends:
-                    additional_backend = additional_backend.replace("online/", "")
-                    subprocess.check_call(["git", "clone", "git@gitlab.com:RBniCS-backends/" + additional_backend + ".git"], cwd=self.additional_backends_directory)
-                self.additional_backends_directory_cloned = True
-        setuptools_install.finalize_options(self)
-
     def run(self):
         egg_info = self.get_finalized_command("egg_info")
         egg_info.additional_backends = self.additional_backends
@@ -58,6 +62,7 @@ class install(setuptools_install):
             for symlink in egg_info.additional_backends_symlinks:
                 os.unlink(symlink)
             
+@AdditionalBackendsOptions
 class egg_info(setuptools_egg_info):
     def run(self):
         if self.additional_backends is not None:
@@ -82,7 +87,7 @@ setup(name="RBniCS",
       license="GNU Library or Lesser General Public License (LGPL)",
       url="http://mathlab.sissa.it/rbnics",
       classifiers=[
-          "Development Status :: 3 - Alpha"
+          "Development Status :: 3 - Alpha",
           "Intended Audience :: Developers",
           "Intended Audience :: Science/Research",
           "Programming Language :: Python :: 3",
