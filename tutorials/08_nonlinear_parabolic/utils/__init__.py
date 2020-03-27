@@ -19,5 +19,5 @@
 from .plot_phase_space import plot_phase_space
 
 __all__ = [
-    'plot_phase_space'
+    "plot_phase_space"
 ]

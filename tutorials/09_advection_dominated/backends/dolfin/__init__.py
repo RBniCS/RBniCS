@@ -19,5 +19,5 @@
 from .non_hierarchical_basis_functions_matrix import NonHierarchicalBasisFunctionsMatrix
 
 __all__ = [
-    'NonHierarchicalBasisFunctionsMatrix',
+    "NonHierarchicalBasisFunctionsMatrix",
 ]

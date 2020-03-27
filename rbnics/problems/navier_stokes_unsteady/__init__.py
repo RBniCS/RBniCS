@@ -23,8 +23,8 @@ from rbnics.problems.navier_stokes_unsteady.navier_stokes_unsteady_reduced_probl
 
 
 __all__ = [
-    'NavierStokesUnsteadyPODGalerkinReducedProblem',
-    'NavierStokesUnsteadyProblem',
-    # 'NavierStokesUnsteadyRBReducedProblem',
-    'NavierStokesUnsteadyReducedProblem'
+    "NavierStokesUnsteadyPODGalerkinReducedProblem",
+    "NavierStokesUnsteadyProblem",
+    # "NavierStokesUnsteadyRBReducedProblem",
+    "NavierStokesUnsteadyReducedProblem"
 ]

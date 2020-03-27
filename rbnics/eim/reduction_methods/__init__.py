@@ -23,9 +23,9 @@ from rbnics.eim.reduction_methods.exact_parametrized_functions_decorated_reducti
 from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
 
 __all__ = [
-    'DEIMDecoratedReductionMethod',
-    'EIMApproximationReductionMethod',
-    'EIMDecoratedReductionMethod',
-    'ExactParametrizedFunctionsDecoratedReductionMethod',
-    'TimeDependentEIMApproximationReductionMethod'
+    "DEIMDecoratedReductionMethod",
+    "EIMApproximationReductionMethod",
+    "EIMDecoratedReductionMethod",
+    "ExactParametrizedFunctionsDecoratedReductionMethod",
+    "TimeDependentEIMApproximationReductionMethod"
 ]

@@ -19,5 +19,5 @@
 from rbnics.sampling.parameter_space_subset import ParameterSpaceSubset
 
 __all__ = [
-    'ParameterSpaceSubset'
+    "ParameterSpaceSubset"
 ]

@@ -130,7 +130,7 @@ def test_competing_ambiguous_try():
 # Add back patched versions of list tests of test_dispatcher.py
 def test_register_instance_method__list_of():
     class Test(object):
-        __init__ = MethodDispatcher('f')
+        __init__ = MethodDispatcher("f")
 
         @__init__.register(list_of(int))
         def _init_list(self, data):
@@ -145,7 +145,7 @@ def test_register_instance_method__list_of():
     assert a.data == b.data
 
 def test_register_stacking__list_of__tuple_of():
-    f = Dispatcher('f')
+    f = Dispatcher("f")
 
     @f.register(list_of(int))
     @f.register(tuple_of(int))
@@ -155,11 +155,11 @@ def test_register_stacking__list_of__tuple_of():
     assert f((1, 2, 3)) == (3, 2, 1)
     assert f([1, 2, 3]) == [3, 2, 1]
 
-    assert raises(UnavailableSignatureError, lambda: f('hello'))
-    assert rev('hello') == 'olleh'
+    assert raises(UnavailableSignatureError, lambda: f("hello"))
+    assert rev("hello") == "olleh"
 
 def test_dispatch_method__list_of():
-    f = Dispatcher('f')
+    f = Dispatcher("f")
 
     @f.register(list_of(int))
     def rev(x):
@@ -186,14 +186,14 @@ def test_source_copy():
         """ Docstring number two """
         return x - y
 
-    master_doc = 'Doc of the multimethod itself'
+    master_doc = "Doc of the multimethod itself"
 
-    f = Dispatcher('f', doc=master_doc)
+    f = Dispatcher("f", doc=master_doc)
     f.add((int, int), one)
     f.add((float, float), two)
 
-    assert 'x + y' in f._source(1, 1)
-    assert 'x - y' in f._source(1.0, 1.0)
+    assert "x + y" in f._source(1, 1)
+    assert "x - y" in f._source(1.0, 1.0)
 
 # Add back subset of upstream test_dispatcher_3only.py, which is not tested fully because of our different implementation of dispatching through annotations
 def test_function_annotation_dispatch():
@@ -741,16 +741,16 @@ def test_inheritance_for_list_of():
 
     @dispatch(list_of(A))
     def f(x):
-        return 'a'
+        return "a"
 
     @dispatch(list_of(B))
     def f(x):
-        return 'b'
+        return "b"
 
-    assert f([A(), A()]) == 'a'
-    assert f([B(), B()]) == 'b'
-    assert f([C(), C()]) == 'a'
-    assert f([C(), A()]) == 'a'
+    assert f([A(), A()]) == "a"
+    assert f([B(), B()]) == "b"
+    assert f([C(), C()]) == "a"
+    assert f([C(), A()]) == "a"
     assert raises(UnavailableSignatureError, lambda: f(B(), C()))
 
 # Test inheritance in combination with dict_of (keys only)
@@ -764,15 +764,15 @@ def test_inheritance_for_dict_of_keys():
 
     @dispatch(dict_of(A, int))
     def f(x):
-        return 'a'
+        return "a"
 
     @dispatch(dict_of(B, int))
     def f(x):
-        return 'b'
+        return "b"
 
-    assert f({A(): 1}) == 'a'
-    assert f({B(): 2}) == 'b'
-    assert f({C(): 3}) == 'a'
+    assert f({A(): 1}) == "a"
+    assert f({B(): 2}) == "b"
+    assert f({C(): 3}) == "a"
     assert raises(UnavailableSignatureError, lambda: f({B(): 4.}))
 
 # Test inheritance in combination with dict_of (values only)
@@ -786,15 +786,15 @@ def test_inheritance_for_dict_of_values():
 
     @dispatch(dict_of(int, A))
     def f(x):
-        return 'a'
+        return "a"
 
     @dispatch(dict_of(int, B))
     def f(x):
-        return 'b'
+        return "b"
 
-    assert f({1: A()}) == 'a'
-    assert f({2: B()}) == 'b'
-    assert f({3: C()}) == 'a'
+    assert f({1: A()}) == "a"
+    assert f({2: B()}) == "b"
+    assert f({3: C()}) == "a"
     assert raises(UnavailableSignatureError, lambda: f({4.: B()}))
 
 # Test inheritance in combination with dict_of (keys and values)
@@ -808,17 +808,17 @@ def test_inheritance_for_dict_of_keys_values():
 
     @dispatch(dict_of(A, A))
     def f(x):
-        return 'a'
+        return "a"
 
     @dispatch(dict_of(B, B))
     def f(x):
-        return 'b'
+        return "b"
 
-    assert f({A(): A()}) == 'a'
-    assert f({B(): B()}) == 'b'
-    assert f({C(): C()}) == 'a'
-    assert f({A(): C()}) == 'a'
-    assert f({C(): A()}) == 'a'
+    assert f({A(): A()}) == "a"
+    assert f({B(): B()}) == "b"
+    assert f({C(): C()}) == "a"
+    assert f({A(): C()}) == "a"
+    assert f({C(): A()}) == "a"
     assert raises(UnavailableSignatureError, lambda: f({A(): B()}))
 
 # Test inheritance in combination with dict_of (keys only, which are tuple_of)
@@ -832,16 +832,16 @@ def test_inheritance_for_dict_of_keys_tuple_of():
 
     @dispatch(dict_of(tuple_of(A), int))
     def f(x):
-        return 'a'
+        return "a"
 
     @dispatch(dict_of(tuple_of(B), int))
     def f(x):
-        return 'b'
+        return "b"
 
-    assert f({(A(), A()): 1}) == 'a'
-    assert f({(B(), B()): 2}) == 'b'
-    assert f({(C(), C()): 3}) == 'a'
-    assert f({(C(), A()): 4}) == 'a'
+    assert f({(A(), A()): 1}) == "a"
+    assert f({(B(), B()): 2}) == "b"
+    assert f({(C(), C()): 3}) == "a"
+    assert f({(C(), A()): 4}) == "a"
     assert raises(UnavailableSignatureError, lambda: f({(B(), B()): 5.}))
 
 # Test competing solutions for list_of

@@ -20,6 +20,6 @@ from rbnics.scm.utils.io.bounding_box_side_list import BoundingBoxSideList
 from rbnics.scm.utils.io.upper_bounds_list import UpperBoundsList
 
 __all__ = [
-    'BoundingBoxSideList',
-    'UpperBoundsList'
+    "BoundingBoxSideList",
+    "UpperBoundsList"
 ]

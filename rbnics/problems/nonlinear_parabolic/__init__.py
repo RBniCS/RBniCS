@@ -23,8 +23,8 @@ from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_reduced_problem imp
 
 
 __all__ = [
-    'NonlinearParabolicPODGalerkinReducedProblem',
-    'NonlinearParabolicProblem',
-    # 'NonlinearParabolicRBReducedProblem',
-    'NonlinearParabolicReducedProblem'
+    "NonlinearParabolicPODGalerkinReducedProblem",
+    "NonlinearParabolicProblem",
+    # "NonlinearParabolicRBReducedProblem",
+    "NonlinearParabolicReducedProblem"
 ]

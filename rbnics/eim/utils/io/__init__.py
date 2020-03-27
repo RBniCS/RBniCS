@@ -19,5 +19,5 @@
 from rbnics.eim.utils.io.affine_expansion_separated_forms_storage import AffineExpansionSeparatedFormsStorage
 
 __all__ = [
-    'AffineExpansionSeparatedFormsStorage'
+    "AffineExpansionSeparatedFormsStorage"
 ]

@@ -24,10 +24,10 @@ from rbnics.eim.backends.offline_online_riesz_solver import OfflineOnlineRieszSo
 from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
 
 __all__ = [
-    'OfflineOnlineBackend',
-    'OfflineOnlineClassMethod',
-    'OfflineOnlineExpansionStorage',
-    'OfflineOnlineExpansionStorageSize',
-    'OfflineOnlineRieszSolver',
-    'OfflineOnlineSwitch'
+    "OfflineOnlineBackend",
+    "OfflineOnlineClassMethod",
+    "OfflineOnlineExpansionStorage",
+    "OfflineOnlineExpansionStorageSize",
+    "OfflineOnlineRieszSolver",
+    "OfflineOnlineSwitch"
 ]

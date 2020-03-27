@@ -78,7 +78,7 @@ class InvalidSignatureError(TypeError):
 
 # == Customize Dispatcher == #
 class Dispatcher(OriginalDispatcher):
-    __slots__ = '__name__', 'name', 'funcs', '_ordering', '_cache', 'doc', 'signature_to_provided_signature' # extended with new private members
+    __slots__ = "__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature" # extended with new private members
 
     def __init__(self, name, doc=None):
         OriginalDispatcher.__init__(self, name, doc)
@@ -191,7 +191,7 @@ class Dispatcher(OriginalDispatcher):
 
 # == Customize MethodDispatcher == #
 class MethodDispatcher_Wrapper(object):
-    __slots__ = 'name', 'standard_funcs', 'lambda_funcs', 'dispatchers'
+    __slots__ = "name", "standard_funcs", "lambda_funcs", "dispatchers"
 
     def __init__(self, name, doc=None):
         self.name = name
@@ -247,7 +247,7 @@ class MethodDispatcher_Wrapper(object):
         return dispatcher
 
 class MethodDispatcher(Dispatcher):
-    __slots__ = '__name__', 'name', 'funcs', '_ordering', '_cache', 'doc', 'signature_to_provided_signature', 'origin', 'obj' # extended with new private members
+    __slots__ = "__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature", "origin", "obj" # extended with new private members
 
     def __init__(self, origin, cls, name, doc=None):
         Dispatcher.__init__(self, name, doc)

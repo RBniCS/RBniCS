@@ -24,10 +24,10 @@ from rbnics.shape_parametrization.problems.shape_parametrization_decorated_probl
 from rbnics.shape_parametrization.problems.shape_parametrization_decorated_reduced_problem import ShapeParametrizationDecoratedReducedProblem
 
 __all__ = [
-    'AffineShapeParametrization',
-    'AffineShapeParametrizationDecoratedProblem',
-    'AffineShapeParametrizationDecoratedReducedProblem',
-    'ShapeParametrization',
-    'ShapeParametrizationDecoratedProblem',
-    'ShapeParametrizationDecoratedReducedProblem'
+    "AffineShapeParametrization",
+    "AffineShapeParametrizationDecoratedProblem",
+    "AffineShapeParametrizationDecoratedReducedProblem",
+    "ShapeParametrization",
+    "ShapeParametrizationDecoratedProblem",
+    "ShapeParametrizationDecoratedReducedProblem"
 ]

@@ -29,15 +29,15 @@ from rbnics.backends.online.basic.transpose import transpose
 from rbnics.backends.online.basic.vector import Vector
 
 __all__ = [
-    'AffineExpansionStorage',
-    'assign',
-    'evaluate',
-    'Function',
-    'LinearSolver',
-    'NonAffineExpansionStorage',
-    'Matrix',
-    'product',
-    'sum',
-    'transpose',
-    'Vector'
+    "AffineExpansionStorage",
+    "assign",
+    "evaluate",
+    "Function",
+    "LinearSolver",
+    "NonAffineExpansionStorage",
+    "Matrix",
+    "product",
+    "sum",
+    "transpose",
+    "Vector"
 ]

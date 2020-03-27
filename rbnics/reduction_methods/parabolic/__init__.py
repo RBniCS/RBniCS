@@ -21,7 +21,7 @@ from rbnics.reduction_methods.parabolic.parabolic_rb_reduction import ParabolicR
 from rbnics.reduction_methods.parabolic.parabolic_reduction_method import ParabolicReductionMethod
 
 __all__ = [
-    'ParabolicPODGalerkinReduction',
-    'ParabolicRBReduction',
-    'ParabolicReductionMethod'
+    "ParabolicPODGalerkinReduction",
+    "ParabolicRBReduction",
+    "ParabolicReductionMethod"
 ]

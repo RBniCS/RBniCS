@@ -21,7 +21,7 @@ from rbnics.reduction_methods.nonlinear_parabolic.nonlinear_parabolic_pod_galerk
 from rbnics.reduction_methods.nonlinear_parabolic.nonlinear_parabolic_reduction_method import NonlinearParabolicReductionMethod
 
 __all__ = [
-    'NonlinearParabolicPODGalerkinReduction',
-    # 'NonlinearParabolicRBReduction',
-    'NonlinearParabolicReductionMethod'
+    "NonlinearParabolicPODGalerkinReduction",
+    # "NonlinearParabolicRBReduction",
+    "NonlinearParabolicReductionMethod"
 ]

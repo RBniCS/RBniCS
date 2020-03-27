@@ -21,7 +21,7 @@ from rbnics.reduction_methods.navier_stokes_unsteady.navier_stokes_unsteady_pod_
 from rbnics.reduction_methods.navier_stokes_unsteady.navier_stokes_unsteady_reduction_method import NavierStokesUnsteadyReductionMethod
 
 __all__ = [
-    'NavierStokesUnsteadyPODGalerkinReduction',
-    # 'NavierStokesUnsteadyRBReduction',
-    'NavierStokesUnsteadyReductionMethod'
+    "NavierStokesUnsteadyPODGalerkinReduction",
+    # "NavierStokesUnsteadyRBReduction",
+    "NavierStokesUnsteadyReductionMethod"
 ]

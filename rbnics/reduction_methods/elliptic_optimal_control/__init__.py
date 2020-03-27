@@ -21,7 +21,7 @@ from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_
 from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import EllipticOptimalControlReductionMethod
 
 __all__ = [
-    'EllipticOptimalControlPODGalerkinReduction',
-    'EllipticOptimalControlRBReduction',
-    'EllipticOptimalControlReductionMethod'
+    "EllipticOptimalControlPODGalerkinReduction",
+    "EllipticOptimalControlRBReduction",
+    "EllipticOptimalControlReductionMethod"
 ]

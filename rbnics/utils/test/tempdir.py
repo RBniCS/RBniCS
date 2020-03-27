@@ -44,8 +44,8 @@ else:
 
         # Construct name test_foo_tempdir from name test_foo.py
         testfilename = os.path.basename(testfile)
-        if hasattr(request.config, 'slaveinput'):
-            outputname = testfilename.replace(".py", "_tempdir_{}".format(request.config.slaveinput['slaveid']))
+        if hasattr(request.config, "slaveinput"):
+            outputname = testfilename.replace(".py", "_tempdir_{}".format(request.config.slaveinput["slaveid"]))
         else:
             outputname = testfilename.replace(".py", "_tempdir")
 

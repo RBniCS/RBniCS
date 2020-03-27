@@ -31,16 +31,16 @@ from rbnics.problems.elliptic.elliptic_reduced_problem import EllipticReducedPro
 
 
 __all__ = [
-    'EllipticCoerciveCompliantPODGalerkinReducedProblem',
-    'EllipticCoerciveCompliantProblem',
-    'EllipticCoerciveCompliantRBReducedProblem',
-    'EllipticCoerciveCompliantReducedProblem',
-    'EllipticCoercivePODGalerkinReducedProblem',
-    'EllipticCoerciveProblem',
-    'EllipticCoerciveRBReducedProblem',
-    'EllipticCoerciveReducedProblem',
-    'EllipticPODGalerkinReducedProblem',
-    'EllipticProblem',
-    'EllipticRBReducedProblem',
-    'EllipticReducedProblem'
+    "EllipticCoerciveCompliantPODGalerkinReducedProblem",
+    "EllipticCoerciveCompliantProblem",
+    "EllipticCoerciveCompliantRBReducedProblem",
+    "EllipticCoerciveCompliantReducedProblem",
+    "EllipticCoercivePODGalerkinReducedProblem",
+    "EllipticCoerciveProblem",
+    "EllipticCoerciveRBReducedProblem",
+    "EllipticCoerciveReducedProblem",
+    "EllipticPODGalerkinReducedProblem",
+    "EllipticProblem",
+    "EllipticRBReducedProblem",
+    "EllipticReducedProblem"
 ]

@@ -19,5 +19,5 @@
 from .beta_distribution import BetaDistribution
 
 __all__ = [
-    'BetaDistribution'
+    "BetaDistribution"
 ]

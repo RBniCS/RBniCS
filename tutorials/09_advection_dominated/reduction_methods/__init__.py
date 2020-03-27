@@ -21,7 +21,7 @@ from .online_stabilization_decorated_reduction_method import OnlineStabilization
 from .online_vanishing_viscosity_decorated_reduction_method import OnlineVanishingViscosityDecoratedReductionMethod
 
 __all__ = [
-    'OnlineRectificationDecoratedReductionMethod',
-    'OnlineStabilizationDecoratedReductionMethod',
-    'OnlineVanishingViscosityDecoratedReductionMethod'
+    "OnlineRectificationDecoratedReductionMethod",
+    "OnlineStabilizationDecoratedReductionMethod",
+    "OnlineVanishingViscosityDecoratedReductionMethod"
 ]

@@ -21,7 +21,7 @@ from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMA
 from rbnics.scm.reduction_methods.scm_decorated_reduction_method import SCMDecoratedReductionMethod
 
 __all__ = [
-    'ExactStabilityFactorDecoratedReductionMethod',
-    'SCMApproximationReductionMethod',
-    'SCMDecoratedReductionMethod'
+    "ExactStabilityFactorDecoratedReductionMethod",
+    "SCMApproximationReductionMethod",
+    "SCMDecoratedReductionMethod"
 ]

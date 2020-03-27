@@ -21,7 +21,7 @@ from .uniform_weight import UniformWeight
 from .weight import Weight
 
 __all__ = [
-    'BetaWeight',
-    'UniformWeight',
-    'Weight'
+    "BetaWeight",
+    "UniformWeight",
+    "Weight"
 ]

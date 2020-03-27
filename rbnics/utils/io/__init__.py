@@ -34,20 +34,20 @@ from rbnics.utils.io.text_line import TextLine
 from rbnics.utils.io.timer import Timer
 
 __all__ = [
-    'ComponentNameToBasisComponentIndexDict',
-    'CSVIO',
-    'ErrorAnalysisTable',
-    'ExportableList',
-    'Folders',
-    'GreedyErrorEstimatorsList',
-    'GreedySelectedParametersList',
-    'NumpyIO',
-    'OnlineSizeDict',
-    'PerformanceTable',
-    'PickleIO',
-    'SpeedupAnalysisTable',
-    'TextBox',
-    'TextIO',
-    'TextLine',
-    'Timer'
+    "ComponentNameToBasisComponentIndexDict",
+    "CSVIO",
+    "ErrorAnalysisTable",
+    "ExportableList",
+    "Folders",
+    "GreedyErrorEstimatorsList",
+    "GreedySelectedParametersList",
+    "NumpyIO",
+    "OnlineSizeDict",
+    "PerformanceTable",
+    "PickleIO",
+    "SpeedupAnalysisTable",
+    "TextBox",
+    "TextIO",
+    "TextLine",
+    "Timer"
 ]

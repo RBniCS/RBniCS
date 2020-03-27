@@ -29,15 +29,15 @@ from rbnics.eim.problems.exact_parametrized_functions_decorated_reduced_problem 
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 
 __all__ = [
-    'DEIM',
-    'DEIMDecoratedProblem',
-    'DEIMDecoratedReducedProblem',
-    'EIM',
-    'EIMApproximation',
-    'EIMDecoratedProblem',
-    'EIMDecoratedReducedProblem',
-    'ExactParametrizedFunctions',
-    'ExactParametrizedFunctionsDecoratedProblem',
-    'ExactParametrizedFunctionsDecoratedReducedProblem',
-    'TimeDependentEIMApproximation'
+    "DEIM",
+    "DEIMDecoratedProblem",
+    "DEIMDecoratedReducedProblem",
+    "EIM",
+    "EIMApproximation",
+    "EIMDecoratedProblem",
+    "EIMDecoratedReducedProblem",
+    "ExactParametrizedFunctions",
+    "ExactParametrizedFunctionsDecoratedProblem",
+    "ExactParametrizedFunctionsDecoratedReducedProblem",
+    "TimeDependentEIMApproximation"
 ]

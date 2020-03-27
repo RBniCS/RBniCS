@@ -22,8 +22,8 @@ from .online_solve_kwargs_generator import OnlineSolveKwargsGenerator
 from .online_vector import OnlineVector
 
 __all__ = [
-    'OnlineMatrix',
-    'OnlineNonHierarchicalAffineExpansionStorage',
-    'OnlineSolveKwargsGenerator',
-    'OnlineVector'
+    "OnlineMatrix",
+    "OnlineNonHierarchicalAffineExpansionStorage",
+    "OnlineSolveKwargsGenerator",
+    "OnlineVector"
 ]

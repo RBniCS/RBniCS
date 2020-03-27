@@ -31,7 +31,7 @@ from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import backend_for, ComputeThetaType, overload, tuple_of
 
-# Need to customize ThetaType in order to also include dolfin' ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
+# Need to customize ThetaType in order to also include dolfin's ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
 # this is the reason why in the following theta coefficients are preprocessed by float().
 ThetaType = ComputeThetaType((Expression, Operator))
 

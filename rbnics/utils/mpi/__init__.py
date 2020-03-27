@@ -21,7 +21,7 @@ from rbnics.utils.mpi.parallel_max import parallel_max
 from rbnics.utils.mpi.print import print
 
 __all__ = [
-    'parallel_io',
-    'parallel_max',
-    'print'
+    "parallel_io",
+    "parallel_max",
+    "print"
 ]

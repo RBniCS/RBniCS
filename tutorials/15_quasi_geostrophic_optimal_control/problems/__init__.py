@@ -21,7 +21,7 @@ from .geostrophic_optimal_control_reduced_problem import GeostrophicOptimalContr
 from .geostrophic_optimal_control_pod_galerkin_reduced_problem import GeostrophicOptimalControlPODGalerkinReducedProblem
 
 __all__ = [
-    'GeostrophicOptimalControlProblem',
-    'GeostrophicOptimalControlReducedProblem',
-    'GeostrophicOptimalControlPODGalerkinReducedProblem'
+    "GeostrophicOptimalControlProblem",
+    "GeostrophicOptimalControlReducedProblem",
+    "GeostrophicOptimalControlPODGalerkinReducedProblem"
 ]

@@ -24,10 +24,10 @@ from rbnics.backends.online.basic.wrapping.slice_to_array import slice_to_array
 from rbnics.backends.online.basic.wrapping.slice_to_size import slice_to_size
 
 __all__ = [
-    'DelayedTransposeWithArithmetic',
-    'DirichletBC',
-    'function_to_vector',
-    'preserve_solution_attributes',
-    'slice_to_array',
-    'slice_to_size'
+    "DelayedTransposeWithArithmetic",
+    "DirichletBC",
+    "function_to_vector",
+    "preserve_solution_attributes",
+    "slice_to_array",
+    "slice_to_size"
 ]

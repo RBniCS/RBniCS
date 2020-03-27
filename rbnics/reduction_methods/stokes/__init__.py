@@ -21,7 +21,7 @@ from rbnics.reduction_methods.stokes.stokes_rb_reduction import StokesRBReductio
 from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReductionMethod
 
 __all__ = [
-    'StokesPODGalerkinReduction',
-    'StokesRBReduction',
-    'StokesReductionMethod'
+    "StokesPODGalerkinReduction",
+    "StokesRBReduction",
+    "StokesReductionMethod"
 ]

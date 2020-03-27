@@ -21,7 +21,7 @@ from rbnics.reduction_methods.elliptic.elliptic_rb_reduction import EllipticRBRe
 from rbnics.reduction_methods.elliptic.elliptic_reduction_method import EllipticReductionMethod
 
 __all__ = [
-    'EllipticPODGalerkinReduction',
-    'EllipticRBReduction',
-    'EllipticReductionMethod'
+    "EllipticPODGalerkinReduction",
+    "EllipticRBReduction",
+    "EllipticReductionMethod"
 ]

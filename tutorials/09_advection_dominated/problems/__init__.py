@@ -27,13 +27,13 @@ from .online_vanishing_viscosity_decorated_problem import OnlineVanishingViscosi
 from .online_vanishing_viscosity_decorated_reduced_problem import OnlineVanishingViscosityDecoratedReducedProblem
 
 __all__ = [
-    'OnlineRectification',
-    'OnlineRectificationDecoratedProblem',
-    'OnlineRectificationDecoratedReducedProblem',
-    'OnlineStabilization',
-    'OnlineStabilizationDecoratedProblem',
-    'OnlineStabilizationDecoratedReducedProblem',
-    'OnlineVanishingViscosity',
-    'OnlineVanishingViscosityDecoratedProblem',
-    'OnlineVanishingViscosityDecoratedReducedProblem'
+    "OnlineRectification",
+    "OnlineRectificationDecoratedProblem",
+    "OnlineRectificationDecoratedReducedProblem",
+    "OnlineStabilization",
+    "OnlineStabilizationDecoratedProblem",
+    "OnlineStabilizationDecoratedReducedProblem",
+    "OnlineVanishingViscosity",
+    "OnlineVanishingViscosityDecoratedProblem",
+    "OnlineVanishingViscosityDecoratedReducedProblem"
 ]

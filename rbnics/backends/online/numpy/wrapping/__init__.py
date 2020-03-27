@@ -30,19 +30,19 @@ from rbnics.backends.online.numpy.wrapping.tensor_save import tensor_save
 from rbnics.backends.online.numpy.wrapping.vector_mul import vector_mul_vector
 
 __all__ = [
-    'basis_functions_matrix_mul_online_matrix',
-    'basis_functions_matrix_mul_online_vector',
-    'function_load',
-    'function_save',
-    'function_to_vector',
-    'functions_list_mul_online_matrix',
-    'functions_list_mul_online_vector',
-    'get_mpi_comm',
-    'gram_schmidt_projection_step',
-    'matrix_mul_vector',
-    'Slicer',
-    'tensor_load',
-    'tensor_save',
-    'vector_mul_vector',
-    'vectorized_matrix_inner_vectorized_matrix'
+    "basis_functions_matrix_mul_online_matrix",
+    "basis_functions_matrix_mul_online_vector",
+    "function_load",
+    "function_save",
+    "function_to_vector",
+    "functions_list_mul_online_matrix",
+    "functions_list_mul_online_vector",
+    "get_mpi_comm",
+    "gram_schmidt_projection_step",
+    "matrix_mul_vector",
+    "Slicer",
+    "tensor_load",
+    "tensor_save",
+    "vector_mul_vector",
+    "vectorized_matrix_inner_vectorized_matrix"
 ]

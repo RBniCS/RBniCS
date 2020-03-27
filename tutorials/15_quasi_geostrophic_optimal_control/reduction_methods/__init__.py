@@ -20,6 +20,6 @@ from .geostrophic_optimal_control_pod_galerkin_reduction import GeostrophicOptim
 from .geostrophic_optimal_control_reduction_method import GeostrophicOptimalControlReductionMethod
 
 __all__ = [
-    'GeostrophicOptimalControlPODGalerkinReduction',
-    'GeostrophicOptimalControlReductionMethod'
+    "GeostrophicOptimalControlPODGalerkinReduction",
+    "GeostrophicOptimalControlReductionMethod"
 ]

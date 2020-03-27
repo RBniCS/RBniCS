@@ -23,8 +23,8 @@ from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierSt
 
 
 __all__ = [
-    'NavierStokesPODGalerkinReducedProblem',
-    'NavierStokesProblem',
-    # 'NavierStokesRBReducedProblem',
-    'NavierStokesReducedProblem'
+    "NavierStokesPODGalerkinReducedProblem",
+    "NavierStokesProblem",
+    # "NavierStokesRBReducedProblem",
+    "NavierStokesReducedProblem"
 ]

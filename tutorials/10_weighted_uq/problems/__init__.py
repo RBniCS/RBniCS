@@ -21,7 +21,7 @@ from .weighted_uncertainty_quantification_decorated_problem import WeightedUncer
 from .weighted_uncertainty_quantification_decorated_reduced_problem import WeightedUncertaintyQuantificationDecoratedReducedProblem
 
 __all__ = [
-    'WeightedUncertaintyQuantification',
-    'WeightedUncertaintyQuantificationDecoratedProblem',
-    'WeightedUncertaintyQuantificationDecoratedReducedProblem'
+    "WeightedUncertaintyQuantification",
+    "WeightedUncertaintyQuantificationDecoratedProblem",
+    "WeightedUncertaintyQuantificationDecoratedReducedProblem"
 ]

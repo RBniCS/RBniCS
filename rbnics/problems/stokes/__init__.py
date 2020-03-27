@@ -23,8 +23,8 @@ from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 
 
 __all__ = [
-    'StokesPODGalerkinReducedProblem',
-    'StokesProblem',
-    'StokesRBReducedProblem',
-    'StokesReducedProblem'
+    "StokesPODGalerkinReducedProblem",
+    "StokesProblem",
+    "StokesRBReducedProblem",
+    "StokesReducedProblem"
 ]

@@ -21,7 +21,7 @@ from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_pod_galerkin_reduc
 from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_reduction_method import StokesUnsteadyReductionMethod
 
 __all__ = [
-    'StokesUnsteadyPODGalerkinReduction',
-    # 'StokesUnsteadyRBReduction',
-    'StokesUnsteadyReductionMethod'
+    "StokesUnsteadyPODGalerkinReduction",
+    # "StokesUnsteadyRBReduction",
+    "StokesUnsteadyReductionMethod"
 ]

@@ -21,7 +21,7 @@ from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_pod_
 from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
 
 __all__ = [
-    'StokesOptimalControlPODGalerkinReduction',
-    # 'StokesOptimalControlRBReduction',
-    'StokesOptimalControlReductionMethod'
+    "StokesOptimalControlPODGalerkinReduction",
+    # "StokesOptimalControlRBReduction",
+    "StokesOptimalControlReductionMethod"
 ]

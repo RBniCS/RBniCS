@@ -23,8 +23,8 @@ from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem impor
 
 
 __all__ = [
-    'NonlinearEllipticPODGalerkinReducedProblem',
-    'NonlinearEllipticProblem',
-    # 'NonlinearEllipticRBReducedProblem',
-    'NonlinearEllipticReducedProblem'
+    "NonlinearEllipticPODGalerkinReducedProblem",
+    "NonlinearEllipticProblem",
+    # "NonlinearEllipticRBReducedProblem",
+    "NonlinearEllipticReducedProblem"
 ]

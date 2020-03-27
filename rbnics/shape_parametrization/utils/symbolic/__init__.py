@@ -28,14 +28,14 @@ from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates impo
 from rbnics.shape_parametrization.utils.symbolic.vertices_mapping_io import VerticesMappingIO
 
 __all__ = [
-    'affine_shape_parametrization_from_vertices_mapping',
-    'compute_shape_parametrization_gradient',
-    'python_string_to_sympy',
-    'strings_to_number_of_parameters',
-    'strings_to_sympy_symbolic_parameters',
-    'sympy_eval',
-    'sympy_exec',
-    'SympyIO',
-    'sympy_symbolic_coordinates',
-    'VerticesMappingIO'
+    "affine_shape_parametrization_from_vertices_mapping",
+    "compute_shape_parametrization_gradient",
+    "python_string_to_sympy",
+    "strings_to_number_of_parameters",
+    "strings_to_sympy_symbolic_parameters",
+    "sympy_eval",
+    "sympy_exec",
+    "SympyIO",
+    "sympy_symbolic_coordinates",
+    "VerticesMappingIO"
 ]

@@ -20,6 +20,6 @@ from rbnics.shape_parametrization.reduction_methods.affine_shape_parametrization
 from rbnics.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
 
 __all__ = [
-    'AffineShapeParametrizationDecoratedReductionMethod',
-    'ShapeParametrizationDecoratedReductionMethod'
+    "AffineShapeParametrizationDecoratedReductionMethod",
+    "ShapeParametrizationDecoratedReductionMethod"
 ]

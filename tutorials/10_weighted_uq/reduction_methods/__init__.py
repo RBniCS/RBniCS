@@ -19,5 +19,5 @@
 from .weighted_uncertainty_quantification_decorated_reduction_method import WeightedUncertaintyQuantificationDecoratedReductionMethod
 
 __all__ = [
-    'WeightedUncertaintyQuantificationDecoratedReductionMethod'
+    "WeightedUncertaintyQuantificationDecoratedReductionMethod"
 ]

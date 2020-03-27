@@ -26,12 +26,12 @@ from rbnics.sampling.distributions.log_uniform_distribution import LogUniformDis
 from rbnics.sampling.distributions.uniform_distribution import UniformDistribution
 
 __all__ = [
-    'CompositeDistribution',
-    'DiscreteDistribution',
-    'Distribution',
-    'DrawFrom',
-    'EquispacedDistribution',
-    'LogEquispacedDistribution',
-    'LogUniformDistribution',
-    'UniformDistribution'
+    "CompositeDistribution",
+    "DiscreteDistribution",
+    "Distribution",
+    "DrawFrom",
+    "EquispacedDistribution",
+    "LogEquispacedDistribution",
+    "LogUniformDistribution",
+    "UniformDistribution"
 ]

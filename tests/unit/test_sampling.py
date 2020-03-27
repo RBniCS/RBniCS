@@ -40,7 +40,7 @@ def plot(p, box, set_, bins, generator=None, *args, **kwargs):
     if generator is not None:
         distribution = generator(*args, **kwargs)
         x = linspace(sub_box_p[0], sub_box_p[1], bins**2)
-        ax.plot(x, distribution.pdf(x), 'r-', lw=2)
+        ax.plot(x, distribution.pdf(x), "r-", lw=2)
     hist_kwargs = dict()
     hist_kwargs["bins"] = bins
     if LooseVersion(matplotlib.__version__) < LooseVersion("2.2"):

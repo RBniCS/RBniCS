@@ -19,6 +19,6 @@
 from rbnics.utils.config.config import Config, config
 
 __all__ = [
-    'Config',
-    'config'
+    "Config",
+    "config"
 ]

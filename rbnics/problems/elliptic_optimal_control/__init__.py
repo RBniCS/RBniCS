@@ -21,10 +21,9 @@ from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem i
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_rb_reduced_problem import EllipticOptimalControlRBReducedProblem
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_reduced_problem import EllipticOptimalControlReducedProblem
 
-
 __all__ = [
-    'EllipticOptimalControlPODGalerkinReducedProblem',
-    'EllipticOptimalControlProblem',
-    'EllipticOptimalControlRBReducedProblem',
-    'EllipticOptimalControlReducedProblem'
+    "EllipticOptimalControlPODGalerkinReducedProblem",
+    "EllipticOptimalControlProblem",
+    "EllipticOptimalControlRBReducedProblem",
+    "EllipticOptimalControlReducedProblem"
 ]

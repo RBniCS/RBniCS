@@ -27,13 +27,13 @@ from rbnics.scm.problems.exact_stability_factor_decorated_reduced_problem import
 from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import ParametrizedStabilityFactorEigenProblem
 
 __all__ = [
-    'DecoratedReducedProblemWithStabilityFactorEvaluation',
-    'SCM',
-    'SCMApproximation',
-    'SCMDecoratedProblem',
-    'SCMDecoratedReducedProblem',
-    'ExactStabilityFactor',
-    'ExactStabilityFactorDecoratedProblem',
-    'ExactStabilityFactorDecoratedReducedProblem',
-    'ParametrizedStabilityFactorEigenProblem'
+    "DecoratedReducedProblemWithStabilityFactorEvaluation",
+    "SCM",
+    "SCMApproximation",
+    "SCMDecoratedProblem",
+    "SCMDecoratedReducedProblem",
+    "ExactStabilityFactor",
+    "ExactStabilityFactorDecoratedProblem",
+    "ExactStabilityFactorDecoratedReducedProblem",
+    "ParametrizedStabilityFactorEigenProblem"
 ]

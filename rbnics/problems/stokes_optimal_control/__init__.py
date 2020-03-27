@@ -23,8 +23,8 @@ from rbnics.problems.stokes_optimal_control.stokes_optimal_control_reduced_probl
 
 
 __all__ = [
-    'StokesOptimalControlPODGalerkinReducedProblem',
-    'StokesOptimalControlProblem',
-    # 'StokesOptimalControlRBReducedProblem',
-    'StokesOptimalControlReducedProblem'
+    "StokesOptimalControlPODGalerkinReducedProblem",
+    "StokesOptimalControlProblem",
+    # "StokesOptimalControlRBReducedProblem",
+    "StokesOptimalControlReducedProblem"
 ]

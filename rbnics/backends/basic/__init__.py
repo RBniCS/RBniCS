@@ -34,20 +34,20 @@ from rbnics.backends.basic.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.basic.transpose import transpose
 
 __all__ = [
-    'BasisFunctionsMatrix',
-    'copy',
-    'evaluate',
-    'export',
-    'FunctionsList',
-    'GramSchmidt',
-    'import_',
-    'NonAffineExpansionStorage',
-    'ParametrizedExpressionFactory',
-    'ParametrizedTensorFactory',
-    'ProperOrthogonalDecompositionBase',
-    'SnapshotsMatrix',
-    'TensorBasisList',
-    'TensorsList',
-    'TensorSnapshotsList',
-    'transpose'
+    "BasisFunctionsMatrix",
+    "copy",
+    "evaluate",
+    "export",
+    "FunctionsList",
+    "GramSchmidt",
+    "import_",
+    "NonAffineExpansionStorage",
+    "ParametrizedExpressionFactory",
+    "ParametrizedTensorFactory",
+    "ProperOrthogonalDecompositionBase",
+    "SnapshotsMatrix",
+    "TensorBasisList",
+    "TensorsList",
+    "TensorSnapshotsList",
+    "transpose"
 ]

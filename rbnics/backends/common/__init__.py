@@ -34,20 +34,20 @@ from rbnics.backends.common.time_series import TimeSeries
 from rbnics.backends.common.transpose import transpose
 
 __all__ = [
-    'abs',
-    'AffineExpansionStorage',
-    'assign',
-    'copy',
-    'export',
-    'import_',
-    'LinearProgramSolver',
-    'NonAffineExpansionStorage',
-    'ParametrizedTensorFactory',
-    'product',
-    'SeparatedParametrizedForm',
-    'sum',
-    'SymbolicParameters',
-    'TimeQuadrature',
-    'TimeSeries',
-    'transpose'
+    "abs",
+    "AffineExpansionStorage",
+    "assign",
+    "copy",
+    "export",
+    "import_",
+    "LinearProgramSolver",
+    "NonAffineExpansionStorage",
+    "ParametrizedTensorFactory",
+    "product",
+    "SeparatedParametrizedForm",
+    "sum",
+    "SymbolicParameters",
+    "TimeQuadrature",
+    "TimeSeries",
+    "transpose"
 ]

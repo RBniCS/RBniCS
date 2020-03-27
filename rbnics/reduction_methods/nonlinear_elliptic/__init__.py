@@ -21,7 +21,7 @@ from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_pod_galerkin
 from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_method import NonlinearEllipticReductionMethod
 
 __all__ = [
-    'NonlinearEllipticPODGalerkinReduction',
-    # 'NonlinearEllipticRBReduction',
-    'NonlinearEllipticReductionMethod'
+    "NonlinearEllipticPODGalerkinReduction",
+    # "NonlinearEllipticRBReduction",
+    "NonlinearEllipticReductionMethod"
 ]

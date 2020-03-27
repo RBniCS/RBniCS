@@ -28,19 +28,19 @@ from rbnics.utils.test.run_and_compare_to_gold import run_and_compare_to_gold
 from rbnics.utils.test.tempdir import load_tempdir, save_tempdir, tempdir
 
 __all__ = [
-    'add_gold_options',
-    'add_performance_options',
-    'AttachInstanceMethod',
-    'diff',
-    'disable_matplotlib',
-    'enable_logging',
-    'enable_matplotlib',
-    'load_tempdir',
-    'patch_benchmark_plugin',
-    'patch_initialize_testing_training_set',
-    'PatchInstanceMethod',
-    'process_gold_options',
-    'run_and_compare_to_gold',
-    'save_tempdir',
-    'tempdir'
+    "add_gold_options",
+    "add_performance_options",
+    "AttachInstanceMethod",
+    "diff",
+    "disable_matplotlib",
+    "enable_logging",
+    "enable_matplotlib",
+    "load_tempdir",
+    "patch_benchmark_plugin",
+    "patch_initialize_testing_training_set",
+    "PatchInstanceMethod",
+    "process_gold_options",
+    "run_and_compare_to_gold",
+    "save_tempdir",
+    "tempdir"
 ]

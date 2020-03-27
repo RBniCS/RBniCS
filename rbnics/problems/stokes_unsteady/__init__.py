@@ -23,8 +23,8 @@ from rbnics.problems.stokes_unsteady.stokes_unsteady_reduced_problem import Stok
 
 
 __all__ = [
-    'StokesUnsteadyPODGalerkinReducedProblem',
-    'StokesUnsteadyProblem',
-    # 'StokesUnsteadyRBReducedProblem',
-    'StokesUnsteadyReducedProblem'
+    "StokesUnsteadyPODGalerkinReducedProblem",
+    "StokesUnsteadyProblem",
+    # "StokesUnsteadyRBReducedProblem",
+    "StokesUnsteadyReducedProblem"
 ]

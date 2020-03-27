@@ -27,8 +27,8 @@ import tempfile
 def AdditionalBackendsOptions(SetuptoolsClass):
     class AdditionalBackendsOptions_Class(SetuptoolsClass):
         user_options = SetuptoolsClass.user_options + [
-            ('additional-backends=', None, 'Desired additional backends'),
-            ('additional-backends-directory=', None, 'Additional backends directory')
+            ("additional-backends=", None, "Desired additional backends"),
+            ("additional-backends-directory=", None, "Additional backends directory")
         ]
 
         def initialize_options(self):

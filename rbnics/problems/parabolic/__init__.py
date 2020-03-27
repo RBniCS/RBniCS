@@ -31,16 +31,16 @@ from rbnics.problems.parabolic.parabolic_reduced_problem import ParabolicReduced
 
 
 __all__ = [
-    'AbstractParabolicPODGalerkinReducedProblem',
-    'AbstractParabolicProblem',
-    'AbstractParabolicRBReducedProblem',
-    'AbstractParabolicReducedProblem',
-    'ParabolicCoercivePODGalerkinReducedProblem',
-    'ParabolicCoerciveProblem',
-    'ParabolicCoerciveRBReducedProblem',
-    'ParabolicCoerciveReducedProblem',
-    'ParabolicPODGalerkinReducedProblem',
-    'ParabolicProblem',
-    'ParabolicRBReducedProblem',
-    'ParabolicReducedProblem'
+    "AbstractParabolicPODGalerkinReducedProblem",
+    "AbstractParabolicProblem",
+    "AbstractParabolicRBReducedProblem",
+    "AbstractParabolicReducedProblem",
+    "ParabolicCoercivePODGalerkinReducedProblem",
+    "ParabolicCoerciveProblem",
+    "ParabolicCoerciveRBReducedProblem",
+    "ParabolicCoerciveReducedProblem",
+    "ParabolicPODGalerkinReducedProblem",
+    "ParabolicProblem",
+    "ParabolicRBReducedProblem",
+    "ParabolicReducedProblem"
 ]

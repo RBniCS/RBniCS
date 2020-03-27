@@ -20,7 +20,7 @@ from rbnics.utils.cache.cache import Cache, cache
 from rbnics.utils.cache.time_series_cache import TimeSeriesCache
 
 __all__ = [
-    'Cache',
-    'cache',
-    'TimeSeriesCache'
+    "Cache",
+    "cache",
+    "TimeSeriesCache"
 ]
