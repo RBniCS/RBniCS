@@ -20,11 +20,11 @@ from rbnics.problems.base import NonlinearTimeDependentReducedProblem
 from rbnics.backends import product, sum
 
 def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClass):
-    
+
     NonlinearParabolicReducedProblem_Base = NonlinearTimeDependentReducedProblem(NonlinearEllipticReducedProblem_DerivedClass)
-    
+
     class NonlinearParabolicReducedProblem_Class(NonlinearParabolicReducedProblem_Base):
-            
+
         class ProblemSolver(NonlinearParabolicReducedProblem_Base.ProblemSolver):
             def residual_eval(self, t, solution, solution_dot):
                 problem = self.problem
@@ -40,7 +40,7 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
                     + assembled_operator["c"]
                     - assembled_operator["f"]
                 )
-                
+
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
                 N = self.N
@@ -53,6 +53,6 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
                     + assembled_operator["a"]
                     + assembled_operator["dc"]
                 )
-            
+
     # return value (a class) for the decorator
     return NonlinearParabolicReducedProblem_Class

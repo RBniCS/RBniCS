@@ -22,7 +22,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 class GramSchmidt(object, metaclass=ABCMeta):
     def __init__(self, space, inner_product, component=None):
         pass
-        
+
     # Apply one iteration of Gram Schmidt procedure to orthonormalize the new basis function
     # with respect to the provided basis functions matrix
     @abstractmethod

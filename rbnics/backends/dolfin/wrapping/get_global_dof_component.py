@@ -25,7 +25,7 @@ def get_global_dof_component(global_dof, V, global_to_local=None, local_dof_to_c
         global_to_local = get_global_dof_to_local_dof_map(V, V.dofmap())
     if local_dof_to_component is None:
         local_dof_to_component = get_local_dof_to_component_map(V)
-    
+
     mpi_comm = V.mesh().mpi_comm()
     dof_component = None
     dof_component_processor = -1

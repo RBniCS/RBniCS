@@ -21,11 +21,11 @@ from rbnics.reduction_methods.base import LinearReductionMethod
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 def EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    
+
     EllipticOptimalControlReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
-        
+
     class EllipticOptimalControlReductionMethod_Class(EllipticOptimalControlReductionMethod_Base):
         pass
-    
+
     # return value (a class) for the decorator
     return EllipticOptimalControlReductionMethod_Class

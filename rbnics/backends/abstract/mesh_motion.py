@@ -22,15 +22,15 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 class MeshMotion(object, metaclass=ABCMeta):
     def __init__(self, space, subdomains, shape_parametrization_expression):
         pass
-        
+
     @abstractmethod
     def init(self, problem):
         pass
-        
+
     @abstractmethod
     def move_mesh(self):
         pass
-        
+
     @abstractmethod
     def reset_reference(self):
         pass

@@ -17,16 +17,16 @@
 #
 
 from dolfin import as_backend_type, compile_cpp_code
-    
+
 def matrix_mul_vector(matrix, vector):
     return matrix*vector
-    
+
 cpp_code = """
     #include <pybind11/pybind11.h>
     #include <dolfin/la/PETScMatrix.h>
-    
+
     void throw_error(PetscErrorCode ierr, std::string reason);
-    
+
     PetscScalar vectorized_matrix_inner_vectorized_matrix(std::shared_ptr<dolfin::PETScMatrix> A, std::shared_ptr<dolfin::PETScMatrix> B)
     {
         Mat a = A->mat();
@@ -60,12 +60,12 @@ cpp_code = """
         }
         return output;
     }
-    
+
     void throw_error(PetscErrorCode ierr, std::string reason)
     {
         throw std::runtime_error("Error in vectorized_matrix_inner_vectorized_matrix: reason " + reason + ", error code " + std::to_string(ierr));
     }
-    
+
     PYBIND11_MODULE(SIGNATURE, m)
     {
         m.def("vectorized_matrix_inner_vectorized_matrix", &vectorized_matrix_inner_vectorized_matrix);

@@ -23,7 +23,7 @@ from rbnics.backends.dolfin.wrapping.dirichlet_bc import InvertProductOutputDiri
 
 def Matrix():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
-    
+
 # Attach a Type() function
 def Type():
     return GenericMatrix
@@ -58,7 +58,7 @@ def preserve_generator_attribute(operator):
         else:
             return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
-    
+
 for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__imul__", "__truediv__", "__itruediv__"):
     preserve_generator_attribute(operator)
 

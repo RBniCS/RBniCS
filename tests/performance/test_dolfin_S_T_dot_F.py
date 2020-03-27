@@ -34,7 +34,7 @@ class Data(object):
         self.N = N
         mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
-        
+
     def generate_random(self):
         # Generate random vectors
         S = FunctionsList(self.V)
@@ -44,21 +44,21 @@ class Data(object):
         F = RandomDolfinFunction(self.V)
         # Return
         return (S, F)
-        
+
     def evaluate_builtin(self, S, F):
         result_builtin = NumpyVector(self.N)
         for i in range(self.N):
             result_builtin[i] = S[i].vector().inner(F.vector())
         return result_builtin
-        
+
     def evaluate_backend(self, S, F):
         return transpose(S)*F.vector()
-        
+
     def assert_backend(self, S, F, result_backend):
         result_builtin = self.evaluate_builtin(S, F)
         relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))

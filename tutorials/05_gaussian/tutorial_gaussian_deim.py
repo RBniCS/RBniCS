@@ -21,7 +21,7 @@ from rbnics import *
 
 @DEIM()
 class Gaussian(EllipticCoerciveProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -35,15 +35,15 @@ class Gaussian(EllipticCoerciveProblem):
         self.dx = Measure("dx")(subdomain_data=subdomains)
         self.f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         # note that we cannot use self.mu in the initialization of self.f, because self.mu has not been initialized yet
-        
+
     # Return custom problem name
     def name(self):
         return "GaussianDEIM"
-        
+
     # Return the alpha_lower bound.
     def get_stability_factor_lower_bound(self):
         return 1.
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         if term == "a":
@@ -52,7 +52,7 @@ class Gaussian(EllipticCoerciveProblem):
             return (1., )
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -76,7 +76,7 @@ class Gaussian(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-            
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/gaussian.xml")
 subdomains = MeshFunction("size_t", mesh, "data/gaussian_physical_region.xml")

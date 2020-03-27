@@ -22,7 +22,7 @@ cpp_code = """
     #include <petscksp.h>
     #include <dolfin/common/MPI.h>
     #include <pybind11/pybind11.h>
-    
+
     std::string get_default_linear_solver()
     {
         if (dolfin::MPI::size(MPI_COMM_WORLD) == 1)
@@ -54,7 +54,7 @@ cpp_code = """
             #endif
         }
     }
-    
+
     PYBIND11_MODULE(SIGNATURE, m)
     {
         m.def("get_default_linear_solver", &get_default_linear_solver);

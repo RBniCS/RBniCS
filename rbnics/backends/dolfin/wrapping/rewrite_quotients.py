@@ -22,7 +22,7 @@ from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_
 
 class RewriteQuotientsReplacer(MultiFunction):
     expr = MultiFunction.reuse_if_untouched
-    
+
     def division(self, o, n, d):
         # We need to rewrite quotients in this way so that expression like
         #   expr1*v/expr2
@@ -33,7 +33,7 @@ class RewriteQuotientsReplacer(MultiFunction):
         #   coefficient1 = expr1
         #   coefficient2 = expr2
         return n*(1./d)
-        
+
 def rewrite_quotients(form):
     form = remove_complex_nodes(form) # TODO support forms in the complex field. This is currently needed otherwise conj(a/b) does not get rewritten.
     return map_integrand_dags(RewriteQuotientsReplacer(), form)

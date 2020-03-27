@@ -33,7 +33,7 @@ class Left(SubDomain):
 class Right(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - 1.) < DOLFIN_EPS
-        
+
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 left = Left()

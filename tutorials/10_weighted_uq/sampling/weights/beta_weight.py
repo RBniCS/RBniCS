@@ -26,7 +26,7 @@ class BetaWeight(Weight):
         assert len(a) == len(b)
         self.a = a
         self.b = b
-        
+
     def density(self, box, samples):
         assert len(self.a) == len(box)
         assert len(self.b) == len(box)

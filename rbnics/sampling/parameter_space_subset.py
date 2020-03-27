@@ -31,18 +31,18 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         ExportableList.__init__(self, "text")
         self.mpi_comm = COMM_WORLD
         self.distributed_max = True
-        
+
     @overload
     def __getitem__(self, key: int):
         return self._list[key]
-        
+
     @overload
     def __getitem__(self, key: slice):
         output = ParameterSpaceSubset()
         output.distributed_max = self.distributed_max
         output._list = self._list[key]
         return output
-    
+
     # Method for generation of parameter space subsets
     def generate(self, box, n, sampling=None):
         if len(box) > 0:
@@ -57,7 +57,7 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         else:
             for i in range(n):
                 self._list.append(tuple())
-        
+
     def max(self, generator, postprocessor=None):
         if postprocessor is None:
             def postprocessor(value):
@@ -82,32 +82,32 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             global_i_max = argmax(values_with_postprocessing)
             global_value_max = values[global_i_max]
         return (global_value_max, global_i_max)
-        
+
     def serialize_maximum_computations(self):
         assert self.distributed_max is True
         self.distributed_max = False
-    
+
     def diff(self, other_set):
         output = ParameterSpaceSubset()
         output.distributed_max = self.distributed_max
         output._list = [mu for mu in self._list if mu not in other_set]
         return output
-        
+
     # M parameters in this set closest to mu
     def closest(self, M, mu):
         assert M <= len(self)
-        
+
         # Trivial case 1:
         if M == len(self):
             return self
-            
+
         output = ParameterSpaceSubset()
         output.distributed_max = self.distributed_max
-            
+
         # Trivial case 2:
         if M == 0:
             return output
-        
+
         parameters_and_distances = list()
         for xi_i in self:
             distance = sqrt(sum([(x - y)**2 for (x, y) in zip(mu, xi_i)]))

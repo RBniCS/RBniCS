@@ -40,14 +40,14 @@ def EIMDecoratedProblem(
     **decorator_kwargs
 ):
     from rbnics.eim.problems.eim import EIM
-    
+
     @ProblemDecoratorFor(EIM, ExactAlgorithm=ExactEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def EIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        
+
         @DefineSymbolicParameters
         @PreserveClassName
         class EIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
-            
+
             # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
@@ -55,17 +55,17 @@ def EIMDecoratedProblem(
                 # Storage for EIM reduced problems
                 self.separated_forms = dict() # from terms to AffineExpansionSeparatedFormsStorage
                 self.EIM_approximations = dict() # from coefficients to EIMApproximation
-                
+
                 # Store value of N_EIM passed to solve
                 self._N_EIM = None
                 # Store values passed to decorator
                 self._store_EIM_stages(stages)
                 # Avoid useless assignments
                 self._update_N_EIM__previous_kwargs = None
-                
+
                 # Generate offline online backend for current problem
                 self.offline_online_backend = OfflineOnlineBackend(self.name())
-                
+
             @overload(str)
             def _store_EIM_stages(self, stage):
                 assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
@@ -73,7 +73,7 @@ def EIMDecoratedProblem(
                 self._apply_EIM_at_stages = (stages, )
                 assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") below @EIM(\"online\") decorator"
                 assert self._apply_exact_evaluation_at_stages == ("offline", )
-                
+
             @overload(tuple_of(str))
             def _store_EIM_stages(self, stage):
                 assert len(stages) in (1, 2)
@@ -83,7 +83,7 @@ def EIMDecoratedProblem(
                     assert stages[0] != stages[1]
                 self._apply_EIM_at_stages = stages
                 assert not hasattr(self, "_apply_exact_evaluation_at_stages"), "This choice does not make any sense because there is at least a stage for which both EIM and ExactParametrizedFunctions are required"
-                
+
             def _init_EIM_approximations(self):
                 # Preprocess each term in the affine expansions.
                 # Note that this cannot be done in __init__, because operators may depend on self.mu,
@@ -125,7 +125,7 @@ def EIMDecoratedProblem(
                                             self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, os.path.join(self.name(), "eim", factor_name), basis_generation)
                     # Restore float parameters
                     self.detach_symbolic_parameters()
-                    
+
             def init(self):
                 # Call parent's method (enforcing an empty parent call to _init_operators)
                 self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None) # may be shared between EIM and exact evaluation
@@ -135,7 +135,7 @@ def EIMDecoratedProblem(
                 del self.disable_init_operators
                 # Then, initialize EIM operators
                 self._init_operators_EIM()
-                
+
             def _init_operators_EIM(self):
                 # Initialize offline/online switch storage only once (may be shared between EIM and exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
@@ -169,11 +169,11 @@ def EIMDecoratedProblem(
                     self.operator.unset_is_affine()
                 # Restore former stage in offline/online switch storage
                 OfflineOnlineSwitch.set_current_stage(former_stage)
-                    
+
             def _solve(self, **kwargs):
                 self._update_N_EIM(**kwargs)
                 ParametrizedDifferentialProblem_DerivedClass._solve(self, **kwargs)
-            
+
             def _update_N_EIM(self, **kwargs):
                 N_EIM = kwargs.pop("EIM", None)
                 if N_EIM != self._update_N_EIM__previous_kwargs:
@@ -193,7 +193,7 @@ def EIMDecoratedProblem(
                     else:
                         self._N_EIM = None
                     self._update_N_EIM__previous_kwargs = N_EIM
-                
+
             def _assemble_operator_EIM(self, term):
                 eim_forms = list()
                 for form in self.separated_forms[term]:
@@ -211,7 +211,7 @@ def EIMDecoratedProblem(
                     for unchanged_form in form.unchanged_forms:
                         eim_forms.append(unchanged_form)
                 return tuple(eim_forms)
-                
+
             def _compute_theta_EIM(self, term):
                 original_thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                 eim_thetas = list()
@@ -238,7 +238,7 @@ def EIMDecoratedProblem(
                     for _ in form.unchanged_forms:
                         eim_thetas.append(original_theta)
                 return tuple(eim_thetas)
-                
+
             def _cache_key_from_kwargs(self, **kwargs):
                 cache_key = ParametrizedDifferentialProblem_DerivedClass._cache_key_from_kwargs(self, **kwargs)
                 # Change cache key depending on current stage
@@ -248,9 +248,9 @@ def EIMDecoratedProblem(
                     cache_key = cache_key + ("EIM", )
                 # Return
                 return cache_key
-                
+
         # return value (a class) for the decorator
         return EIMDecoratedProblem_Class
-        
+
     # return the decorator itself
     return EIMDecoratedProblem_Decorator

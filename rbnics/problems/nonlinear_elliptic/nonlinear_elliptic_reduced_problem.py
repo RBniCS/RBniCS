@@ -20,11 +20,11 @@ from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.backends import product, sum
 
 def NonlinearEllipticReducedProblem(EllipticReducedProblem_DerivedClass):
-    
+
     NonlinearEllipticReducedProblem_Base = NonlinearReducedProblem(EllipticReducedProblem_DerivedClass)
-    
+
     class NonlinearEllipticReducedProblem_Class(NonlinearEllipticReducedProblem_Base):
-        
+
         class ProblemSolver(NonlinearEllipticReducedProblem_Base.ProblemSolver):
             def residual_eval(self, solution):
                 problem = self.problem
@@ -34,7 +34,7 @@ def NonlinearEllipticReducedProblem(EllipticReducedProblem_DerivedClass):
                 assembled_operator["c"] = sum(product(problem.compute_theta("c"), problem.operator["c"][:N]))
                 assembled_operator["f"] = sum(product(problem.compute_theta("f"), problem.operator["f"][:N]))
                 return assembled_operator["a"]*solution + assembled_operator["c"] - assembled_operator["f"]
-                
+
             def jacobian_eval(self, solution):
                 problem = self.problem
                 N = self.N
@@ -42,6 +42,6 @@ def NonlinearEllipticReducedProblem(EllipticReducedProblem_DerivedClass):
                 assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
                 assembled_operator["dc"] = sum(product(problem.compute_theta("dc"), problem.operator["dc"][:N, :N]))
                 return assembled_operator["a"] + assembled_operator["dc"]
-        
+
     # return value (a class) for the decorator
     return NonlinearEllipticReducedProblem_Class

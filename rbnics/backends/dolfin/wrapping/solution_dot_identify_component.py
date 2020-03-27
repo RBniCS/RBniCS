@@ -22,7 +22,7 @@ from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_
 def solution_dot_identify_component(node):
     node = _remove_mute_indices(node)
     return _solution_dot_identify_component(node)
-    
+
 def _solution_dot_identify_component(node):
     assert node in _solution_dot_split_to_component
     assert node in _solution_dot_split_to_solution_dot

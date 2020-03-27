@@ -44,7 +44,7 @@ def expand_sum_product(form):
     unpatch_expr_mul()
     # Return
     return expanded_split_form
-    
+
 class SympyExpander(MultiFunction):
     def __init__(self):
         MultiFunction.__init__(self)
@@ -53,20 +53,20 @@ class SympyExpander(MultiFunction):
         self.sympy_to_ufl = dict()
         self.ufl_to_sympy_id = dict()
         self.sympy_id_to_ufl = dict()
-        
+
     expr = MultiFunction.reuse_if_untouched
-    
+
     def operator(self, e, *ops):
         self._store_sympy_symbol(e)
         new_e = MultiFunction.reuse_if_untouched(self, e, *ops)
         if new_e != e:
             self._update_sympy_symbol(e, new_e)
         return new_e
-        
+
     def terminal(self, o):
         self._store_sympy_symbol(o)
         return o
-        
+
     def sum(self, e, arg1, arg2):
         if e not in self.ufl_to_replaced_ufl:
             self._store_sympy_symbol(e)
@@ -90,16 +90,16 @@ class SympyExpander(MultiFunction):
             return new_e
         else:
             return self.ufl_to_replaced_ufl[e]
-    
+
     def indexed(self, o, *dops):
         return self._transform_and_attach_multi_index(Indexed, o, *dops)
-        
+
     def index_sum(self, o, *dops):
         return self._transform_and_attach_multi_index(IndexSum, o, *dops)
-        
+
     def component_tensor(self, o, *dops):
         return self._transform_and_attach_multi_index(ComponentTensor, o, *dops)
-    
+
     def _transform_and_attach_multi_index(self, Class, o, *dops):
         if o not in self.ufl_to_replaced_ufl:
             self._store_sympy_symbol(o)
@@ -113,7 +113,7 @@ class SympyExpander(MultiFunction):
             return new_o
         else:
             return self.ufl_to_replaced_ufl[o]
-        
+
     def _apply_sympy_simplify(self, e, arg1, arg2, op):
         from rbnics.shape_parametrization.utils.symbolic import sympy_eval
         assert arg1 in self.ufl_to_sympy
@@ -124,7 +124,7 @@ class SympyExpander(MultiFunction):
         sympy_expanded_e = self._pow_to_mul(sympy_expanded_e) # Indexed does not support power with integer exponents, only multiplication
         ufl_expanded_e = sympy_eval(str(sympy_expanded_e), self.sympy_id_to_ufl)
         return (ufl_expanded_e, sympy_expanded_e)
-        
+
     def _store_sympy_symbol(self, o):
         if isinstance(o, MultiIndex):
             pass
@@ -139,7 +139,7 @@ class SympyExpander(MultiFunction):
                 self.sympy_to_ufl[sympy_o] = o
                 self.ufl_to_sympy_id[o] = sympy_id
                 self.sympy_id_to_ufl[sympy_id] = o
-                
+
     def _update_sympy_symbol(self, old_o, new_o, new_sympy_o=None):
         if new_sympy_o is not None:
             self.ufl_to_sympy[old_o] = new_sympy_o
@@ -154,7 +154,7 @@ class SympyExpander(MultiFunction):
             sympy_id = self.ufl_to_sympy_id[old_o]
             self.ufl_to_sympy_id[new_o] = sympy_id
             self.sympy_id_to_ufl[sympy_id] = new_o
-        
+
     @staticmethod
     def _pow_to_mul(expr):
         """
@@ -165,7 +165,7 @@ class SympyExpander(MultiFunction):
         repl = dict(zip(pows, (Mul(*[p.base]*p.exp, evaluate=False) for p in pows)))
         output, _ = SympyExpander._non_eval_xreplace(expr, repl)
         return output
-        
+
     @staticmethod
     def _non_eval_xreplace(expr, rule):
         """
@@ -185,7 +185,7 @@ class SympyExpander(MultiFunction):
             if changed:
                 return expr.func(*args, evaluate=False), True
         return expr, False
-        
+
 def split_sum(input_, output):
     if isinstance(input_, Sum):
         for operand in input_.ufl_operands:
@@ -199,7 +199,7 @@ def split_sum(input_, output):
         output.extend([IndexSum(summand_0, indices) for summand_0 in output_0])
     else:
         output.append(input_)
-        
+
 # Sympy reconstructs expressions from scratch. If that expression contains a product, we do not want to go through
 # the helper method _mult defined in ufl/exproperators.py, but rather create a plain UFL Product class.
 Expr_mul = Expr.__mul__
@@ -209,7 +209,7 @@ def patch_expr_mul():
         return Product(a, b)
     Expr.__mul__ = plain_mul
     Expr.__rmul__ = plain_mul
-    
+
 def unpatch_expr_mul():
     Expr.__mul__ = Expr_mul
     Expr.__rmul__ = Expr_rmul

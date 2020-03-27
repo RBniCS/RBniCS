@@ -18,6 +18,6 @@
 
 def matrix_mul_vector(matrix, vector):
     pass
-    
+
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
     pass

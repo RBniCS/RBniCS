@@ -60,7 +60,7 @@ def _export(
     ) = None
 ):
     export_base(solution, directory, filename, suffix, component)
-    
+
 @overload
 def _export(
     solution: Operator,

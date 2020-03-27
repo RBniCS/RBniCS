@@ -26,18 +26,18 @@ class GeostrophicProblem(GeostrophicProblem_Base):
     def __init__(self, V, **kwargs):
         # Call to parent
         GeostrophicProblem_Base.__init__(self, V, **kwargs)
-        
+
         # Form names for geostrophic problems
         self.terms = ["a", "f"]
         self.terms_order = {"a": 2, "f": 1}
         self.components = ["psi", "q"]
-        
+
     # Perform a truth solve
     class ProblemSolver(GeostrophicProblem_Base.ProblemSolver):
         def matrix_eval(self):
             problem = self.problem
             return sum(product(problem.compute_theta("a"), problem.operator["a"]))
-            
+
         def vector_eval(self):
             problem = self.problem
             return sum(product(problem.compute_theta("f"), problem.operator["f"]))

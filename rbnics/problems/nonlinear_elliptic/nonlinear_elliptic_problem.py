@@ -23,16 +23,16 @@ from rbnics.backends import product, sum
 NonlinearEllipticProblem_Base = NonlinearProblem(EllipticProblem)
 
 class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         NonlinearEllipticProblem_Base.__init__(self, V, **kwargs)
-        
+
         # Form names for nonlinear problems
         self.terms = ["a", "c", "dc", "f"]
         self.terms_order = {"a": 2, "c": 1, "dc": 2, "f": 1}
-    
+
     class ProblemSolver(NonlinearEllipticProblem_Base.ProblemSolver):
         def residual_eval(self, solution):
             problem = self.problem
@@ -41,7 +41,7 @@ class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
             assembled_operator["c"] = sum(product(problem.compute_theta("c"), problem.operator["c"]))
             assembled_operator["f"] = sum(product(problem.compute_theta("f"), problem.operator["f"]))
             return assembled_operator["a"]*solution + assembled_operator["c"] - assembled_operator["f"]
-            
+
         def jacobian_eval(self, solution):
             problem = self.problem
             assembled_operator = dict()

@@ -31,16 +31,16 @@ from rbnics.utils.decorators import overload
 def solution_identify_component(node):
     node = _remove_mute_indices(node)
     return _solution_identify_component(node)
-    
+
 def _solution_identify_component(node):
     assert node in _solution_split_to_component
     assert node in _solution_split_to_solution
     return (node, _solution_split_to_component[node], _solution_split_to_solution[node])
-    
+
 @overload
 def _remove_mute_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
     return node
-    
+
 @overload
 def _remove_mute_indices(node: Indexed):
     assert len(node.ufl_operands) == 2
@@ -57,7 +57,7 @@ def _remove_mute_indices(node: Indexed):
         return _remove_mute_indices(node.ufl_operands[0])
     else:
         raise TypeError("Invalid index")
-        
+
 @overload
 def _remove_mute_indices(node: ListTensor):
     return node._ufl_expr_reconstruct_(*[_remove_mute_indices(operand) for operand in node.ufl_operands])

@@ -33,7 +33,7 @@ def python_string_to_sympy(string_expression: str, problem: ParametrizedProblem)
     x_symb = sympy_symbolic_coordinates(problem.V.mesh().geometry().dim(), MatrixListSymbol)
     mu_symb = MatrixListSymbol("mu", len(problem.mu), 1)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
-    
+
 @overload
 def python_string_to_sympy(string_expression: str, x_symb: (Matrix, MatrixSymbol, None), mu_symb: (Matrix, MatrixSymbol, None)):
     return sympify(string_expression, locals={"x": x_symb, "mu": mu_symb})
@@ -46,14 +46,14 @@ def python_string_to_sympy(string_expression: tuple_of(str), problem: Parametriz
     x_symb = sympy_symbolic_coordinates(problem.V.mesh().geometry().dim(), MatrixListSymbol)
     mu_symb = MatrixListSymbol("mu", len(problem.mu), 1)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
-    
+
 @overload
 def python_string_to_sympy(string_expression: tuple_of(str), x_symb: (Matrix, MatrixSymbol, None), mu_symb: (Matrix, MatrixSymbol, None)):
     sympy_expression = zeros(len(string_expression), 1)
     for (i, si) in enumerate(string_expression):
         sympy_expression[i] = sympify(si, locals={"x": x_symb, "mu": mu_symb})
     return ImmutableMatrix(sympy_expression)
-    
+
 @overload
 def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), problem: ParametrizedProblem):
     """
@@ -62,7 +62,7 @@ def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), problem: 
     x_symb = sympy_symbolic_coordinates(problem.V.mesh().geometry().dim(), MatrixListSymbol)
     mu_symb = MatrixListSymbol("mu", len(problem.mu), 1)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
-    
+
 @overload
 def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), x_symb: (Matrix, MatrixSymbol, None), mu_symb: (Matrix, MatrixSymbol, None)):
     assert all([len(si) == len(string_expression[0]) for si in string_expression[1:]])

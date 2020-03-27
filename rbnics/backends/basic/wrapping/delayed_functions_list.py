@@ -26,7 +26,7 @@ class DelayedFunctionsList(object):
         self.space = space
         self._enrich_memory = list()
         self._precomputed_slices = Cache() # from tuple to DelayedFunctionsList
-        
+
     def enrich(self, function, component=None, weight=None, copy=True):
         assert component is None
         assert weight is None
@@ -37,20 +37,20 @@ class DelayedFunctionsList(object):
         self._precomputed_slices.clear()
         # Prepare trivial precomputed slice
         self._precomputed_slices[0, len(self._enrich_memory)] = self
-        
+
     @overload(DelayedLinearSolver)
     def _enrich(self, function):
         self._enrich_memory.append(function)
-        
+
     @overload(lambda cls: cls)
     def _enrich(self, other):
         assert self.space is other.space
         self._enrich_memory.extend(other._enrich_memory)
-        
+
     @overload(int)
     def __getitem__(self, key):
         return self._enrich_memory[key]
-        
+
     @overload(slice) # e.g. key = :N, return the first N functions
     def __getitem__(self, key):
         if key.start is not None:
@@ -62,7 +62,7 @@ class DelayedFunctionsList(object):
             stop = key.stop
         else:
             stop = len(self._enrich_memory)
-            
+
         assert start <= stop
         if start < stop:
             assert start >= 0
@@ -71,22 +71,22 @@ class DelayedFunctionsList(object):
             assert stop <= len(self._enrich_memory)
         # elif start == stop
         #    trivial case which will result in an empty FunctionsList
-        
+
         if (start, stop) not in self._precomputed_slices:
             output = DelayedFunctionsList(self.space)
             if start < stop:
                 output._enrich_memory = self._enrich_memory[key]
             self._precomputed_slices[start, stop] = output
         return self._precomputed_slices[start, stop]
-        
+
     def __len__(self):
         return len(self._enrich_memory)
-        
+
     def save(self, directory, filename):
         LengthIO.save_file(len(self._enrich_memory), directory, filename + "_length")
         for (index, memory) in enumerate(self._enrich_memory):
             memory.save(directory, filename + "_" + str(index))
-        
+
     def load(self, directory, filename):
         if len(self._enrich_memory) > 0: # avoid loading multiple times
             return False
@@ -98,7 +98,7 @@ class DelayedFunctionsList(object):
                 memory.load(directory, filename + "_" + str(index))
                 self.enrich(memory)
             return True
-            
+
     def get_problem_name(self):
         problem_name = None
         for memory in self._enrich_memory:

@@ -25,7 +25,7 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     assert config.pluginmanager.hasplugin("benchmark")
     patch_benchmark_plugin(config.pluginmanager.getplugin("benchmark"))
-    
+
 def pytest_runtest_teardown(item, nextitem):
     # Do the normal teardown
     item.teardown()

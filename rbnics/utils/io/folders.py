@@ -21,17 +21,17 @@ from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import parallel_io
 
 class Folders(dict): # dict from string to string
-    
+
     # Auxiliary class
     class Folder(object):
         @overload(str)
         def __init__(self, name):
             self.name = name
-            
+
         @overload(lambda cls: cls)
         def __init__(self, name):
             self.name = name.name
-            
+
         # Returns True if it was necessary to create the folder
         # or if the folder was already created before, but it is
         # empty. Returs False otherwise.
@@ -44,7 +44,7 @@ class Folders(dict): # dict from string to string
                     return True
                 return False
             return parallel_io(create_task)
-            
+
         def touch_file(self, filename):
             def touch_file_task():
                 with open(os.path.join(self.name, filename), "a"):
@@ -53,19 +53,19 @@ class Folders(dict): # dict from string to string
 
         def __str__(self):
             return self.name
-            
+
         def __repr__(self):
             return self.name
-            
+
         def __add__(self, suffix):
             return Folders.Folder(str(self) + suffix)
-            
+
         def __radd__(self, prefix):
             return Folders.Folder(prefix + str(self))
-            
+
         def replace(self, old, new):
             return Folders.Folder(str(self).replace(old, new))
-    
+
     def __init__(self, *args):
         dict.__init__(self, args)
 
@@ -76,7 +76,7 @@ class Folders(dict): # dict from string to string
     def __setitem__(self, key, val):
         # takes a string and initialize a Folder from it
         dict.__setitem__(self, key, Folders.Folder(val))
-    
+
     # Returns True if it was necessary to create *at least* a folder
     # or if *at least* a folder was already created before, but it is
     # empty. Returs False otherwise.

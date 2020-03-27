@@ -42,5 +42,5 @@ def _ReductionMethodDecoratorGenerator(ReductionMethodDecorator):
     def _ReductionMethodDecoratorGenerator_Function(truth_problem, **kwargs):
         return ReductionMethodDecorator
     return _ReductionMethodDecoratorGenerator_Function
-    
+
 _cache = types.ModuleType("reduction method decorators", "Storage for reduction method decorators")

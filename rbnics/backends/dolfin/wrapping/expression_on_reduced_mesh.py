@@ -37,7 +37,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
             t = expression_problem.t
         else:
             t = None
-        
+
         if (expression_name, reduced_mesh) not in expression_cache:
             visited = set()
             replacements = dict()
@@ -63,7 +63,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 0: dict(),
                 1: dict()
             }
-            
+
             # Look for terminals on truth mesh
             logger.log(DEBUG, "Traversing terminals of expression " + expression_name)
             for node in wrapping.expression_iterator(expression):
@@ -133,7 +133,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                     visited.add(node)
             # ... and replace them
             replaced_expression = wrapping.expression_replace(expression, replacements)
-            
+
             # Cache the resulting dicts
             expression_cache[(expression_name, reduced_mesh)] = replaced_expression
             truth_problems_cache[(expression_name, reduced_mesh)] = truth_problems
@@ -146,7 +146,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
             reduced_problem_to_reduced_mesh_solution_cache[(expression_name, reduced_mesh)] = reduced_problem_to_reduced_mesh_solution
             reduced_problem_to_reduced_mesh_solution_dot_cache[(expression_name, reduced_mesh)] = reduced_problem_to_reduced_mesh_solution_dot
             reduced_problem_to_reduced_basis_functions_cache[(expression_name, reduced_mesh)] = reduced_problem_to_reduced_basis_functions
-            
+
         # Extract from cache
         replaced_expression = expression_cache[(expression_name, reduced_mesh)]
         truth_problems = truth_problems_cache[(expression_name, reduced_mesh)]
@@ -159,7 +159,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
         reduced_problem_to_reduced_mesh_solution = reduced_problem_to_reduced_mesh_solution_cache[(expression_name, reduced_mesh)]
         reduced_problem_to_reduced_mesh_solution_dot = reduced_problem_to_reduced_mesh_solution_dot_cache[(expression_name, reduced_mesh)]
         reduced_problem_to_reduced_basis_functions = reduced_problem_to_reduced_basis_functions_cache[(expression_name, reduced_mesh)]
-        
+
         # Get list of truth and reduced problems that need to be solved, possibly updating cache
         required_truth_problems = list()
         required_reduced_problems = list()
@@ -264,7 +264,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 assert not reduced_problem_is_solving
                 # Append to list of required truth problems which are currently solving
                 required_truth_problems.append((truth_problem, True, False))
-        
+
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, truth_problem_is_solving, reduced_problem_is_solving) in required_truth_problems:
             if not reduced_problem_is_solving:
@@ -309,7 +309,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                     else:
                         solution_dot_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution_dot.N]*reduced_problem._solution_dot)
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
             # Solve (if necessary)
@@ -350,12 +350,12 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                         online_backend.online_assign(solution_dot_from, reduced_problem._solution_dot_over_time.at(t))
                     solution_dot_from = reduced_basis_functions[:solution_dot_from_N]*solution_dot_from
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Evaluate and return
         reduced_function = backend.Function(reduced_space)
         wrapping.evaluate_expression(expression, reduced_function, replaced_expression)
         return reduced_function
-        
+
     expression_cache = Cache()
     truth_problems_cache = Cache()
     truth_problem_to_components_cache = Cache()
@@ -367,7 +367,7 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
     reduced_problem_to_reduced_mesh_solution_cache = Cache()
     reduced_problem_to_reduced_mesh_solution_dot_cache = Cache()
     reduced_problem_to_reduced_basis_functions_cache = Cache()
-    
+
     return _basic_expression_on_reduced_mesh
 
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid

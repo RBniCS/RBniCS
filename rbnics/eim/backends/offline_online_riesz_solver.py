@@ -27,10 +27,10 @@ from rbnics.utils.decorators import overload
 def OfflineOnlineRieszSolver(problem_name):
     _OfflineOnlineRieszSolver_Base = OfflineOnlineSwitch(problem_name)
     class _OfflineOnlineRieszSolver(_OfflineOnlineRieszSolver_Base):
-        
+
         def __call__(self, problem):
             return _OfflineOnlineRieszSolver._RieszSolver(problem, self._content[_OfflineOnlineRieszSolver_Base._current_stage])
-            
+
         def set_is_affine(self, is_affine):
             assert isinstance(is_affine, bool)
             if is_affine:
@@ -41,15 +41,15 @@ def OfflineOnlineRieszSolver(problem_name):
                 self._content[_OfflineOnlineRieszSolver_Base._current_stage] = delay
             else:
                 assert delay is self._content[_OfflineOnlineRieszSolver_Base._current_stage]
-            
+
         def unset_is_affine(self):
             pass
-            
+
         class _RieszSolver(object):
             def __init__(self, problem, delay):
                 self.problem = problem
                 self.delay = delay
-            
+
             @overload
             def solve(self, rhs: object):
                 problem = self.problem
@@ -63,7 +63,7 @@ def OfflineOnlineRieszSolver(problem_name):
                     solver = DelayedLinearSolver(*args)
                     solver.set_parameters(problem._linear_solver_parameters)
                     return solver
-                    
+
             @overload
             def solve(self, coef: Number, matrix: object, basis_function: object):
                 if not self.delay:
@@ -73,5 +73,5 @@ def OfflineOnlineRieszSolver(problem_name):
                     rhs *= matrix
                     rhs *= basis_function
                 return self.solve(rhs)
-            
+
     return _OfflineOnlineRieszSolver

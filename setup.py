@@ -61,7 +61,7 @@ class install(setuptools_install):
         if self.additional_backends is not None:
             for symlink in egg_info.additional_backends_symlinks:
                 os.unlink(symlink)
-            
+
 @AdditionalBackendsOptions
 class egg_info(setuptools_egg_info):
     def run(self):

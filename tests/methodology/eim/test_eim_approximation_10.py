@@ -39,25 +39,25 @@ def test_eim_approximation_10(expression_type, basis_generation):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
             # Minimal subset of a time dependent ParametrizedDifferentialProblem
             self.t0 = 0.
             self.t = 0.
             self.dt = 0.
             self.T = 0.
-            
+
         def name(self):
             return "MockTimeDependentProblem_10_" + expression_type + "_" + basis_generation
-            
+
         def set_initial_time(self, t0):
             self.t0 = t0
-            
+
         def set_time(self, t):
             self.t = t
-            
+
         def set_time_step_size(self, dt):
             self.dt = dt
-            
+
         def set_final_time(self, T):
             self.T = T
 

@@ -47,13 +47,13 @@ class TimeStepping(AbstractTimeStepping):
         self.set_parameters({
             "linear_solver": "default"
         })
-            
+
     def set_parameters(self, parameters):
         self.solver.set_parameters(parameters)
-        
+
     def solve(self):
         self.solver.solve()
-        
+
 class _TimeDependentProblem(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
         # Store input arguments
@@ -66,7 +66,7 @@ class _TimeDependentProblem(object):
         # Make sure that residual vector and jacobian matrix are properly initialized
         self.residual_vector = self._residual_vector_assemble(self.residual_eval(0., self.solution, self.solution_dot))
         self.jacobian_matrix = self._jacobian_matrix_assemble(self.jacobian_eval(0., self.solution, self.solution_dot, 0.))
-        
+
     def residual_vector_eval(self, ts, t, petsc_solution, petsc_solution_dot, petsc_residual):
         """
            TSSetIFunction - Set the function to compute F(t,U,U_t) where F() = 0 is the DAE to be solved.
@@ -87,7 +87,7 @@ class _TimeDependentProblem(object):
                 .  u_t - time derivative of state vector
                 .  F   - function vector
                 -  ctx - [optional] user-defined context for matrix evaluation routine
-           
+
            (from PETSc/src/ts/interface/ts.c)
         """
         # 1. Store solution and solution_dot in dolfin data structures, as well as current time
@@ -99,49 +99,49 @@ class _TimeDependentProblem(object):
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
         self._residual_bcs_apply(bcs)
-            
+
     @overload
     def _residual_vector_assemble(self, residual_form: Form):
         return assemble(residual_form)
-        
+
     @overload
     def _residual_vector_assemble(self, residual_form: Form, petsc_residual: PETSc.Vec):
         self.residual_vector = PETScVector(petsc_residual)
         assemble(residual_form, tensor=self.residual_vector)
-        
+
     @overload
     def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory):
         return evaluate(residual_form)
-        
+
     @overload
     def _residual_vector_assemble(self, residual_form: ParametrizedTensorFactory, petsc_residual: PETSc.Vec):
         self.residual_vector = PETScVector(petsc_residual)
         evaluate(residual_form, tensor=self.residual_vector)
-        
+
     @overload
     def _residual_vector_assemble(self, residual_vector: GenericVector):
         return residual_vector
-        
+
     @overload
     def _residual_vector_assemble(self, residual_vector_input: GenericVector, petsc_residual: PETSc.Vec):
         self.residual_vector = PETScVector(petsc_residual)
         to_petsc4py(residual_vector_input).swap(petsc_residual)
-        
+
     @overload
     def _residual_bcs_apply(self, bcs: None):
         pass
-        
+
     @overload
     def _residual_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in bcs:
             bc.apply(self.residual_vector, self.solution.vector())
-            
+
     @overload
     def _residual_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in bcs:
             for bc in bcs[key]:
                 bc.apply(self.residual_vector, self.solution.vector())
-                
+
     def jacobian_matrix_eval(self, ts, t, petsc_solution, petsc_solution_dot, solution_dot_coefficient, petsc_jacobian, petsc_preconditioner):
         """
            TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
@@ -180,7 +180,7 @@ class _TimeDependentProblem(object):
            a and vector W depend on the integration method, step size, and past states. For example with
            the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
            W + a*U = a*(U - U(previous timestep)) = (U - U(previous timestep))/dt
-           
+
            (from PETSc/src/ts/interface/ts.c)
         """
         # 1. There is no need to store solution and solution_dot in dolfin data structures, nor current time,
@@ -191,29 +191,29 @@ class _TimeDependentProblem(object):
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
         self._jacobian_bcs_apply(bcs)
-        
+
     @overload
     def _jacobian_matrix_assemble(self, jacobian_form: Form):
         return assemble(jacobian_form)
-        
+
     @overload
     def _jacobian_matrix_assemble(self, jacobian_form: Form, petsc_jacobian: PETSc.Mat):
         self.jacobian_matrix = PETScMatrix(petsc_jacobian)
         assemble(jacobian_form, tensor=self.jacobian_matrix)
-        
+
     @overload
     def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory):
         return evaluate(jacobian_form)
-        
+
     @overload
     def _jacobian_matrix_assemble(self, jacobian_form: ParametrizedTensorFactory, petsc_jacobian: PETSc.Mat):
         self.jacobian_matrix = PETScMatrix(petsc_jacobian)
         evaluate(jacobian_form, tensor=self.jacobian_matrix)
-        
+
     @overload
     def _jacobian_matrix_assemble(self, jacobian_matrix: GenericMatrix):
         return jacobian_matrix
-        
+
     @overload
     def _jacobian_matrix_assemble(self, jacobian_matrix_input: GenericMatrix, petsc_jacobian: PETSc.Mat):
         self.jacobian_matrix = PETScMatrix(petsc_jacobian)
@@ -222,28 +222,28 @@ class _TimeDependentProblem(object):
         # Make sure to keep nonzero pattern, as dolfin does by default, because this option is apparently
         # not preserved by the sum
         petsc_jacobian.setOption(PETSc.Mat.Option.KEEP_NONZERO_PATTERN, True)
-    
+
     @overload
     def _jacobian_bcs_apply(self, bcs: None):
         pass
-        
+
     @overload
     def _jacobian_bcs_apply(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in bcs:
             bc.apply(self.jacobian_matrix)
-            
+
     @overload
     def _jacobian_bcs_apply(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in bcs:
             for bc in bcs[key]:
                 bc.apply(self.jacobian_matrix)
-        
+
     def update_solution(self, petsc_solution):
         petsc_solution.ghostUpdate()
         self.solution.vector().zero()
         self.solution.vector().add_local(petsc_solution.getArray())
         self.solution.vector().apply("add")
-        
+
     def update_solution_dot(self, petsc_solution_dot):
         petsc_solution_dot.ghostUpdate()
         self.solution_dot.vector().zero()

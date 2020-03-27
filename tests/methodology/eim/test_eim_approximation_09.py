@@ -35,12 +35,12 @@ def test_eim_approximation_09(expression_type, basis_generation):
     * EIM: test the case when the expression to be interpolated is an Operator (rather than an Expression).
     * DEIM: test interpolation of form with integrand function of type Operator (rather than Expression).
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_09_" + expression_type + "_" + basis_generation
 
@@ -76,7 +76,7 @@ def test_eim_approximation_09(expression_type, basis_generation):
 
     # 2. Create Finite Element space (Lagrange P1)
     V = FunctionSpace(mesh, "Lagrange", 1)
-    
+
     # 3. Create a parametrized problem
     mock_problem = MockProblem(V)
     mu_range = [(1., pi), ]

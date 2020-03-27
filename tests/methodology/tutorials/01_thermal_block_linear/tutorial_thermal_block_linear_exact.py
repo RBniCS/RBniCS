@@ -21,7 +21,7 @@ from rbnics import *
 
 @ExactParametrizedFunctions()
 class ThermalBlock(EllipticCoerciveCompliantProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -34,15 +34,15 @@ class ThermalBlock(EllipticCoerciveCompliantProblem):
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.ds = Measure("ds")(subdomain_data=self.boundaries)
-        
+
     # Return custom problem name
     def name(self):
         return "ThermalBlockLinearExact"
-    
+
     # Return the alpha_lower bound.
     def get_stability_factor_lower_bound(self):
         return min(self.compute_theta("a"))
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -55,7 +55,7 @@ class ThermalBlock(EllipticCoerciveCompliantProblem):
             return (theta_f0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -78,7 +78,7 @@ class ThermalBlock(EllipticCoerciveCompliantProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")
 subdomains = MeshFunction("size_t", mesh, "data/thermal_block_physical_region.xml")

@@ -43,10 +43,10 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             V_index = V_components
     else:
         V_index = None
-    
+
     V_to_function_V_mapping = dict()
     function_V_to_V_mapping = dict()
-    
+
     if _function_spaces_eq(function_V, V, function_V_index, V_index):
         # Then function_V == V: do not need to extend nor restrict input function
         # Example of use case: function is the solution of an elliptic problem, V is the truth space
@@ -98,7 +98,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         if weight is not None:
             restricted_function.vector()[:] *= weight
         return restricted_function
-    
+
 def _function_spaces_eq(V, W, index_V, index_W): # V == W
     V = _sub_from_tuple(V, index_V)
     W = _sub_from_tuple(W, index_W)
@@ -106,7 +106,7 @@ def _function_spaces_eq(V, W, index_V, index_W): # V == W
     # We thus resort to:
     assert V.ufl_domain() == W.ufl_domain()
     return V.ufl_element() == W.ufl_element()
-    
+
 def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     assert V.ufl_domain() == W.ufl_domain()
     assert len(W_to_V_mapping) == 0
@@ -131,12 +131,12 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
             should_return_False = True
             # Do not return immediately so that the map W_to_V_mapping
             # is filled in as best as possible
-            
+
     if should_return_False:
         return False
-            
+
     assert len(W_to_V_mapping) == len(V_sub_elements) # all elements were found
-    
+
     # Avoid ambiguity that may arise if there were sub elements of W that were not used but had
     # the same element type of used elements
     for (index_W_used, element_W_was_used) in W_sub_elements_used.items():
@@ -150,9 +150,9 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
                     not W_sub_elements_used[index_W]
                 ):
                     raise RuntimeError("Ambiguity when querying _function_spaces_lt")
-        
+
     return True
-    
+
 def _function_spaces_gt(V, W, V_to_W_mapping, index_V, index_W): # V > W
     return _function_spaces_lt(W, V, V_to_W_mapping, index_W, index_V)
 
@@ -174,7 +174,7 @@ def _get_sub_elements(V, index_V):
         if index_length in sub_elements__sorted_by_index_length:
             output.update(sub_elements__sorted_by_index_length[index_length])
     return output
-        
+
 def _get_sub_elements__recursive(V, index_V):
     sub_elements = OrderedDict()
     if V.num_sub_spaces() == 0:
@@ -191,7 +191,7 @@ def _get_sub_elements__recursive(V, index_V):
             sub_elements_i = _get_sub_elements__recursive(V.sub(i), index_V_comma_i)
             sub_elements.update(sub_elements_i)
         return sub_elements
-        
+
 def _sub_from_tuple(input_, index_as_tuple):
     if index_as_tuple is None:
         index_as_tuple = (None, )

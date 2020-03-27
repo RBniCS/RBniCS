@@ -34,7 +34,7 @@ def set_online_backend(online_backend):
             else:
                 __all__cleaned_up.append(class_or_function_name)
         sys.modules[__name__].__all__ = __all__cleaned_up
-                
+
     # Import (current) online backend
     importlib.import_module(__name__ + "." + online_backend)
     importlib.import_module(__name__ + "." + online_backend + ".wrapping")
@@ -49,7 +49,7 @@ def set_online_backend(online_backend):
             prefix = "online_"
         setattr(sys.modules[__name__], prefix + class_or_function_name, class_or_function)
         sys.modules[__name__].__all__.append(prefix + class_or_function_name)
-    
+
     # Also copy the online wrapping module, without prefixes
     sys.modules[__name__ + ".wrapping"] = sys.modules[__name__ + "." + online_backend].wrapping
 

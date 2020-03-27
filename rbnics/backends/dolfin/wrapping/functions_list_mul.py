@@ -21,7 +21,7 @@ from dolfin import Function, FunctionSpace
 def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
     space = functions_list.space
     assert isinstance(space, FunctionSpace)
-    
+
     output = FunctionsListType(space)
     assert isinstance(online_matrix.M, int)
     for j in range(online_matrix.M):
@@ -36,7 +36,7 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
 def functions_list_mul_online_vector(functions_list, online_vector):
     space = functions_list.space
     assert isinstance(space, FunctionSpace)
-    
+
     output = Function(space)
     if len(functions_list) == 0:
         return output

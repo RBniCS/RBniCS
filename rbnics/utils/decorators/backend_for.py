@@ -29,7 +29,7 @@ def BackendFor(library, inputs=None, replaces=None, replaces_if=None):
         _cache.__all__.add(Class.__name__)
         return dispatch(*inputs, module=_cache, replaces=replaces, replaces_if=replaces_if)(Class)
     return BackendFor_Decorator
-    
+
 def backend_for(library, inputs=None, replaces=None, replaces_if=None):
     def backend_for_decorator(function):
         assert inspect.isfunction(function)
@@ -39,6 +39,6 @@ def backend_for(library, inputs=None, replaces=None, replaces_if=None):
         _cache.__all__.add(function.__name__)
         return dispatch(*inputs, module=_cache, replaces=replaces, replaces_if=replaces_if)(function)
     return backend_for_decorator
-    
+
 _cache = types.ModuleType("backends", "Storage for backends") # cannot import directly in rbnics.backends because of circular imports
 _cache.__all__ = set()

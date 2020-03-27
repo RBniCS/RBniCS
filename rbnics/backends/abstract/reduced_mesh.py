@@ -22,19 +22,19 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 class ReducedMesh(object, metaclass=ABCMeta):
     def __init__(self, space):
         pass
-        
+
     @abstractmethod
     def append(self, dofs):
         pass
-        
+
     @abstractmethod
     def save(self, directory, filename):
         pass
-        
+
     @abstractmethod
     def load(self, directory, filename):
         pass
-        
+
     @abstractmethod
     def __getitem__(self, key):
         pass

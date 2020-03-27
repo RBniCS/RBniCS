@@ -42,14 +42,14 @@ def RandomNumpyMatrix(N, M):
         m[:, :] = _rand(N, M)
     COMM_WORLD.Bcast(m.content, root=0)
     return m
-    
+
 def RandomNumpyVector(N):
     v = NumpyVector(N)
     if COMM_WORLD.rank == 0:
         v[:] = _rand(N)
     COMM_WORLD.Bcast(v.content, root=0)
     return v
-    
+
 def RandomSize(N_lower, N_upper):
     if COMM_WORLD.rank == 0:
         size = randint(N_lower, N_upper)
@@ -58,7 +58,7 @@ def RandomSize(N_lower, N_upper):
     size = COMM_WORLD.bcast(size, root=0)
     assert size is not None
     return size
-    
+
 def RandomTuple(Q):
     if COMM_WORLD.rank == 0:
         tuple_ = tuple(float(v) for v in _rand(Q))
@@ -67,6 +67,6 @@ def RandomTuple(Q):
     tuple_ = COMM_WORLD.bcast(tuple_, root=0)
     assert tuple_ is not None
     return tuple_
-                
+
 def _rand(*args):
     return (-1)**randint(2, size=(args))*random(args)/(1e-3 + random(args))

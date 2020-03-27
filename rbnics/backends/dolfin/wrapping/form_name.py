@@ -27,7 +27,7 @@ def basic_form_name(backend, wrapping):
         hash_code = hashlib.sha1(str_repr.encode("utf-8")).hexdigest()
         return hash_code
     return _basic_form_name
-    
+
 from rbnics.utils.decorators import ModuleWrapper
 from rbnics.backends.dolfin.wrapping.expression_name import expression_name
 backend = ModuleWrapper()

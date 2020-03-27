@@ -64,7 +64,7 @@ def snapshot_links_to_cache(offline_method):
             else:
                 original_export_solution(folder, filename, *args, **kwargs)
         return patched_export_solution_internal
-    
+
     def patched_offline_method(self_):
         # Patch truth_problem's export_solution
         assert (
@@ -80,14 +80,14 @@ def snapshot_links_to_cache(offline_method):
             raise AttributeError("Invalid truth problem attribute.")
         export_solution_patch = PatchInstanceMethod(truth_problem, "export_solution", patched_export_solution(truth_problem, self_.folder["snapshots"]))
         export_solution_patch.patch()
-        
+
         # Call standard offline
         reduced_problem = offline_method(self_)
-        
+
         # Disable patch
         export_solution_patch.unpatch()
-        
+
         # Return generated reduced problem
         return reduced_problem
-        
+
     return patched_offline_method

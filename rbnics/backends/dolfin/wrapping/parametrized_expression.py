@@ -31,7 +31,7 @@ from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
 def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *args, **kwargs):
     if parametrized_expression_code is None:
         return None
-    
+
     assert "mu" in kwargs
     mu = kwargs["mu"]
     assert mu is not None
@@ -61,13 +61,13 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             parametrized_expression_code = parametrized_expression_code.replace("mu[" + str(p) + "]", "mu_" + str(p))
         else:
             raise TypeError("Invalid expression type in ParametrizedExpression")
-    
+
     # Detect mesh
     if "domain" in kwargs:
         mesh = kwargs["domain"]
     else:
         mesh = truth_problem.V.mesh()
-    
+
     # Prepare a dictionary of mu
     mu_dict = dict()
     for (p, mu_p) in enumerate(mu):
@@ -79,20 +79,20 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             mu_dict["mu_" + str(p)] = parametrized_constant_to_float(mu_p, point=mesh.coordinates()[0])
     del kwargs["mu"]
     kwargs.update(mu_dict)
-    
+
     # Initialize expression
     expression = Expression(parametrized_expression_code, *args, **kwargs)
     expression._mu = mu # to avoid repeated assignments
-    
+
     # Store mesh
     expression._mesh = mesh
-    
+
     # Cache all problem -> expression relation
     first_parametrized_expression_for_truth_problem = (truth_problem not in _truth_problem_to_parametrized_expressions)
     if first_parametrized_expression_for_truth_problem:
         _truth_problem_to_parametrized_expressions[truth_problem] = list()
     _truth_problem_to_parametrized_expressions[truth_problem].append(expression)
-    
+
     # Keep mu in sync
     if first_parametrized_expression_for_truth_problem:
         def generate_overridden_set_mu(standard_set_mu):
@@ -114,7 +114,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             standard_set_mu = truth_problem.set_mu
             overridden_set_mu = generate_overridden_set_mu(standard_set_mu)
             PatchInstanceMethod(truth_problem, "set_mu", overridden_set_mu).patch()
-        
+
     def expression_set_mu(self, mu):
         assert isinstance(mu, tuple)
         assert len(mu) >= len(self._mu)
@@ -132,7 +132,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
     # since (1) we do not want to define a new child class, (2) we have to execute some preprocessing
     # on the data, (3) it is a one-way propagation rather than a sync.
     # For these reasons, the decorator @sync_setters is not used but we partially duplicate some code
-    
+
     # Possibly also keep time in sync
     if hasattr(truth_problem, "set_time"):
         if first_parametrized_expression_for_truth_problem:
@@ -157,7 +157,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
                 standard_set_time = truth_problem.set_time
                 overridden_set_time = generate_overridden_set_time(standard_set_time)
                 PatchInstanceMethod(truth_problem, "set_time", overridden_set_time).patch()
-    
+
     return expression
-    
+
 _truth_problem_to_parametrized_expressions = Cache()

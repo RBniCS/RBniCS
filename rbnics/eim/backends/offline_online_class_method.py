@@ -28,13 +28,13 @@ def OfflineOnlineClassMethod(problem_name):
             assert hasattr(problem, original_class_method_name)
             self._original_class_method = getattr(problem, original_class_method_name)
             self._replacement_condition = dict()
-            
+
         def __call__(self, term):
             if self._replacement_condition[_OfflineOnlineClassMethod_Base._current_stage](term):
                 return self._content[_OfflineOnlineClassMethod_Base._current_stage](term)
             else:
                 return self._original_class_method(term)
-            
+
         def attach(self, replaced_class_method, replacement_condition):
             if _OfflineOnlineClassMethod_Base._current_stage not in self._content:
                 assert _OfflineOnlineClassMethod_Base._current_stage not in self._replacement_condition
@@ -43,5 +43,5 @@ def OfflineOnlineClassMethod(problem_name):
             else:
                 assert replaced_class_method == self._content[_OfflineOnlineClassMethod_Base._current_stage]
                 # assert replacement_condition == self._replacement_condition[_OfflineOnlineClassMethod_Base._current_stage] # disabled because cannot easily compare lambda functions
-                
+
     return _OfflineOnlineClassMethod

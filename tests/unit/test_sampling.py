@@ -50,14 +50,14 @@ def plot(p, box, set_, bins, generator=None, *args, **kwargs):
     hist_kwargs["histtype"] = "stepfilled"
     hist_kwargs["alpha"] = 0.2
     ax.hist(sub_set_p, **hist_kwargs)
-    
+
 class stats_equispaced(object):
     def __init__(self, *args, **kwargs):
         self.scale = kwargs["scale"]
-    
+
     def pdf(self, x):
         return [1./self.scale]*len(x)
-        
+
 class stats_loguniform(object):
     def __init__(self, *args, **kwargs):
         loc = kwargs["loc"]
@@ -66,7 +66,7 @@ class stats_loguniform(object):
         log_max = log(loc + scale)
         self.log_min = log_min
         self.log_max = log_max
-    
+
     def pdf(self, x):
         return [1./(v*(self.log_max - self.log_min)) for v in x]
 

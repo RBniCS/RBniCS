@@ -22,10 +22,10 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearPODGalerkinReduction, TimeDependentPODGalerkinReduction)
 def NonlinearTimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
-    
+
     @PreserveClassName
     class NonlinearTimeDependentPODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
-                
+
     # return value (a class) for the decorator
     return NonlinearTimeDependentPODGalerkinReduction_Class

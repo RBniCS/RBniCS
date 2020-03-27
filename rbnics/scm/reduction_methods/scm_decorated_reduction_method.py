@@ -26,16 +26,16 @@ from rbnics.utils.test import PatchInstanceMethod
 
 @ReductionMethodDecoratorFor(SCM)
 def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    
+
     @PreserveClassName
     class SCMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
+
             # Storage for SCM reduction method
             self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, os.path.join(self.truth_problem.name(), "scm"))
-            
+
         # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
@@ -51,7 +51,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             tol_SCM = kwargs["SCM"]
             assert isinstance(tol_SCM, Number)
             self.SCM_reduction.set_tolerance(tol_SCM) # kwargs are not needed
-            
+
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
@@ -65,7 +65,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self.SCM_reduction.training_set.serialize_maximum_computations()
             # Return
             return import_successful and import_successful_SCM
-            
+
         # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
@@ -75,7 +75,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             import_successful_SCM = self.SCM_reduction.initialize_testing_set(ntest_SCM, enable_import, sampling) # kwargs are not needed
             # Return
             return import_successful and import_successful_SCM
-            
+
         # Perform the offline phase of the reduced order model
         def offline(self):
             # Perform first the SCM offline phase, ...
@@ -84,7 +84,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # ..., and then call the parent method.
             self.truth_problem.set_mu(bak_first_mu)
             return DifferentialProblemReductionMethod_DerivedClass.offline(self)
-            
+
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
         def error_analysis(self, N_generator=None, filename=None, **kwargs):
@@ -101,19 +101,19 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 self.SCM_reduction.error_analysis(SCM_N_generator, filename)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N_generator, filename, **kwargs)
-            
+
         def _init_error_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
             self._replace_stability_factor_lower_bound_computation(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_error_analysis(self, **kwargs)
-            
+
         def _finalize_error_analysis(self, **kwargs):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_error_analysis(self, **kwargs)
             # Undo replacement of stability factor computation, if needed
             self._undo_replace_stability_factor_lower_bound_computation(**kwargs)
-            
+
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
         def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
@@ -130,19 +130,19 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 self.SCM_reduction.speedup_analysis(SCM_N_generator, filename)
             # ..., and then call the parent method.
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N_generator, filename, **kwargs)
-            
+
         def _init_speedup_analysis(self, **kwargs):
             # Replace stability factor computation, if needed
             self._replace_stability_factor_lower_bound_computation(**kwargs)
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._init_speedup_analysis(self, **kwargs)
-            
+
         def _finalize_speedup_analysis(self, **kwargs):
             # Call Parent
             DifferentialProblemReductionMethod_DerivedClass._finalize_speedup_analysis(self, **kwargs)
             # Undo replacement of stability factor computation, if needed
             self._undo_replace_stability_factor_lower_bound_computation(**kwargs)
-            
+
         def _replace_stability_factor_lower_bound_computation(self, **kwargs):
             self._replace_stability_factor_lower_bound_computation__get_stability_factor_lower_bound__original = self.reduced_problem.get_stability_factor_lower_bound
             if "SCM" not in kwargs:
@@ -167,11 +167,11 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                     lambda self_: self_.SCM_approximation.get_stability_factor_lower_bound(kwargs["SCM"])
                 )
                 self.replace_get_stability_factor_lower_bound.patch()
-            
+
         def _undo_replace_stability_factor_lower_bound_computation(self, **kwargs):
             if self.replace_get_stability_factor_lower_bound is not None:
                 self.replace_get_stability_factor_lower_bound.unpatch()
             del self.replace_get_stability_factor_lower_bound
-        
+
     # return value (a class) for the decorator
     return SCMDecoratedReductionMethod_Class

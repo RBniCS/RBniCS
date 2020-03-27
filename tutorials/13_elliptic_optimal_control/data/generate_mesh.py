@@ -21,7 +21,7 @@ from mshr import *
 
 def generate_mesh1():
     pass # Uses the same mesh as tutorial 04
-    
+
 def generate_mesh2():
     # Create mesh
     rectangle = Rectangle(Point(0., 0.), Point(2.5, 1.))
@@ -43,13 +43,13 @@ def generate_mesh2():
             SubDomain.__init__(self)
         def inside(self, x, on_boundary):
             return on_boundary and abs(x[0] - 0.) < DOLFIN_EPS
-       
+
     class Right(SubDomain):
         def __init__(self):
             SubDomain.__init__(self)
         def inside(self, x, on_boundary):
             return on_boundary and abs(x[0] - 2.5) < DOLFIN_EPS
-            
+
     class Bottom(SubDomain):
         def __init__(self, x_min, x_max):
             SubDomain.__init__(self)
@@ -57,7 +57,7 @@ def generate_mesh2():
             self.x_max = x_max
         def inside(self, x, on_boundary):
             return on_boundary and abs(x[1] - 0.) < DOLFIN_EPS and x[0] >= self.x_min and x[0] <= self.x_max
-            
+
     class Top(SubDomain):
         def __init__(self, x_min, x_max):
             SubDomain.__init__(self)
@@ -65,7 +65,7 @@ def generate_mesh2():
             self.x_max = x_max
         def inside(self, x, on_boundary):
             return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS and x[0] >= self.x_min and x[0] <= self.x_max
-            
+
     boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundaries.set_all(0)
     left = Left()
@@ -88,6 +88,6 @@ def generate_mesh2():
     XDMFFile("mesh2.xdmf").write(mesh)
     XDMFFile("mesh2_physical_region.xdmf").write(subdomains)
     XDMFFile("mesh2_facet_region.xdmf").write(boundaries)
-    
+
 generate_mesh1()
 generate_mesh2()

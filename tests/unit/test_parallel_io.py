@@ -25,13 +25,13 @@ def test_parallel_io_without_return_value():
         pass
     return_value = parallel_io(task)
     assert return_value is None
-    
+
 def test_parallel_io_with_return_value():
     def task():
         return COMM_WORLD.rank
     return_value = parallel_io(task)
     assert return_value == 0
-    
+
 def test_parallel_io_with_error_1():
     exception_message = "This test will fail"
     def task():
@@ -39,11 +39,11 @@ def test_parallel_io_with_error_1():
     with pytest.raises(RuntimeError) as excinfo:
         parallel_io(task)
     assert str(excinfo.value) == exception_message
-    
+
 class CustomError(RuntimeError):
     def __init__(self, arg1, arg2):
         RuntimeError.__init__(self, arg1, arg2)
-    
+
 def test_parallel_io_with_error_2():
     exception_message_1 = "This test"
     exception_message_2 = "will fail"

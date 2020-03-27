@@ -21,7 +21,7 @@ from rbnics import *
 
 @ExactParametrizedFunctions()
 class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -49,11 +49,11 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
                 "report": True
             }
         })
-             
+
     # Return custom problem name
     def name(self):
         return "NavierStokesUnsteadyExact1"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivatives
     @compute_theta_for_supremizers
@@ -82,7 +82,7 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivatives
     @assemble_operator_for_supremizers
@@ -138,7 +138,7 @@ class NavierStokesUnsteady(NavierStokesUnsteadyProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-           
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesUnsteadyProblem)
 def CustomizeReducedNavierStokesUnsteady(ReducedNavierStokesUnsteady_Base):
@@ -152,7 +152,7 @@ def CustomizeReducedNavierStokesUnsteady(ReducedNavierStokesUnsteady_Base):
                     "line_search": "wolfe"
                 }
             })
-            
+
     return ReducedNavierStokesUnsteady
 
 # 1. Read the mesh for this problem

@@ -36,6 +36,6 @@ HighOrderProperOrthogonalDecomposition_Base = BasicHighOrderProperOrthogonalDeco
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecomposition_Base):
     def __init__(self, basis_functions, empty_tensor):
         HighOrderProperOrthogonalDecomposition_Base.__init__(self, basis_functions, None, empty_tensor)
-        
+
     def store_snapshot(self, snapshot):
         self.snapshots_matrix.enrich(snapshot)

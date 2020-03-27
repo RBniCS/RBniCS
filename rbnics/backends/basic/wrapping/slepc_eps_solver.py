@@ -30,7 +30,7 @@ def BasicSLEPcEPSSolver(backend, wrapping):
                 self.A = wrapping.to_petsc4py(A)
                 self.B = None
                 self.eps.setOperators(self.A)
-            
+
         def set_parameters(self, parameters):
             eps_tolerances = [None, None]
             for (key, value) in parameters.items():
@@ -128,17 +128,17 @@ def BasicSLEPcEPSSolver(backend, wrapping):
             self.eps.setDimensions(n_eigs)
             self.eps.solve()
             assert self.eps.getConverged() >= n_eigs
-                
+
         def get_eigenvalue(self, i):
             assert i < self.eps.getConverged()
             eig_i = self.eps.getEigenvalue(i)
             return eig_i.real, eig_i.imag
-        
+
         def get_eigenvector(self, i, eigv_i_real, eigv_i_imag):
             assert i < self.eps.getConverged()
             eigv_i_real_petsc4py = wrapping.to_petsc4py(eigv_i_real)
             eigv_i_imag_petsc4py = wrapping.to_petsc4py(eigv_i_imag)
             self.eps.getEigenvector(i, eigv_i_real_petsc4py, eigv_i_imag_petsc4py)
             return (eigv_i_real, eigv_i_imag)
-    
+
     return _BasicSLEPcEPSSolver

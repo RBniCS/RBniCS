@@ -21,10 +21,10 @@ from problems import OnlineStabilization
 
 @ReductionMethodDecoratorFor(OnlineStabilization)
 def OnlineStabilizationDecoratedReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
-    
+
     @PreserveClassName
     class OnlineStabilizationDecoratedReductionMethod_Class(EllipticCoerciveReductionMethod_DerivedClass):
         pass
-        
+
     # return value (a class) for the decorator
     return OnlineStabilizationDecoratedReductionMethod_Class

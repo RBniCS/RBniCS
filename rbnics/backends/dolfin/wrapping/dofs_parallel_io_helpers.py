@@ -62,7 +62,7 @@ _dof_map_reader_mapping_cache = Cache()
 
 def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cell_dof in dolfin
     mpi_comm = V.mesh().mpi_comm()
-    
+
     # Build global dof -> (global cell, local dof) map on root process
     global_dof_to_cell_dof = dict()
     if mpi_comm.rank == 0:
@@ -79,7 +79,7 @@ def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cel
                 i += 1
     global_dof_to_cell_dof = mpi_comm.bcast(global_dof_to_cell_dof, root=0)
     return global_dof_to_cell_dof
-    
+
 def _build_dof_map_reader_mapping(V, gathered_dofmap): # was build_dof_map in dolfin
     mesh = V.mesh()
     mpi_comm = mesh.mpi_comm()
@@ -105,15 +105,15 @@ def _get_local_dofmap(V):
     mesh = V.mesh()
     dofmap = V.dofmap()
     mpi_comm = mesh.mpi_comm()
-    
+
     local_dofmap = list() # of integers
-    
+
     # Check that local-to-global cell numbering is available
     assert mesh.topology().have_global_indices(mesh.topology().dim())
-    
+
     # Get local-to-global map
     local_to_global_dof = dofmap.tabulate_local_to_global_dofs()
-    
+
     # Build dof map data with global cell indices
     for cell in cells(mesh):
         local_cell_index = cell.index()
@@ -123,7 +123,7 @@ def _get_local_dofmap(V):
         cell_dofs_global = list()
         for cell_dof in cell_dofs:
             cell_dofs_global.append(local_to_global_dof[cell_dof])
-        
+
         # Store information as follows: global_cell_index, size of dofs, cell dof global 1, ...., cell dof global end
         local_dofmap.append(global_cell_index)
         local_dofmap.append(len(cell_dofs))

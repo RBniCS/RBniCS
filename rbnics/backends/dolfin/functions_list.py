@@ -42,12 +42,12 @@ FunctionsList_Base = BasicFunctionsList(backend, wrapping, online_backend, onlin
 class FunctionsList(FunctionsList_Base):
     def __init__(self, V, component=None):
         FunctionsList_Base.__init__(self, V, component)
-        
+
     @overload(Operator, (None, str, dict_of(str, str)), (None, list_of(Number)), bool)
     def _enrich(self, function, component, weight, copy):
         function = function_from_ufl_operators(function)
         FunctionsList_Base._enrich(self, function, component, weight, copy)
-        
+
     @overload(int, Operator)
     def __setitem__(self, key, item):
         item = function_from_ufl_operators(item)

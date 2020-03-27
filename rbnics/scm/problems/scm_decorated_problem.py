@@ -26,13 +26,13 @@ def SCMDecoratedProblem(
 ):
     from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
     from rbnics.scm.problems.scm import SCM
-    
+
     @ProblemDecoratorFor(
         SCM,
         ExactAlgorithm=ExactStabilityFactor
     )
     def SCMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        
+
         @DecoratedProblemWithStabilityFactorEvaluation
         @PreserveClassName
         class SCMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
@@ -58,9 +58,9 @@ def SCMDecoratedProblem(
                 # Stability factor eigen problem
                 self.stability_factor_calculator = self.SCM_approximation.stability_factor_calculator
                 self.stability_factor_lower_bound_calculator = self.SCM_approximation
-                
+
         # return value (a class) for the decorator
         return SCMDecoratedProblem_Class
-    
+
     # return the decorator itself
     return SCMDecoratedProblem_Decorator

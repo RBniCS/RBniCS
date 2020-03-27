@@ -22,10 +22,10 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearReducedProblem, RBReducedProblem)
 def NonlinearRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     @PreserveClassName
     class NonlinearRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
-                
+
     # return value (a class) for the decorator
     return NonlinearRBReducedProblem_Class

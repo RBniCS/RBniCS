@@ -26,7 +26,7 @@ from rbnics import *
     ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
 )
 class Graetz(EllipticCoerciveProblem):
-    
+
     # Default initialization of members
     @generate_function_space_for_stability_factor
     def __init__(self, V, **kwargs):
@@ -48,11 +48,11 @@ class Graetz(EllipticCoerciveProblem):
             "bounding_box_maximum": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e5, "linear_solver": "mumps"},
             "stability_factor": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e-5, "linear_solver": "mumps"}
         })
-        
+
     # Return custom problem name
     def name(self):
         return "Graetz2"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_stability_factor
     def compute_theta(self, term):
@@ -70,7 +70,7 @@ class Graetz(EllipticCoerciveProblem):
             return (theta_bc0, theta_bc1)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_stability_factor
     def assemble_operator(self, term):
@@ -107,7 +107,7 @@ class Graetz(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/graetz.xml")
 subdomains = MeshFunction("size_t", mesh, "data/graetz_physical_region.xml")

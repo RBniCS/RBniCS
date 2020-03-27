@@ -33,7 +33,7 @@ class LinearProgramSolver(object, metaclass=ABCMeta):
            (x_{min}, x_{max})   are given as a list of (min, max) tuples in the fourth input parameter
         """
         pass
-        
+
     @abstractmethod
     def solve(self):
         pass

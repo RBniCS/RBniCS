@@ -34,7 +34,7 @@ class Geostrophic(GeostrophicProblem):
         (self.phi, self.p) = split(phip)
         self.dx = Measure("dx")(subdomain_data=self.subdomains)
         self.f = Expression("-sin(pi*x[1])", element=W.sub(0).ufl_element())
-        
+
     def compute_theta(self, term):
         mu = self.mu
         if term == "a":
@@ -49,7 +49,7 @@ class Geostrophic(GeostrophicProblem):
             return (theta_f0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-            
+
     def assemble_operator(self, term):
         dx = self.dx
         phi = self.phi
@@ -85,7 +85,7 @@ class Geostrophic(GeostrophicProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-                
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")
 subdomains = MeshFunction("size_t", mesh, "data/square_physical_region.xml")

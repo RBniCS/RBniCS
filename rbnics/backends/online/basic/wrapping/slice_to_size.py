@@ -22,7 +22,7 @@ from rbnics.utils.io import OnlineSizeDict
 def slice_to_size(obj, key, length_dict):
     key = _check_key(obj, key)
     length_dict = _check_length_dict(key, length_dict)
-    
+
     size = list()
     for (slice_index, slice_) in enumerate(key):
         assert isinstance(slice_.start, (int, OnlineSizeDict))

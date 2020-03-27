@@ -24,13 +24,13 @@ from rbnics.utils.decorators import BackendFor, tuple_of
 class AffineExpansionStorage(AbstractAffineExpansionStorage):
     def __init__(self, args):
         self._content = args
-        
+
     def __getitem__(self, key):
         return self._content[key]
-        
+
     def __iter__(self):
         return self._content.__iter__()
-        
+
     def __len__(self):
         assert self._content is not None
         return len(self._content)

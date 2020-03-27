@@ -20,10 +20,10 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(None)
 def PODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     @PreserveClassName
     class PODGalerkinReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
-        
+
     # return value (a class) for the decorator
     return PODGalerkinReducedProblem_Class

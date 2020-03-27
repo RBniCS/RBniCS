@@ -54,7 +54,7 @@ evaluate_base = basic_evaluate(backend, wrapping, online_backend, online_wrappin
 @backend_for("dolfin", inputs=((Matrix.Type(), Vector.Type(), Function.Type(), Operator, TensorsList, FunctionsList, ParametrizedTensorFactory, ParametrizedExpressionFactory), (ReducedMesh, ReducedVertices, None)))
 def evaluate(expression, at=None, **kwargs):
     return _evaluate(expression, at, **kwargs)
-    
+
 @overload
 def _evaluate(
     expression: (
@@ -67,7 +67,7 @@ def _evaluate(
 ):
     assert len(kwargs) == 0
     return evaluate_base(expression, at)
-    
+
 @overload
 def _evaluate(
     expression: (
@@ -82,7 +82,7 @@ def _evaluate(
 ):
     assert len(kwargs) == 0
     return evaluate_base(expression, at)
-    
+
 @overload
 def _evaluate(
     expression: ParametrizedTensorFactory,
@@ -96,7 +96,7 @@ def _evaluate(
     )
     tensor = kwargs.get("tensor", None)
     return evaluate_base(expression, at, tensor)
-    
+
 @overload
 def _evaluate(
     expression: ParametrizedTensorFactory,
@@ -105,7 +105,7 @@ def _evaluate(
 ):
     assert len(kwargs) == 0
     return evaluate_base(expression, at)
-    
+
 @overload
 def _evaluate(
     expression: ParametrizedExpressionFactory,
@@ -119,7 +119,7 @@ def _evaluate(
     )
     function = kwargs.get("function", None)
     return evaluate_base(expression, at, function)
-    
+
 @overload
 def _evaluate(
     expression: ParametrizedExpressionFactory,
@@ -128,7 +128,7 @@ def _evaluate(
 ):
     assert len(kwargs) == 0
     return evaluate_base(expression, at)
-    
+
 @overload
 def _evaluate(
     expression: Operator,

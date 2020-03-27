@@ -29,13 +29,13 @@ def patch_benchmark_plugin(benchmark_plugin):
     from pytest_benchmark.session import BenchmarkSession as OriginalBenchmarkSession
     from pytest_benchmark.timers import compute_timer_precision as original_compute_timer_precision
     from pytest_benchmark.utils import format_time
-    
+
     class BenchmarkFixture(OriginalBenchmarkFixture):
         def __init__(self, *args, **kwargs):
             OriginalBenchmarkFixture.__init__(self, *args, **kwargs)
             # Customize self._timer
             self._timer = Timer("parallel")
-            
+
         @classmethod
         def _get_precision(cls, timer):
             try:
@@ -43,7 +43,7 @@ def patch_benchmark_plugin(benchmark_plugin):
             except KeyError:
                 cls._precisions[timer] = compute_timer_precision(timer)
                 return cls._precisions[timer]
-        
+
         def _raw(self, function_to_benchmark, *args, **kwargs):
             """
             This is a customization of the original implementation so that:
@@ -52,15 +52,15 @@ def patch_benchmark_plugin(benchmark_plugin):
               * calibration is done with respect to setup + function + teardown, since in our case also setup
                 may be expensive.
             """
-            
+
             assert len(args) == 0   # arguments will be provided by the setup function
-            
+
             assert "setup" in kwargs
             setup = kwargs.pop("setup")
             teardown = kwargs.pop("teardown", _do_nothing)
-            
+
             assert len(kwargs) == 0 # no kwargs allowed, except setup and teardown
-            
+
             if not self.disabled:
                 # Choose how many time we must repeat the test, basing the timing on the setup + function + teardown
                 def calibration_setup():
@@ -77,7 +77,7 @@ def patch_benchmark_plugin(benchmark_plugin):
                 rounds = max(rounds, self._min_rounds)
                 rounds = min(rounds, sys.maxsize)
                 stats = self._make_stats(iterations)
-                
+
                 # Create a runner on the function to benchmark
                 runner = self._make_runner(setup, function_to_benchmark, teardown, args, kwargs)
                 self._logger.debug("  Running %s rounds x %s iterations ..." % (rounds, iterations), yellow=True, bold=True)
@@ -94,11 +94,11 @@ def patch_benchmark_plugin(benchmark_plugin):
                 args = setup()
                 result = function_to_benchmark(*args)
                 teardown(*args, result)
-            
+
         def _make_runner(self, setup, function_to_benchmark, teardown, args_, kwargs_):
             assert len(args_) == 0   # arguments will be provided
             assert len(kwargs_) == 0 # by the setup function
-            
+
             def runner(loops_range, timer=self._timer):
                 gc_enabled = gc.isenabled()
                 if self._disable_gc:
@@ -130,9 +130,9 @@ def patch_benchmark_plugin(benchmark_plugin):
                     sys.settrace(tracer)
                     if gc_enabled:
                         gc.enable()
-            
+
             return runner
-            
+
     class BenchmarkSession(OriginalBenchmarkSession):
         def display(self, tr):
             OriginalBenchmarkSession.display(self, tr)
@@ -203,11 +203,11 @@ def patch_benchmark_plugin(benchmark_plugin):
                     legend = plt.legend(plt_legends, loc="center left", bbox_to_anchor=(1, 0.5))
                     plt_filename = os.path.join(storage_dir, "_".join(external_key) + "_" + str(int(time.mktime(time.strptime(datetimes[0], "%Y-%m-%d %H:%M")))) + ".png")
                     plt.savefig(plt_filename, bbox_extra_artists=(legend,), bbox_inches="tight")
-            
+
     # Auxiliary do nothing function
     def _do_nothing(*args):
         pass
-        
+
     # Auxiliary timer precision computation
     def compute_timer_precision(timer):
         if isinstance(timer, Timer):
@@ -226,6 +226,6 @@ def patch_benchmark_plugin(benchmark_plugin):
             return precision
         else:
             return original_compute_timer_precision(timer)
-            
+
     benchmark_plugin.BenchmarkFixture = BenchmarkFixture
     benchmark_plugin.BenchmarkSession = BenchmarkSession

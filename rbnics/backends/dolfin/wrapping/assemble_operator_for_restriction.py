@@ -78,14 +78,14 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
                         restricted_dirichlet_bcs.append(restricted_dirichlet_bc)
                     assert len(restricted_dirichlet_bcs) == len(original_dirichlet_bcs)
                     return tuple(restricted_dirichlet_bcs)
-            
+
         return assemble_operator_for_restriction_decorator_impl
     return assemble_operator_for_restriction_decorator
 
 @overload(FunctionSpace, (int, None))
 def _to_int(V, restrict_to):
     return restrict_to
-    
+
 @overload(FunctionSpace, str)
 def _to_int(V, restrict_to):
     assert hasattr(V, "_component_to_index")

@@ -29,14 +29,14 @@ def OfflineOnlineExpansionStorageSize(problem_name):
                 "offline": dict(),
                 "online": dict()
             }
-            
+
         def __getitem__(self, term):
             return self._content[_OfflineOnlineExpansionStorageSize_Base._current_stage][term]
-            
+
         def __setitem__(self, term, size):
             self._content[_OfflineOnlineExpansionStorageSize_Base._current_stage][term] = size
-            
+
         def __contains__(self, term):
             return term in self._content[_OfflineOnlineExpansionStorageSize_Base._current_stage]
-    
+
     return _OfflineOnlineExpansionStorageSize

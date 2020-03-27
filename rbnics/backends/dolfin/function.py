@@ -29,12 +29,12 @@ def Function(V, component=None):
     else:
         V = V.sub(component).collapse()
         return _Function_Type(V)
-    
+
 # Attach a Type() function
 def Type():
     return _Function_Type
 Function.Type = Type
-    
+
 # Make sure that _Function_Type.function_space() preserves component to index map
 original__init__ = _Function_Type.__init__
 def custom__init__(self, *args, **kwargs):

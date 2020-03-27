@@ -23,7 +23,7 @@ from reduction_methods import *
 
 @OnlineStabilization()
 class AdvectionDominated(EllipticCoerciveProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -42,11 +42,11 @@ class AdvectionDominated(EllipticCoerciveProblem):
         # Store terms related to stabilization
         self.delta = 0.5
         self.h = CellDiameter(V.mesh())
-        
+
     # Return custom problem name
     def name(self):
         return "AdvectionDominated1POD"
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -71,7 +71,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             return (theta_f0, theta_f1)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -110,7 +110,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")
 subdomains = MeshFunction("size_t", mesh, "data/square_physical_region.xml")

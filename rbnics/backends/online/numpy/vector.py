@@ -34,17 +34,17 @@ class _Vector_Type(_Vector_Type_Base):
             return float(_Vector_Type_Base.__getitem__(self, key)) # convert from numpy numbers wrappers
         else:
             return _Vector_Type_Base.__getitem__(self, key)
-            
+
     def __iter__(self):
         return map(float, self.content.flat)
-        
+
     def __array__(self, dtype=None):
         return self.content.__array__(dtype)
 
 @backend_for("numpy", inputs=(OnlineSizeType, ))
 def Vector(N):
     return _Vector_Type(N)
-    
+
 # Attach a Type() function
 def Type():
     return _Vector_Type

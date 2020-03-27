@@ -26,7 +26,7 @@ def DelayedTransposeWithArithmetic(backend):
         def __init__(self, arg):
             assert isinstance(arg, DelayedTranspose)
             self._arg = arg
-            
+
         @overload(lambda cls: cls)
         def __add__(self, other):
             from rbnics.backends import transpose
@@ -50,11 +50,11 @@ def DelayedTransposeWithArithmetic(backend):
                 raise ValueError("Invalid argument")
             assert isinstance(output, DelayedTranspose)
             return DelayedTransposeWithArithmetic_Class(output)
-                
+
         @overload(lambda cls: cls)
         def __sub__(self, other):
             return self + (- other)
-            
+
         @overload(backend.Function.Type())
         def __mul__(self, other):
             from rbnics.backends import transpose
@@ -66,11 +66,11 @@ def DelayedTransposeWithArithmetic(backend):
             output = transpose(args[0])*(args[1]*(args[2]*other))
             assert isinstance(output, DelayedTranspose)
             return DelayedTransposeWithArithmetic_Class(output)
-            
+
         @overload(Number)
         def __mul__(self, other):
             return other*self
-            
+
         @overload(Number)
         def __rmul__(self, other):
             from rbnics.backends import transpose
@@ -87,10 +87,10 @@ def DelayedTransposeWithArithmetic(backend):
                 raise ValueError("Invalid argument")
             assert isinstance(output, DelayedTranspose)
             return DelayedTransposeWithArithmetic_Class(output)
-        
+
         def __neg__(self):
             return -1.*self
-            
+
         def evaluate(self):
             from rbnics.backends import evaluate, transpose
             args = self._arg._args
@@ -106,5 +106,5 @@ def DelayedTransposeWithArithmetic(backend):
                 raise ValueError("Invalid argument")
             assert not isinstance(output, DelayedTranspose)
             return output
-            
+
     return DelayedTransposeWithArithmetic_Class

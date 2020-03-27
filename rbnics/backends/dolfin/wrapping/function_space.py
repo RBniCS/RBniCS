@@ -36,10 +36,10 @@ FunctionSpace.__init__ = custom_FunctionSpace__init__
 def custom_FunctionSpace__hash__(self):
     return ufl.FunctionSpace.__hash__(self)
 FunctionSpace.__hash__ = custom_FunctionSpace__hash__
-    
+
 def _enable_string_components(components, function_space):
     _init_component_to_index(components, function_space)
-    
+
     original_sub = function_space.sub
     def custom_sub(self_, i):
         assert i is not None
@@ -73,9 +73,9 @@ def _enable_string_components(components, function_space):
         _enable_string_components(components, output)
         return output
     PatchInstanceMethod(function_space, "sub", custom_sub).patch()
-    
+
     _preserve_root_space_after_sub(function_space, None)
-    
+
     original_extract_sub_space = function_space.extract_sub_space
     def custom_extract_sub_space(self_, i):
         i_int = _convert_component_to_int(self_, i)
@@ -90,17 +90,17 @@ def _enable_string_components(components, function_space):
         _enable_string_components(components, output)
         return output
     PatchInstanceMethod(function_space, "extract_sub_space", custom_extract_sub_space).patch()
-    
+
 def _preserve_root_space_after_sub(function_space, root_space_after_sub):
     function_space._root_space_after_sub = root_space_after_sub
-    
+
     original_sub = function_space.sub
     def custom_sub(self_, i):
         output = original_sub(i)
         _preserve_root_space_after_sub(output, self_)
         return output
     PatchInstanceMethod(function_space, "sub", custom_sub).patch()
-    
+
 def _init_component_to_index(components, function_space):
     assert isinstance(components, (list, OrderedDict))
     if isinstance(components, list):
@@ -130,7 +130,7 @@ def _init_component_to_index(components, function_space):
     def index_to_components(self_, c):
         return self_._index_to_components[c]
     AttachInstanceMethod(function_space, "index_to_components", index_to_components).attach()
-    
+
     original_collapse = function_space.collapse
     def custom_collapse(self_, collapsed_dofs=False):
         if not collapsed_dofs:
@@ -144,7 +144,7 @@ def _init_component_to_index(components, function_space):
         else:
             return output, collapsed_dofs_dict
     PatchInstanceMethod(function_space, "collapse", custom_collapse).patch()
-    
+
 def _init_component_to_index__recursive(components, component_to_index, index):
     assert isinstance(components, (str, tuple, list))
     if isinstance(components, str):
@@ -165,7 +165,7 @@ def _init_component_to_index__recursive(components, component_to_index, index):
                 full_index.extend(index)
             full_index.append(subindex)
             _init_component_to_index__recursive(subcomponent, component_to_index, full_index)
-            
+
 def _convert_component_to_int(function_space, i):
     if isinstance(i, str):
         return function_space._component_to_index[i]

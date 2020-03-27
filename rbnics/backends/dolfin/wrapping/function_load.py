@@ -31,7 +31,7 @@ def function_load(fun, directory, filename, suffix=None):
             assign(fun.sub(index), sub_fun)
     else:
         _read_from_file(fun, directory, filename, suffix)
-    
+
 def _read_from_file(fun, directory, filename, suffix, components=None):
     if components is not None:
         filename = filename + "_component_" + "".join(components)

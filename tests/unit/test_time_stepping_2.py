@@ -41,7 +41,7 @@ for g such that u = u_ex = sin(x+t)
 def _test_time_stepping_2_sparse(callback_type, integrator_type):
     from dolfin import Function
     from rbnics.backends.dolfin import TimeStepping
-    
+
     # Create mesh and define function space
     mesh = IntervalMesh(132, 0, 2*pi)
     V = FunctionSpace(mesh, "Lagrange", 1)
@@ -49,7 +49,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
     # Define Dirichlet boundary (x = 0 or x = 2*pi)
     def boundary(x):
         return x[0] < 0 + DOLFIN_EPS or x[0] > 2*pi - 10*DOLFIN_EPS
-        
+
     # Define time step
     dt = 0.01
     monitor_dt = 0.02
@@ -86,7 +86,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
 
     # Assemble inner product matrix
     X = assemble(x)
-    
+
     # Define callback function depending on callback type
     assert callback_type in ("form callbacks", "tensor callbacks")
     if callback_type == "form callbacks":
@@ -95,7 +95,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
     elif callback_type == "tensor callbacks":
         def callback(arg):
             return assemble(arg)
-            
+
     # Define problem wrapper
     class ProblemWrapper(TimeDependentProblemWrapper):
         # Residual and jacobian functions
@@ -104,16 +104,16 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
             return callback(r)
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             return callback(Constant(solution_dot_coefficient)*j_u_dot + j_u)
-            
+
         # Define boundary condition
         def bc_eval(self, t):
             return bc(t)
-            
+
         # Define initial condition
         def ic_eval(self):
             exact_solution_expression.t = 0.
             return project(exact_solution_expression, V)
-            
+
         # Define custom monitor to plot the solution
         def monitor(self, t, solution, solution_dot):
             assert isclose(round(t/monitor_dt), t/monitor_dt)
@@ -127,7 +127,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
             else:
                 print("||u|| at t = " + str(t) + ": " + str(solution.vector().norm("l2")))
                 print("||u_dot|| at t = " + str(t) + ": " + str(solution_dot.vector().norm("l2")))
-    
+
     # Solve the time dependent problem
     problem_wrapper = ProblemWrapper()
     (solution, solution_dot) = (u, u_dot)
@@ -150,7 +150,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
         "report": True
     })
     solver.solve()
-    
+
     # Compute the error at the final time
     error = Function(V)
     error.vector().add_local(+ solution.vector().get_local())
@@ -170,13 +170,13 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
 # ~~~ Dense case ~~~ #
 def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot):
     from rbnics.backends.online.numpy import Function, Matrix, TimeStepping, Vector
-    
+
     x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
     dof_2pi = x_to_dof[2*pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)
     max_dof_0_2pi = max(dof_0, dof_2pi)
-    
+
     # Define problem wrapper
     class ProblemWrapper(TimeDependentProblemWrapper):
         # Residual and jacobian functions, reordering resulting matrix and vector
@@ -191,7 +191,7 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             residual = Vector(*residual_array.shape)
             residual[:] = residual_array
             return residual
-            
+
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             self._solution_from_dense_to_sparse(solution, u)
             self._solution_from_dense_to_sparse(solution_dot, u_dot)
@@ -201,11 +201,11 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             jacobian = Matrix(*jacobian_array.shape)
             jacobian[:, :] = jacobian_array
             return jacobian
-        
+
         # Define boundary condition
         def bc_eval(self, t):
             return (sin(t), sin(t))
-            
+
         # Define initial condition
         def ic_eval(self):
             exact_solution_expression.t = 0.
@@ -214,7 +214,7 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             solution_array = solution.vector()
             solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             return solution
-        
+
         # Define custom monitor to plot the solution
         def monitor(self, t, solution, solution_dot):
             assert isclose(round(t/monitor_dt), t/monitor_dt)
@@ -230,7 +230,7 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             else:
                 print("||u|| at t = " + str(t) + ": " + str(monitor_norm(solution.vector())))
                 print("||u_dot|| at t = " + str(t) + ": " + str(monitor_norm(solution_dot.vector())))
-            
+
         def _solution_from_dense_to_sparse(self, solution, u):
             solution_array = solution.vector()
             solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
@@ -238,7 +238,7 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             u.vector().add_local(solution_array.__array__())
             u.vector().apply("")
             solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
-    
+
     # Solve the time dependent problem
     problem_wrapper = ProblemWrapper()
     shape = exact_solution.vector().get_local().shape
@@ -264,7 +264,7 @@ def _test_time_stepping_2_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
         })
     solver.set_parameters(solver_parameters)
     solver.solve()
-    
+
     # Compute the error at the final time
     error = Function(*exact_solution.vector().get_local().shape)
     error.vector()[:] = exact_solution.vector().get_local()

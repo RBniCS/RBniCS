@@ -33,17 +33,17 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     """
     Base class containing the interface of a projection based ROM.
     Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
-    
+
     :param truth_problem: class of the truth problem to be solved.
     """
-    
+
     @sync_setters("truth_problem", "set_mu", "mu")
     @sync_setters("truth_problem", "set_mu_range", "mu_range")
     def __init__(self, truth_problem, **kwargs):
-    
+
         # Call to parent
         ParametrizedProblem.__init__(self, truth_problem.name())
-        
+
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension
         self.N = None # integer (for problems with one component) or dict of integers (for problem with several components)
@@ -84,7 +84,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             "reduced problems",
             key_generator=_output_cache_key_generator
         )
-        
+
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
         self.truth_problem = truth_problem
@@ -101,7 +101,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self._init_operators(current_stage)
         self._init_inner_products(current_stage)
         self._init_basis_functions(current_stage)
-            
+
     def _init_operators(self, current_stage="online"):
         """
         Initialize data structures required for the online phase. Internal method.
@@ -118,7 +118,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             pass # Nothing else to be done
         else:
             raise ValueError("Invalid stage in _init_operators().")
-            
+
     def _init_inner_products(self, current_stage="online"):
         """
         Initialize data structures required for the online phase. Internal method.
@@ -170,7 +170,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.projection_inner_product = OnlineAffineExpansionStorage(1)
         else:
             raise ValueError("Invalid stage in _init_inner_products().")
-            
+
     def _combine_all_inner_products(self):
         if len(self.components) > 1:
             all_inner_products = list()
@@ -184,7 +184,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         all_inner_products = OnlineAffineExpansionStorage(all_inner_products)
         all_inner_products_thetas = (1.,)*len(all_inner_products)
         return sum(product(all_inner_products_thetas, all_inner_products))
-        
+
     def _combine_all_projection_inner_products(self):
         if len(self.components) > 1:
             all_projection_inner_products = list()
@@ -198,7 +198,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         all_projection_inner_products = OnlineAffineExpansionStorage(all_projection_inner_products)
         all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
         return sum(product(all_projection_inner_products_thetas, all_projection_inner_products))
-        
+
     def _init_basis_functions(self, current_stage="online"):
         """
         Basis functions are initialized. Internal method.
@@ -287,7 +287,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             # of basis functions without the lifting ones.
         else:
             raise ValueError("Invalid stage in _init_basis_functions().")
-            
+
     def _combine_and_homogenize_all_dirichlet_bcs(self):
         if len(self.components) > 1:
             all_dirichlet_bcs_thetas = dict()
@@ -302,11 +302,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             else:
                 all_dirichlet_bcs_thetas = None
         return all_dirichlet_bcs_thetas
-            
+
     def solve(self, N=None, **kwargs):
         """
         Perform an online solve. self.N will be used as matrix dimension if the default value is provided for N.
-        
+
         :param N : Dimension of the reduced problem
         :type N : integer
         :return: reduced solution
@@ -325,13 +325,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             self._solve(N, **kwargs) # will also add to cache
             delattr(self, "_is_solving")
         return self._solution
-        
+
     class ProblemSolver(object, metaclass=ABCMeta):
         def __init__(self, problem, N, **kwargs):
             self.problem = problem
             self.N = N
             self.kwargs = kwargs
-        
+
         def bc_eval(self):
             problem = self.problem
             if len(problem.components) > 1:
@@ -347,34 +347,34 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 else:
                     all_dirichlet_bcs_thetas = None
             return all_dirichlet_bcs_thetas
-            
+
         def monitor(self, solution):
             problem = self.problem
             problem._solution_cache[problem.mu, self.N, self.kwargs] = copy(solution)
-            
+
         @abstractmethod
         def solve(self):
             pass
-        
+
     # Perform an online solve (internal)
     def _solve(self, N, **kwargs):
         problem_solver = self.ProblemSolver(self, N, **kwargs)
         problem_solver.solve()
-        
+
     def project(self, snapshot, N=None, on_dirichlet_bc=True, **kwargs):
         N, kwargs = self._online_size_from_kwargs(N, **kwargs)
         N += self.N_bc
-        
+
         # Get truth and reduced inner product matrices for projection
         inner_product = self.truth_problem._combined_projection_inner_product
         inner_product_N = self._combined_projection_inner_product[:N, :N]
-                
+
         # Get basis
         basis_functions = self.basis_functions[:N]
-        
+
         # Define storage for projected solution
         projected_snapshot_N = OnlineFunction(N)
-        
+
         # Project on reduced basis
         if on_dirichlet_bc:
             solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot)
@@ -383,10 +383,10 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
         return projected_snapshot_N
-    
+
     def compute_output(self):
         """
-        
+
         :return: reduced output
         """
         N = self._solution.N
@@ -400,20 +400,20 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 self._output = NotImplemented
             self._output_cache[self.mu, N, kwargs] = self._output
         return self._output
-        
+
     def _compute_output(self, N):
         """
         Perform an online evaluation of the output.
         """
         self._output = NotImplemented
-        
+
     def _online_size_from_kwargs(self, N, **kwargs):
         return OnlineSizeDict.generate_from_N_and_kwargs(self.components, self.N, N, **kwargs)
-        
+
     def _cache_key_from_N_and_kwargs(self, N, **kwargs):
         """
         Internal method.
-        
+
         :param N: dimension of reduced problem.
         """
         for blacklist in ("components", "inner_product"):
@@ -424,7 +424,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         else:
             assert isinstance(N, int)
             return (self.mu, N, tuple(sorted(kwargs.items())))
-        
+
     def build_reduced_operators(self, current_stage="offline"):
         """
         It asssembles the reduced order affine expansion.
@@ -433,11 +433,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self._build_reduced_inner_products(current_stage)
         # Terms
         self._build_reduced_operators(current_stage)
-    
+
     def _build_reduced_operators(self, current_stage="offline"):
         for term in self.terms:
             self.operator[term] = self.assemble_operator(term, current_stage)
-            
+
     def _build_reduced_inner_products(self, current_stage="offline"):
         n_components = len(self.components)
         # Inner products
@@ -456,16 +456,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         else:
             self.projection_inner_product = self.assemble_operator("projection_inner_product", current_stage)
         self._combined_projection_inner_product = self._combine_all_projection_inner_products()
-        
+
     def compute_error(self, **kwargs):
         """
         Returns the function _compute_error() evaluated for the desired parameter.
-        
+
         :return: error between online and offline solutions.
         """
         self.truth_problem.solve(**kwargs)
         return self._compute_error(**kwargs)
-        
+
     def _compute_error(self, **kwargs):
         """
         It computes the error of the reduced order approximation with respect to the full order one for the current value of mu.
@@ -488,16 +488,16 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             error = error[components[0]]
         #
         return error
-        
+
     def compute_relative_error(self, **kwargs):
         """
         It returns the function _compute_relative_error() evaluated for the desired parameter.
-        
+
         :return: relative error.
         """
         absolute_error = self.compute_error(**kwargs)
         return self._compute_relative_error(absolute_error, **kwargs)
-        
+
     def _compute_relative_error(self, absolute_error, **kwargs):
         """
         It computes the relative error of the reduced order approximation with respect to the full order one for the current value of mu.
@@ -528,11 +528,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             relative_error = relative_error[components[0]]
         #
         return relative_error
-                
+
     def _preprocess_compute_error_and_relative_error_kwargs(self, **kwargs):
         """
         This function returns the components and the inner products, picking them up from the kwargs or choosing default ones in case they are not defined yet. Internal method.
-        
+
         :return: components and inner_product.
         """
         # Set default components, if needed
@@ -554,19 +554,19 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             assert set(kwargs["inner_product"].keys()) == set(kwargs["components"])
         #
         return (kwargs["components"], kwargs["inner_product"])
-                
+
     # Compute the error of the reduced order output with respect to the full order one
     # for the current value of mu
     def compute_error_output(self, **kwargs):
         """
         It returns the function _compute_error_output() evaluated for the desired parameter.
-        
+
         :return: output error.
         """
         self.truth_problem.solve(**kwargs)
         self.truth_problem.compute_output()
         return self._compute_error_output(**kwargs)
-                
+
     # Internal method for output error computation
     def _compute_error_output(self, **kwargs):
         """
@@ -581,18 +581,18 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             truth_output = self.truth_problem._output
             error_output = abs(truth_output - reduced_output)
             return error_output
-        
+
     # Compute the relative error of the reduced order approximation with respect to the full order one
     # for the current value of mu
     def compute_relative_error_output(self, **kwargs):
         """
         It returns the function _compute_relative_error_output() evaluated for the desired parameter.
-        
+
         :return: relative output error.
         """
         absolute_error_output = self.compute_error_output(**kwargs)
         return self._compute_relative_error_output(absolute_error_output, **kwargs)
-        
+
     # Internal method for output error computation
     def _compute_relative_error_output(self, absolute_error_output, **kwargs):
         """
@@ -612,11 +612,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     return 0.
                 else:
                     return float("NaN")
-        
+
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """
         It exports reduced solution to file.
-        
+
         :param folder: the folder into which we want to save the solution.
         :param filename: the name of the file to be saved.
         :param solution: the solution to be saved.
@@ -627,31 +627,31 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             solution = self._solution
         N = solution.N
         self.truth_problem.export_solution(folder, filename, self.basis_functions[:N]*solution, component, suffix)
-        
+
     def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
         self.truth_problem.solve(**kwargs)
         reduced_solution = self.basis_functions[:self._solution.N]*self._solution
         truth_solution = self.truth_problem._solution
         error_function = truth_solution - reduced_solution
         self.truth_problem.export_solution(folder, filename, error_function, component, suffix)
-        
+
     def export_output(self, folder=None, filename=None, output=None, suffix=None):
         self.truth_problem.export_output(folder, filename, output, suffix)
 
     def compute_theta(self, term):
         """
         Return theta multiplicative terms of the affine expansion of the problem.
-        
+
         :param term: the forms of the class of the problem.
         :return: computed thetas.
         """
         return self.truth_problem.compute_theta(term)
-        
+
     # Assemble the reduced order affine expansion
     def assemble_operator(self, term, current_stage="online"):
         """
         Terms and respective thetas are assembled.
-        
+
         :param term: the forms of the class of the problem.
         :param current_stage: online or offline stage.
         """
@@ -785,7 +785,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 raise ValueError("Invalid term for assemble_operator().")
         else:
             raise ValueError("Invalid stage in assemble_operator().")
-    
+
     def _lifting_truth_solve(self, term, i):
         # Since lifting solves for different values of i are associated to the same parameter
         # but with a patched call to compute_theta(), which returns the i-th component, we set

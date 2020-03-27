@@ -26,18 +26,18 @@ from rbnics.utils.decorators import is_training_finished, PreserveClassName, Red
 
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    
+
     @PreserveClassName
     class DEIMDecoratedReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             # Initialize DEIM approximations, if needed
             truth_problem._init_DEIM_approximations()
-            
+
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Storage for DEIM reduction methods
             self.DEIM_reductions = dict() # from term to dict of DEIMApproximationReductionMethod
-            
+
             # Preprocess each term in the affine expansions
             for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.items():
                 self.DEIM_reductions[term] = dict()
@@ -48,7 +48,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     else:
                         DEIMApproximationReductionMethodType = DEIMApproximationReductionMethod
                     self.DEIM_reductions[term][q] = DEIMApproximationReductionMethodType(DEIM_approximations_term_q)
-            
+
         # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
@@ -56,7 +56,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             def setter(DEIM_reduction, Nmax_DEIM):
                 DEIM_reduction.set_Nmax(max(DEIM_reduction.Nmax, Nmax_DEIM)) # kwargs are not needed
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
-            
+
         # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
@@ -64,7 +64,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             def setter(DEIM_reduction, tol_DEIM):
                 DEIM_reduction.set_tolerance(max(DEIM_reduction.tol, tol_DEIM)) # kwargs are not needed
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, Number, **kwargs)
-            
+
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
@@ -75,7 +75,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 return DEIM_reduction.initialize_training_set(ntrain_DEIM, enable_import, sampling) # kwargs are not needed
             import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_DEIM
-            
+
         # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
@@ -84,7 +84,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 return DEIM_reduction.initialize_testing_set(ntest_DEIM, enable_import, sampling) # kwargs are not needed
             import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_DEIM
-            
+
         def _propagate_setter_from_kwargs_to_DEIM_reductions(self, setter, Type, **kwargs):
             assert "DEIM" in kwargs
             kwarg_DEIM = kwargs["DEIM"]
@@ -109,7 +109,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         current_return_value = setter(DEIM_reduction_term_q, kwarg_DEIM)
                         return_value = current_return_value and return_value
             return return_value # an "and" with a None results in None, so this method returns only if necessary
-            
+
         # Perform the offline phase of the reduced order model
         def offline(self):
             if "offline" not in self.truth_problem._apply_DEIM_at_stages:
@@ -121,7 +121,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     DEIM_reduction_term_q.offline()
             self.truth_problem.set_mu(lifting_mu)
             return DifferentialProblemReductionMethod_DerivedClass.offline(self)
-            
+
         # Compute the error of the reduced order approximation with respect to the full order one
         # over the testing set
         def error_analysis(self, N_generator=None, filename=None, **kwargs):
@@ -149,7 +149,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
                 del kwargs["DEIM"]
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N_generator, filename, **kwargs)
-            
+
         # Compute the speedup of the reduced order approximation with respect to the full order one
         # over the testing set
         def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
@@ -177,6 +177,6 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if "DEIM" in kwargs and kwargs["DEIM"] is None:
                 del kwargs["DEIM"]
             DifferentialProblemReductionMethod_DerivedClass.speedup_analysis(self, N_generator, filename, **kwargs)
-        
+
     # return value (a class) for the decorator
     return DEIMDecoratedReductionMethod_Class

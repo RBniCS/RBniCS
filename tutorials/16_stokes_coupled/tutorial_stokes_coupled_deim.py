@@ -23,7 +23,7 @@ from sampling import LinearlyDependentUniformDistribution
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -41,7 +41,7 @@ class Stokes(StokesProblem):
         # ... as well as forcing terms
         self.f = Constant((0.0, -10.0))
         self.g = Constant(0.0)
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_supremizers
     def compute_theta(self, term):
@@ -59,7 +59,7 @@ class Stokes(StokesProblem):
             return (theta_g0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_supremizers
     def assemble_operator(self, term):
@@ -102,12 +102,12 @@ class Stokes(StokesProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 @DEIM(basis_generation="Greedy")
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class AdvectionDiffusion(EllipticCoerciveProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -124,11 +124,11 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         # ... as well as forcing and solution of the Stokes problem
         (self.vel, _) = split(self.stokes_problem._solution)
         self.f = Constant(0.0)
-        
+
     # Return custom problem name
     def name(self):
         return "AdvectionDiffusionDEIM"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         if term == "a":
@@ -143,7 +143,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         d = self.d
@@ -167,7 +167,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/t_bypass.xml")
 subdomains = MeshFunction("size_t", mesh, "data/t_bypass_physical_region.xml")

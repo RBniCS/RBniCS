@@ -52,7 +52,7 @@ def _abs(matrix: Matrix.Type()):
     mpi_comm = mat.comm.tompi4py()
     (global_value_max, global_ij_max) = parallel_max(value_max, (i_max, j_max), fabs, mpi_comm)
     return AbsOutput(global_value_max, global_ij_max)
-    
+
 @overload
 def _abs(vector: Vector.Type()):
     # Note: PETSc offers VecAbs and VecMax, but for symmetry with the matrix case we do the same by hand
@@ -71,7 +71,7 @@ def _abs(vector: Vector.Type()):
     mpi_comm = vec.comm.tompi4py()
     (global_value_max, global_i_max) = parallel_max(value_max, (i_max, ), fabs, mpi_comm)
     return AbsOutput(global_value_max, global_i_max)
-    
+
 @overload
 def _abs(expression: (Function.Type(), Operator)):
     function = function_from_ufl_operators(expression)
@@ -86,13 +86,13 @@ def _abs(expression: (Function.Type(), Operator)):
     # Prettify print
     coordinates_max_component_max_dof_max = PrettyTuple(coordinates_max, component_max, global_dof_max)
     return AbsOutput(value_max, coordinates_max_component_max_dof_max)
-    
+
 # Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method
 class AbsOutput(object):
     def __init__(self, max_abs_return_value, max_abs_return_location):
         self.max_abs_return_value = max_abs_return_value
         self.max_abs_return_location = max_abs_return_location
-        
+
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):
         return tuple.__new__(cls, (arg0, arg1, arg2))

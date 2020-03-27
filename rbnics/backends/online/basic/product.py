@@ -55,7 +55,7 @@ def product(backend, wrapping):
                 raise ValueError("product(): invalid operands.")
             # Return
             return ProductOutput(output)
-        
+
         @overload(ThetaType, backend.NonAffineExpansionStorage, ThetaType + (None, ))
         def __call__(self, thetas, operators, thetas2):
             from rbnics.backends import product, sum, transpose
@@ -106,10 +106,10 @@ def product(backend, wrapping):
                 return ProductOutput(output)
             else:
                 raise ValueError("Invalid type")
-                
+
     # Auxiliary class to signal to the sum() function that it is dealing with an output of the product() method
     class ProductOutput(object):
         def __init__(self, sum_product_return_value):
             self.sum_product_return_value = sum_product_return_value
-            
+
     return (_Product(), ProductOutput)

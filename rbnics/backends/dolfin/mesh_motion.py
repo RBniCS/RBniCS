@@ -57,25 +57,25 @@ class MeshMotion(AbstractMeshMotion):
         # Subdomain numbering is contiguous
         assert min(self.subdomain_id_to_deformation_dofs.keys()) == 0
         assert len(self.subdomain_id_to_deformation_dofs.keys()) == max(self.subdomain_id_to_deformation_dofs.keys()) + 1
-        
+
         # Store the shape parametrization expression
         self.shape_parametrization_expression = shape_parametrization_expression
         assert len(self.shape_parametrization_expression) == len(self.subdomain_id_to_deformation_dofs.keys())
-        
+
         # Prepare storage for displacement expression, computed by init()
         self.displacement_expression = list()
-        
+
     def init(self, problem):
         if len(self.displacement_expression) == 0: # avoid initialize multiple times
             # Preprocess the shape parametrization expression to convert it in the displacement expression
             # This cannot be done during __init__ because at construction time the number
             # of parameters is still unknown
-            
+
             # Declare first some sympy simbolic quantities, needed by ccode
             from rbnics.shape_parametrization.utils.symbolic import sympy_symbolic_coordinates
             x = sympy_symbolic_coordinates(self.mesh.geometry().dim(), MatrixSymbol)
             mu = MatrixSymbol("mu", len(problem.mu), 1)
-            
+
             # Then carry out the proprocessing
             for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
                 displacement_expression_on_subdomain = list()
@@ -95,14 +95,14 @@ class MeshMotion(AbstractMeshMotion):
                         domain=self.mesh
                     )
                 )
-        
+
     def move_mesh(self):
         displacement = self.compute_displacement()
         ALE.move(self.mesh, displacement)
-        
+
     def reset_reference(self):
         self.mesh.coordinates()[:] = self.reference_coordinates
-        
+
     # Auxiliary method to deform the domain
     def compute_displacement(self):
         displacement = Function(self.deformation_V)

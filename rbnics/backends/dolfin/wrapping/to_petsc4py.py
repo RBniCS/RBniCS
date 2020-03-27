@@ -27,7 +27,7 @@ def to_petsc4py(function: Function):
 @overload
 def to_petsc4py(vector: GenericVector):
     return as_backend_type(vector).vec()
-    
+
 @overload
 def to_petsc4py(matrix: GenericMatrix):
     return as_backend_type(matrix).mat()

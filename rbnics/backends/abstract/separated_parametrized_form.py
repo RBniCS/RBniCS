@@ -22,7 +22,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, ab
 class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     def __init__(self, form):
         pass
-        
+
     @abstractmethod
     def separate(self):
         pass
@@ -30,7 +30,7 @@ class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     @abstractproperty
     def coefficients(self):
         pass
-    
+
     @abstractproperty
     def unchanged_forms(self):
         pass
@@ -38,7 +38,7 @@ class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     @abstractmethod
     def replace_placeholders(self, i, new_coefficients):
         pass
-    
+
     @abstractmethod
     def placeholders_names(self, i):
         pass

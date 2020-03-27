@@ -28,7 +28,7 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
     StokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(LinearTimeDependentReducedProblem(StokesReducedProblem_DerivedClass))
 
     class StokesUnsteadyReducedProblem_Class(StokesUnsteadyReducedProblem_Base):
-            
+
         class ProblemSolver(StokesUnsteadyReducedProblem_Base.ProblemSolver):
             def residual_eval(self, t, solution, solution_dot):
                 problem = self.problem
@@ -47,7 +47,7 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
                     + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
                     - assembled_operator["f"] - assembled_operator["g"]
                 )
-                
+
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
                 N = self.N
@@ -58,6 +58,6 @@ def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
                       assembled_operator["m"]*solution_dot_coefficient
                     + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                 )
-        
+
     # return value (a class) for the decorator
     return StokesUnsteadyReducedProblem_Class

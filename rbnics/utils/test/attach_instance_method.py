@@ -24,6 +24,6 @@ class AttachInstanceMethod(object):
         self._method_name = method_name
         self._patched_method = patched_method
         assert not hasattr(instance, method_name)
-        
+
     def attach(self):
         setattr(self._instance, self._method_name, types.MethodType(self._patched_method, self._instance))

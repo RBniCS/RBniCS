@@ -21,12 +21,12 @@ from rbnics.utils.decorators import overload
 
 def compute_theta_for_stability_factor(compute_theta):
     from rbnics.problems.elliptic import EllipticCoerciveProblem
-    
+
     module = types.ModuleType("compute_theta_for_stability_factor", "Storage for implementation of compute_theta_for_stability_factor")
-    
+
     def compute_theta_for_stability_factor_impl(self, term):
         return module._compute_theta_for_stability_factor_impl(self, term)
-        
+
     # Elliptic coercive problem
     @overload(EllipticCoerciveProblem, str, module=module)
     def _compute_theta_for_stability_factor_impl(self_, term):
@@ -34,5 +34,5 @@ def compute_theta_for_stability_factor(compute_theta):
             return tuple(0.5*t for t in compute_theta(self_, "a"))
         else:
             return compute_theta(self_, term)
-    
+
     return compute_theta_for_stability_factor_impl

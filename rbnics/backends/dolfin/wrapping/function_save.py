@@ -31,7 +31,7 @@ class SolutionFile_Base(object):
         self._last_index = None
         self._function_container = None
         self._init_last_index()
-        
+
     @staticmethod
     def remove_files(directory, filename):
         full_filename = os.path.join(str(directory), filename)
@@ -39,25 +39,25 @@ class SolutionFile_Base(object):
             if os.path.exists(full_filename + "_index.sfx"):
                 os.remove(full_filename + "_index.sfx")
         parallel_io(remove_files_task)
-        
+
     def write(self, function, name, index):
         pass
-        
+
     def read(self, function, name, index):
         pass
-        
+
     def _update_function_container(self, function):
         if self._function_container is None:
             self._function_container = function.copy(deepcopy=True)
         else:
             assign(self._function_container, function)
-        
+
     def _init_last_index(self):
         if IndexIO.exists_file(self._directory, self._filename + "_index.sfx"):
             self._last_index = IndexIO.load_file(self._directory, self._filename + "_index.sfx")
         else:
             self._last_index = -1
-            
+
     def _write_last_index(self, index):
         self._last_index = index
         # Write out current index
@@ -67,12 +67,12 @@ class SolutionFileXML(SolutionFile_Base):
     def __init__(self, directory, filename):
         SolutionFile_Base.__init__(self, directory, filename)
         self._visualization_file = PVDFile(self._full_filename + ".pvd", "compressed")
-            
+
     @staticmethod
     def remove_files(directory, filename):
         SolutionFile_Base.remove_files(directory, filename)
         # No need to remove further files, PVD and XML will get automatically truncated
-            
+
     def write(self, function, name, index):
         assert index in (self._last_index, self._last_index + 1)
         if index == self._last_index + 1: # writing out solutions after time stepping
@@ -89,7 +89,7 @@ class SolutionFileXML(SolutionFile_Base):
             pass
         else:
             raise ValueError("Invalid index")
-            
+
     def read(self, function, name, index):
         if index <= self._last_index:
             restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
@@ -102,14 +102,14 @@ class SolutionFileXDMF(SolutionFile_Base):
     # attribute to XDMFFile.write_checkpoint, which should be set to its non-default value,
     # thus breaking backwards compatibility
     append_attribute = XDMFFile.write_checkpoint.__doc__.find("append: bool") > - 1
-        
+
     def __init__(self, directory, filename):
         SolutionFile_Base.__init__(self, directory, filename)
         self._visualization_file = XDMFFile(self._full_filename + ".xdmf")
         self._visualization_file.parameters["flush_output"] = True
         self._restart_file = XDMFFile(self._full_filename + "_checkpoint.xdmf")
         self._restart_file.parameters["flush_output"] = True
-            
+
     @staticmethod
     def remove_files(directory, filename):
         SolutionFile_Base.remove_files(directory, filename)
@@ -122,7 +122,7 @@ class SolutionFileXDMF(SolutionFile_Base):
                 os.remove(full_filename + "_checkpoint.xdmf")
                 os.remove(full_filename + "_checkpoint.h5")
         parallel_io(remove_files_task)
-            
+
     def write(self, function, name, index):
         time = float(index)
         # Write visualization file (no append available, will overwrite)
@@ -147,7 +147,7 @@ class SolutionFileXDMF(SolutionFile_Base):
             set_log_level(bak_log_level)
             # Once solutions have been written to file, update last written index
         self._write_last_index(index)
-            
+
     def read(self, function, name, index):
         if index <= self._last_index:
             time = float(index)
@@ -164,7 +164,7 @@ def function_save(fun, directory, filename, suffix=None):
             _write_to_file(fun.sub(index, deepcopy=True), directory, filename, suffix, components)
     else:
         _write_to_file(fun, directory, filename, suffix)
-    
+
 def _write_to_file(fun, directory, filename, suffix, components=None):
     if components is not None:
         filename = filename + "_component_" + "".join(components)
@@ -206,5 +206,5 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
             # Write function to file
             file_ = SolutionFile(directory, filename)
             file_.write(fun, function_name, 0)
-            
+
 _all_solution_files = Cache()

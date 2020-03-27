@@ -25,10 +25,10 @@ def ExactStabilityFactorDecoratedProblem(
     **decorator_kwargs
 ):
     from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
-    
+
     @ProblemDecoratorFor(ExactStabilityFactor)
     def ExactStabilityFactorDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        
+
         @DecoratedProblemWithStabilityFactorEvaluation
         @PreserveClassName
         class ExactStabilityFactorDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
@@ -50,16 +50,16 @@ def ExactStabilityFactorDecoratedProblem(
                 # Stability factor eigen problem
                 self.stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self, "smallest", self._eigen_solver_parameters["stability_factor"], os.path.join(self.name(), "exact_stability_factor"))
                 self.stability_factor_lower_bound_calculator = None
-                
+
             # Initialize data structures required for the online phase
             def init(self):
                 # Call to Parent
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 # Init exact stability factor computations
                 self.stability_factor_calculator.init()
-            
+
         # return value (a class) for the decorator
         return ExactStabilityFactorDecoratedProblem_Class
-        
+
     # return the decorator itself
     return ExactStabilityFactorDecoratedProblem_Decorator

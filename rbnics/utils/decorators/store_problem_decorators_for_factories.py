@@ -21,7 +21,7 @@ from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, **kwargs):
     def StoreProblemDecoratorsForFactories_Decorator(DecoratedProblem_Base):
         assert issubclass(DecoratedProblem_Base, Problem)
-        
+
         if hasattr(Problem, "UndecoratedProblemClass"):
             UndecoratedProblemClass = Problem.UndecoratedProblemClass
         else:
@@ -38,7 +38,7 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
             ProblemExactDecorators = Problem.ProblemExactDecorators
         else:
             ProblemExactDecorators = list()
-        
+
         # Also store **kwargs as passed to init
         @PreserveClassName
         class DecoratedProblem(DecoratedProblem_Base):
@@ -47,7 +47,7 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
                 DecoratedProblem_Base.__init__(self, V, **kwargs)
                 # Store **kwargs
                 self.problem_kwargs = kwargs
-                
+
         # Move attributes from the base class to the decorated class
         DecoratedProblem.UndecoratedProblemClass = UndecoratedProblemClass
         # if hasattr(Problem, "UndecoratedProblemClass"):
@@ -69,7 +69,7 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
             DecoratedProblem.ProblemDecorators.append(Algorithm)
             DecoratedProblem.ProblemDecoratorsKwargs.append(kwargs)
             DecoratedProblem.ProblemExactDecorators.append(ExactAlgorithm)
-        
+
         # Return
         return DecoratedProblem
     # Return

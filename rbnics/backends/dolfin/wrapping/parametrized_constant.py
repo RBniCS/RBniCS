@@ -27,7 +27,7 @@ def ParametrizedConstant(truth_problem, parametrized_constant_code=None, *args, 
             element = element.sub_elements()[0]
         kwargs["element"] = element
     return ParametrizedExpression(truth_problem, parametrized_constant_code, *args, **kwargs)
-    
+
 def is_parametrized_constant(expr):
     if not isinstance(expr, Expression):
         return False
@@ -40,7 +40,7 @@ def parametrized_constant_to_float(expr, point=None):
     if point is None:
         point = expr._mesh.coordinates()[0]
     return float(expr(point))
-    
+
 def expression_float(self):
     if is_parametrized_constant(self):
         return parametrized_constant_to_float(self)

@@ -30,25 +30,25 @@ class Data(object):
     def __init__(self, Th):
         mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
-        
+
     def generate_random(self):
         # Generate random vectors
         v1 = RandomDolfinFunction(self.V).vector()
         v2 = RandomDolfinFunction(self.V).vector()
         # Return
         return (v1, v2)
-        
+
     def evaluate_builtin(self, v1, v2):
         return v1.inner(v2)
-        
+
     def evaluate_backend(self, v1, v2):
         return transpose(v1)*v2
-        
+
     def assert_backend(self, v1, v2, result_backend):
         result_builtin = self.evaluate_builtin(v1, v2)
         relative_error = (result_builtin - result_backend)/result_builtin
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(1, 9)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_dolfin_v1_dot_v2(Th, test_type, benchmark):

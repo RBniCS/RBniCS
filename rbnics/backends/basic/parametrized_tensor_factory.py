@@ -32,7 +32,7 @@ def ParametrizedTensorFactory(backend, wrapping):
             self._empty_snapshot = None
             self._name = None
             self._description = None
-            
+
         def __eq__(self, other):
             return (
                 isinstance(other, type(self))
@@ -41,10 +41,10 @@ def ParametrizedTensorFactory(backend, wrapping):
                     and
                 self._spaces == other._spaces
             )
-            
+
         def __hash__(self):
             return hash((self._form, self._spaces))
-        
+
         def create_interpolation_locations_container(self, **kwargs):
             # Populate auxiliary_problems_and_components
             visited = set()
@@ -76,37 +76,37 @@ def ParametrizedTensorFactory(backend, wrapping):
             assert "auxiliary_problems_and_components" not in kwargs
             kwargs["auxiliary_problems_and_components"] = auxiliary_problems_and_components
             return backend.ReducedMesh(self._spaces, **kwargs)
-            
+
         def create_snapshots_container(self):
             return backend.TensorSnapshotsList(self._spaces, self.create_empty_snapshot())
-            
+
         def create_empty_snapshot(self):
             if self._empty_snapshot is None:
                 self._empty_snapshot = self._assemble_empty_snapshot()
             return backend.copy(self._empty_snapshot)
-            
+
         def create_basis_container(self):
             return backend.TensorBasisList(self._spaces, self.create_empty_snapshot())
-            
+
         def create_POD_container(self):
             return backend.HighOrderProperOrthogonalDecomposition(self._spaces, self.create_empty_snapshot())
-            
+
         def name(self):
             if self._name is None:
                 self._name = wrapping.form_name(self._form)
             return self._name
-            
+
         def description(self):
             if self._description is None:
                 self._description = PrettyTuple(self._form, wrapping.form_description(self._form), self.name())
             return self._description
-            
+
         def is_parametrized(self):
             return wrapping.is_parametrized(self._form, wrapping.form_iterator) or self.is_time_dependent()
-            
+
         def is_time_dependent(self):
             return wrapping.is_time_dependent(self._form, wrapping.form_iterator)
-            
+
         @overload(lambda cls: cls)
         def __add__(self, other):
             form_sum = self._form + other._form
@@ -124,21 +124,21 @@ def ParametrizedTensorFactory(backend, wrapping):
             del output._description
             # Return
             return output
-            
+
         @overload(Number)
         def __add__(self, other):
             from rbnics.backends import evaluate
             assert len(self._spaces) == 0
             return evaluate(self) + other
-            
+
         @overload(Number)
         def __radd__(self, other):
             return self + other
-            
+
         @overload((lambda cls: cls, Number))
         def __sub__(self, other):
             return self + (- other)
-        
+
         @overload(backend.Function.Type())
         def __mul__(self, other):
             form_mul = self._form*other
@@ -160,11 +160,11 @@ def ParametrizedTensorFactory(backend, wrapping):
             del output._description
             # Return
             return output
-            
+
         @overload(Number)
         def __mul__(self, other):
             return other*self
-            
+
         @overload(Number)
         def __rmul__(self, other):
             form_mul = other*self._form
@@ -180,16 +180,16 @@ def ParametrizedTensorFactory(backend, wrapping):
             del output._description
             # Return
             return output
-            
+
         def __neg__(self):
             return -1.*self
-            
+
         @staticmethod
         def _hash_name(string):
             return hashlib.sha1(string.encode("utf-8")).hexdigest()
-        
+
     return _ParametrizedTensorFactory
-        
+
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):
         as_list = [str(arg0) + ",", "where"]

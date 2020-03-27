@@ -19,11 +19,11 @@
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
-    
+
     NavierStokesReductionMethod_Base = NonlinearReductionMethod(StokesReductionMethod_DerivedClass)
-    
+
     class NavierStokesReductionMethod_Class(NavierStokesReductionMethod_Base):
         pass
-        
+
     # return value (a class) for the decorator
     return NavierStokesReductionMethod_Class

@@ -42,33 +42,33 @@ def ExactParametrizedFunctionsDecoratedProblem(
 ):
 
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-    
+
     @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline, stages=stages)
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        
+
         @DefineSymbolicParameters
         @StoreMapFromParametrizedOperatorsToProblem
         @StoreMapFromParametrizedOperatorsToTermAndIndex
         @PreserveClassName
         class ExactParametrizedFunctionsDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
-            
+
             # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
-                
+
                 # Store values passed to decorator
                 self._store_exact_evaluation_stages(stages)
-                
+
                 # Generate offline online backend for current problem
                 self.offline_online_backend = OfflineOnlineBackend(self.name())
-            
+
             @overload(str)
             def _store_exact_evaluation_stages(self, stage):
                 assert stages != "online", "This choice does not make any sense because it requires an EIM/DEIM offline stage which then is not used online"
                 assert stages == "offline"
                 self._apply_exact_evaluation_at_stages = (stages, )
-                
+
             @overload(tuple_of(str))
             def _store_exact_evaluation_stages(self, stage):
                 assert len(stages) in (1, 2)
@@ -77,7 +77,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
                     assert stages[1] in ("offline", "online")
                     assert stages[0] != stages[1]
                 self._apply_exact_evaluation_at_stages = stages
-            
+
             def init(self):
                 has_disable_init_operators = hasattr(self, "disable_init_operators") # may be shared between EIM/DEIM and exact evaluation
                 # Call parent's method (enforcing an empty parent call to _init_operators)
@@ -90,7 +90,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
                     del self.disable_init_operators
                 # Then, initialize exact operators
                 self._init_operators_exact()
-            
+
             def _init_operators_exact(self):
                 # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
@@ -131,7 +131,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 OfflineOnlineSwitch.set_current_stage(former_stage)
                 # Restore float parameters
                 self.detach_symbolic_parameters()
-                
+
             def solve(self, **kwargs):
                 # Exact operators should be used regardless of the current stage
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -143,7 +143,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 OfflineOnlineSwitch.set_current_stage(former_stage)
                 # Return
                 return solution
-                
+
             def compute_output(self):
                 # Exact operators should be used regardless of the current stage
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -155,7 +155,7 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 OfflineOnlineSwitch.set_current_stage(former_stage)
                 # Return
                 return output
-                
+
             def _cache_key_from_kwargs(self, **kwargs):
                 cache_key = ParametrizedDifferentialProblem_DerivedClass._cache_key_from_kwargs(self, **kwargs)
                 # Change cache key depending on current stage
@@ -165,9 +165,9 @@ def ExactParametrizedFunctionsDecoratedProblem(
                     cache_key = cache_key + ("exact_evaluation", )
                 # Return
                 return cache_key
-                
+
         # return value (a class) for the decorator
         return ExactParametrizedFunctionsDecoratedProblem_Class
-        
+
     # return the decorator itself
     return ExactParametrizedFunctionsDecoratedProblem_Decorator

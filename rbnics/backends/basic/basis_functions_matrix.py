@@ -86,24 +86,24 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     functions_list.enrich_patch.patch()
                 for component_name in components_name:
                     patch_functions_list_enrich(component_name, self._components[component_name])
-                
+
         def enrich(self, functions, component=None, weights=None, copy=True):
             assert copy is True
             # Append to storage
             self._enrich(functions, component, weights, copy)
-        
+
         @overload(object, None, (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
         def _enrich(self, functions, component, weights, copy):
             assert len(self._components) == 1
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             self._components[component_0].enrich(functions, None, weights, copy)
-            
+
         @overload(object, str, (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
         def _enrich(self, functions, component, weights, copy):
             assert component in self._components
             self._components[component].enrich(functions, component, weights, copy)
-            
+
         @overload(object, dict_of(str, str), (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
         def _enrich(self, functions, component, weights, copy):
             assert len(component) == 1
@@ -111,18 +111,18 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 break
             assert component_to in self._components
             self._components[component_to].enrich(functions, component, weights)
-            
+
         @overload(None)
         def _update_component_name_to_basis_component_length(self, component):
             assert len(self._components) == 1
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             self._component_name_to_basis_component_length[component_0] = len(self._components[component_0])
-            
+
         @overload(str)
         def _update_component_name_to_basis_component_length(self, component):
             self._component_name_to_basis_component_length[component] = len(self._components[component])
-            
+
         @overload(dict_of(str, str))
         def _update_component_name_to_basis_component_length(self, component):
             assert len(component) == 1
@@ -130,10 +130,10 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 break
             assert component_to in self._components
             self._component_name_to_basis_component_length[component_to] = len(self._components[component_to])
-            
+
         def _prepare_trivial_precomputed_sub_components(self):
             self._precomputed_sub_components[tuple(self._components_name)] = self
-            
+
         def _prepare_trivial_precomputed_slice(self):
             if len(self._components) == 1:
                 assert len(self._components_name) == 1
@@ -149,13 +149,13 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 precomputed_slice_key_start = tuple(precomputed_slice_key_start)
                 precomputed_slice_key_stop = tuple(precomputed_slice_key_stop)
             self._precomputed_slices[precomputed_slice_key_start, precomputed_slice_key_stop] = self
-            
+
         def clear(self):
             components_name = self._components_name
             # Trick _init into re-initializing everything
             self._components_name = None
             self.init(components_name)
-            
+
         def save(self, directory, filename):
             if len(self._components) > 1:
                 def filename_and_component(component_name):
@@ -165,7 +165,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     return filename
             for (component_name, functions_list) in self._components.items():
                 functions_list.save(directory, filename_and_component(component_name))
-            
+
         def load(self, directory, filename):
             return_value = True
             assert len(self._components) > 0
@@ -197,7 +197,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             self._prepare_trivial_precomputed_slice()
             # Return
             return return_value
-            
+
         @overload(online_backend.OnlineMatrix.Type(), )
         def __mul__(self, other):
             if isinstance(other.M, dict):
@@ -208,26 +208,26 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 output.init(self._components_name)
                 return output
             return wrapping.basis_functions_matrix_mul_online_matrix(self, other, BasisFunctionsMatrixWithInit)
-            
+
         @overload(online_backend.OnlineFunction.Type(), )
         def __mul__(self, other):
             return self.__mul__(online_wrapping.function_to_vector(other))
-            
+
         @overload(online_backend.OnlineVector.Type(), )
         def __mul__(self, other):
             if isinstance(other.N, dict):
                 assert set(other.N.keys()) == set(self._components_name)
             return wrapping.basis_functions_matrix_mul_online_vector(self, other)
-            
+
         @overload(ThetaType, )
         def __mul__(self, other):
             return wrapping.basis_functions_matrix_mul_online_vector(self, other)
-            
+
         def __len__(self):
             assert len(self._components_name) == 1
             assert len(self._component_name_to_basis_component_length) == 1
             return self._component_name_to_basis_component_length[self._components_name[0]]
-            
+
         @overload(int)
         def __getitem__(self, key):
             # spare the user an obvious extraction of the first component return basis function number key
@@ -235,35 +235,35 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             return self._components[component_0][key]
-                
+
         @overload(str)
         def __getitem__(self, key):
             # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
             return self._components[key]
-            
+
         @overload(list_of(str))
         def __getitem__(self, key):
             return self._precompute_sub_components(key)
-            
+
         @overload(slice) # e.g. key = :N, return the first N functions
         def __getitem__(self, key):
             assert key.step is None
             return self._precompute_slice(key.start, key.stop)
-            
+
         @overload(int, object) # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
         def __setitem__(self, key, item):
             assert len(self._components) == 1, "Cannot set components, only single functions. Did you mean to call __getitem__ to extract a component and __setitem__ of a single function on that component?"
             assert len(self._components_name) == 1
             self._components[self._components_name[0]][key] = item
-        
+
         @overload(None, int)
         def _precompute_slice(self, _, N_stop):
             return self._precompute_slice(0, N_stop)
-            
+
         @overload(int, None)
         def _precompute_slice(self, N_start, _):
             return self._precompute_slice(N_start, len(self))
-        
+
         @overload(int, int)
         def _precompute_slice(self, N_start, N_stop):
             if (N_start, N_stop) not in self._precomputed_slices:
@@ -275,21 +275,21 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     output._components[component_name].enrich(self._components[component_name][N_start:N_stop], copy=False)
                 self._precomputed_slices[N_start, N_stop] = output
             return self._precomputed_slices[N_start, N_stop]
-            
+
         @overload(None, OnlineSizeDict)
         def _precompute_slice(self, _, N_stop):
             N_start = OnlineSizeDict()
             for component_name in self._components_name:
                 N_start[component_name] = 0
             return self._precompute_slice(N_start, N_stop)
-            
+
         @overload(OnlineSizeDict, None)
         def _precompute_slice(self, N_start, _):
             N_stop = OnlineSizeDict()
             for component_name in self._components_name:
                 N_stop[component_name] = self._component_name_to_basis_component_length[component_name]
             return self._precompute_slice(N_start, len(self))
-            
+
         @overload(OnlineSizeDict, OnlineSizeDict)
         def _precompute_slice(self, N_start, N_stop):
             assert set(N_start.keys()) == set(self._components_name)
@@ -304,7 +304,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     output._components[component_name].enrich(self._components[component_name][N_start[component_name]:N_stop[component_name]], copy=False)
                 self._precomputed_slices[N_start_key, N_stop_key] = output
             return self._precomputed_slices[N_start_key, N_stop_key]
-            
+
         def _precompute_sub_components(self, sub_components):
             sub_components_key = tuple(sub_components)
             if sub_components_key not in self._precomputed_sub_components:
@@ -316,7 +316,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                     output._components[component_name].enrich(self._components[component_name], component=component_name, copy=True)
                 self._precomputed_sub_components[sub_components_key] = output
             return self._precomputed_sub_components[sub_components_key]
-            
+
         def __iter__(self):
             assert len(self._components) == 1
             assert len(self._components_name) == 1

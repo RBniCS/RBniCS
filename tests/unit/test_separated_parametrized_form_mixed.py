@@ -66,10 +66,10 @@ expr17_split_0_split = split(expr17_split[0])
 class Problem(object):
     def __init__(self, name):
         self._name = name
-    
+
     def name(self):
         return self._name
-        
+
 _solution_to_problem_map[expr10] = Problem("problem10")
 _solution_to_problem_map[expr11] = Problem("problem11")
 _solution_to_problem_map[expr12] = Problem("problem12")
@@ -98,7 +98,7 @@ def test_separated_parametrized_forms_mixed_1():
     a1_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients)))
-    
+
     assert 6 == len(a1_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[0])))
@@ -107,7 +107,7 @@ def test_separated_parametrized_forms_mixed_1():
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[5])))
-    
+
     assert 1 == len(a1_sep.coefficients[0])
     assert 1 == len(a1_sep.coefficients[1])
     assert 1 == len(a1_sep.coefficients[2])
@@ -121,7 +121,7 @@ def test_separated_parametrized_forms_mixed_1():
     test_logger.log(DEBUG, "\t\t" + str(a1_sep.coefficients[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep.coefficients[5][0]))
-    
+
     assert "f_7" == str(a1_sep.coefficients[0][0])
     assert "f_6" == str(a1_sep.coefficients[1][0])
     assert "f_5" == str(a1_sep.coefficients[2][0])
@@ -135,7 +135,7 @@ def test_separated_parametrized_forms_mixed_1():
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._placeholders[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._placeholders[5][0]))
-    
+
     assert "f_44" == str(a1_sep._placeholders[0][0])
     assert "f_45" == str(a1_sep._placeholders[1][0])
     assert "f_46" == str(a1_sep._placeholders[2][0])
@@ -149,7 +149,7 @@ def test_separated_parametrized_forms_mixed_1():
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{17}} sum_{i_{16}} ([{ A | A_{i_{23}} = (grad(v_0))[0, i_{23}] }, { A | A_{i_{22}} = (grad(v_0))[1, i_{22}] }])[i_{16}, i_{17}] * ({ A | A_{i_8, i_9} = sum_{i_{10}} ([{ A | A_{i_{25}} = (grad(v_1))[0, i_{25}] }, { A | A_{i_{24}} = (grad(v_1))[1, i_{24}] }])[i_{10}, i_9] * f_44[i_8, i_{10}]  })[i_{16}, i_{17}]  " == str(a1_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{18}} ([v_0[0], v_0[1]])[i_{18}] * ({ A | A_{i_{11}} = sum_{i_{12}} ([{ A | A_{i_{27}} = (grad(v_1))[0, i_{27}] }, { A | A_{i_{26}} = (grad(v_1))[1, i_{26}] }])[i_{11}, i_{12}] * f_45[i_{12}]  })[i_{18}] " == str(a1_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_46 * (sum_{i_{19}} ([v_0[0], v_0[1]])[i_{19}] * ([v_1[0], v_1[1]])[i_{19}] )" == str(a1_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -158,7 +158,7 @@ def test_separated_parametrized_forms_mixed_1():
     assert "f_49 * v_0[2] * -1 * v_1[2]" == str(a1_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep._form_unchanged)))
-    
+
     assert 0 == len(a1_sep._form_unchanged)
 
 @skip_in_parallel
@@ -172,7 +172,7 @@ def test_separated_parametrized_forms_mixed_2():
     a2_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients)))
-    
+
     assert 6 == len(a2_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[0])))
@@ -181,7 +181,7 @@ def test_separated_parametrized_forms_mixed_2():
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[5])))
-    
+
     assert 1 == len(a2_sep.coefficients[0])
     assert 1 == len(a2_sep.coefficients[1])
     assert 1 == len(a2_sep.coefficients[2])
@@ -195,7 +195,7 @@ def test_separated_parametrized_forms_mixed_2():
     test_logger.log(DEBUG, "\t\t" + str(a2_sep.coefficients[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep.coefficients[5][0]))
-    
+
     assert "{ A | A_{i_{33}, i_{34}} = sum_{i_{35}} f_7[i_{33}, i_{35}] * f_8[i_{35}, i_{34}]  }" == str(a2_sep.coefficients[0][0])
     assert "f_6" == str(a2_sep.coefficients[1][0])
     assert "f_5" == str(a2_sep.coefficients[2][0])
@@ -209,7 +209,7 @@ def test_separated_parametrized_forms_mixed_2():
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._placeholders[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._placeholders[5][0]))
-    
+
     assert "f_50" == str(a2_sep._placeholders[0][0])
     assert "f_51" == str(a2_sep._placeholders[1][0])
     assert "f_52" == str(a2_sep._placeholders[2][0])
@@ -223,7 +223,7 @@ def test_separated_parametrized_forms_mixed_2():
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{45}} sum_{i_{44}} ([{ A | A_{i_{51}} = (grad(v_0))[0, i_{51}] }, { A | A_{i_{50}} = (grad(v_0))[1, i_{50}] }])[i_{44}, i_{45}] * ({ A | A_{i_{36}, i_{37}} = sum_{i_{38}} ([{ A | A_{i_{53}} = (grad(v_1))[0, i_{53}] }, { A | A_{i_{52}} = (grad(v_1))[1, i_{52}] }])[i_{38}, i_{37}] * f_50[i_{36}, i_{38}]  })[i_{44}, i_{45}]  " == str(a2_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{46}} ([v_0[0], v_0[1]])[i_{46}] * ({ A | A_{i_{39}} = sum_{i_{40}} ([{ A | A_{i_{55}} = (grad(v_1))[0, i_{55}] }, { A | A_{i_{54}} = (grad(v_1))[1, i_{54}] }])[i_{39}, i_{40}] * f_51[i_{40}]  })[i_{46}] " == str(a2_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_52 * (sum_{i_{47}} ([v_0[0], v_0[1]])[i_{47}] * ([v_1[0], v_1[1]])[i_{47}] )" == str(a2_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -232,7 +232,7 @@ def test_separated_parametrized_forms_mixed_2():
     assert "f_55 * v_0[2] * -1 * v_1[2]" == str(a2_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep._form_unchanged)))
-    
+
     assert 0 == len(a2_sep._form_unchanged)
 
 @skip_in_parallel
@@ -246,7 +246,7 @@ def test_separated_parametrized_forms_mixed_3():
     a3_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients)))
-    
+
     assert 9 == len(a3_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[0])))
@@ -258,7 +258,7 @@ def test_separated_parametrized_forms_mixed_3():
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[6])))
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[7])))
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[8])))
-    
+
     assert 1 == len(a3_sep.coefficients[0])
     assert 1 == len(a3_sep.coefficients[1])
     assert 1 == len(a3_sep.coefficients[2])
@@ -278,7 +278,7 @@ def test_separated_parametrized_forms_mixed_3():
     test_logger.log(DEBUG, "\t\t" + str(a3_sep.coefficients[6][0]))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep.coefficients[7][0]))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep.coefficients[8][0]))
-    
+
     assert "{ A | A_{i_{66}, i_{67}} = ({ A | A_{i_{64}, i_{65}} = f_7[0, 0] * f_7[1, 1] * ({ A | A_{i_{61}, i_{62}} = sum_{i_{63}} f_7[i_{63}, i_{62}] * f_7[i_{61}, i_{63}]  })[i_{64}, i_{65}] })[i_{66}, i_{67}] * f_5 }" == str(a3_sep.coefficients[0][0])
     assert "{ A | A_{i_{66}, i_{67}} = ({ A | A_{i_{64}, i_{65}} = f_7[0, 0] * f_7[1, 1] * f_8[i_{64}, i_{65}] })[i_{66}, i_{67}] * f_5 }" == str(a3_sep.coefficients[1][0])
     assert "{ A | A_{i_{66}, i_{67}} = ({ A | A_{i_{64}, i_{65}} = -1 * f_7[0, 1] * f_7[1, 0] * f_8[i_{64}, i_{65}] })[i_{66}, i_{67}] * f_5 }" == str(a3_sep.coefficients[2][0])
@@ -298,7 +298,7 @@ def test_separated_parametrized_forms_mixed_3():
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._placeholders[6][0]))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._placeholders[7][0]))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._placeholders[8][0]))
-    
+
     assert "f_56" == str(a3_sep._placeholders[0][0])
     assert "f_57" == str(a3_sep._placeholders[1][0])
     assert "f_58" == str(a3_sep._placeholders[2][0])
@@ -318,7 +318,7 @@ def test_separated_parametrized_forms_mixed_3():
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._form_with_placeholders[6].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._form_with_placeholders[7].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._form_with_placeholders[8].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{77}} sum_{i_{76}} ([{ A | A_{i_{83}} = (grad(v_0))[0, i_{83}] }, { A | A_{i_{82}} = (grad(v_0))[1, i_{82}] }])[i_{76}, i_{77}] * ({ A | A_{i_{68}, i_{69}} = sum_{i_{70}} ([{ A | A_{i_{85}} = (grad(v_1))[0, i_{85}] }, { A | A_{i_{84}} = (grad(v_1))[1, i_{84}] }])[i_{70}, i_{69}] * f_56[i_{68}, i_{70}]  })[i_{76}, i_{77}]  " == str(a3_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{77}} sum_{i_{76}} ([{ A | A_{i_{83}} = (grad(v_0))[0, i_{83}] }, { A | A_{i_{82}} = (grad(v_0))[1, i_{82}] }])[i_{76}, i_{77}] * ({ A | A_{i_{68}, i_{69}} = sum_{i_{70}} ([{ A | A_{i_{85}} = (grad(v_1))[0, i_{85}] }, { A | A_{i_{84}} = (grad(v_1))[1, i_{84}] }])[i_{70}, i_{69}] * f_57[i_{68}, i_{70}]  })[i_{76}, i_{77}]  " == str(a3_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "sum_{i_{77}} sum_{i_{76}} ([{ A | A_{i_{83}} = (grad(v_0))[0, i_{83}] }, { A | A_{i_{82}} = (grad(v_0))[1, i_{82}] }])[i_{76}, i_{77}] * ({ A | A_{i_{68}, i_{69}} = sum_{i_{70}} ([{ A | A_{i_{85}} = (grad(v_1))[0, i_{85}] }, { A | A_{i_{84}} = (grad(v_1))[1, i_{84}] }])[i_{70}, i_{69}] * f_58[i_{68}, i_{70}]  })[i_{76}, i_{77}]  " == str(a3_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -330,7 +330,7 @@ def test_separated_parametrized_forms_mixed_3():
     assert "-1 * f_64 * v_0[2] * v_1[2]" == str(a3_sep._form_with_placeholders[8].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep._form_unchanged)))
-    
+
     assert 0 == len(a3_sep._form_unchanged)
 
 @skip_in_parallel
@@ -345,7 +345,7 @@ def test_separated_parametrized_forms_mixed_4():
     a4_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients)))
-    
+
     assert 6 == len(a4_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[0])))
@@ -354,7 +354,7 @@ def test_separated_parametrized_forms_mixed_4():
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[5])))
-    
+
     assert 1 == len(a4_sep.coefficients[0])
     assert 1 == len(a4_sep.coefficients[1])
     assert 1 == len(a4_sep.coefficients[2])
@@ -368,7 +368,7 @@ def test_separated_parametrized_forms_mixed_4():
     test_logger.log(DEBUG, "\t\t" + str(a4_sep.coefficients[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep.coefficients[5][0]))
-    
+
     assert "{ A | A_{i_{93}, i_{94}} = diameter * f_7[i_{93}, i_{94}] }" == str(a4_sep.coefficients[0][0])
     assert "f_6" == str(a4_sep.coefficients[1][0])
     assert "f_5" == str(a4_sep.coefficients[2][0])
@@ -382,7 +382,7 @@ def test_separated_parametrized_forms_mixed_4():
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[5][0]))
-    
+
     assert "f_65" == str(a4_sep._placeholders[0][0])
     assert "f_66" == str(a4_sep._placeholders[1][0])
     assert "f_67" == str(a4_sep._placeholders[2][0])
@@ -396,7 +396,7 @@ def test_separated_parametrized_forms_mixed_4():
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{107}} sum_{i_{106}} ([{ A | A_{i_{113}} = (grad(v_0))[0, i_{113}] }, { A | A_{i_{112}} = (grad(v_0))[1, i_{112}] }])[i_{106}, i_{107}] * ({ A | A_{i_{95}, i_{96}} = sum_{i_{97}} ([{ A | A_{i_{115}} = (grad(v_1))[0, i_{115}] }, { A | A_{i_{114}} = (grad(v_1))[1, i_{114}] }])[i_{97}, i_{96}] * f_65[i_{95}, i_{97}]  })[i_{106}, i_{107}]  " == str(a4_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{108}} ([v_0[0], v_0[1]])[i_{108}] * ({ A | A_{i_{100}} = diameter * ({ A | A_{i_{98}} = sum_{i_{99}} ([{ A | A_{i_{117}} = (grad(v_1))[0, i_{117}] }, { A | A_{i_{116}} = (grad(v_1))[1, i_{116}] }])[i_{98}, i_{99}] * f_66[i_{99}]  })[i_{100}] })[i_{108}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_67 * diameter * (sum_{i_{109}} ([v_0[0], v_0[1]])[i_{109}] * ([v_1[0], v_1[1]])[i_{109}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -405,7 +405,7 @@ def test_separated_parametrized_forms_mixed_4():
     assert "f_70 * v_0[2] * -1 * diameter * v_1[2]" == str(a4_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep._form_unchanged)))
-    
+
     assert 0 == len(a4_sep._form_unchanged)
 
 @skip_in_parallel
@@ -420,7 +420,7 @@ def test_separated_parametrized_forms_mixed_5():
     a5_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients)))
-    
+
     assert 6 == len(a5_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[0])))
@@ -429,7 +429,7 @@ def test_separated_parametrized_forms_mixed_5():
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[5])))
-    
+
     assert 1 == len(a5_sep.coefficients[0])
     assert 1 == len(a5_sep.coefficients[1])
     assert 1 == len(a5_sep.coefficients[2])
@@ -443,7 +443,7 @@ def test_separated_parametrized_forms_mixed_5():
     test_logger.log(DEBUG, "\t\t" + str(a5_sep.coefficients[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep.coefficients[5][0]))
-    
+
     assert "{ A | A_{i_{123}, i_{124}} = diameter * f_7[i_{123}, i_{124}] }" == str(a5_sep.coefficients[0][0])
     assert "{ A | A_{i_{128}} = diameter * f_6[i_{128}] }" == str(a5_sep.coefficients[1][0])
     assert "f_5" == str(a5_sep.coefficients[2][0])
@@ -457,7 +457,7 @@ def test_separated_parametrized_forms_mixed_5():
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[5][0]))
-    
+
     assert "f_71" == str(a5_sep._placeholders[0][0])
     assert "f_72" == str(a5_sep._placeholders[1][0])
     assert "f_73" == str(a5_sep._placeholders[2][0])
@@ -471,7 +471,7 @@ def test_separated_parametrized_forms_mixed_5():
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{137}} sum_{i_{136}} ([{ A | A_{i_{143}} = (grad(v_0))[0, i_{143}] }, { A | A_{i_{142}} = (grad(v_0))[1, i_{142}] }])[i_{136}, i_{137}] * ({ A | A_{i_{125}, i_{126}} = sum_{i_{127}} ([{ A | A_{i_{145}} = (grad(v_1))[0, i_{145}] }, { A | A_{i_{144}} = (grad(v_1))[1, i_{144}] }])[i_{127}, i_{126}] * f_71[i_{125}, i_{127}]  })[i_{136}, i_{137}]  " == str(a5_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{138}} ([v_0[0], v_0[1]])[i_{138}] * ({ A | A_{i_{129}} = sum_{i_{130}} ([{ A | A_{i_{147}} = (grad(v_1))[0, i_{147}] }, { A | A_{i_{146}} = (grad(v_1))[1, i_{146}] }])[i_{129}, i_{130}] * f_72[i_{130}]  })[i_{138}] " == str(a5_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_73 * diameter * (sum_{i_{139}} ([v_0[0], v_0[1]])[i_{139}] * ([v_1[0], v_1[1]])[i_{139}] )" == str(a5_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -480,7 +480,7 @@ def test_separated_parametrized_forms_mixed_5():
     assert "f_76 * v_0[2] * -1 * diameter * v_1[2]" == str(a5_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep._form_unchanged)))
-    
+
     assert 0 == len(a5_sep._form_unchanged)
 
 @skip_in_parallel
@@ -494,11 +494,11 @@ def test_separated_parametrized_forms_mixed_6():
     a6_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a6_sep.coefficients)))
-    
+
     assert 0 == len(a6_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a6_sep._form_unchanged)))
-    
+
     assert 6 == len(a6_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a6_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -507,7 +507,7 @@ def test_separated_parametrized_forms_mixed_6():
     test_logger.log(DEBUG, "\t\t" + str(a6_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a6_sep._form_unchanged[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a6_sep._form_unchanged[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{162}} sum_{i_{161}} ([{ A | A_{i_{168}} = (grad(v_0))[0, i_{168}] }, { A | A_{i_{167}} = (grad(v_0))[1, i_{167}] }])[i_{161}, i_{162}] * ({ A | A_{i_{153}, i_{154}} = sum_{i_{155}} ([{ A | A_{i_{170}} = (grad(v_1))[0, i_{170}] }, { A | A_{i_{169}} = (grad(v_1))[1, i_{169}] }])[i_{155}, i_{154}] * f_11[i_{153}, i_{155}]  })[i_{161}, i_{162}]  " == str(a6_sep._form_unchanged[0].integrals()[0].integrand())
     assert "sum_{i_{163}} ([v_0[0], v_0[1]])[i_{163}] * ({ A | A_{i_{156}} = sum_{i_{157}} ([{ A | A_{i_{172}} = (grad(v_1))[0, i_{172}] }, { A | A_{i_{171}} = (grad(v_1))[1, i_{171}] }])[i_{156}, i_{157}] * f_10[i_{157}]  })[i_{163}] " == str(a6_sep._form_unchanged[1].integrals()[0].integrand())
     assert "f_9 * (sum_{i_{164}} ([v_0[0], v_0[1]])[i_{164}] * ([v_1[0], v_1[1]])[i_{164}] )" == str(a6_sep._form_unchanged[2].integrals()[0].integrand())
@@ -526,27 +526,27 @@ def test_separated_parametrized_forms_mixed_7():
     a7_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a7_sep.coefficients)))
-    
+
     assert 1 == len(a7_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a7_sep.coefficients[0])))
-    
+
     assert 1 == len(a7_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a7_sep.coefficients[0][0]))
-    
+
     assert "{ A | A_{i_{178}, i_{179}} = sum_{i_{180}} f_7[i_{178}, i_{180}] * f_8[i_{180}, i_{179}]  }" == str(a7_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._placeholders[0][0]))
-    
+
     assert "f_77" == str(a7_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{193}} sum_{i_{192}} ([{ A | A_{i_{199}} = (grad(v_0))[0, i_{199}] }, { A | A_{i_{198}} = (grad(v_0))[1, i_{198}] }])[i_{192}, i_{193}] * ({ A | A_{i_{184}, i_{185}} = sum_{i_{186}} ([{ A | A_{i_{201}} = (grad(v_1))[0, i_{201}] }, { A | A_{i_{200}} = (grad(v_1))[1, i_{200}] }])[i_{186}, i_{185}] * ({ A | A_{i_{181}, i_{182}} = sum_{i_{183}} f_11[i_{181}, i_{183}] * f_77[i_{183}, i_{182}]  })[i_{184}, i_{186}]  })[i_{192}, i_{193}]  " == str(a7_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a7_sep._form_unchanged)))
-    
+
     assert 5 == len(a7_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -554,7 +554,7 @@ def test_separated_parametrized_forms_mixed_7():
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[2].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[4].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{194}} ([v_0[0], v_0[1]])[i_{194}] * ({ A | A_{i_{187}} = sum_{i_{188}} ([{ A | A_{i_{203}} = (grad(v_1))[0, i_{203}] }, { A | A_{i_{202}} = (grad(v_1))[1, i_{202}] }])[i_{187}, i_{188}] * f_10[i_{188}]  })[i_{194}] " == str(a7_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_9 * (sum_{i_{195}} ([v_0[0], v_0[1]])[i_{195}] * ([v_1[0], v_1[1]])[i_{195}] )" == str(a7_sep._form_unchanged[1].integrals()[0].integrand())
     assert "-1 * v_1[2] * (sum_{i_{196}} ({ A | A_{i_{189}, i_{190}} = sum_{i_{191}} ([{ A | A_{i_{205}} = (grad(v_0))[0, i_{205}] }, { A | A_{i_{204}} = (grad(v_0))[1, i_{204}] }])[i_{191}, i_{190}] * f_11[i_{189}, i_{191}]  })[i_{196}, i_{196}] )" == str(a7_sep._form_unchanged[2].integrals()[0].integrand())
@@ -572,27 +572,27 @@ def test_separated_parametrized_forms_mixed_8():
     a8_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a8_sep.coefficients)))
-    
+
     assert 1 == len(a8_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a8_sep.coefficients[0])))
-    
+
     assert 1 == len(a8_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep.coefficients[0][0]))
-    
+
     assert "{ A | A_{i_{212}, i_{213}} = sum_{i_{214}} ({ A | A_{i_{209}, i_{210}} = sum_{i_{211}} f_7[i_{209}, i_{211}] * f_11[i_{211}, i_{210}]  })[i_{212}, i_{214}] * f_8[i_{214}, i_{213}]  }" == str(a8_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._placeholders[0][0]))
-    
+
     assert "f_78" == str(a8_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{224}} sum_{i_{223}} ([{ A | A_{i_{230}} = (grad(v_0))[0, i_{230}] }, { A | A_{i_{229}} = (grad(v_0))[1, i_{229}] }])[i_{223}, i_{224}] * ({ A | A_{i_{215}, i_{216}} = sum_{i_{217}} ([{ A | A_{i_{232}} = (grad(v_1))[0, i_{232}] }, { A | A_{i_{231}} = (grad(v_1))[1, i_{231}] }])[i_{217}, i_{216}] * f_78[i_{215}, i_{217}]  })[i_{223}, i_{224}]  " == str(a8_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a8_sep._form_unchanged)))
-    
+
     assert 5 == len(a8_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -600,7 +600,7 @@ def test_separated_parametrized_forms_mixed_8():
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_unchanged[2].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_unchanged[4].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{225}} ([v_0[0], v_0[1]])[i_{225}] * ({ A | A_{i_{218}} = sum_{i_{219}} ([{ A | A_{i_{234}} = (grad(v_1))[0, i_{234}] }, { A | A_{i_{233}} = (grad(v_1))[1, i_{233}] }])[i_{218}, i_{219}] * f_10[i_{219}]  })[i_{225}] " == str(a8_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_9 * (sum_{i_{226}} ([v_0[0], v_0[1]])[i_{226}] * ([v_1[0], v_1[1]])[i_{226}] )" == str(a8_sep._form_unchanged[1].integrals()[0].integrand())
     assert "-1 * v_1[2] * (sum_{i_{227}} ({ A | A_{i_{220}, i_{221}} = sum_{i_{222}} ([{ A | A_{i_{236}} = (grad(v_0))[0, i_{236}] }, { A | A_{i_{235}} = (grad(v_0))[1, i_{235}] }])[i_{222}, i_{221}] * f_11[i_{220}, i_{222}]  })[i_{227}, i_{227}] )" == str(a8_sep._form_unchanged[2].integrals()[0].integrand())
@@ -618,27 +618,27 @@ def test_separated_parametrized_forms_mixed_9():
     a9_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a9_sep.coefficients)))
-    
+
     assert 1 == len(a9_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a9_sep.coefficients[0])))
-    
+
     assert 1 == len(a9_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep.coefficients[0][0]))
-    
+
     assert "{ A | A_{i_{240}, i_{241}} = sum_{i_{242}} f_7[i_{240}, i_{242}] * f_8[i_{242}, i_{241}]  }" == str(a9_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._placeholders[0][0]))
-    
+
     assert "f_79" == str(a9_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{255}} sum_{i_{254}} ([{ A | A_{i_{261}} = (grad(v_0))[0, i_{261}] }, { A | A_{i_{260}} = (grad(v_0))[1, i_{260}] }])[i_{254}, i_{255}] * ({ A | A_{i_{246}, i_{247}} = sum_{i_{248}} ([{ A | A_{i_{263}} = (grad(v_1))[0, i_{263}] }, { A | A_{i_{262}} = (grad(v_1))[1, i_{262}] }])[i_{248}, i_{247}] * ({ A | A_{i_{243}, i_{244}} = sum_{i_{245}} f_13[i_{243}, i_{245}] * f_79[i_{245}, i_{244}]  })[i_{246}, i_{248}]  })[i_{254}, i_{255}]  " == str(a9_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a9_sep._form_unchanged)))
-    
+
     assert 5 == len(a9_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -646,7 +646,7 @@ def test_separated_parametrized_forms_mixed_9():
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_unchanged[2].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_unchanged[4].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{256}} ([v_0[0], v_0[1]])[i_{256}] * ({ A | A_{i_{249}} = sum_{i_{250}} ([{ A | A_{i_{265}} = (grad(v_1))[0, i_{265}] }, { A | A_{i_{264}} = (grad(v_1))[1, i_{264}] }])[i_{249}, i_{250}] * f_10[i_{250}]  })[i_{256}] " == str(a9_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_9 * (sum_{i_{257}} ([v_0[0], v_0[1]])[i_{257}] * ([v_1[0], v_1[1]])[i_{257}] )" == str(a9_sep._form_unchanged[1].integrals()[0].integrand())
     assert "-1 * v_1[2] * (sum_{i_{258}} ({ A | A_{i_{251}, i_{252}} = sum_{i_{253}} ([{ A | A_{i_{267}} = (grad(v_0))[0, i_{267}] }, { A | A_{i_{266}} = (grad(v_0))[1, i_{266}] }])[i_{253}, i_{252}] * f_11[i_{251}, i_{253}]  })[i_{258}, i_{258}] )" == str(a9_sep._form_unchanged[2].integrals()[0].integrand())
@@ -664,27 +664,27 @@ def test_separated_parametrized_forms_mixed_10():
     a10_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a10_sep.coefficients)))
-    
+
     assert 1 == len(a10_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a10_sep.coefficients[0])))
-    
+
     assert 1 == len(a10_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a10_sep.coefficients[0][0]))
-    
+
     assert "{ A | A_{i_{274}, i_{275}} = sum_{i_{276}} ({ A | A_{i_{271}, i_{272}} = sum_{i_{273}} f_7[i_{271}, i_{273}] * f_13[i_{273}, i_{272}]  })[i_{274}, i_{276}] * f_8[i_{276}, i_{275}]  }" == str(a10_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._placeholders[0][0]))
-    
+
     assert "f_80" == str(a10_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{286}} sum_{i_{285}} ([{ A | A_{i_{292}} = (grad(v_0))[0, i_{292}] }, { A | A_{i_{291}} = (grad(v_0))[1, i_{291}] }])[i_{285}, i_{286}] * ({ A | A_{i_{277}, i_{278}} = sum_{i_{279}} ([{ A | A_{i_{294}} = (grad(v_1))[0, i_{294}] }, { A | A_{i_{293}} = (grad(v_1))[1, i_{293}] }])[i_{279}, i_{278}] * f_80[i_{277}, i_{279}]  })[i_{285}, i_{286}]  " == str(a10_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a10_sep._form_unchanged)))
-    
+
     assert 5 == len(a10_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -692,7 +692,7 @@ def test_separated_parametrized_forms_mixed_10():
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_unchanged[2].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_unchanged[4].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{287}} ([v_0[0], v_0[1]])[i_{287}] * ({ A | A_{i_{280}} = sum_{i_{281}} ([{ A | A_{i_{296}} = (grad(v_1))[0, i_{296}] }, { A | A_{i_{295}} = (grad(v_1))[1, i_{295}] }])[i_{280}, i_{281}] * f_10[i_{281}]  })[i_{287}] " == str(a10_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_9 * (sum_{i_{288}} ([v_0[0], v_0[1]])[i_{288}] * ([v_1[0], v_1[1]])[i_{288}] )" == str(a10_sep._form_unchanged[1].integrals()[0].integrand())
     assert "-1 * v_1[2] * (sum_{i_{289}} ({ A | A_{i_{282}, i_{283}} = sum_{i_{284}} ([{ A | A_{i_{298}} = (grad(v_0))[0, i_{298}] }, { A | A_{i_{297}} = (grad(v_0))[1, i_{297}] }])[i_{284}, i_{283}] * f_11[i_{282}, i_{284}]  })[i_{289}, i_{289}] )" == str(a10_sep._form_unchanged[2].integrals()[0].integrand())
@@ -710,7 +710,7 @@ def test_separated_parametrized_forms_mixed_11():
     a11_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients)))
-    
+
     assert 6 == len(a11_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients[0])))
@@ -719,7 +719,7 @@ def test_separated_parametrized_forms_mixed_11():
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients[5])))
-    
+
     assert 1 == len(a11_sep.coefficients[0])
     assert 1 == len(a11_sep.coefficients[1])
     assert 1 == len(a11_sep.coefficients[2])
@@ -733,7 +733,7 @@ def test_separated_parametrized_forms_mixed_11():
     test_logger.log(DEBUG, "\t\t" + str(a11_sep.coefficients[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a11_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a11_sep.coefficients[5][0]))
-    
+
     assert "f_26" == str(a11_sep.coefficients[0][0])
     assert "f_23" == str(a11_sep.coefficients[1][0])
     assert "f_20" == str(a11_sep.coefficients[2][0])
@@ -747,7 +747,7 @@ def test_separated_parametrized_forms_mixed_11():
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._placeholders[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._placeholders[5][0]))
-    
+
     assert "f_93" == str(a11_sep._placeholders[0][0])
     assert "f_94" == str(a11_sep._placeholders[1][0])
     assert "f_95" == str(a11_sep._placeholders[2][0])
@@ -761,7 +761,7 @@ def test_separated_parametrized_forms_mixed_11():
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{311}} sum_{i_{310}} ([{ A | A_{i_{317}} = (grad(v_0))[0, i_{317}] }, { A | A_{i_{316}} = (grad(v_0))[1, i_{316}] }])[i_{310}, i_{311}] * ({ A | A_{i_{302}, i_{303}} = sum_{i_{304}} ([{ A | A_{i_{319}} = (grad(v_1))[0, i_{319}] }, { A | A_{i_{318}} = (grad(v_1))[1, i_{318}] }])[i_{304}, i_{303}] * f_93[i_{302}, i_{304}]  })[i_{310}, i_{311}]  " == str(a11_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{312}} ([v_0[0], v_0[1]])[i_{312}] * ({ A | A_{i_{305}} = sum_{i_{306}} ([{ A | A_{i_{321}} = (grad(v_1))[0, i_{321}] }, { A | A_{i_{320}} = (grad(v_1))[1, i_{320}] }])[i_{305}, i_{306}] * f_94[i_{306}]  })[i_{312}] " == str(a11_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_95 * (sum_{i_{313}} ([v_0[0], v_0[1]])[i_{313}] * ([v_1[0], v_1[1]])[i_{313}] )" == str(a11_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -770,7 +770,7 @@ def test_separated_parametrized_forms_mixed_11():
     assert "f_98 * v_0[2] * -1 * v_1[2]" == str(a11_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep._form_unchanged)))
-    
+
     assert 0 == len(a11_sep._form_unchanged)
 
 @skip_in_parallel
@@ -784,35 +784,35 @@ def test_separated_parametrized_forms_mixed_12():
     a12_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep.coefficients)))
-    
+
     assert 2 == len(a12_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep.coefficients[1])))
-    
+
     assert 1 == len(a12_sep.coefficients[0])
     assert 1 == len(a12_sep.coefficients[1])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a12_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a12_sep.coefficients[1][0]))
-    
+
     assert "f_29[0]" == str(a12_sep.coefficients[0][0])
     assert "f_29[1]" == str(a12_sep.coefficients[1][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a12_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a12_sep._placeholders[1][0]))
-    
+
     assert "f_99" == str(a12_sep._placeholders[0][0])
     assert "f_100" == str(a12_sep._placeholders[1][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a12_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a12_sep._form_with_placeholders[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * f_99" == str(a12_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "(grad(v_1))[0] * v_0 * f_100" == str(a12_sep._form_with_placeholders[1].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep._form_unchanged)))
-    
+
     assert 0 == len(a12_sep._form_unchanged)
 
 @skip_in_parallel
@@ -826,29 +826,29 @@ def test_separated_parametrized_forms_mixed_13():
     a13_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep.coefficients)))
-    
+
     assert 1 == len(a13_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep.coefficients[0])))
-    
+
     assert 1 == len(a13_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a13_sep.coefficients[0][0]))
-    
+
     assert "[f_29[0], f_29[1]]" == str(a13_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._placeholders[0][0]))
-    
+
     assert "f_101" == str(a13_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * (sum_{i_{327}} f_101[i_{327}] * (grad(v_1))[i_{327}] )" == str(a13_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep._form_unchanged)))
-    
+
     assert 0 == len(a13_sep._form_unchanged)
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="14", depends=["13"])
@@ -860,11 +860,11 @@ def test_separated_parametrized_forms_mixed_14():
     a14_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep.coefficients)))
-    
+
     assert 0 == len(a14_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep._form_unchanged)))
-    
+
     assert 6 == len(a14_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -873,14 +873,14 @@ def test_separated_parametrized_forms_mixed_14():
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_unchanged[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_unchanged[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{337}} sum_{i_{336}} ([{ A | A_{i_{343}} = (grad(v_0))[0, i_{343}] }, { A | A_{i_{342}} = (grad(v_0))[1, i_{342}] }])[i_{336}, i_{337}] * ({ A | A_{i_{328}, i_{329}} = sum_{i_{330}} ([{ A | A_{i_{345}} = (grad(v_1))[0, i_{345}] }, { A | A_{i_{344}} = (grad(v_1))[1, i_{344}] }])[i_{330}, i_{329}] * f_38[i_{328}, i_{330}]  })[i_{336}, i_{337}]  " == str(a14_sep._form_unchanged[0].integrals()[0].integrand())
     assert "sum_{i_{338}} ([v_0[0], v_0[1]])[i_{338}] * ({ A | A_{i_{331}} = sum_{i_{332}} ([{ A | A_{i_{347}} = (grad(v_1))[0, i_{347}] }, { A | A_{i_{346}} = (grad(v_1))[1, i_{346}] }])[i_{331}, i_{332}] * f_35[i_{332}]  })[i_{338}] " == str(a14_sep._form_unchanged[1].integrals()[0].integrand())
     assert "f_32 * (sum_{i_{339}} ([v_0[0], v_0[1]])[i_{339}] * ([v_1[0], v_1[1]])[i_{339}] )" == str(a14_sep._form_unchanged[2].integrals()[0].integrand())
     assert "-1 * v_1[2] * (sum_{i_{340}} ({ A | A_{i_{333}, i_{334}} = sum_{i_{335}} ([{ A | A_{i_{349}} = (grad(v_0))[0, i_{349}] }, { A | A_{i_{348}} = (grad(v_0))[1, i_{348}] }])[i_{335}, i_{334}] * f_38[i_{333}, i_{335}]  })[i_{340}, i_{340}] )" == str(a14_sep._form_unchanged[3].integrals()[0].integrand())
     assert "v_0[2] * -1 * f_32 * (sum_{i_{341}} ([{ A | A_{i_{351}} = (grad(v_1))[0, i_{351}] }, { A | A_{i_{350}} = (grad(v_1))[1, i_{350}] }])[i_{341}, i_{341}] )" == str(a14_sep._form_unchanged[4].integrals()[0].integrand())
     assert "f_35[0] * v_0[2] * -1 * v_1[2]" == str(a14_sep._form_unchanged[5].integrals()[0].integrand())
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="15", depends=["14"])
@@ -892,16 +892,16 @@ def test_separated_parametrized_forms_mixed_15():
     a15_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep.coefficients)))
-    
+
     assert 0 == len(a15_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep._form_unchanged)))
-    
+
     assert 2 == len(a15_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * f_41[0] * v_1" == str(a15_sep._form_unchanged[0].integrals()[0].integrand())
     assert "(grad(v_1))[0] * f_41[1] * v_0" == str(a15_sep._form_unchanged[1].integrals()[0].integrand())
 
@@ -916,17 +916,17 @@ def test_separated_parametrized_forms_mixed_16():
     a16_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep.coefficients)))
-    
+
     assert 0 == len(a16_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep._form_unchanged)))
-    
+
     assert 1 == len(a16_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._form_unchanged[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * (sum_{i_{353}} ([f_41[0], f_41[1]])[i_{353}] * (grad(v_1))[i_{353}] )" == str(a16_sep._form_unchanged[0].integrals()[0].integrand())
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="17", depends=["16"])
@@ -938,7 +938,7 @@ def test_separated_parametrized_forms_mixed_17():
     a17_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients)))
-    
+
     assert 6 == len(a17_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients[0])))
@@ -947,7 +947,7 @@ def test_separated_parametrized_forms_mixed_17():
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients[5])))
-    
+
     assert 1 == len(a17_sep.coefficients[0])
     assert 1 == len(a17_sep.coefficients[1])
     assert 1 == len(a17_sep.coefficients[2])
@@ -961,7 +961,7 @@ def test_separated_parametrized_forms_mixed_17():
     test_logger.log(DEBUG, "\t\t" + str(a17_sep.coefficients[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep.coefficients[5][0]))
-    
+
     assert "grad(f_23)" == str(a17_sep.coefficients[0][0])
     assert "grad(f_20)" == str(a17_sep.coefficients[1][0])
     assert "(grad(f_20))[0]" == str(a17_sep.coefficients[2][0])
@@ -975,7 +975,7 @@ def test_separated_parametrized_forms_mixed_17():
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._placeholders[3][0]))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._placeholders[5][0]))
-    
+
     assert "f_102" == str(a17_sep._placeholders[0][0])
     assert "f_103" == str(a17_sep._placeholders[1][0])
     assert "f_104" == str(a17_sep._placeholders[2][0])
@@ -989,7 +989,7 @@ def test_separated_parametrized_forms_mixed_17():
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{363}} sum_{i_{362}} ([{ A | A_{i_{370}} = (grad(v_0))[0, i_{370}] }, { A | A_{i_{369}} = (grad(v_0))[1, i_{369}] }])[i_{362}, i_{363}] * ({ A | A_{i_{354}, i_{355}} = sum_{i_{356}} ([{ A | A_{i_{372}} = (grad(v_1))[0, i_{372}] }, { A | A_{i_{371}} = (grad(v_1))[1, i_{371}] }])[i_{356}, i_{355}] * f_102[i_{354}, i_{356}]  })[i_{362}, i_{363}]  " == str(a17_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{364}} ([v_0[0], v_0[1]])[i_{364}] * ({ A | A_{i_{357}} = sum_{i_{358}} ([{ A | A_{i_{374}} = (grad(v_1))[0, i_{374}] }, { A | A_{i_{373}} = (grad(v_1))[1, i_{373}] }])[i_{357}, i_{358}] * f_103[i_{358}]  })[i_{364}] " == str(a17_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_104 * (sum_{i_{365}} ([v_0[0], v_0[1]])[i_{365}] * ([v_1[0], v_1[1]])[i_{365}] )" == str(a17_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -998,7 +998,7 @@ def test_separated_parametrized_forms_mixed_17():
     assert "f_107 * v_0[2] * -1 * v_1[2]" == str(a17_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep._form_unchanged)))
-    
+
     assert 0 == len(a17_sep._form_unchanged)
 
 @skip_in_parallel
@@ -1012,35 +1012,35 @@ def test_separated_parametrized_forms_mixed_18():
     a18_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients)))
-    
+
     assert 2 == len(a18_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients[1])))
-    
+
     assert 1 == len(a18_sep.coefficients[0])
     assert 1 == len(a18_sep.coefficients[1])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a18_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep.coefficients[1][0]))
-    
+
     assert "grad(f_29)" == str(a18_sep.coefficients[0][0])
     assert "(grad(f_29))[1, 0]" == str(a18_sep.coefficients[1][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._placeholders[1][0]))
-    
+
     assert "f_108" == str(a18_sep._placeholders[0][0])
     assert "f_109" == str(a18_sep._placeholders[1][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._form_with_placeholders[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * (sum_{i_{381}} f_108[0, i_{381}] * (grad(v_1))[i_{381}] )" == str(a18_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * f_109" == str(a18_sep._form_with_placeholders[1].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep._form_unchanged)))
-    
+
     assert 0 == len(a18_sep._form_unchanged)
 
 @skip_in_parallel
@@ -1054,37 +1054,37 @@ def test_separated_parametrized_forms_mixed_19():
     a19_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a19_sep.coefficients)))
-    
+
     assert 2 == len(a19_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a19_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a19_sep.coefficients[1])))
-    
+
     assert 1 == len(a19_sep.coefficients[0])
     assert 1 == len(a19_sep.coefficients[1])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a19_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a19_sep.coefficients[1][0]))
-    
+
     assert "grad(f_29)" == str(a19_sep.coefficients[0][0])
     assert "grad(f_29)" == str(a19_sep.coefficients[1][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._placeholders[1][0]))
-    
+
     assert "f_110" == str(a19_sep._placeholders[0][0])
     assert "f_111" == str(a19_sep._placeholders[1][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._form_with_placeholders[1].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{387}} ({ A | A_{i_{384}} = sum_{i_{385}} ([{ A | A_{i_{390}} = f_110[0, i_{390}] }, { A | A_{i_{389}} = f_110[1, i_{389}] }])[i_{384}, i_{385}] * (grad(v_1))[i_{385}]  })[i_{387}] * (grad(v_0))[i_{387}] " == str(a19_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{388}} ([{ A | A_{i_{392}} = f_111[0, i_{392}] }, { A | A_{i_{391}} = f_111[1, i_{391}] }])[i_{388}, 0] * (grad(v_1))[i_{388}] )" == str(a19_sep._form_with_placeholders[1].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a19_sep._form_unchanged)))
-    
+
     assert 0 == len(a19_sep._form_unchanged)
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="20", depends=["19"])
@@ -1096,11 +1096,11 @@ def test_separated_parametrized_forms_mixed_20():
     a20_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a20_sep.coefficients)))
-    
+
     assert 0 == len(a20_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a20_sep._form_unchanged)))
-    
+
     assert 6 == len(a20_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a20_sep._form_unchanged[0].integrals()[0].integrand()))
@@ -1109,14 +1109,14 @@ def test_separated_parametrized_forms_mixed_20():
     test_logger.log(DEBUG, "\t\t" + str(a20_sep._form_unchanged[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a20_sep._form_unchanged[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a20_sep._form_unchanged[5].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{402}} sum_{i_{401}} ([{ A | A_{i_{409}} = (grad(v_0))[0, i_{409}] }, { A | A_{i_{408}} = (grad(v_0))[1, i_{408}] }])[i_{401}, i_{402}] * ({ A | A_{i_{393}, i_{394}} = sum_{i_{395}} ([{ A | A_{i_{411}} = (grad(v_1))[0, i_{411}] }, { A | A_{i_{410}} = (grad(v_1))[1, i_{410}] }])[i_{395}, i_{394}] * (grad(f_35))[i_{393}, i_{395}]  })[i_{401}, i_{402}]  " == str(a20_sep._form_unchanged[0].integrals()[0].integrand())
     assert "sum_{i_{403}} ([v_0[0], v_0[1]])[i_{403}] * ({ A | A_{i_{396}} = sum_{i_{397}} ([{ A | A_{i_{413}} = (grad(v_1))[0, i_{413}] }, { A | A_{i_{412}} = (grad(v_1))[1, i_{412}] }])[i_{396}, i_{397}] * (grad(f_32))[i_{397}]  })[i_{403}] " == str(a20_sep._form_unchanged[1].integrals()[0].integrand())
     assert "(grad(f_32))[0] * (sum_{i_{404}} ([v_0[0], v_0[1]])[i_{404}] * ([v_1[0], v_1[1]])[i_{404}] )" == str(a20_sep._form_unchanged[2].integrals()[0].integrand())
     assert "-1 * v_1[2] * (sum_{i_{405}} ({ A | A_{i_{398}, i_{399}} = sum_{i_{400}} ([{ A | A_{i_{415}} = (grad(v_0))[0, i_{415}] }, { A | A_{i_{414}} = (grad(v_0))[1, i_{414}] }])[i_{400}, i_{399}] * (grad(f_35))[i_{398}, i_{400}]  })[i_{405}, i_{405}] )" == str(a20_sep._form_unchanged[3].integrals()[0].integrand())
     assert "v_0[2] * -1 * (sum_{i_{407}} ([{ A | A_{i_{417}} = (grad(v_1))[0, i_{417}] }, { A | A_{i_{416}} = (grad(v_1))[1, i_{416}] }])[i_{407}, i_{407}] ) * (sum_{i_{406}} (grad(f_35))[i_{406}, i_{406}] )" == str(a20_sep._form_unchanged[4].integrals()[0].integrand())
     assert "(grad(f_32))[1] * v_0[2] * -1 * v_1[2]" == str(a20_sep._form_unchanged[5].integrals()[0].integrand())
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="21", depends=["20"])
@@ -1128,16 +1128,16 @@ def test_separated_parametrized_forms_mixed_21():
     a21_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a21_sep.coefficients)))
-    
+
     assert 0 == len(a21_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a21_sep._form_unchanged)))
-    
+
     assert 2 == len(a21_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a21_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a21_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * (sum_{i_{420}} (grad(f_41))[0, i_{420}] * (grad(v_1))[i_{420}] )" == str(a21_sep._form_unchanged[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * (grad(f_41))[1, 0]" == str(a21_sep._form_unchanged[1].integrals()[0].integrand())
 
@@ -1152,15 +1152,15 @@ def test_separated_parametrized_forms_mixed_22():
     a22_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a22_sep.coefficients)))
-    
+
     assert 0 == len(a22_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a22_sep._form_unchanged)))
-    
+
     assert 2 == len(a22_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a22_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a22_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{426}} ({ A | A_{i_{423}} = sum_{i_{424}} ([{ A | A_{i_{429}} = (grad(f_41))[0, i_{429}] }, { A | A_{i_{428}} = (grad(f_41))[1, i_{428}] }])[i_{423}, i_{424}] * (grad(v_1))[i_{424}]  })[i_{426}] * (grad(v_0))[i_{426}] " == str(a22_sep._form_unchanged[0].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{427}} ([{ A | A_{i_{431}} = (grad(f_41))[0, i_{431}] }, { A | A_{i_{430}} = (grad(f_41))[1, i_{430}] }])[i_{427}, 0] * (grad(v_1))[i_{427}] )" == str(a22_sep._form_unchanged[1].integrals()[0].integrand())

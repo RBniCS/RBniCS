@@ -38,7 +38,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
         # Regularization coefficient
         self.alpha = 1.e-5
         self.yd = self._compute_yd()
-        
+
     def _compute_yd(self):
         """
         The desired state is (a component of) the solution of a nonlinear geostrophic problem for fixed parameters
@@ -88,7 +88,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
         # Tracking is on the psi component
         (psi, q) = psiq.split(deepcopy=True)
         return psi
-        
+
     def compute_theta(self, term):
         mu = self.mu
         if term == "a" or term == "a*":
@@ -118,7 +118,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             return (theta_h0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-            
+
     def assemble_operator(self, term):
         dx = self.dx
         if term == "a":

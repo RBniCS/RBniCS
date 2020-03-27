@@ -29,7 +29,7 @@ def basic_form_description(backend, wrapping):
             coefficients_repr.update(coefficients_repr_integral)
         return coefficients_repr
     return _basic_form_description
-    
+
 from rbnics.backends.dolfin.wrapping.expression_description import expression_description
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()

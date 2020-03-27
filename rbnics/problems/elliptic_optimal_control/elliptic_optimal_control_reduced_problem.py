@@ -21,13 +21,13 @@ from rbnics.problems.base import LinearReducedProblem
 from rbnics.backends import product, sum, transpose
 
 def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     EllipticOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
 
     # Base class containing the interface of a projection based ROM
     # for saddle point problems.
     class EllipticOptimalControlReducedProblem_Class(EllipticOptimalControlReducedProblem_Base):
-        
+
         class ProblemSolver(EllipticOptimalControlReducedProblem_Base.ProblemSolver):
             def matrix_eval(self):
                 problem = self.problem
@@ -40,7 +40,7 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                                               + assembled_operator["n"] - assembled_operator["c*"]
                     + assembled_operator["a"] - assembled_operator["c"]
                 )
-                
+
             def vector_eval(self):
                 problem = self.problem
                 N = self.N
@@ -49,10 +49,10 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return (
                       assembled_operator["g"]
-                    
+
                     + assembled_operator["f"]
                 )
-                            
+
         # Perform an online evaluation of the cost functional
         def _compute_output(self, N):
             assembled_operator = dict()
@@ -72,7 +72,7 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 transpose(assembled_operator["g"])*self._solution +
                 0.5*assembled_operator["h"]
             )
-        
+
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
         def _online_size_from_kwargs(self, N, **kwargs):
@@ -88,6 +88,6 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 for component in ("y", "p"):
                     N[component] *= 2
                 return N, kwargs
-        
+
     # return value (a class) for the decorator
     return EllipticOptimalControlReducedProblem_Class

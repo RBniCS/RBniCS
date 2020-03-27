@@ -24,6 +24,6 @@ def compute_theta_for_derivative(jacobian_term_to_residual_term):
                 return compute_theta(self, term)
             else:
                 return compute_theta(self, residual_term)
-            
+
         return compute_theta_for_derivative_decorator_impl
     return compute_theta_for_derivative_decorator

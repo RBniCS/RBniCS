@@ -37,7 +37,7 @@ class Data(object):
         self.Qa = Qa
         self.Qf = Qf
         self.Ntrain = 10
-        
+
     def generate_random(self):
         aa_product = OnlineAffineExpansionStorage(self.Qa, self.Qa)
         aa_product_legacy = legacy_tensor((self.Qa, self.Qa, self.N, self.N))
@@ -77,7 +77,7 @@ class Data(object):
             v.append(RandomNumpyVector(self.N))
         # Return
         return (theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
-        
+
     def evaluate_builtin(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v):
         result_builtin = list()
         for t in range(self.Ntrain):
@@ -87,7 +87,7 @@ class Data(object):
                 einsum("i,ij,j", theta_f[t], ff_product_legacy, theta_f[t], optimize=True)
             )
         return result_builtin
-        
+
     def evaluate_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v):
         result_backend = []
         for t in range(self.Ntrain):
@@ -97,7 +97,7 @@ class Data(object):
                 sum(product(theta_f[t], ff_product, theta_f[t]))
             )
         return result_backend
-        
+
     def assert_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v, result_backend):
         assert len(result_backend) == self.Ntrain
         result_builtin = self.evaluate_builtin(theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)

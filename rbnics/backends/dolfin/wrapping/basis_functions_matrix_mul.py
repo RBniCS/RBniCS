@@ -21,7 +21,7 @@ from dolfin import Function, FunctionSpace
 def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matrix, BasisFunctionsMatrixType):
     space = basis_functions_matrix.space
     assert isinstance(space, FunctionSpace)
-    
+
     output = BasisFunctionsMatrixType(space)
     assert isinstance(online_matrix.M, dict)
     j = 0
@@ -42,7 +42,7 @@ def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matr
 def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vector):
     space = basis_functions_matrix.space
     assert isinstance(space, FunctionSpace)
-    
+
     output = Function(space)
     if sum(basis_functions_matrix._component_name_to_basis_component_length.values()) == 0:
         return output

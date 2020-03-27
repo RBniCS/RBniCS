@@ -27,7 +27,7 @@ class Data(object):
         self.N = N
         mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
-        
+
     def generate_random(self):
         # Generate random vectors
         S = FunctionsList(self.V)
@@ -37,22 +37,22 @@ class Data(object):
         uN = RandomNumpyVector(self.N)
         # Return
         return (S, uN)
-        
+
     def evaluate_builtin(self, S, uN):
         result_builtin = uN[0]*S[0].vector()
         for i in range(1, self.N):
             result_builtin.add_local(uN[i]*S[i].vector().get_local())
         result_builtin.apply("add")
         return result_builtin
-        
+
     def evaluate_backend(self, S, uN):
         return (S*uN).vector()
-        
+
     def assert_backend(self, S, uN, result_backend):
         result_builtin = self.evaluate_builtin(S, uN)
         relative_error = (result_builtin - result_backend).norm("l2")/result_builtin.norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin", "__mul__"])

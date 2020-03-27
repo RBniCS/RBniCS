@@ -59,13 +59,13 @@ def test_eim_approximation_12(expression_type, basis_generation):
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
             self.inner_product = assemble(f*g*dx)
-            
+
         def name(self):
             return "MockProblem_12_" + expression_type + "_" + basis_generation
-            
+
         def init(self):
             pass
-            
+
         def solve(self):
             print("solving mock problem at mu =", self.mu)
             assert not hasattr(self, "_is_solving")
@@ -73,7 +73,7 @@ def test_eim_approximation_12(expression_type, basis_generation):
             project(self.f, self.V, function=self._solution)
             delattr(self, "_is_solving")
             return self._solution
-            
+
     @StoreMapFromProblemToReductionMethod
     class MockReductionMethod(ReductionMethod):
         def __init__(self, truth_problem, **kwargs):
@@ -82,25 +82,25 @@ def test_eim_approximation_12(expression_type, basis_generation):
             # Minimal subset of a DifferentialProblemReductionMethod
             self.truth_problem = truth_problem
             self.reduced_problem = None
-            
+
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
-            
+
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
-            
+
         def offline(self):
             pass
-            
+
         def update_basis_matrix(self, snapshot):
             pass
-            
+
         def error_analysis(self, N=None, **kwargs):
             pass
-            
+
         def speedup_analysis(self, N=None, **kwargs):
             pass
-            
+
     class ParametrizedFunctionApproximation(EIMApproximation):
         def __init__(self, truth_problem, expression_type, basis_generation, function):
             self.V = truth_problem.V

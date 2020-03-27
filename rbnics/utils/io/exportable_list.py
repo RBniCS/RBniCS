@@ -34,21 +34,21 @@ class ExportableList(object):
             raise ValueError("Invalid import/export backend")
         if original_list is not None:
             self._list.extend(original_list)
-    
+
     def append(self, element):
         self._list.append(element)
-    
+
     @overload(list_of(object))
     def extend(self, other_list):
         self._list.extend(other_list)
-        
+
     @overload(lambda cls: cls)
     def extend(self, other_list):
         self._list.extend(other_list._list)
-            
+
     def save(self, directory, filename):
         self._FileIO.save_file(self._list, directory, filename)
-    
+
     # Returns False if the list had been already imported so no further
     # action was needed.
     # Returns True if it was possible to import the list.
@@ -61,18 +61,18 @@ class ExportableList(object):
             return True
         else:
             raise OSError
-                         
+
     def __getitem__(self, key):
         return self._list[key]
-        
+
     def __setitem__(self, key, item):
         self._list[key] = item
-        
+
     def __iter__(self):
         return iter(self._list)
-        
+
     def __len__(self):
         return len(self._list)
-        
+
     def __str__(self):
         return str(self._list)

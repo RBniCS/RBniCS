@@ -20,7 +20,7 @@ from dolfin.cpp.la import GenericVector
 
 def Vector():
     raise NotImplementedError("This is dummy function (not required by the interface) just store the Type")
-    
+
 # Attach a Type() function
 def Type():
     return GenericVector
@@ -42,6 +42,6 @@ def preserve_generator_attribute(operator):
         else:
             return original_operator(self, other)
     setattr(GenericVector, operator, custom_operator)
-    
+
 for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
     preserve_generator_attribute(operator)

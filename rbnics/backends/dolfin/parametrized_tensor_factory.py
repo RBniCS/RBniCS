@@ -69,7 +69,7 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
             raise ValueError("Invalid arguments")
         # Call Parent
         ParametrizedTensorFactory_Base.__init__(self, form, spaces, assemble_empty_snapshot)
-        
+
     def __eq__(self, other):
         return (
             isinstance(other, type(self))
@@ -78,10 +78,10 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
                 and
             self._spaces == other._spaces
         )
-        
+
     def __hash__(self):
         return hash((self._form, self._spaces))
-        
+
     def create_interpolation_locations_container(self):
         # Populate subdomain data
         subdomain_data = list()

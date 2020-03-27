@@ -24,11 +24,11 @@ from rbnics.utils.decorators import ProblemDecoratorFor
 logger = getLogger("rbnics/shape_parametrization/problems/affine_shape_parametrization_decorated_problem.py")
 
 def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_mappings, **decorator_kwargs):
-    
+
     if "shape_parametrization_vertices_mappings" in decorator_kwargs:
         assert len(shape_parametrization_vertices_mappings) == 0
         shape_parametrization_vertices_mappings = decorator_kwargs["shape_parametrization_vertices_mappings"]
-    
+
     # Possibly read vertices mappings from file
     if (
         len(shape_parametrization_vertices_mappings) == 1
@@ -39,7 +39,7 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
         assert filename != "identity", "It does not make any sense to use this if you only have one subdomain without parametrization"
         assert VerticesMappingIO.exists_file("", filename)
         shape_parametrization_vertices_mappings = VerticesMappingIO.load_file("", filename)
-        
+
     # Detect the mesh dimension based on the number of vertices to be mapped
     dim = None
     for vertices_mapping in shape_parametrization_vertices_mappings:
@@ -60,7 +60,7 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
                 else:
                     assert dim == 3
     assert dim is not None, "It does not make any sense to use this of all your subdomains are not parametrized"
-        
+
     # Get the shape parametrization expression from vertices mappings
     shape_parametrization_expression = [affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping) for vertices_mapping in shape_parametrization_vertices_mappings]
     if logger.isEnabledFor(DEBUG):
@@ -69,20 +69,20 @@ def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_m
             logger.log(DEBUG, "Subdomain " + str(subdomain + 1))
             logger.log(DEBUG, "\tvertices mapping = " + str(vertices_mapping))
             logger.log(DEBUG, "\tshape parametrization expression = " + str(expression))
-    
+
     # Apply the parent decorator
     AffineShapeParametrizationDecoratedProblem_Decorator_Base = ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs)
-    
+
     # Further decorate the resulting class
     from rbnics.shape_parametrization.problems.affine_shape_parametrization import AffineShapeParametrization
-    
+
     @ProblemDecoratorFor(AffineShapeParametrization, shape_parametrization_vertices_mappings=shape_parametrization_vertices_mappings)
     def AffineShapeParametrizationDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        
+
         AffineShapeParametrizationDecoratedProblem_Class = AffineShapeParametrizationDecoratedProblem_Decorator_Base(ParametrizedDifferentialProblem_DerivedClass)
-        
+
         # return value (a class) for the decorator
         return AffineShapeParametrizationDecoratedProblem_Class
-    
+
     # return the decorator itself
     return AffineShapeParametrizationDecoratedProblem_Decorator

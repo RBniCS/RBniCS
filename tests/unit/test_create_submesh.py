@@ -77,45 +77,45 @@ def submesh_markers(mesh):
     hdf = HDF5File(mesh.mpi_comm(), os.path.join(data_dir, "markers.h5"), "r")
     hdf.read(markers, "/cells")
     return markers
-    
+
 # Submesh
 @module_fixture
 def submesh(mesh, submesh_markers):
     return create_submesh(mesh, submesh_markers)
-    
+
 # Internal: submesh subdomains and boundaries
 @module_fixture
 def _submesh_subdomains_boundaries(mesh, submesh, subdomains, boundaries):
     return convert_meshfunctions_to_submesh(mesh, submesh, [subdomains, boundaries])
-    
+
 # Submesh subdomains
 @module_fixture
 def submesh_subdomains(_submesh_subdomains_boundaries):
     return _submesh_subdomains_boundaries[0]
-    
+
 # Submesh boundaries
 @module_fixture
 def submesh_boundaries(_submesh_subdomains_boundaries):
     return _submesh_subdomains_boundaries[1]
-    
+
 # Auxiliary functions for array asserts
 def array_save(arr, directory, filename):
     assert isinstance(arr, array)
     with open(os.path.join(directory, filename), "wb") as outfile:
         pickle.dump(arr, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-        
+
 def array_assert_equal(arr, directory, filename):
     assert isinstance(arr, array)
     with open(os.path.join(directory, filename), "rb") as infile:
         arr_in = pickle.load(infile)
     assert (arr == arr_in).all()
-    
+
 # Auxiliary functions for dict asserts
 def dict_save(dic, directory, filename):
     assert isinstance(dic, dict)
     with open(os.path.join(directory, filename), "wb") as outfile:
         pickle.dump(dic, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-        
+
 def dict_assert_equal(dic, directory, filename):
     assert isinstance(dic, dict)
     with open(os.path.join(directory, filename), "rb") as infile:
@@ -128,25 +128,25 @@ def dict_assert_equal(dic, directory, filename):
             assert dic_value == set(dic_in_value.tolist())
         else:
             assert dic_value == dic_in_value
-    
+
 # Auxiliary functions for list asserts
 def list_save(lis, directory, filename):
     assert isinstance(lis, list)
     with open(os.path.join(directory, filename), "wb") as outfile:
         pickle.dump(lis, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-        
+
 def list_assert_equal(lis, directory, filename):
     assert isinstance(lis, list)
     with open(os.path.join(directory, filename), "rb") as infile:
         lis_in = pickle.load(infile)
     assert lis == lis_in
-    
+
 # Auxiliary functions to open DofMapPlotter
 def assert_mesh_plotter(mesh, submesh, key, directory, filename):
     V = FunctionSpace(mesh, "Real", 0)
     submesh_V = FunctionSpace(submesh, "Real", 0)
     assert_dof_map_plotter(V, submesh_V, key, directory, filename)
-    
+
 def assert_dof_map_plotter(V, submesh_V, key, directory, filename):
     dmp_V = DofMapPlotter(V, key)
     dmp_submesh_V = DofMapPlotter(submesh_V, key)
@@ -155,7 +155,7 @@ def assert_dof_map_plotter(V, submesh_V, key, directory, filename):
     dmp_submesh_V.save(directory, filename + "__submesh_plot_")
     dmp_V.assert_equal(data_dir, filename + "__mesh_plot_")
     dmp_submesh_V.assert_equal(data_dir, filename + "__submesh_plot_")
-    
+
 # Auxiliary functions for function space definition
 def EllipticFunctionSpace(mesh):
     return FunctionSpace(mesh, "CG", 2)
@@ -165,25 +165,25 @@ def StokesFunctionSpace(mesh):
     element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
     element = MixedElement(element_0, element_1)
     return FunctionSpace(mesh, element)
-    
+
 # DofMapPlotter
 if has_fenicstools:
     # Patch matplotlib.axes.Axes.text to store the text before writing it
     original_text = matplotlib.axes.Axes.text
-    
+
     def custom_text(self, x, y, s, *args, **kwargs):
         original_text(self, x, y, s, *args, **kwargs)
         if not hasattr(self, "_text_storage"):
             self._text_storage = dict()
         self._text_storage[s] = (x, y)
-        
+
     matplotlib.axes.Axes.text = custom_text
-    
+
     # Event that mimics a keypress
     class Event(object):
         def __init__(self, key):
             self.key = key
-            
+
     # Custom dof map plotter
     class DofMapPlotter(FEniCSToolsDofMapPlotter):
         def __init__(self, V, key):
@@ -196,12 +196,12 @@ if has_fenicstools:
             elif key in ("D", ):
                 self.plots[0].dof_handler.__call__(Event(key))
             self.ax = self.plots[0].mesh_entity_handler.axes
-        
+
         def save(self, directory, filename):
             assert hasattr(self.ax, "_text_storage")
             with open(os.path.join(directory, filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl"), "wb") as outfile:
                 pickle.dump(self.ax._text_storage, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-            
+
         def assert_equal(self, directory, filename):
             with open(os.path.join(directory, filename + "_size_" + str(self.mpi_size) + "_rank_" + str(self.mpi_rank) + ".pkl"), "rb") as infile:
                 text_storage = pickle.load(infile)
@@ -213,13 +213,13 @@ else:
     class DofMapPlotter(object):
         def __init__(self, V, key):
             pass
-        
+
         def save(self, directory, filename):
             pass
-            
+
         def assert_equal(self, directory, filename):
             pass
-    
+
 # === NOTE: most of the following tests require interactivity because === #
 # ===       cells may be moved from the owning process to another     === #
 # ===       process which otherwise would have no cell.               === #
@@ -239,7 +239,7 @@ def test_mesh_to_submesh_global_cell_indices(mesh, submesh, tempdir):
     filename = "test_mesh_to_submesh_global_cell_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh.mesh_to_submesh_cell_local_indices, tempdir, filename)
     dict_assert_equal(submesh.mesh_to_submesh_cell_local_indices, data_dir, filename)
-    
+
 # Test submesh to mesh global cell indices
 @enable_create_submesh_logging
 def test_submesh_to_mesh_global_cell_indices(mesh, submesh, tempdir):
@@ -252,7 +252,7 @@ def test_submesh_to_mesh_global_cell_indices(mesh, submesh, tempdir):
     filename = "test_submesh_to_mesh_global_cell_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     array_save(submesh.submesh_to_mesh_cell_local_indices, tempdir, filename)
     array_assert_equal(submesh.submesh_to_mesh_cell_local_indices, data_dir, filename)
-    
+
 # Test that the cell numbering is independent on the number of processors, and that
 # fake cells have the largest numbering
 @enable_create_submesh_logging
@@ -277,7 +277,7 @@ def test_submesh_global_cell_numbering_independent_on_mpi(mesh, submesh_markers,
             assert cell_markers[submesh_global_index]
         else:
             assert not cell_markers[submesh_global_index]
-    
+
 # Test mesh to submesh global facet indices
 @enable_create_submesh_logging
 def test_mesh_to_submesh_global_facet_indices(mesh, submesh, tempdir):
@@ -290,7 +290,7 @@ def test_mesh_to_submesh_global_facet_indices(mesh, submesh, tempdir):
     filename = "test_mesh_to_submesh_global_facet_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh.mesh_to_submesh_facet_local_indices, tempdir, filename)
     dict_assert_equal(submesh.mesh_to_submesh_facet_local_indices, data_dir, filename)
-    
+
 # Test submesh to mesh global facet indices
 @enable_create_submesh_logging
 def test_submesh_to_mesh_global_facet_indices(mesh, submesh, tempdir):
@@ -303,7 +303,7 @@ def test_submesh_to_mesh_global_facet_indices(mesh, submesh, tempdir):
     filename = "test_submesh_to_mesh_global_facet_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     list_save(submesh.submesh_to_mesh_facet_local_indices, tempdir, filename)
     list_assert_equal(submesh.submesh_to_mesh_facet_local_indices, data_dir, filename)
-    
+
 # Test mesh to submesh global vertex indices
 @enable_create_submesh_logging
 def test_mesh_to_submesh_global_vertex_indices(mesh, submesh, tempdir):
@@ -316,7 +316,7 @@ def test_mesh_to_submesh_global_vertex_indices(mesh, submesh, tempdir):
     filename = "test_mesh_to_submesh_global_vertex_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(submesh.mesh_to_submesh_vertex_local_indices, tempdir, filename)
     dict_assert_equal(submesh.mesh_to_submesh_vertex_local_indices, data_dir, filename)
-    
+
 # Test submesh to mesh global vertex indices
 @enable_create_submesh_logging
 def test_submesh_to_mesh_global_vertex_indices(mesh, submesh, tempdir):
@@ -329,7 +329,7 @@ def test_submesh_to_mesh_global_vertex_indices(mesh, submesh, tempdir):
     filename = "test_submesh_to_mesh_global_vertex_indices" + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     array_save(submesh.submesh_to_mesh_vertex_local_indices, tempdir, filename)
     array_assert_equal(submesh.submesh_to_mesh_vertex_local_indices, data_dir, filename)
-    
+
 # Test shared entities detection
 @enable_create_submesh_logging
 def test_shared_entities_detection(mesh, submesh, tempdir):
@@ -361,7 +361,7 @@ def test_mesh_to_submesh_dof_map(mesh, FunctionSpace, submesh_markers, submesh, 
     filename = "test_mesh_to_submesh_dof_map_" + FunctionSpace.__name__ + "_size_" + str(MPI.size(submesh.mpi_comm())) + "_rank_" + str(MPI.rank(submesh.mpi_comm())) + ".pkl"
     dict_save(mesh_dofs_to_submesh_dofs, tempdir, filename)
     dict_assert_equal(mesh_dofs_to_submesh_dofs, data_dir, filename)
-    
+
 # Test submesh to mesh dof map
 @enable_create_submesh_logging
 @pytest.mark.parametrize("FunctionSpace", (EllipticFunctionSpace, StokesFunctionSpace))

@@ -64,7 +64,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             #   a larger number of coefficients
             # * solutions and geometric quantities (except normals) are prevented for being collected in coefficients
             self._strict = strict
-        
+
         def separate(self):
             class _SeparatedParametrizedForm_Replacer(Transformer):
                 def __init__(self, mapping):
@@ -76,12 +76,12 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                         return self.mapping[e]
                     else:
                         return e._ufl_expr_reconstruct_(*ops)
-                    
+
                 def terminal(self, e):
                     return self.mapping.get(e, e)
-            
+
             logger.log(DEBUG, "***        SEPARATE FORM COEFFICIENTS        ***")
-            
+
             logger.log(DEBUG, "1. Extract coefficients")
             integral_to_coefficients = dict()
             for integral in self._form.integrals():
@@ -257,7 +257,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                     for c in self._coefficients[-1]:
                         logger.log(DEBUG, "\t\t" + str(c))
                     integral_to_coefficients[integral] = self._coefficients[-1]
-            
+
             logger.log(DEBUG, "2. Prepare placeholders and forms with placeholders")
             for integral in self._form.integrals():
                 # Prepare measure for the new form (from firedrake/mg/ufl_utils.py)
@@ -282,7 +282,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                     replacer = _SeparatedParametrizedForm_Replacer(placeholders_dict)
                     new_integrand = apply_transformer(integral.integrand(), replacer)
                     self._form_with_placeholders.append(new_integrand*measure)
-                
+
             logger.log(DEBUG, "3. Assert that there are no parametrized expressions left")
             for form in self._form_with_placeholders:
                 for integral in form.integrals():
@@ -291,13 +291,13 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                             assert not (wrapping.is_pull_back_expression(e) and wrapping.is_pull_back_expression_parametrized(e)), "Form " + str(integral) + " still contains a parametrized pull back expression"
                             parameters = e._parameters
                             assert "mu_0" not in parameters, "Form " + str(integral) + " still contains a parametrized expression"
-            
+
             logger.log(DEBUG, "4. Prepare coefficients hash codes")
             for addend in self._coefficients:
                 self._placeholder_names.append(list()) # of string
                 for factor in addend:
                     self._placeholder_names[-1].append(wrapping.expression_name(factor))
-                    
+
             logger.log(DEBUG, "5. Assert list length consistency")
             assert len(self._coefficients) == len(self._placeholders)
             assert len(self._coefficients) == len(self._placeholder_names)
@@ -305,14 +305,14 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                 assert len(c) == len(p)
                 assert len(c) == len(pn)
             assert len(self._coefficients) == len(self._form_with_placeholders)
-            
+
             logger.log(DEBUG, "*** DONE - SEPARATE FORM COEFFICIENTS - DONE ***")
             logger.log(DEBUG, "")
 
         @property
         def coefficients(self):
             return self._coefficients
-            
+
         @property
         def unchanged_forms(self):
             return self._form_unchanged
@@ -321,10 +321,10 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             assert len(new_coefficients) == len(self._placeholders[i])
             replacements = dict((placeholder, new_coefficient) for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))
             return replace(self._form_with_placeholders[i], replacements)
-            
+
         def placeholders_names(self, i):
             return self._placeholder_names[i]
-    
+
     return _BasicSeparatedParametrizedForm
 
 from rbnics.backends.dolfin.wrapping import expression_name, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_dot_identify_component, solution_identify_component

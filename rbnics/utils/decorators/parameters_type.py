@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with RBniCS. If not, see <http://www.gnu.org/licenses/>.
 #
-    
+
 from rbnics.utils.decorators.theta_type import ThetaType
 
 ParametersType = ThetaType

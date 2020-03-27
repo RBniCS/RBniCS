@@ -32,16 +32,16 @@ EllipticRBReducedProblem_Base = LinearRBReducedProblem(EllipticReducedProblem(Pa
 # The following implementation will be retained if no output is provided in the "s" term
 @ReducedProblemFor(EllipticProblem, EllipticRBReduction)
 class EllipticRBReducedProblem(EllipticRBReducedProblem_Base):
-    
+
     # Default initialization of members.
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
-        
+
         # Skip useless Riesz products
         self.riesz_terms = ["f", "a"]
         self.error_estimation_terms = [("f", "f"), ("a", "f"), ("a", "a")]
-    
+
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
@@ -49,19 +49,19 @@ class EllipticRBReducedProblem(EllipticRBReducedProblem_Base):
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert beta >= 0.
         return sqrt(abs(eps2))/beta
-        
+
     # Return a relative error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
-    
+
     # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
-        
+
     # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
-        
+
     # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         N = self._solution.N

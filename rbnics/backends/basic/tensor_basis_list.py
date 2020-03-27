@@ -19,5 +19,5 @@
 def TensorBasisList(TensorsList):
     class _TensorBasisList(TensorsList):
         pass
-                    
+
     return _TensorBasisList

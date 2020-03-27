@@ -23,7 +23,7 @@ from rbnics.sampling.distributions.uniform_distribution import UniformDistributi
 class LogUniformDistribution(Distribution):
     def __init__(self):
         self.uniform_distribution = UniformDistribution()
-        
+
     def sample(self, box, n):
         log_box = [(log(box_p[0]), log(box_p[1])) for box_p in box]
         log_set = self.uniform_distribution.sample(log_box, n)

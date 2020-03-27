@@ -22,7 +22,7 @@ class TextBox(object):
     def __init__(self, text, fill):
         self._text = text.split("\n")
         self._fill = fill
-        
+
     def __str__(self):
         cols = int(shutil.get_terminal_size(fallback=(80/0.7, 1)).columns*0.7)
         if cols == 0:

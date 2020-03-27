@@ -40,7 +40,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             t = form_problem.t
         else:
             t = None
-        
+
         if (form_name, reduced_V) not in form_cache:
             visited = set()
             replacements = dict()
@@ -66,7 +66,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 0: dict(),
                 1: dict()
             }
-            
+
             # Look for terminals on truth mesh
             logger.log(DEBUG, "Traversing terminals of form " + form_name)
             for node in wrapping.form_iterator(form, "nodes"):
@@ -143,7 +143,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                     visited.add(node)
             # ... and replace them
             replaced_form = wrapping.form_replace(form, replacements, "nodes")
-            
+
             # Look for measures ...
             if len(reduced_V) == 2:
                 assert reduced_V[0].mesh().ufl_domain() == reduced_V[1].mesh().ufl_domain()
@@ -166,7 +166,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 replacements_measures[integral.integrand(), integral.integral_type(), integral.subdomain_id()] = measure
             # ... and replace them
             replaced_form_with_replaced_measures = wrapping.form_replace(replaced_form, replacements_measures, "measures")
-            
+
             # Cache the resulting dicts
             form_cache[(form_name, reduced_V)] = replaced_form_with_replaced_measures
             truth_problems_cache[(form_name, reduced_V)] = truth_problems
@@ -179,7 +179,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_mesh_solution
             reduced_problem_to_reduced_mesh_solution_dot_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_mesh_solution_dot
             reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)] = reduced_problem_to_reduced_basis_functions
-            
+
         # Extract from cache
         replaced_form_with_replaced_measures = form_cache[(form_name, reduced_V)]
         truth_problems = truth_problems_cache[(form_name, reduced_V)]
@@ -192,7 +192,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         reduced_problem_to_reduced_mesh_solution = reduced_problem_to_reduced_mesh_solution_cache[(form_name, reduced_V)]
         reduced_problem_to_reduced_mesh_solution_dot = reduced_problem_to_reduced_mesh_solution_dot_cache[(form_name, reduced_V)]
         reduced_problem_to_reduced_basis_functions = reduced_problem_to_reduced_basis_functions_cache[(form_name, reduced_V)]
-        
+
         # Get list of truth and reduced problems that need to be solved, possibly updating cache
         required_truth_problems = list()
         required_reduced_problems = list()
@@ -297,7 +297,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                 assert not reduced_problem_is_solving
                 # Append to list of required truth problems which are currently solving
                 required_truth_problems.append((truth_problem, True, False))
-        
+
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, truth_problem_is_solving, reduced_problem_is_solving) in required_truth_problems:
             if not reduced_problem_is_solving:
@@ -342,7 +342,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                     else:
                         solution_dot_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution_dot.N]*reduced_problem._solution_dot)
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
             # Solve (if necessary)
@@ -383,7 +383,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         online_backend.online_assign(solution_dot_from, reduced_problem._solution_dot_over_time.at(t))
                     solution_dot_from = reduced_basis_functions[:solution_dot_from_N]*solution_dot_from
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Assemble and return
         assembled_replaced_form = wrapping.assemble(replaced_form_with_replaced_measures)
         if not isinstance(assembled_replaced_form, Number):
@@ -391,7 +391,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
         else:
             form_rank = 0
         return (assembled_replaced_form, form_rank)
-        
+
     form_cache = Cache()
     truth_problems_cache = Cache()
     truth_problem_to_components_cache = Cache()
@@ -403,7 +403,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
     reduced_problem_to_reduced_mesh_solution_cache = Cache()
     reduced_problem_to_reduced_mesh_solution_dot_cache = Cache()
     reduced_problem_to_reduced_basis_functions_cache = Cache()
-    
+
     return _basic_form_on_reduced_function_space
 
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid

@@ -35,7 +35,7 @@ def run_and_compare_to_gold(subdirectory=""):
             """
             Handles the comparison of test/tutorial with gold files
             """
-            
+
             rootdir = str(self.config.rootdir)
             # Get action
             action = self.config.option.action

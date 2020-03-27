@@ -27,7 +27,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # I/O
         self.folder_prefix = folder_prefix
         self.folder = Folders()
-        
+
         # $$ OFFLINE DATA STRUCTURES $$ #
         # Maximum reduced order space dimension to be used for the stopping criterion in the basis selection
         self.Nmax = 0
@@ -37,7 +37,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
         self.training_set = ParameterSpaceSubset()
         # I/O
         self.folder["training_set"] = os.path.join(self.folder_prefix, "training_set")
-        
+
         # $$ ERROR ANALYSIS AND SPEEDUP ANALYSIS DATA STRUCTURES $$ #
         # Testing set
         self.testing_set = ParameterSpaceSubset()
@@ -45,11 +45,11 @@ class ReductionMethod(object, metaclass=ABCMeta):
         self.folder["testing_set"] = os.path.join(self.folder_prefix, "testing_set")
         self.folder["error_analysis"] = os.path.join(self.folder_prefix, "error_analysis")
         self.folder["speedup_analysis"] = os.path.join(self.folder_prefix, "speedup_analysis")
-    
+
     # OFFLINE: set maximum reduced space dimension (stopping criterion)
     def set_Nmax(self, Nmax, **kwargs):
         self.Nmax = Nmax
-        
+
     # OFFLINE: set tolerance (stopping criterion)
     def set_tolerance(self, tol, **kwargs):
         self.tol = tol
@@ -72,7 +72,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
             # Export
             self.training_set.save(self.folder["training_set"], "training_set")
         return import_successful
-        
+
     # ERROR ANALYSIS: set the elements in the testing set.
     def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
         # Create I/O folder
@@ -91,44 +91,44 @@ class ReductionMethod(object, metaclass=ABCMeta):
             # Export
             self.testing_set.save(self.folder["testing_set"], "testing_set")
         return import_successful
-    
+
     # Perform the offline phase of the reduced order model
     @abstractmethod
     def offline(self):
         raise NotImplementedError("Please implement the offline phase of the reduced order model.")
-        
+
     # Initialize data structures required for the offline phase
     def _init_offline(self):
         pass
-        
+
     # Finalize data structures required after the offline phase
     def _finalize_offline(self):
         pass
-    
+
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
     @abstractmethod
     def error_analysis(self, N_generator=None, filename=None, **kwargs):
         raise NotImplementedError("Please implement the error analysis of the reduced order model.")
-        
+
     # Initialize data structures required for the error analysis phase
     def _init_error_analysis(self, **kwargs):
         pass
-        
+
     # Finalize data structures required after the error analysis phase
     def _finalize_error_analysis(self, **kwargs):
         pass
-        
+
     # Compute the speedup analysis of the reduced order approximation with respect to the full order one
     # over the testing set
     @abstractmethod
     def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
         raise NotImplementedError("Please implement the speedup analysis of the reduced order model.")
-        
+
     # Initialize data structures required for the speedup analysis phase
     def _init_speedup_analysis(self, **kwargs):
         pass
-        
+
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):
         pass

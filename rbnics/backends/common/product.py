@@ -27,7 +27,7 @@ from rbnics.utils.decorators import array_of, backend_for, list_of, overload, Th
 @backend_for("common", inputs=(ThetaType, (AffineExpansionStorage, array_of(DelayedBasisFunctionsMatrix), array_of(DelayedLinearSolver), NonAffineExpansionStorage), ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
     return _product(thetas, operators, thetas2)
-    
+
 @overload
 def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExpansionStorage), thetas2: None):
     output = 0.
@@ -35,7 +35,7 @@ def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExp
     for (theta, operator) in zip(thetas, operators):
         output += theta*operator
     return ProductOutput(output)
-    
+
 @overload
 def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExpansionStorage), thetas2: ThetaType):
     output = 0.
@@ -46,7 +46,7 @@ def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExp
         for j, theta2_j in enumerate(thetas2):
             output += theta_i*operators[i, j]*theta2_j
     return ProductOutput(output)
-    
+
 @overload
 def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_of(DelayedLinearSolver)), thetas2: None):
     output = None
@@ -76,7 +76,7 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
             assert output._parameters == operator._parameters
     output.solve()
     return ProductOutput(output._solution)
-    
+
 @overload
 def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix), thetas2: None):
     from rbnics.backends import BasisFunctionsMatrix
@@ -98,7 +98,7 @@ def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix)
         for delayed_functions_over_theta in operator_memory_over_basis_functions_index:
             output.enrich(_product(thetas, delayed_functions_over_theta, None).sum_product_return_value, component=component_name if len(components_name) > 1 else None)
     return ProductOutput(output)
-    
+
 # Auxiliary class to signal to the sum() function that it is dealing with an output of the product() method
 class ProductOutput(object):
     def __init__(self, sum_product_return_value):

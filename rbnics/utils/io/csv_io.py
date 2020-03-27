@@ -31,7 +31,7 @@ class CSVIO(object):
                 writer = csv.writer(outfile, delimiter=";")
                 writer.writerows(content)
         parallel_io(save_file_task)
-        
+
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
@@ -40,7 +40,7 @@ class CSVIO(object):
         with open(os.path.join(str(directory), filename), "r") as infile:
             reader = csv.reader(infile, delimiter=";")
             return [line for line in reader]
-            
+
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):

@@ -31,7 +31,7 @@ class SympyIO(object):
             with open(os.path.join(str(directory), filename), "w") as outfile:
                 outfile.write(python(content))
         parallel_io(save_file_task)
-    
+
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
@@ -40,7 +40,7 @@ class SympyIO(object):
         with open(os.path.join(str(directory), filename), "r") as infile:
             content = infile.read()
             return sympy_exec(content, {})
-            
+
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):

@@ -19,5 +19,5 @@
 def TensorSnapshotsList(TensorsList):
     class _TensorSnapshotsList(TensorsList):
         pass
-                    
+
     return _TensorSnapshotsList

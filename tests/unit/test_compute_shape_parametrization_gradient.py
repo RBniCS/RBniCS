@@ -102,7 +102,7 @@ def test_compute_shape_parametrization_gradient_hole():
     assert len(shape_parametrization_gradient_expression[7][X]) == 2
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "2 - mu[1]", x, mu)
-    
+
 # Test shape parametrization gradient computation for tutorial 03 rotation
 def test_compute_shape_parametrization_gradient_hole_rotation():
     shape_parametrization_expression = [
@@ -185,7 +185,7 @@ def test_compute_shape_parametrization_gradient_hole_rotation():
     assert len(shape_parametrization_gradient_expression[7][Y]) == 2
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "-sqrt(2.0)*sin(mu[0]) + 2", x, mu)
-    
+
 # Test shape parametrization gradient computation for tutorial 04
 def test_compute_shape_parametrization_gradient_graetz():
     shape_parametrization_expression = [
@@ -214,7 +214,7 @@ def test_compute_shape_parametrization_gradient_graetz():
     assert len(shape_parametrization_gradient_expression[1][X]) == 2
     assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[1][Y][Y], "1", x, mu)
-    
+
 # Test shape parametrization gradient computation for tutorial 12
 def test_compute_shape_parametrization_gradient_stokes():
     shape_parametrization_expression = [
@@ -297,7 +297,7 @@ def test_compute_shape_parametrization_gradient_stokes():
     assert len(shape_parametrization_gradient_expression[7][X]) == 2
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[7][Y][Y], "mu[2]", x, mu)
-    
+
 # Test shape parametrization gradient computation for tutorial 17
 def test_compute_shape_parametrization_gradient_navier_stokes():
     shape_parametrization_expression = [
@@ -344,7 +344,7 @@ def test_compute_shape_parametrization_gradient_navier_stokes():
     assert len(shape_parametrization_gradient_expression[3][Y]) == 2
     assert symbolic_equal(shape_parametrization_gradient_expression[3][Y][X], "0", x, mu)
     assert symbolic_equal(shape_parametrization_gradient_expression[3][Y][Y], "0.5*mu[1]", x, mu)
-    
+
 # Test shape parametrization gradient computation for stokes optimal dirichlet boundary control
 def test_compute_shape_parametrization_gradient_stokes_optimal_dirichlet_boundary_control():
     shape_parametrization_expression = [

@@ -38,14 +38,14 @@ def DEIMDecoratedProblem(
     **decorator_kwargs
 ):
     from rbnics.eim.problems.deim import DEIM
-    
+
     @ProblemDecoratorFor(DEIM, ExactAlgorithm=ExactDEIMAlgorithm, stages=stages, basis_generation=basis_generation)
     def DEIMDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
-        
+
         @DefineSymbolicParameters
         @PreserveClassName
         class DEIMDecoratedProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
-            
+
             # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
@@ -53,17 +53,17 @@ def DEIMDecoratedProblem(
                 # Storage for DEIM reduced problems
                 self.DEIM_approximations = dict() # from term to dict of DEIMApproximation
                 self.non_DEIM_forms = dict() # from term to dict of forms
-                
+
                 # Store value of N_DEIM passed to solve
                 self._N_DEIM = None
                 # Store values passed to decorator
                 self._store_DEIM_stages(stages)
                 # Avoid useless assignments
                 self._update_N_DEIM__previous_kwargs = None
-                
+
                 # Generate offline online backend for current problem
                 self.offline_online_backend = OfflineOnlineBackend(self.name())
-                
+
             @overload(str)
             def _store_DEIM_stages(self, stage):
                 assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
@@ -71,7 +71,7 @@ def DEIMDecoratedProblem(
                 self._apply_DEIM_at_stages = (stages, )
                 assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") below @DEIM(\"online\") decorator"
                 assert self._apply_exact_evaluation_at_stages == ("offline", )
-                
+
             @overload(tuple_of(str))
             def _store_DEIM_stages(self, stage):
                 assert len(stages) in (1, 2)
@@ -81,7 +81,7 @@ def DEIMDecoratedProblem(
                     assert stages[0] != stages[1]
                 self._apply_DEIM_at_stages = stages
                 assert not hasattr(self, "_apply_exact_evaluation_at_stages"), "This choice does not make any sense because there is at least a stage for which both DEIM and ExactParametrizedFunctions are required"
-            
+
             def _init_DEIM_approximations(self):
                 # Preprocess each term in the affine expansions.
                 # Note that this cannot be done in __init__, because operators may depend on self.mu,
@@ -120,7 +120,7 @@ def DEIMDecoratedProblem(
                                     self.non_DEIM_forms[term][q] = form_q
                     # Restore float parameters
                     self.detach_symbolic_parameters()
-                    
+
             def init(self):
                 # Call parent's method (enforcing an empty parent call to _init_operators)
                 self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None) # may be shared between DEIM and exact evaluation
@@ -130,7 +130,7 @@ def DEIMDecoratedProblem(
                 del self.disable_init_operators
                 # Then, initialize DEIM operators
                 self._init_operators_DEIM()
-                    
+
             def _init_operators_DEIM(self):
                 # Initialize offline/online switch storage only once (may be shared between DEIM and exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
@@ -164,11 +164,11 @@ def DEIMDecoratedProblem(
                     self.operator.unset_is_affine()
                 # Restore former stage in offline/online switch storage
                 OfflineOnlineSwitch.set_current_stage(former_stage)
-                
+
             def _solve(self, **kwargs):
                 self._update_N_DEIM(**kwargs)
                 ParametrizedDifferentialProblem_DerivedClass._solve(self, **kwargs)
-            
+
             def _update_N_DEIM(self, **kwargs):
                 N_DEIM = kwargs.pop("DEIM", None)
                 if N_DEIM != self._update_N_DEIM__previous_kwargs:
@@ -186,7 +186,7 @@ def DEIMDecoratedProblem(
                     else:
                         self._N_DEIM = None
                     self._update_N_DEIM__previous_kwargs = N_DEIM
-                
+
             def _assemble_operator_DEIM(self, term):
                 deim_forms = list()
                 # Append forms computed with DEIM, if applicable
@@ -196,7 +196,7 @@ def DEIMDecoratedProblem(
                 for (_, non_deim_form) in self.non_DEIM_forms[term].items():
                     deim_forms.append(non_deim_form)
                 return tuple(deim_forms)
-            
+
             def _compute_theta_DEIM(self, term):
                 original_thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                 deim_thetas = list()
@@ -215,7 +215,7 @@ def DEIMDecoratedProblem(
                 for q in self.non_DEIM_forms[term]:
                     deim_thetas.append(original_thetas[q])
                 return tuple(deim_thetas)
-                
+
             def _cache_key_from_kwargs(self, **kwargs):
                 cache_key = ParametrizedDifferentialProblem_DerivedClass._cache_key_from_kwargs(self, **kwargs)
                 # Change cache key depending on current stage
@@ -225,9 +225,9 @@ def DEIMDecoratedProblem(
                     cache_key = cache_key + ("DEIM", )
                 # Return
                 return cache_key
-            
+
         # return value (a class) for the decorator
         return DEIMDecoratedProblem_Class
-        
+
     # return the decorator itself
     return DEIMDecoratedProblem_Decorator

@@ -32,15 +32,15 @@ def test_eim_approximation_00(expression_type, basis_generation):
     This test deals with the trivial case of interpolating the zero function/vector/matrix,
     as it is a corner case. Next files will deal with more interesting cases.
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_00_" + expression_type + "_" + basis_generation
-    
+
     class ParametrizedFunctionApproximation(EIMApproximation):
         def __init__(self, V, expression_type, basis_generation):
             self.V = V
@@ -81,7 +81,7 @@ def test_eim_approximation_00(expression_type, basis_generation):
     # 4. Prepare reduction with EIM
     parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)
     parametrized_function_reduction_method.set_Nmax(1)
-    
+
     # 5. Perform the offline phase
     parametrized_function_reduction_method.initialize_training_set(5, sampling=EquispacedDistribution())
     reduced_parametrized_function_approximation = parametrized_function_reduction_method.offline()

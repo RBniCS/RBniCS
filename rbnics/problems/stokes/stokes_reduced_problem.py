@@ -29,7 +29,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
     # Base class containing the interface of a projection based ROM
     # for saddle point problems.
     class StokesReducedProblem_Class(StokesReducedProblem_Base):
-        
+
         def __init__(self, truth_problem, **kwargs):
             StokesReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Auxiliary storage for solution of reduced order supremizer problem (if requested through solve_supremizer)
@@ -43,7 +43,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 "reduced problems",
                 key_generator=_supremizer_cache_key_generator
             )
-            
+
         class ProblemSolver(StokesReducedProblem_Base.ProblemSolver):
             def matrix_eval(self):
                 problem = self.problem
@@ -52,7 +52,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 for term in ("a", "b", "bt"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
-                
+
             def vector_eval(self):
                 problem = self.problem
                 N = self.N
@@ -60,7 +60,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 for term in ("f", "g"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return assembled_operator["f"] + assembled_operator["g"]
-                
+
             # Custom combination of boundary conditions *not* to add BCs of supremizers
             def bc_eval(self):
                 problem = self.problem
@@ -72,7 +72,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 # Restore and return
                 problem.components = components_bak
                 return bcs
-                
+
         def solve_supremizer(self, solution):
             N_us = OnlineSizeDict(solution.N) # create a copy
             del N_us["p"]
@@ -84,7 +84,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 self._solve_supremizer(solution)
                 self._supremizer_cache[self.mu, N_us, kwargs] = copy(self._supremizer)
             return self._supremizer
-            
+
         def _solve_supremizer(self, solution):
             N_us = self._supremizer.N
             N_usp = solution.N
@@ -107,10 +107,10 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             )
             solver.set_parameters(self._linear_solver_parameters)
             solver.solve()
-            
+
         def _supremizer_cache_key_from_N_and_kwargs(self, N, **kwargs):
             return self._cache_key_from_N_and_kwargs(N, **kwargs)
-            
+
         # Internal method for error computation
         def _compute_error(self, **kwargs):
             components = ["u", "p"] # but not "s"
@@ -119,7 +119,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             else:
                 assert kwargs["components"] == components
             return StokesReducedProblem_Base._compute_error(self, **kwargs)
-            
+
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error, **kwargs):
             components = ["u", "p"] # but not "s"
@@ -128,14 +128,14 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             else:
                 assert kwargs["components"] == components
             return StokesReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
-            
+
         def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             if supremizer is None:
                 supremizer = self._supremizer
             N_us = supremizer.N
             basis_functions_us = self.basis_functions[["u", "s"]]
             self.truth_problem.export_supremizer(folder, filename, basis_functions_us[:N_us]*supremizer, component, suffix)
-            
+
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
             if current_stage == "offline":
@@ -164,7 +164,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)
             else:
                 return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)
-                
+
         # Custom combination of inner products *not* to add inner product corresponding to supremizers
         def _combine_all_inner_products(self):
             # Temporarily change self.components
@@ -175,7 +175,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Restore and return
             self.components = components_bak
             return combined_inner_products
-            
+
         # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
         def _combine_all_projection_inner_products(self):
             # Temporarily change self.components
@@ -186,6 +186,6 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Restore and return
             self.components = components_bak
             return combined_projection_inner_products
-        
+
     # return value (a class) for the decorator
     return StokesReducedProblem_Class

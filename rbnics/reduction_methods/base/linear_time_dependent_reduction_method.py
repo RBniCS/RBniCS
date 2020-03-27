@@ -22,10 +22,10 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(LinearReductionMethod, TimeDependentReductionMethod)
 def LinearTimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    
+
     @PreserveClassName
     class LinearTimeDependentReductionMethod_Class(DifferentialProblemReductionMethod_DerivedClass):
         pass
-                
+
     # return value (a class) for the decorator
     return LinearTimeDependentReductionMethod_Class

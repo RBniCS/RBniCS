@@ -19,7 +19,7 @@
 def patch_initialize_testing_training_set(action):
     import rbnics.reduction_methods.base
     import rbnics.eim.reduction_methods
-    
+
     """
     Patch ReductionMethod.initialize_{testing,training}_set to always read from file if
     action == "compare", and to try first to read from file if actions == "regold"
@@ -34,7 +34,7 @@ def patch_initialize_testing_training_set(action):
                 raise AssertionError("Loading should have not been failing")
             return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
-            
+
         def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
             try:
                 self.testing_set.load(self.folder["testing_set"], "testing_set")
@@ -53,7 +53,7 @@ def patch_initialize_testing_training_set(action):
             else:
                 return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
-        
+
         original_initialize_testing_set = rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set
         def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
             self.folder["testing_set"].create()
@@ -64,7 +64,7 @@ def patch_initialize_testing_training_set(action):
             else:
                 return True
         rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set
-        
+
     original__time_dependent_eim__initialize_training_set = rbnics.eim.reduction_methods.TimeDependentEIMApproximationReductionMethod.initialize_training_set
     def time_dependent_eim__initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = original__time_dependent_eim__initialize_training_set(self, ntrain, True, sampling, **kwargs)

@@ -24,7 +24,7 @@ from rbnics import *
     ("x[0]", "mu[0]*x[1]"), # subdomain 1
 )
 class StokesOptimalControl(StokesOptimalControlProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -49,11 +49,11 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         self._linear_solver_parameters.update({
             "linear_solver": "mumps"
         })
-        
+
     # Return custom problem name
     def name(self):
         return "StokesOptimalControl1"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_supremizers
     def compute_theta(self, term):
@@ -90,7 +90,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_supremizers
     def assemble_operator(self, term):
@@ -196,7 +196,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-    
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/mesh1.xml")
 subdomains = MeshFunction("size_t", mesh, "data/mesh1_physical_region.xml")

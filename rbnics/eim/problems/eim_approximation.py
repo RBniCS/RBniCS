@@ -40,7 +40,7 @@ class EIMApproximation(ParametrizedProblem):
         self.truth_problem = truth_problem
         assert basis_generation in ("Greedy", "POD")
         self.basis_generation = basis_generation
-        
+
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension
         self.N = 0
@@ -49,7 +49,7 @@ class EIMApproximation(ParametrizedProblem):
         self.interpolation_matrix = OnlineAffineExpansionStorage(1) # interpolation matrix
         # Solution
         self._interpolation_coefficients = None # OnlineFunction
-        
+
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.snapshot = parametrized_expression.create_empty_snapshot()
         # Basis functions container
@@ -79,7 +79,7 @@ class EIMApproximation(ParametrizedProblem):
             export=_snapshot_cache_export,
             filename_generator=_snapshot_cache_filename_generator
         )
-        
+
     # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
         assert current_stage in ("online", "offline")
@@ -101,31 +101,31 @@ class EIMApproximation(ParametrizedProblem):
         except KeyError:
             self.snapshot = evaluate(self.parametrized_expression)
             self._snapshot_cache[self.mu] = copy(self.snapshot)
-        
+
     def _cache_key(self):
         return self.mu
-        
+
     def _cache_file(self):
         return hashlib.sha1(str(self._cache_key()).encode("utf-8")).hexdigest()
-        
+
     # Perform an online solve.
     def solve(self, N=None):
         if N is None:
             N = self.N
-        
+
         self._solve(self.parametrized_expression, N)
         return self._interpolation_coefficients
-        
+
     def _solve(self, rhs_, N=None):
         if N is None:
             N = self.N
-            
+
         if N > 0:
             self._interpolation_coefficients = OnlineFunction(N)
-                
+
             # Evaluate the parametrized expression at interpolation locations
             rhs = evaluate(rhs_, self.interpolation_locations[:N])
-            
+
             (max_abs_rhs, _) = max(abs(rhs))
             if max_abs_rhs == 0.:
                 # If the rhs is zero, then we are interpolating the zero function
@@ -134,13 +134,13 @@ class EIMApproximation(ParametrizedProblem):
             else:
                 # Extract the interpolation matrix
                 lhs = self.interpolation_matrix[0][:N, :N]
-                
+
                 # Solve the interpolation problem
                 solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
                 solver.solve()
         else:
             self._interpolation_coefficients = None # OnlineFunction
-        
+
     # Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):
         interpolated_theta = self.solve(N)
@@ -158,19 +158,19 @@ class EIMApproximation(ParametrizedProblem):
     def compute_maximum_interpolation_error(self, N=None):
         if N is None:
             N = self.N
-        
+
         # Compute the error (difference with the eim approximation)
         if N > 0:
             error = self.snapshot - self.basis_functions[:N]*self._interpolation_coefficients
         else:
             error = copy(self.snapshot) # need a copy because it will be rescaled
-        
+
         # Get the location of the maximum error
         (maximum_error, maximum_location) = max(abs(error))
-        
+
         # Return
         return (error, maximum_error, maximum_location)
-        
+
     def compute_maximum_interpolation_relative_error(self, N=None):
         (absolute_error, maximum_absolute_error, maximum_location) = self.compute_maximum_interpolation_error(N)
         (maximum_snapshot_value, _) = max(abs(self.snapshot))
@@ -181,7 +181,7 @@ class EIMApproximation(ParametrizedProblem):
                 return (absolute_error, maximum_absolute_error, maximum_location) # the first two arguments are a zero expression and zero scalar
             else:
                 return (None, float("NaN"), maximum_location) # the first argument should be a NaN expression
-                
+
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None):
         if folder is None:
@@ -191,7 +191,7 @@ class EIMApproximation(ParametrizedProblem):
         if solution is None:
             solution = self.snapshot
         export(solution, folder, filename)
-        
+
     # Import solution from file
     def import_solution(self, folder=None, filename=None, solution=None):
         if folder is None:

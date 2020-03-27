@@ -29,7 +29,7 @@ class TimeQuadrature(AbstractTimeQuadrature):
         assert len(function_over_time) > 1
         self._time_step_size = (time_interval[1] - time_interval[0])/(len(function_over_time) - 1)
         self._function_over_time = function_over_time
-        
+
     def integrate(self):
         vector_over_time = list()
         for function in self._function_over_time:

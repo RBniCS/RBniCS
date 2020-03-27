@@ -17,13 +17,13 @@
 #
 
 def EllipticCoerciveReducedProblem(EllipticReducedProblem_DerivedClass):
-    
+
     EllipticCoerciveReducedProblem_Base = EllipticReducedProblem_DerivedClass
-    
+
     # Base class containing the interface of a projection based ROM
     # for elliptic coercive problems.
     class EllipticCoerciveReducedProblem_Class(EllipticCoerciveReducedProblem_Base):
         pass
-        
+
     # return value (a class) for the decorator
     return EllipticCoerciveReducedProblem_Class

@@ -65,26 +65,26 @@ class Cache(object):
                 self._import = None
                 self._export = None
                 self._filename_generator = None
-        
+
     def __len__(self):
         """
         Returns the size of RAM cache.
         """
         return len(self._storage)
-        
+
     def clear(self):
         """
         Clears RAM cache, but not disk one.
         """
         self._storage.clear()
-        
+
     def __contains__(self, key):
         """
         Checks if key is in current RAM cache.
         """
         (_, _, storage_key) = self._compute_storage_key(key)
         return storage_key in self._storage
-        
+
     def __getitem__(self, key):
         """
         Get key from either RAM or disk storage, if possible.
@@ -109,7 +109,7 @@ class Cache(object):
         else:
             logger.log(DEBUG, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
             return storage_value
-        
+
     def __setitem__(self, key, value):
         """
         Set key in both RAM and disk storage.
@@ -119,14 +119,14 @@ class Cache(object):
         if self._filename_generator is not None:
             storage_filename = self._filename_generator(*args, **kwargs)
             self._export(storage_filename)
-        
+
     def __delitem__(self, key):
         """
         Remove key from RAM cache (but not from disk storage).
         """
         (_, _, storage_key) = self._compute_storage_key(key)
         del self._storage[storage_key]
-        
+
     def _compute_storage_key(self, key):
         from rbnics.utils.io import OnlineSizeDict # cannot import at global scope
         if isinstance(key, tuple):
@@ -150,34 +150,34 @@ class Cache(object):
             else:
                 storage_key = args
         return (args, kwargs, storage_key)
-        
+
     def __iter__(self):
         """
         Iterate over current RAM cache.
         """
         return iter(self._storage)
-        
+
     def items(self):
         """
         Returns items in current RAM cache.
         """
         return self._storage.items()
-        
+
     def keys(self):
         """
         Returns keys in current RAM cache.
         """
         return self._storage.keys()
-        
+
     def values(self):
         """
         Returns values in current RAM cache.
         """
         return self._storage.values()
-        
+
 def cache(fun):
     storage = Cache()
-    
+
     @wraps(fun)
     def wrapper(*args):
         try:
@@ -185,9 +185,9 @@ def cache(fun):
         except KeyError:
             storage[args] = fun(*args)
             return storage[args]
-        
+
     return wrapper
-    
+
 class DisabledStorage(MutableMapping):
     def __getitem__(self, key):
         raise KeyError

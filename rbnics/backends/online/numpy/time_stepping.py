@@ -44,14 +44,14 @@ class TimeStepping(AbstractTimeStepping):
         self._monitor_callback = problem_wrapper.monitor
         self.solver = self.problem.create_solver({"problem_type": "linear"})
         self.solver._monitor_callback = self._monitor_callback
-        
+
     def set_parameters(self, parameters):
         self.solver = self.problem.create_solver(parameters)
         self.solver._monitor_callback = self._monitor_callback
-                
+
     def solve(self):
         self.solver.solve()
-        
+
 class _TimeDependentProblem(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
         self.residual_eval = residual_eval
@@ -60,7 +60,7 @@ class _TimeDependentProblem(object):
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
         self.set_time = set_time
-        
+
     def create_solver(self, parameters=None):
         if parameters is None:
             parameters = dict()
@@ -72,13 +72,13 @@ class _TimeDependentProblem(object):
             problem_type = "linear"
         else:
             problem_type = parameters["problem_type"]
-        
+
         if has_IDA:
             assert integrator_type in ("beuler", "ida")
         else:
             assert integrator_type in ("beuler")
         assert problem_type in ("linear", "nonlinear")
-        
+
         if integrator_type == "beuler":
             solver = _ScipyImplicitEuler(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, self.set_time, problem_type)
             solver.set_parameters(parameters)
@@ -89,7 +89,7 @@ class _TimeDependentProblem(object):
             return solver
         else:
             raise ValueError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
-            
+
 class _ScipyImplicitEuler(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time, problem_type):
         self.residual_eval = residual_eval
@@ -113,7 +113,7 @@ class _ScipyImplicitEuler(object):
                     rhs = - self.residual_eval(t, self.zero, self.minus_solution_previous_over_dt)
                     bcs_t = self.bc_eval(t)
                     LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t)
-                
+
             self.solver_generator = _LinearSolver
         elif problem_type == "nonlinear":
             class _NonlinearSolver(NonlinearSolver):
@@ -135,7 +135,7 @@ class _ScipyImplicitEuler(object):
                         def monitor(self_, solution):
                             pass
                     NonlinearSolver.__init__(self_, _NonlinearProblemWrapper(), self.solution)
-                
+
             self.solver_generator = _NonlinearSolver
         # Additional storage which will be setup by set_parameters
         self._final_time = None
@@ -147,11 +147,11 @@ class _ScipyImplicitEuler(object):
         self._monitor_initial_time = None
         self._monitor_time_step_size = None
         self._time_step_size = None
-        
+
     def _monitor(self, t, solution, solution_dot):
         if self._monitor_callback is not None:
             self._monitor_callback(t, solution, solution_dot)
-    
+
     def set_parameters(self, parameters):
         for (key, value) in parameters.items():
             if key == "final_time":
@@ -184,7 +184,7 @@ class _ScipyImplicitEuler(object):
                 self._time_step_size = value
             else:
                 raise ValueError("Invalid paramater passed to _ScipyImplicitEuler object.")
-                
+
     def solve(self):
         # Prepar time array
         assert self._max_time_steps is not None or self._time_step_size is not None
@@ -226,7 +226,7 @@ class _ScipyImplicitEuler(object):
             if t in monitor_t:
                 self._monitor(t, self.solution, self.solution_dot)
             self.solution_previous.vector()[:] = self.solution.vector()
-        
+
 if has_IDA:
     class _AssimuloIDA(object):
         def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
@@ -254,7 +254,7 @@ if has_IDA:
             self._relative_tolerance = None
             self._report = False
             self._time_step_size = None
-            
+
         def _update_bcs(self, t):
             # Update current bc
             bcs_t = self.bc_eval(t)
@@ -265,7 +265,7 @@ if has_IDA:
                 self.current_bc = DirichletBC(bcs_t, self.sample_residual._component_name_to_basis_component_index, self.solution.vector().N)
             else:
                 raise TypeError("Invalid bc in _LinearSolver.__init__().")
-                    
+
         def _residual_vector_eval(self, t, solution, solution_dot):
             # Store current time
             self.set_time(t)
@@ -280,7 +280,7 @@ if has_IDA:
                 self.current_bc.apply_to_vector(residual_vector, self.solution.vector())
             # Convert to an array, rather than a matrix with one column, and return
             return residual_vector.__array__()
-            
+
         def _jacobian_matrix_eval(self, solution_dot_coefficient, t, solution, solution_dot):
             # Store current time
             self.set_time(t)
@@ -295,7 +295,7 @@ if has_IDA:
                 self.current_bc.apply_to_matrix(jacobian_matrix)
             # Return
             return jacobian_matrix.__array__()
-            
+
         def _monitor(self, solver, t, solution, solution_dot):
             # Store solution and solution_dot
             self.solution.vector()[:] = solution
@@ -303,7 +303,7 @@ if has_IDA:
             # Call monitor
             if self._monitor_callback is not None:
                 self._monitor_callback(t, self.solution, self.solution_dot)
-            
+
         def set_parameters(self, parameters):
             for (key, value) in parameters.items():
                 if key == "absolute_tolerance":
@@ -349,7 +349,7 @@ if has_IDA:
                     self._time_step_size = value
                 else:
                     raise ValueError("Invalid paramater passed to _AssimuloIDA object.")
-        
+
         def solve(self):
             # Setup IDA
             assert self._initial_time is not None

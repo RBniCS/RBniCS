@@ -37,69 +37,69 @@ class LinearSolver(AbstractLinearSolver):
         self._apply_bcs(bcs)
         self._linear_solver = "default"
         self.monitor = None
-        
+
     @overload(LinearProblemWrapper, Function.Type())
     def __init__(self, problem_wrapper, solution):
         self.__init__(problem_wrapper.matrix_eval(), solution, problem_wrapper.vector_eval(), problem_wrapper.bc_eval())
         self.monitor = problem_wrapper.monitor
-    
+
     @overload
     def _init_lhs(self, lhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
         self.lhs = assemble(lhs, keep_diagonal=True)
-        
+
     @overload
     def _init_lhs(self, lhs: ParametrizedTensorFactory, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
         self.lhs = evaluate(lhs)
-        
+
     @overload
     def _init_lhs(self, lhs: Matrix.Type(), bcs: None):
         self.lhs = lhs
-        
+
     @overload
     def _init_lhs(self, lhs: Matrix.Type(), bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         # Create a copy of lhs, in order not to change
         # the original references when applying bcs
         self.lhs = lhs.copy()
-        
+
     @overload
     def _init_rhs(self, rhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
         self.rhs = assemble(rhs)
-        
+
     @overload
     def _init_rhs(self, rhs: ParametrizedTensorFactory, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
         self.rhs = evaluate(rhs)
-        
+
     @overload
     def _init_rhs(self, rhs: Vector.Type(), bcs: None):
         self.rhs = rhs
-        
+
     @overload
     def _init_rhs(self, rhs: Vector.Type(), bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         # Create a copy of rhs, in order not to change
         # the original references when applying bcs
         self.rhs = rhs.copy()
-        
+
     @overload
     def _apply_bcs(self, bcs: None):
         pass
-        
+
     @overload
     def _apply_bcs(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
         for bc in bcs:
             bc.apply(self.lhs, self.rhs)
-            
+
     @overload
     def _apply_bcs(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
         for key in bcs:
             for bc in bcs[key]:
                 bc.apply(self.lhs, self.rhs)
-                
+
     def set_parameters(self, parameters):
         assert len(parameters) in (0, 1)
         if len(parameters) == 1:
             assert "linear_solver" in parameters
         self._linear_solver = parameters.get("linear_solver", "default")
-        
+
     def solve(self):
         solver = PETScLUSolver(self._linear_solver)
         solver.solve(self.lhs, self.solution.vector(), self.rhs)

@@ -39,7 +39,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 "report": True
             }
             self.set_parameters(default_parameters)
-                 
+
         def set_parameters(self, parameters):
             for (key, value) in parameters.items():
                 if key == "exact_final_time":
@@ -132,7 +132,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     raise ValueError("Invalid paramater passed to PETSc TS object.")
             # Finally, read in additional options from the command line
             self.ts.setFromOptions()
-            
+
         def solve(self):
             # Assert consistency of final time and time step size
             t0, dt, T = self.ts.getTime(), self.ts.getTimeStep(), self.ts.getMaxTime()
@@ -153,7 +153,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
             # not be correct if TS has stepped over the final time.
             self.monitor._evaluate_solution(T, self.solution)
             self.monitor._evaluate_solution_dot(T, self.solution_dot)
-        
+
     class _Monitor(object):
         def __init__(self, ts):
             self.ts = ts
@@ -169,7 +169,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
             self.monitor_t = None
             self.monitor_T = None
             self.monitor_callback = None
-            
+
         def init(self, solution, solution_dot):
             if self.monitor_callback is not None:
                 self.monitor_solution = wrapping.function_copy(solution)
@@ -190,7 +190,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 self.monitor_T = self.T
                 monitor_T_consistency = (self.monitor_T - self.t0)/self.dt
                 assert isclose(round(monitor_T_consistency), monitor_T_consistency), "Monitor initial time should be occuring after an integer number of time steps"
-        
+
         def __call__(self, ts, step, time, solution):
             """
                TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
@@ -215,7 +215,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     .    u - current iterate
                     -    mctx - [optional] monitoring context
             """
-            
+
             if self.monitor_callback is not None:
                 monitor_times = arange(self.monitor_t, min(self.monitor_T, time) + self.monitor_eps, self.monitor_dt).tolist()
                 assert all(monitor_t <= time or isclose(monitor_t, time, self.monitor_eps) for monitor_t in monitor_times)
@@ -228,7 +228,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 # Prepare for next time step
                 if len(monitor_times) > 0:
                     self.monitor_t += self.monitor_dt
-                
+
         def _evaluate_solution(self, t, result):
             assert t >= self.t0 or isclose(t, self.t0, atol=self.monitor_eps)
             assert t <= self.T or isclose(t, self.T, atol=self.monitor_eps)
@@ -239,7 +239,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 self.ts.interpolate(t, result_petsc)
                 result_petsc.assemble()
                 result_petsc.ghostUpdate()
-                
+
         def _evaluate_solution_dot(self, t, result):
             assert t >= self.t0 or isclose(t, self.t0, atol=self.monitor_eps)
             assert t <= self.T or isclose(t, self.T, atol=self.monitor_eps)
@@ -266,5 +266,5 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 result_petsc /= current_dt
                 result_petsc.assemble()
                 result_petsc.ghostUpdate()
-            
+
     return _BasicPETScTSIntegrator

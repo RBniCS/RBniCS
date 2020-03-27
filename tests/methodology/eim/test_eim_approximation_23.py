@@ -33,15 +33,15 @@ def test_eim_approximation_23(expression_type, basis_generation):
     (non-parametrized) function. In contrast to tests 11-22, the auxiliary function is not the solution of a problem:
     a corresponding auxiliary problem is created automatically.
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_23_" + expression_type + "_" + basis_generation
-    
+
     class ParametrizedFunctionApproximation(EIMApproximation):
         def __init__(self, V, expression_type, basis_generation):
             self.V = V

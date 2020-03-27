@@ -92,11 +92,11 @@ class RightInner(SubDomain):
 class BottomInner(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] + 1.) < DOLFIN_EPS
-                
+
 class TopInner(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS
-        
+
 class LeftOuter(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] + 2.) < DOLFIN_EPS
@@ -108,11 +108,11 @@ class RightOuter(SubDomain):
 class BottomOuter(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] + 2.) < DOLFIN_EPS
-                
+
 class TopOuter(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 2.) < DOLFIN_EPS
-        
+
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 bottomInner = BottomInner()

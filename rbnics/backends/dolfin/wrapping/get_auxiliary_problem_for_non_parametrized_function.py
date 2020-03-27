@@ -29,11 +29,11 @@ from rbnics.utils.cache import Cache, cache
 class AuxiliaryProblemForNonParametrizedFunction(object, metaclass=ABCMeta):
     def __init__(self, V):
         self.V = V
-        
+
     @abstractmethod
     def name(self):
         pass
-    
+
 def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping):
     @cache # to skip preprocessing if node is queried multiple time
     def _basic_get_auxiliary_problem_for_non_parametrized_function(node):
@@ -85,13 +85,13 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
             AuxiliaryProblemForNonParametrizedFunction_Local.__name__ = auxiliary_problem_for_non_parametrized_function_name
             auxiliary_problem_for_non_parametrized_function = AuxiliaryProblemForNonParametrizedFunction_Local(V)
             _auxiliary_problem_for_non_parametrized_function_cache[V] = auxiliary_problem_for_non_parametrized_function
-            
+
         return (preprocessed_node, component, auxiliary_problem_for_non_parametrized_function)
-        
+
     _auxiliary_problem_for_non_parametrized_function_cache = Cache() # over function spaces rather than nodes, as after preprocessing all nodes sharing the same function space can use the same auxiliary problem
-        
+
     return _basic_get_auxiliary_problem_for_non_parametrized_function
-    
+
 from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()

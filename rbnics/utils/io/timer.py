@@ -26,10 +26,10 @@ class Timer(object):
         self._mode = mode
         self._start = None
         self._comm = MPI.COMM_WORLD
-        
+
     def start(self):
         self._start = python_timer()
-        
+
     def stop(self):
         elapsed = python_timer() - self._start
         self._start = None

@@ -21,7 +21,7 @@ from rbnics import *
 
 @ExactParametrizedFunctions()
 class ThermalBlock(NonlinearEllipticProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -39,11 +39,11 @@ class ThermalBlock(NonlinearEllipticProblem):
             "maximum_iterations": 20,
             "report": True
         })
-        
+
     # Return custom problem name
     def name(self):
         return "ThermalBlockNonlinearExact"
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -56,7 +56,7 @@ class ThermalBlock(NonlinearEllipticProblem):
             return (theta_f0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -84,7 +84,7 @@ class ThermalBlock(NonlinearEllipticProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-            
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearEllipticProblem)
 def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
@@ -94,9 +94,9 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
             self._nonlinear_solver_parameters.update({
                 "report": True
             })
-            
+
     return ReducedNonlinearElliptic
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")
 subdomains = MeshFunction("size_t", mesh, "data/thermal_block_physical_region.xml")

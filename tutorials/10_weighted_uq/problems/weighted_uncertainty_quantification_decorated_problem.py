@@ -20,11 +20,11 @@ from rbnics.utils.decorators import ProblemDecoratorFor
 
 def WeightedUncertaintyQuantificationDecoratedProblem(**decorator_kwargs):
     from .weighted_uncertainty_quantification import WeightedUncertaintyQuantification
-    
+
     @ProblemDecoratorFor(WeightedUncertaintyQuantification)
     def WeightedUncertaintyQuantificationDecoratedProblem_Decorator(EllipticCoerciveProblem_DerivedClass):
         # return value (a class) for the decorator
         return EllipticCoerciveProblem_DerivedClass
-    
+
     # return the decorator itself
     return WeightedUncertaintyQuantificationDecoratedProblem_Decorator

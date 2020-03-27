@@ -29,20 +29,20 @@ all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory"
 class Data(object):
     def __init__(self, N):
         self.N = N
-        
+
     def generate_random(self):
         # Generate random vectors
         v1 = RandomNumpyVector(self.N)
         v2 = RandomNumpyVector(self.N)
         # Return
         return (v1, v2)
-        
+
     def evaluate_builtin(self, v1, v2):
         return float(dot(v1, v2))
-        
+
     def evaluate_backend(self, v1, v2):
         return transpose(v1)*v2
-        
+
     def assert_backend(self, v1, v2, result_backend):
         result_builtin = self.evaluate_builtin(v1, v2)
         relative_error = (result_builtin - result_backend)/result_builtin

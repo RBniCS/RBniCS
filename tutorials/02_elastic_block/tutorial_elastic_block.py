@@ -20,7 +20,7 @@ from dolfin import *
 from rbnics import *
 
 class ElasticBlock(EllipticCoerciveProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -39,7 +39,7 @@ class ElasticBlock(EllipticCoerciveProblem):
         self.nu = 0.3
         self.lambda_1 = self.E*self.nu / ((1.0 + self.nu)*(1.0 - 2.0*self.nu))
         self.lambda_2 = self.E / (2.0*(1.0 + self.nu))
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -61,7 +61,7 @@ class ElasticBlock(EllipticCoerciveProblem):
             return (theta_f0, theta_f1, theta_f2)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -94,13 +94,13 @@ class ElasticBlock(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-    
+
     # Auxiliary function to compute the elasticity bilinear form
     def elasticity(self, u, v):
         lambda_1 = self.lambda_1
         lambda_2 = self.lambda_2
         return 2.0*lambda_2*inner(sym(grad(u)), sym(grad(v))) + lambda_1*tr(sym(grad(u)))*tr(sym(grad(v)))
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/elastic_block.xml")
 subdomains = MeshFunction("size_t", mesh, "data/elastic_block_physical_region.xml")

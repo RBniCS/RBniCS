@@ -33,15 +33,15 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Abstract class describing a parametrized differential problem.
     Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q, inner products and boundary conditions, truth solution.
-    
+
     :param V: functional solution space.
     """
-    
+
     def __init__(self, V, **kwargs):
-    
+
         # Call to parent
         ParametrizedProblem.__init__(self, self.name())
-        
+
         # Input arguments
         self.V = V
         # Form names and order (to be filled in by child classes)
@@ -108,10 +108,10 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             export=_output_cache_export,
             filename_generator=_output_cache_filename_generator
         )
-        
+
     def name(self):
         return type(self).__name__
-    
+
     def init(self):
         """
         Initialize data structures required during the offline phase.
@@ -119,7 +119,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self._init_operators()
         self._init_inner_products()
         self._init_dirichlet_bc()
-        
+
     def _init_operators(self):
         """
         Initialize operators required for the offline phase. Internal method.
@@ -135,7 +135,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 else:
                     if term not in self.Q: # init was not called already
                         self.Q[term] = len(self.operator[term])
-        
+
     def _init_inner_products(self):
         """
         Initialize inner products required for the offline phase. Internal method.
@@ -172,7 +172,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 self.projection_inner_product = projection_inner_product
             assert self._combined_projection_inner_product is None
             self._combined_projection_inner_product = self._combine_all_projection_inner_products()
-            
+
     def _combine_all_inner_products(self):
         if len(self.components) > 1:
             all_inner_products = list()
@@ -186,7 +186,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         all_inner_products = AffineExpansionStorage(all_inner_products)
         all_inner_products_thetas = (1.,)*len(all_inner_products)
         return sum(product(all_inner_products_thetas, all_inner_products))
-        
+
     def _combine_all_projection_inner_products(self):
         if len(self.components) > 1:
             all_projection_inner_products = list()
@@ -200,7 +200,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         all_projection_inner_products = AffineExpansionStorage(all_projection_inner_products)
         all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
         return sum(product(all_projection_inner_products_thetas, all_projection_inner_products))
-        
+
     def _init_dirichlet_bc(self):
         """
         Initialize boundary conditions required for the offline phase. Internal method.
@@ -255,7 +255,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 self.dirichlet_bc_are_homogeneous = dirichlet_bc_are_homogeneous
             assert self._combined_and_homogenized_dirichlet_bc is None
             self._combined_and_homogenized_dirichlet_bc = self._combine_and_homogenize_all_dirichlet_bcs()
-                
+
     def _combine_and_homogenize_all_dirichlet_bcs(self):
         if len(self.components) > 1:
             all_dirichlet_bcs = list()
@@ -274,7 +274,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             return sum(product(all_dirichlet_bcs_thetas, all_dirichlet_bcs))
         else:
             return None
-    
+
     def solve(self, **kwargs):
         """
         Perform a truth solve in case no precomputed solution is imported.
@@ -289,12 +289,12 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             self._solve(**kwargs) # will also add to cache
             delattr(self, "_is_solving")
         return self._solution
-            
+
     class ProblemSolver(object, metaclass=ABCMeta):
         def __init__(self, problem, **kwargs):
             self.problem = problem
             self.kwargs = kwargs
-            
+
         def bc_eval(self):
             problem = self.problem
             if len(problem.components) > 1:
@@ -323,23 +323,23 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 return sum(product(all_dirichlet_bcs_thetas, all_dirichlet_bcs))
             else:
                 return None
-                
+
         def monitor(self, solution):
             problem = self.problem
             problem._solution_cache[problem.mu, self.kwargs] = copy(solution)
-        
+
         @abstractmethod
         def solve(self):
             pass
-    
+
     # Perform a truth solve
     def _solve(self, **kwargs):
         problem_solver = self.ProblemSolver(self, **kwargs)
         problem_solver.solve()
-        
+
     def compute_output(self):
         """
-        
+
         :return: output evaluation.
         """
         kwargs = self._latest_solve_kwargs
@@ -352,22 +352,22 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 self._output = NotImplemented
             self._output_cache[self.mu, kwargs] = self._output
         return self._output
-        
+
     def _compute_output(self):
         """
         Perform a truth evaluation of the output. Internal method.
         """
         self._output = NotImplemented
-        
+
     def _cache_key_from_kwargs(self, **kwargs):
         for blacklist in ("components", "inner_product"):
             if blacklist in kwargs:
                 del kwargs[blacklist]
         return (self.mu, tuple(sorted(kwargs.items())))
-        
+
     def _cache_file_from_kwargs(self, **kwargs):
         return hashlib.sha1(str(self._cache_key_from_kwargs(**kwargs)).encode("utf-8")).hexdigest()
-    
+
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """
         Export solution to file.
@@ -391,7 +391,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 export(solution, folder, filename + "_" + c, suffix, c)
         else:
             raise TypeError("Invalid component in export_solution()")
-            
+
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         """
         Import solution from file.
@@ -415,7 +415,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                 import_(solution, folder, filename + "_" + c, suffix, c)
         else:
             raise TypeError("Invalid component in import_solution()")
-            
+
     def export_output(self, folder=None, filename=None, output=None, suffix=None):
         """
         Export solution to file.
@@ -430,7 +430,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert isinstance(output, list)
             assert len(output) == 1
         export(output, folder, filename + "_output", suffix)
-            
+
     def import_output(self, folder=None, filename=None, output=None, suffix=None):
         """
         Import solution from file.
@@ -450,7 +450,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert len(output) == 1
             assert isinstance(output[0], Number)
             import_(output, folder, filename + "_output", suffix)
-    
+
     @abstractmethod
     def compute_theta(self, term):
         """
@@ -474,7 +474,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                raise ValueError("Invalid term for compute_theta().")
         """
         raise NotImplementedError("The method compute_theta() is problem-specific and needs to be overridden.")
-        
+
     @abstractmethod
     def assemble_operator(self, term):
         """
@@ -496,7 +496,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                raise ValueError("Invalid term for assemble_operator().")
         """
         raise NotImplementedError("The method assemble_operator() is problem-specific and needs to be overridden.")
-        
+
     def get_stability_factor_lower_bound(self):
         """
         Return a lower bound for the stability factor

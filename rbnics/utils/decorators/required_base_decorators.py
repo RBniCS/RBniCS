@@ -23,7 +23,7 @@ def RequiredBaseDecorators(*BaseDecorators):
             AlreadyAppliedBaseDecorators = list()
             if hasattr(Class, "AlreadyAppliedBaseDecorators"):
                 AlreadyAppliedBaseDecorators.extend(Class.AlreadyAppliedBaseDecorators)
-            
+
             for BaseDecorator in BaseDecorators:
                 if (
                     BaseDecorator is not None
@@ -32,7 +32,7 @@ def RequiredBaseDecorators(*BaseDecorators):
                 ):
                     BaseClass = BaseDecorator(BaseClass)
                     AlreadyAppliedBaseDecorators.append(BaseDecorator.__name__)
-            
+
             if Decorator not in AlreadyAppliedBaseDecorators:
                 DecoratedClass = Decorator(BaseClass)
                 DecoratedClass.AlreadyAppliedBaseDecorators = list()
@@ -41,10 +41,10 @@ def RequiredBaseDecorators(*BaseDecorators):
                 return DecoratedClass
             else:
                 return BaseClass
-        
+
         # Preserve class decorator name and return
         setattr(RequiredBaseDecorators_ClassDecorator, "__name__", Decorator.__name__)
         setattr(RequiredBaseDecorators_ClassDecorator, "__module__", Decorator.__module__)
         return RequiredBaseDecorators_ClassDecorator
-        
+
     return RequiredBaseDecorators_FunctionDecorator

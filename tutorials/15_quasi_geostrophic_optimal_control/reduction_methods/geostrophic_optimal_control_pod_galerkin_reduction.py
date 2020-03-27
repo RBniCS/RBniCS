@@ -25,7 +25,7 @@ GeostrophicOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
 
 @ReductionMethodFor(GeostrophicOptimalControlProblem, "PODGalerkin")
 class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPODGalerkinReduction_Base):
-    
+
     # Compute basis functions performing POD: overridden to handle aggregated spaces
     def compute_basis_functions(self):
         # Carry out POD
@@ -39,11 +39,11 @@ class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPOD
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
             POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
-        
+
         # Store POD modes related to control as usual
         self.reduced_problem.basis_functions.enrich(basis_functions["u"], component="u")
         self.reduced_problem.N["u"] += N["u"]
-        
+
         # Aggregate POD modes related to state and adjoint
         for pair in (("ypsi", "ppsi"), ("yq", "pq")):
             for component_to in pair:
@@ -51,6 +51,6 @@ class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPOD
                     for component_from in pair:
                         self.reduced_problem.basis_functions.enrich(basis_functions[component_from][i], component={component_from: component_to})
                     self.reduced_problem.N[component_to] += 2
-        
+
         # Save
         self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")

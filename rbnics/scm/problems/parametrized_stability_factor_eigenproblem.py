@@ -33,7 +33,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         # Call the parent initialization
         ParametrizedProblem.__init__(self, folder_prefix)
         self.truth_problem = truth_problem
-        
+
         # Matrices/vectors resulting from the truth discretization
         self.expansion_index = expansion_index
         self.operator = {
@@ -43,7 +43,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         self.dirichlet_bc = None # AffineExpansionStorage
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
-        
+
         # Solution
         self._eigenvalue = 0.
         self._eigenvector = Function(truth_problem.stability_factor_V)
@@ -81,7 +81,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
             export=_eigenvector_cache_export,
             filename_generator=_eigenvector_cache_filename_generator
         )
-    
+
     def init(self):
         # Store the left and right hand side operators
         if self.operator["stability_factor_left_hand_matrix"] is None: # init was not called already
@@ -92,17 +92,17 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
             self.operator["stability_factor_right_hand_matrix"] = self.truth_problem.operator["stability_factor_right_hand_matrix"]
             assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
-            
+
         # Store Dirichlet boundary conditions
         if self.dirichlet_bc is None: # init was not called already (or raised a trivial error)
             try:
                 self.dirichlet_bc = AffineExpansionStorage(self.truth_problem.assemble_operator("stability_factor_dirichlet_bc")) # need to call assemble_operator because this special bc is not stored among the ones in self.truth_problem.dirichlet_bc
             except ValueError: # there were no Dirichlet BCs
                 self.dirichlet_bc = None
-            
+
         # Also make sure to create folder for cache
         self.folder.create()
-    
+
     def solve(self):
         cache_key = self._cache_key()
         try:
@@ -113,7 +113,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
             self._eigenvalue_cache[cache_key] = self._eigenvalue
             self._eigenvector_cache[cache_key] = copy(self._eigenvector)
         return (self._eigenvalue, self._eigenvector)
-        
+
     def _solve(self):
         assert self.operator["stability_factor_left_hand_matrix"] is not None
         if self.expansion_index is None:
@@ -124,7 +124,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         assert self.operator["stability_factor_right_hand_matrix"] is not None
         assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
         B = self.operator["stability_factor_right_hand_matrix"][0]
-        
+
         if self.dirichlet_bc is not None:
             dirichlet_bcs_sum = sum(product((0., )*len(self.dirichlet_bc), self.dirichlet_bc))
             eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B, dirichlet_bcs_sum)
@@ -136,38 +136,38 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         eigensolver_parameters.update(self.eigensolver_parameters)
         eigensolver.set_parameters(eigensolver_parameters)
         eigensolver.solve(1)
-        
+
         r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
         r_vector, c_vector = eigensolver.get_eigenvector(0) # real and complex part of the eigenvectors
-        
+
         assert isclose(c, 0.), "The required eigenvalue is not real"
-        
+
         self._eigenvalue = r
         assign(self._eigenvector, r_vector)
-        
+
     def _cache_key(self):
         if self.expansion_index is None:
             return (self.mu, self.spectrum)
         else:
             return (self.expansion_index, self.spectrum)
-            
+
     def _cache_file(self, cache_key):
         return hashlib.sha1(str(cache_key).encode("utf-8")).hexdigest()
-        
+
     def export_eigenvalue(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
             filename = "stability_factor"
         export([self._eigenvalue], folder, filename + "_eigenvalue")
-        
+
     def export_eigenvector(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
         if filename is None:
             filename = "stability_factor"
         export(self._eigenvector, folder, filename + "_eigenvector")
-        
+
     def import_eigenvalue(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix
@@ -177,7 +177,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         import_(eigenvalue_storage, folder, filename + "_eigenvalue")
         assert len(eigenvalue_storage) == 1
         self._eigenvalue = eigenvalue_storage[0]
-        
+
     def import_eigenvector(self, folder=None, filename=None):
         if folder is None:
             folder = self.folder_prefix

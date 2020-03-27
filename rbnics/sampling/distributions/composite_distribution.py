@@ -29,7 +29,7 @@ class CompositeDistribution(Distribution):
             if distribution not in self.distribution_to_components:
                 self.distribution_to_components[distribution] = list()
             self.distribution_to_components[distribution].append(p)
-        
+
     def sample(self, box, n):
         # Divide box among the different distributions
         distribution_to_sub_box = dict()

@@ -20,11 +20,11 @@ from rbnics.utils.decorators import PreserveClassName
 
 def DefineSymbolicParameters(ParametrizedDifferentialProblem_DerivedClass):
     from rbnics.backends import SymbolicParameters # cannot import at global scope
-    
+
     if not hasattr(ParametrizedDifferentialProblem_DerivedClass, "attach_symbolic_parameters"):
         @PreserveClassName
         class DefineSymbolicParameters_Class(ParametrizedDifferentialProblem_DerivedClass):
-            
+
             # Default initialization of members
             def __init__(self, V, **kwargs):
                 # Call the parent initialization
@@ -43,7 +43,7 @@ def DefineSymbolicParameters(ParametrizedDifferentialProblem_DerivedClass):
                     self.mu_float = self.mu
                     self.mu = self.mu_symbolic
                 self.attach_symbolic_parameters__calls += 1
-                
+
             def detach_symbolic_parameters(self):
                 self.attach_symbolic_parameters__calls -= 1
                 assert self.attach_symbolic_parameters__calls >= 0
@@ -53,6 +53,6 @@ def DefineSymbolicParameters(ParametrizedDifferentialProblem_DerivedClass):
                     self.mu_float = None
     else:
         DefineSymbolicParameters_Class = ParametrizedDifferentialProblem_DerivedClass
-        
+
     # return value (a class) for the decorator
     return DefineSymbolicParameters_Class

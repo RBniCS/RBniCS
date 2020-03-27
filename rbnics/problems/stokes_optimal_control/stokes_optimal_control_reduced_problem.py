@@ -24,7 +24,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
     StokesOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
 
     class StokesOptimalControlReducedProblem_Class(StokesOptimalControlReducedProblem_Base):
-        
+
         class ProblemSolver(StokesOptimalControlReducedProblem_Base.ProblemSolver):
             def matrix_eval(self):
                 problem = self.problem
@@ -39,7 +39,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                     + assembled_operator["a"] + assembled_operator["bt"] - assembled_operator["c"]
                     + assembled_operator["b"]
                 )
-                
+
             def vector_eval(self):
                 problem = self.problem
                 N = self.N
@@ -48,12 +48,12 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return (
                       assembled_operator["g"]
-                    
-                    
+
+
                     + assembled_operator["f"]
                     + assembled_operator["l"]
                 )
-                
+
             # Custom combination of boundary conditions *not* to add BCs of supremizers
             def bc_eval(self):
                 problem = self.problem
@@ -65,7 +65,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 # Restore and return
                 problem.components = components_bak
                 return bcs
-            
+
         # Perform an online evaluation of the cost functional
         def _compute_output(self, N):
             assembled_operator = dict()
@@ -85,7 +85,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 transpose(assembled_operator["g"])*self._solution +
                 0.5*assembled_operator["h"]
             )
-        
+
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
         def _online_size_from_kwargs(self, N, **kwargs):
@@ -101,7 +101,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 for component in ("v", "s", "p", "w", "r", "q"):
                     N[component] *= 2
                 return N, kwargs
-        
+
         # Internal method for error computation
         def _compute_error(self, **kwargs):
             components = ["v", "p", "u", "w", "q"] # but not supremizers
@@ -110,7 +110,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             else:
                 assert kwargs["components"] == components
             return StokesOptimalControlReducedProblem_Base._compute_error(self, **kwargs)
-            
+
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error, **kwargs):
             components = ["v", "p", "u", "w", "q"] # but not supremizers
@@ -119,7 +119,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             else:
                 assert kwargs["components"] == components
             return StokesOptimalControlReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)
-            
+
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
             if term == "bt_restricted":
@@ -142,7 +142,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 return self.projection_inner_product["r"]
             else:
                 return StokesOptimalControlReducedProblem_Base.assemble_operator(self, term, current_stage)
-                
+
         # Custom combination of inner products *not* to add inner product corresponding to supremizers
         def _combine_all_inner_products(self):
             # Temporarily change self.components
@@ -153,7 +153,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             # Restore and return
             self.components = components_bak
             return combined_inner_products
-            
+
         # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
         def _combine_all_projection_inner_products(self):
             # Temporarily change self.components
@@ -164,6 +164,6 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             # Restore and return
             self.components = components_bak
             return combined_projection_inner_products
-        
+
     # return value (a class) for the decorator
     return StokesOptimalControlReducedProblem_Class

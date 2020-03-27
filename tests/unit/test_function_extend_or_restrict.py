@@ -33,12 +33,12 @@ def ScalarSpaces(mesh):
     V = FunctionSpace(mesh, "Lagrange", 2)
     W = V
     return (V, W)
-    
+
 def ScalarFunction(V):
     u = Function(V)
     u.vector()[:] = 1.
     return u
-    
+
 def test_scalar_1(mesh):
     (V, W) = ScalarSpaces(mesh)
     u = ScalarFunction(V)
@@ -67,7 +67,7 @@ def VectorSpaces(mesh):
     V = VectorFunctionSpace(mesh, "Lagrange", 2)
     W = V
     return (V, W)
-    
+
 def VectorFunction(V):
     u = Function(V)
     u.vector()[:] = 1.
@@ -104,7 +104,7 @@ def MixedSpacesExtensionAutomatic(mesh):
     V = FunctionSpace(mesh, element_0)
     W = FunctionSpace(mesh, element)
     return (V, W)
-    
+
 def MixedFunctionExtensionAutomatic(V):
     s = Function(V)
     s.vector()[:] = 1.
@@ -116,7 +116,7 @@ def test_mixed_function_extension_automatic_1_fail(mesh):
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(s, None, W, None, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extend functions without copying the vector"
-    
+
 def test_mixed_function_extension_automatic_2_copy(mesh):
     (V, W) = MixedSpacesExtensionAutomatic(mesh)
     s = MixedFunctionExtensionAutomatic(V)
@@ -143,7 +143,7 @@ def MixedSpacesExtensionAmbiguous(mesh):
     V = FunctionSpace(mesh, element_0)
     W = FunctionSpace(mesh, element)
     return (V, W)
-    
+
 def MixedFunctionExtensionAmbiguous(V):
     s = Function(V)
     s.vector()[:] = 1.
@@ -155,7 +155,7 @@ def test_mixed_function_extension_ambiguous_1_fail(mesh):
     with pytest.raises(RuntimeError) as excinfo:
         function_extend_or_restrict(s, None, W, None, weight=None, copy=False)
     assert str(excinfo.value) == "Ambiguity when querying _function_spaces_lt"
-    
+
 # ~~~ Mixed case: extension, non ambiguous vector element ~~~ #
 def MixedSpacesExtensionNonAmbiguousVectorElement(mesh):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 1)
@@ -164,7 +164,7 @@ def MixedSpacesExtensionNonAmbiguousVectorElement(mesh):
     V = FunctionSpace(mesh, element_0)
     W = FunctionSpace(mesh, element)
     return (V, W)
-    
+
 def MixedFunctionExtensionNonAmbiguousVectorElement(V):
     s = Function(V)
     s.vector()[:] = 1.
@@ -176,7 +176,7 @@ def test_mixed_function_extension_non_ambiguous_vector_element_1_fail(mesh):
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(s, None, W, 0, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_extension_non_ambiguous_vector_element_2_copy(mesh):
     (V, W) = MixedSpacesExtensionNonAmbiguousVectorElement(mesh)
     s = MixedFunctionExtensionNonAmbiguousVectorElement(V)
@@ -203,7 +203,7 @@ def MixedSpacesExtensionSolveAmbiguityWithComponents(mesh):
     V = FunctionSpace(mesh, element_0)
     W = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
     return (V, W)
-    
+
 def MixedFunctionExtensionSolveAmbiguityWithComponents(V):
     s = Function(V)
     s.vector()[:] = 1.
@@ -215,7 +215,7 @@ def test_mixed_function_extension_solve_ambiguity_with_components_1_fail(mesh):
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(s, None, W, "s", weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_extension_solve_ambiguity_with_components_2_copy(mesh):
     (V, W) = MixedSpacesExtensionSolveAmbiguityWithComponents(mesh)
     s = MixedFunctionExtensionSolveAmbiguityWithComponents(V)
@@ -243,7 +243,7 @@ def MixedSpacesExtensionFromSubElementAmbiguous(mesh):
     V = FunctionSpace(mesh, element_00)
     W = FunctionSpace(mesh, element)
     return (V, W)
-    
+
 def MixedFunctionExtensionFromSubElementAmbiguous(V):
     s = Function(V)
     s.vector()[:] = 1.
@@ -255,7 +255,7 @@ def test_mixed_function_extension_from_sub_element_ambiguous_1_fail(mesh):
     with pytest.raises(RuntimeError) as excinfo:
         function_extend_or_restrict(s, None, W, None, weight=None, copy=False)
     assert str(excinfo.value) == "Ambiguity when querying _function_spaces_lt"
-    
+
 # ~~~ Mixed case: extension from sub element, avoid ambiguity thanks to user provided input components ~~~ #
 def MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, components):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 1)
@@ -281,7 +281,7 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(s, None, W, (0, 0), weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_components_tuple_2_copy(mesh):
     (V, W) = MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, tuple)
     s = MixedFunctionExtensionFromSubElementSolveAmbiguityWithComponents(V)
@@ -310,7 +310,7 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(s, None, W, "ux", weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_components_str_2_copy(mesh):
     (V, W) = MixedSpacesExtensionFromSubElementSolveAmbiguityWithComponents(mesh, str)
     s = MixedFunctionExtensionFromSubElementSolveAmbiguityWithComponents(V)
@@ -332,7 +332,7 @@ def test_mixed_function_extension_from_sub_element_solve_ambiguity_with_componen
     assert isclose(ux.vector().get_local(), 2.).all()
     assert isclose(uy.vector().get_local(), 0.).all()
     assert isclose(p.vector().get_local(), 0.).all()
-    
+
 # ~~~ Mixed case: restriction, automatic detection of components ~~~ #
 def MixedSpacesRestrictionAutomatic(mesh, sub_element):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)
@@ -345,7 +345,7 @@ def MixedSpacesRestrictionAutomatic(mesh, sub_element):
     elif sub_element == 1:
         W = FunctionSpace(mesh, element_1)
     return (V, W)
-    
+
 def MixedFunctionRestrictionAutomatic(V):
     up = Function(V)
     assign(up.sub(0), project(Constant((1., 1.)), V.sub(0).collapse()))
@@ -402,7 +402,7 @@ def MixedSpacesRestrictionAmbiguous(mesh):
     V = FunctionSpace(mesh, element)
     W = FunctionSpace(mesh, element_0)
     return (V, W)
-    
+
 def MixedFunctionRestrictionAmbiguous(V):
     up = Function(V)
     assign(up.sub(0), project(Constant((1., 1.)), V.sub(0).collapse()))
@@ -428,7 +428,7 @@ def MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, sub_element):
     elif sub_element == 1:
         W = FunctionSpace(mesh, element_1)
     return (V, W)
-    
+
 def MixedFunctionRestrictionSolveAmbiguityWithComponents(V):
     up = Function(V)
     assign(up.sub(0), project(Constant((1., 1.)), V.sub(0).collapse()))
@@ -462,7 +462,7 @@ def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_el
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(up, "u", W, None, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_restriction_solve_ambiguity_with_components_first_sub_element_5_str_copy(mesh):
     (V, W) = MixedSpacesRestrictionSolveAmbiguityWithComponents(mesh, 0)
     up = MixedFunctionRestrictionSolveAmbiguityWithComponents(V)
@@ -507,7 +507,7 @@ def MixedSpacesRestrictionToSubElementAmbiguous(mesh):
     V = FunctionSpace(mesh, element)
     W = FunctionSpace(mesh, element_00)
     return (V, W)
-    
+
 def MixedFunctionRestrictionToSubElementAmbiguous(V):
     up = Function(V)
     assign(up.sub(0).sub(0), project(Constant(1.), V.sub(0).sub(0).collapse()))
@@ -545,7 +545,7 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(up, (0, 0), W, None, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_2_tuple_x_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
@@ -559,14 +559,14 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     ux = function_extend_or_restrict(up, (0, 0), W, None, weight=2., copy=True)
     assert ux.vector().size() == W.dim()
     assert isclose(ux.vector().get_local(), 2.).all()
-    
+
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_4_tuple_y_fail(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(up, (0, 1), W, None, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_5_tuple_y_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
@@ -587,7 +587,7 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(up, "ux", W, None, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_2_str_x_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
@@ -601,14 +601,14 @@ def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_componen
     ux = function_extend_or_restrict(up, "ux", W, None, weight=2., copy=True)
     assert ux.vector().size() == W.dim()
     assert isclose(ux.vector().get_local(), 2.).all()
-    
+
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_4_str_y_fail(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
     with pytest.raises(AssertionError) as excinfo:
         function_extend_or_restrict(up, "uy", W, None, weight=None, copy=False)
     assert str(excinfo.value) == "It is not possible to extract function components without copying the vector"
-    
+
 def test_mixed_function_restriction_to_sub_element_solve_ambiguity_with_components_5_str_y_copy(mesh):
     (V, W) = MixedSpacesRestrictionToSubElementSolveAmbiguityWithComponents(mesh)
     up = MixedFunctionRestrictionToSubElementSolveAmbiguityWithComponents(V)
@@ -631,7 +631,7 @@ def MixedToMixedSpacesCopyComponentToSameLocation(mesh):
     V = FunctionSpace(mesh, element, components=["ux", "uy"])
     W = V
     return (V, W)
-    
+
 def MixedToMixedFunctionCopyComponentToSameLocation(V):
     u = Function(V)
     assign(u.sub(0), project(Constant(1.), V.sub(0).collapse()))
@@ -696,7 +696,7 @@ def MixedToMixedSpacesCopyComponentToDifferentLocation(mesh):
     V = FunctionSpace(mesh, element, components=["ux", "uy"])
     W = V
     return (V, W)
-    
+
 def MixedToMixedFunctionCopyComponentToDifferentLocation(V):
     u = Function(V)
     assign(u.sub(0), project(Constant(1.), V.sub(0).collapse()))
@@ -761,7 +761,7 @@ def MixedToMixedSpacesCopySubComponentToSameLocation(mesh):
     V = FunctionSpace(mesh, element, components=[("uxx", "uxy"), ("uyx", "uyy")])
     W = V
     return (V, W)
-    
+
 def MixedToMixedFunctionCopySubComponentToSameLocation(V):
     u = Function(V)
     assign(u.sub(0), project(Constant((1., 2.)), V.sub(0).collapse()))
@@ -842,7 +842,7 @@ def MixedToMixedSpacesCopySubComponentToDifferentLocation(mesh):
     V = FunctionSpace(mesh, element, components=[("uxx", "uxy"), ("uyx", "uyy")])
     W = V
     return (V, W)
-    
+
 def MixedToMixedFunctionCopySubComponentToDifferentLocation(V):
     u = Function(V)
     assign(u.sub(0), project(Constant((1., 2.)), V.sub(0).collapse()))

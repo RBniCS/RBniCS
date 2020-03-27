@@ -24,7 +24,7 @@ def slice_to_array(obj, key, length_dict, index_dict):
     key = _check_key(obj, key)
     length_dict = _check_length_dict(key, length_dict)
     index_dict = _check_index_dict(key, index_dict)
-    
+
     slices_start = list()
     slices_stop = list()
     for (slice_index, slice_) in enumerate(key):
@@ -52,7 +52,7 @@ def slice_to_array(obj, key, length_dict, index_dict):
             assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)
             slices_stop.append(current_slice_stop)
-            
+
     slices = list()
     assert len(slices_start) == len(slices_stop)
     for (current_slice_start, current_slice_stop) in zip(slices_start, slices_stop):
@@ -64,13 +64,13 @@ def slice_to_array(obj, key, length_dict, index_dict):
             for (current_slice_start_component, current_slice_stop_component) in zip(current_slice_start, current_slice_stop):
                 current_slice.extend(list(range(current_slice_start_component, current_slice_stop_component)))
             slices.append(tuple(current_slice))
-    
+
     assert len(slices) > 0
     if len(slices) == 1:
         return slices[0]
     else:
         return tuple(slices)
-    
+
 def _check_key(obj, key):
     if not isinstance(key, tuple):
         key = (key,)
@@ -112,7 +112,7 @@ def _check_key(obj, key):
         converted_slice = slice(start, stop, step)
         converted_key.append(converted_slice)
     return converted_key
-    
+
 _slice_shape_attribute = {
     1: {
         0: "N",
@@ -122,7 +122,7 @@ _slice_shape_attribute = {
         1: "N"
     }
 }
-    
+
 def _check_length_dict(key, length_dict):
     if length_dict is None:
         length_dict = (None, )*len(key)
@@ -132,7 +132,7 @@ def _check_length_dict(key, length_dict):
     assert all([isinstance(length_dict_i, OnlineSizeDict) or length_dict_i is None for length_dict_i in length_dict])
     assert len(key) == len(length_dict)
     return length_dict
-    
+
 def _check_index_dict(key, index_dict):
     if index_dict is None:
         index_dict = (None, )*len(key)

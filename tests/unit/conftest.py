@@ -24,7 +24,7 @@ def pytest_collection_modifyitems(session, config, items):
     # Deselect first using markers
     from _pytest.mark import pytest_collection_modifyitems as pytest_collection_modifyitems_from_marks # cannot import globally
     pytest_collection_modifyitems_from_marks(items, config)
-    
+
     # Separated parametrized forms tests require clean UFL and DOLFIN counters ...
     deselect_separated_parametrized_forms = False
     if any([item.name.startswith("test_separated_parametrized_forms") for item in items]):
@@ -52,7 +52,7 @@ def pytest_collection_modifyitems(session, config, items):
                 selected_items.append(item)
         config.hook.pytest_deselected(items=deselected_items)
         items[:] = selected_items
-        
+
     # IO tests are split in "save", "load" and "io" (that saves and load at the same time) in order to
     # possibly use different number of mpi processes at saving and loading time. If the "io" one is enabled,
     # than disable the "save" and "load" ones.
@@ -70,7 +70,7 @@ def pytest_collection_modifyitems(session, config, items):
                     selected_items.append(item)
             config.hook.pytest_deselected(items=deselected_items)
             items[:] = selected_items
-            
+
     # Some tests open by default plots using matplotlib. Disable interactive plots
     # unless only those specific tests were enabled
     for test_matplotlib_prefixes in (
@@ -85,14 +85,14 @@ def pytest_collection_modifyitems(session, config, items):
                     item._runtest_setup_function = disable_matplotlib
                     assert not hasattr(item, "_runtest_teardown_function")
                     item._runtest_teardown_function = enable_matplotlib
-            
+
 def pytest_runtest_setup(item):
     # Do the normal setup
     item.setup()
     # Carry out additional setup
     if hasattr(item, "_runtest_setup_function"):
         item._runtest_setup_function()
-        
+
 def pytest_runtest_teardown(item, nextitem):
     # Carry out additional teardown
     if hasattr(item, "_runtest_teardown_function"):

@@ -22,7 +22,7 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(LinearProblem, TimeDependentProblem)
 def LinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
-    
+
     @PreserveClassName
     class LinearTimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         def __init__(self, V, **kwargs):
@@ -30,6 +30,6 @@ def LinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             # Set the problem type in time stepping parameters
             self._time_stepping_parameters["problem_type"] = "linear"
-            
+
     # return value (a class) for the decorator
     return LinearTimeDependentProblem_Class

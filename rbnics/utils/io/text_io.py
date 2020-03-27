@@ -29,7 +29,7 @@ class TextIO(object):
             with open(os.path.join(str(directory), filename), "w") as outfile:
                 outfile.write(repr(content))
         parallel_io(save_file_task)
-                
+
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename, globals=None):
@@ -40,7 +40,7 @@ class TextIO(object):
         globals.update({"__builtins__": None})
         with open(os.path.join(str(directory), filename), "r") as infile:
             return eval(infile.read(), globals, {})
-            
+
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):

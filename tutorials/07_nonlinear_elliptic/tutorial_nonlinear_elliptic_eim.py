@@ -22,7 +22,7 @@ from rbnics import *
 @EIM("online")
 @ExactParametrizedFunctions("offline")
 class NonlinearElliptic(NonlinearEllipticProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -44,11 +44,11 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             "maximum_iterations": 20,
             "report": True
         })
-        
+
     # Return custom problem name
     def name(self):
         return "NonlinearEllipticEIM"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivatives
     def compute_theta(self, term):
@@ -64,7 +64,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             return (theta_f0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -108,7 +108,7 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
                 "report": True,
                 "line_search": "wolfe"
             })
-            
+
     return ReducedNonlinearElliptic
 
 # 1. Read the mesh for this problem

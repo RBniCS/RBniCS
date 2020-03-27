@@ -79,7 +79,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole():
     assert len(shape_parametrization_expression[7]) == 2
     assert symbolic_equal(shape_parametrization_expression[7][X], "2*mu[0] - 2 + x[0] + (1 - mu[0])*x[1]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "2*mu[1] - 2 + (2 - mu[1])*x[1]", x, mu)
-    
+
 # Test affine shape parametrization for tutorial 03 rotation
 def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
     vertices_mappings = [
@@ -162,7 +162,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
     assert len(shape_parametrization_expression[7]) == 2
     assert symbolic_equal(shape_parametrization_expression[7][X], "2*sqrt(2.0)*cos(mu[0]) + x[0] + x[1]*(-sqrt(2.0)*cos(mu[0]) + 1) - 2", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "2*sqrt(2.0)*sin(mu[0]) + x[1]*(-sqrt(2.0)*sin(mu[0]) + 2) - 2", x, mu)
-    
+
 # Test affine shape parametrization for tutorial 04
 def test_affine_shape_parametrization_from_vertices_mapping_graetz():
     vertices_mappings = [
@@ -209,7 +209,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_graetz():
     assert len(shape_parametrization_expression[3]) == 2
     assert symbolic_equal(shape_parametrization_expression[3][X], "mu[0]*(x[0] - 1) + 1", x, mu)
     assert symbolic_equal(shape_parametrization_expression[3][Y], "x[1]", x, mu)
-    
+
 # Test affine shape parametrization for tutorial 12
 def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     filename = "vertices_mapping_stokes"
@@ -253,7 +253,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_stokes():
     assert len(shape_parametrization_expression[7]) == 2
     assert symbolic_equal(shape_parametrization_expression[7][X], "mu[1]*x[0]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[7][Y], "mu[2]*x[1]", x, mu)
-    
+
 # Test affine shape parametrization for tutorial 17
 def test_affine_shape_parametrization_from_vertices_mapping_navier_stokes():
     vertices_mappings = [
@@ -300,7 +300,7 @@ def test_affine_shape_parametrization_from_vertices_mapping_navier_stokes():
     assert len(shape_parametrization_expression[3]) == 2
     assert symbolic_equal(shape_parametrization_expression[3][X], "x[0]", x, mu)
     assert symbolic_equal(shape_parametrization_expression[3][Y], "0.5*mu[1]*x[1] - 1.0*mu[1]+ 2.0", x, mu)
-    
+
 # Test affine shape parametrization for stokes optimal dirichlet boundary control
 def test_affine_shape_parametrization_from_vertices_mapping_stokes_optimal_dirichlet_boundary_control():
     vertices_mappings = [

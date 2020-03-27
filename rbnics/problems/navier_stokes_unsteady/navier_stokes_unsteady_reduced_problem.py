@@ -24,7 +24,7 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
     NavierStokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(NonlinearTimeDependentReducedProblem(NavierStokesReducedProblem_DerivedClass))
 
     class NavierStokesUnsteadyReducedProblem_Class(NavierStokesUnsteadyReducedProblem_Base):
-            
+
         class ProblemSolver(NavierStokesUnsteadyReducedProblem_Base.ProblemSolver):
             def residual_eval(self, t, solution, solution_dot):
                 problem = self.problem
@@ -44,7 +44,7 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                     + assembled_operator["c"]
                     - assembled_operator["f"] - assembled_operator["g"]
                 )
-                
+
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
                 N = self.N
@@ -56,6 +56,6 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                     + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                     + assembled_operator["dc"]
                 )
-        
+
     # return value (a class) for the decorator
     return NavierStokesUnsteadyReducedProblem_Class

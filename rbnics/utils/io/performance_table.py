@@ -24,11 +24,11 @@ from rbnics.utils.io.csv_io import CSVIO
 from rbnics.utils.io.folders import Folders
 
 class PerformanceTable(object):
-    
+
     # Storage for class methods
     _suppressed_groups = list()
     _preprocessor_setitem = dict()
-    
+
     def __init__(self, testing_set):
         self._columns = dict() # string to Content matrix
         self._columns_operations = dict() # string to tuple
@@ -39,13 +39,13 @@ class PerformanceTable(object):
         self._len_testing_set = len(testing_set)
         self._Nmin = 1
         self._Nmax = 0
-        
+
     def set_Nmin(self, Nmin):
         self._Nmin = Nmin
-        
+
     def set_Nmax(self, Nmax):
         self._Nmax = Nmax
-            
+
     def add_column(self, column_name, group_name, operations):
         assert self._Nmax > 0
         assert self._Nmax >= self._Nmin
@@ -63,23 +63,23 @@ class PerformanceTable(object):
             self._columns_operations[column_name] = operations
         else:
             raise ValueError("Invalid operation in PerformanceTable")
-    
+
     @classmethod
     def suppress_group(cls, group_name):
         cls._suppressed_groups.append(group_name)
-        
+
     @classmethod
     def clear_suppressed_groups(cls):
         cls._suppressed_groups = list()
-        
+
     @classmethod
     def preprocess_setitem(cls, group_name, function):
         cls._preprocessor_setitem[group_name] = function
-        
+
     @classmethod
     def clear_setitem_preprocessing(cls):
         cls._preprocessor_setitem.clear()
-    
+
     def __getitem__(self, args):
         assert len(args) == 3
         column_name = args[0]
@@ -95,7 +95,7 @@ class PerformanceTable(object):
             return self._columns[column_name][N - self._Nmin, mu_index]
         else:
             return CustomNotImplementedAfterDiv
-        
+
     def __setitem__(self, args, value):
         assert len(args) == 3
         column_name = args[0]
@@ -119,7 +119,7 @@ class PerformanceTable(object):
                 self._columns[column_name][N - self._Nmin, mu_index] = value
             else:
                 self._columns[column_name][N - self._Nmin, mu_index] = self._preprocessor_setitem[column_name](value)
-            
+
     def _process(self):
         groups_content = collections.OrderedDict()
         for group in self._group_names_sorted:
@@ -185,7 +185,7 @@ class PerformanceTable(object):
             assert group not in groups_content
             groups_content[group] = (table_index, table_header, table_content, column_size)
         return groups_content
-        
+
     def __str__(self):
         groups_content = self._process()
         output = ""
@@ -213,7 +213,7 @@ class PerformanceTable(object):
                     output += formatter.format(*current_line, **column_size) + "\n"
             output += "\n"
         return output[:-2] # remove the last two newlines
-        
+
     def save(self, directory, filename):
         full_directory = Folders.Folder(os.path.join(str(directory), filename))
         full_directory.create()
@@ -231,16 +231,16 @@ class PerformanceTable(object):
                     current_file.append([table_content[t][n - self._Nmin] for t in table_index])
             # Save
             CSVIO.save_file(current_file, full_directory, group)
-    
+
     def load(self, directory, filename):
         raise RuntimeError("PerformanceTable.load has not been implemented yet")
-        
-        
+
+
 class CustomNotImplementedType(object):
     def __init__(self):
         pass
 CustomNotImplemented = CustomNotImplementedType()
-        
+
 def is_not_implemented(value):
     if value is NotImplemented:
         return True
@@ -252,17 +252,17 @@ def is_not_implemented(value):
         return each_is_not_implemented[0]
     else:
         return False
-        
+
 class CustomNotImplementedAfterDivType(CustomNotImplementedType):
     def __init__(self):
         pass
-    
+
     def __truediv__(self, other):
         return CustomNotImplemented
-        
+
     def __rtruediv__(self, other):
         return CustomNotImplemented
-        
+
     def __itruediv__(self, other):
         return CustomNotImplemented
 CustomNotImplementedAfterDiv = CustomNotImplementedAfterDivType()

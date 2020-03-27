@@ -22,7 +22,7 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 class TimeQuadrature(object, metaclass=ABCMeta):
     def __init__(self, time_interval, function_over_time):
         pass
-    
+
     @abstractmethod
     def integrate(self):
         pass

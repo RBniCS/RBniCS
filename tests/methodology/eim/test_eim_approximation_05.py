@@ -34,12 +34,12 @@ def test_eim_approximation_05(expression_type, basis_generation):
     * EIM: not applicable.
     * DEIM: several parametrized expressions are combined when defining forms.
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_05_" + expression_type + "_" + basis_generation
 

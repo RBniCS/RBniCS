@@ -22,11 +22,11 @@ from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFo
 
 @ReducedProblemDecoratorFor(ExactStabilityFactor)
 def ExactStabilityFactorDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     @DecoratedReducedProblemWithStabilityFactorEvaluation
     @PreserveClassName
     class ExactStabilityFactorDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
         pass
-        
+
     # return value (a class) for the decorator
     return ExactStabilityFactorDecoratedReducedProblem_Class

@@ -22,7 +22,7 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(NonlinearProblem, TimeDependentProblem)
 def NonlinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
-    
+
     @PreserveClassName
     class NonlinearTimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
         def __init__(self, V, **kwargs):
@@ -30,6 +30,6 @@ def NonlinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
             # Set the problem type in time stepping parameters
             self._time_stepping_parameters["problem_type"] = "nonlinear"
-            
+
     # return value (a class) for the decorator
     return NonlinearTimeDependentProblem_Class

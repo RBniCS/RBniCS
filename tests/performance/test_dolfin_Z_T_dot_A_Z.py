@@ -37,7 +37,7 @@ class Data(object):
         u = TrialFunction(self.V)
         v = TestFunction(self.V)
         self.a = lambda k: k*inner(grad(u), grad(v))*dx
-        
+
     def generate_random(self):
         # Generate random vectors
         Z = BasisFunctionsMatrix(self.V)
@@ -50,7 +50,7 @@ class Data(object):
         A = assemble(self.a(k))
         # Return
         return (Z, A)
-        
+
     def evaluate_builtin(self, Z, A):
         result_builtin = NumpyMatrix({"u": self.N}, {"u": self.N})
         for j in range(self.N):
@@ -58,10 +58,10 @@ class Data(object):
             for i in range(self.N):
                 result_builtin[i, j] = Z[i].vector().inner(A_Z_j)
         return result_builtin
-        
+
     def evaluate_backend(self, Z, A):
         return transpose(Z)*A*Z
-        
+
     def assert_backend(self, Z, A, result_backend):
         result_builtin = self.evaluate_builtin(Z, A)
         relative_error = norm(result_builtin - result_backend)/norm(result_builtin)

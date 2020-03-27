@@ -36,7 +36,7 @@ def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, r
         out = to_petsc4py(output_function.vector())
         _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list)
         return output_function
-    
+
 def _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list):
     vec_row_start, vec_row_end = vec.getOwnershipRange()
     out_row_start, out_row_end = out.getOwnershipRange()

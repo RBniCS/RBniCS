@@ -90,7 +90,7 @@ def basic_expression_name(backend, wrapping):
             str_repr = str_repr.replace(key, value)
         hash_code = hashlib.sha1(str_repr.encode("utf-8")).hexdigest()
         return hash_code
-    
+
     return _basic_expression_name
 
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator

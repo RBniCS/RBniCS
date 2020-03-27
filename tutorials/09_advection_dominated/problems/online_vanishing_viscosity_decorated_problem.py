@@ -20,7 +20,7 @@ from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
 def OnlineVanishingViscosityDecoratedProblem(viscosity, N_threshold_min, N_threshold_max, **decorator_kwargs):
     from .online_vanishing_viscosity import OnlineVanishingViscosity
-    
+
     @ProblemDecoratorFor(
         OnlineVanishingViscosity,
         viscosity=viscosity,
@@ -28,10 +28,10 @@ def OnlineVanishingViscosityDecoratedProblem(viscosity, N_threshold_min, N_thres
         N_threshold_max=N_threshold_max
     )
     def OnlineVanishingViscosityDecoratedProblem_Decorator(EllipticCoerciveProblem_DerivedClass):
-        
+
         @PreserveClassName
         class OnlineVanishingViscosityDecoratedProblem_Class(EllipticCoerciveProblem_DerivedClass):
-            
+
             def __init__(self, V, **kwargs):
                 # Store input parameters from the decorator factory
                 self._viscosity = viscosity
@@ -47,9 +47,9 @@ def OnlineVanishingViscosityDecoratedProblem(viscosity, N_threshold_min, N_thres
                 self.stabilized = True
                 # Call to parent
                 EllipticCoerciveProblem_DerivedClass.__init__(self, V, **kwargs)
-                        
+
         # return value (a class) for the decorator
         return OnlineVanishingViscosityDecoratedProblem_Class
-    
+
     # return the decorator itself
     return OnlineVanishingViscosityDecoratedProblem_Decorator

@@ -74,7 +74,7 @@ class Replacer(MultiFunction):
             return o
         else:
             return e
-            
+
     def indexed(self, o, *dops):
         if o in self._mapping:
             return self._mapping[o]
@@ -86,7 +86,7 @@ class Replacer(MultiFunction):
             else:
                 replaced_ufl_operand_0 = map_integrand_dags(self, dops[0])
             return Indexed(replaced_ufl_operand_0, dops[1])
-    
+
     def list_tensor(self, o, *dops):
         assert o not in self._mapping
         replaced_ufl_operands = list()
@@ -96,7 +96,7 @@ class Replacer(MultiFunction):
             else:
                 replaced_ufl_operands.append(map_integrand_dags(self, ufl_operand))
         return ListTensor(*replaced_ufl_operands)
-        
+
     def component_tensor(self, o, *dops):
         assert o not in self._mapping
         assert len(dops) == 2
@@ -109,7 +109,7 @@ class Replacer(MultiFunction):
 
     def coefficient_derivative(self, o):
         error("Derivatives should be applied before executing replace.")
-        
+
 def replace(e, mapping):
     """Replace objects in expression.
 
@@ -119,8 +119,8 @@ def replace(e, mapping):
         A dict with from:to replacements to perform.
     """
     mapping2 = dict((k, as_ufl(v)) for (k, v) in mapping.items())
-    
+
     # We have expanded derivative evaluation in ParametrizedTensorFactory
     assert not has_exact_type(e, CoefficientDerivative)
-    
+
     return map_integrand_dags(Replacer(mapping2), e)

@@ -41,13 +41,13 @@ def add_gold_options(parser, subdirectory):
         else:
             data_dir_default = "git@gitlab.com:RBniCS-test-data/" + subdirectory + ".git"
         parser.addoption("--data-dir", action="store", default=data_dir_default)
-        
+
 def add_performance_options(parser):
     available_options = [name for opt in parser._anonymous.options for name in opt.names()]
     # Comparison to previous performance tests
     if "--overhead-speedup-storage" not in available_options:
         parser.addoption("--overhead-speedup-storage", action="store", default=".benchmarks")
-        
+
 def process_gold_options(config):
     if config.option.action is not None:
         if config.option.data_dir.startswith("git@gitlab.com:RBniCS-test-data"):

@@ -42,5 +42,5 @@ def _ReducedProblemGenerator(ReducedProblem):
     def _ReducedProblemGenerator_Function(truth_problem, reduction_method, **kwargs):
         return ReducedProblem
     return _ReducedProblemGenerator_Function
-    
+
 _cache = types.ModuleType("reduced problems", "Storage for reduced problems")

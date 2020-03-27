@@ -27,7 +27,7 @@ class Data(object):
         self.N = N
         mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
-        
+
     def generate_random(self):
         # Generate random vectors
         Z = BasisFunctionsMatrix(self.V)
@@ -38,17 +38,17 @@ class Data(object):
         uN = RandomNumpyVector(self.N)
         # Return
         return (Z, uN)
-        
+
     def evaluate_builtin(self, Z, uN):
         result_builtin = uN[0]*Z[0].vector()
         for i in range(1, self.N):
             result_builtin.add_local(uN[i]*Z[i].vector().get_local())
         result_builtin.apply("add")
         return result_builtin
-        
+
     def evaluate_backend(self, Z, uN):
         return (Z*uN).vector()
-        
+
     def assert_backend(self, Z, uN, result_backend):
         result_builtin = self.evaluate_builtin(Z, uN)
         relative_error = (result_builtin - result_backend).norm("l2")/result_builtin.norm("l2")

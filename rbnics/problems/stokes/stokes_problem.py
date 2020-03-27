@@ -25,12 +25,12 @@ StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
 # Base class containing the definition of saddle point problems
 class StokesProblem(StokesProblem_Base):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         StokesProblem_Base.__init__(self, V, **kwargs)
-        
+
         # Form names for saddle point problems
         self.terms = [
             "a", "b", "bt", "f", "g",
@@ -43,7 +43,7 @@ class StokesProblem(StokesProblem_Base):
             "bt_restricted": 2
         }
         self.components = ["u", "s", "p"]
-        
+
         # Auxiliary storage for supremizer enrichment, using a subspace of V
         self._supremizer = Function(V, "s")
         # I/O
@@ -68,7 +68,7 @@ class StokesProblem(StokesProblem_Base):
             export=_supremizer_cache_export,
             filename_generator=_supremizer_cache_filename_generator
         )
-        
+
     class ProblemSolver(StokesProblem_Base.ProblemSolver):
         def matrix_eval(self):
             problem = self.problem
@@ -76,14 +76,14 @@ class StokesProblem(StokesProblem_Base):
             for term in ("a", "b", "bt"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
-            
+
         def vector_eval(self):
             problem = self.problem
             assembled_operator = dict()
             for term in ("f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return assembled_operator["f"] + assembled_operator["g"]
-        
+
         # Custom combination of boundary conditions *not* to add BCs of supremizers
         def bc_eval(self):
             problem = self.problem
@@ -95,7 +95,7 @@ class StokesProblem(StokesProblem_Base):
             # Restore and return
             problem.components = components_bak
             return bcs
-    
+
     def solve_supremizer(self, solution):
         kwargs = self._latest_solve_kwargs
         try:
@@ -104,7 +104,7 @@ class StokesProblem(StokesProblem_Base):
             self._solve_supremizer(solution)
             self._supremizer_cache[self.mu, kwargs] = copy(self._supremizer)
         return self._supremizer
-    
+
     def _solve_supremizer(self, solution):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
@@ -122,13 +122,13 @@ class StokesProblem(StokesProblem_Base):
         )
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
-        
+
     def _supremizer_cache_key_from_kwargs(self, **kwargs):
         return self._cache_key_from_kwargs(**kwargs)
-        
+
     def _supremizer_cache_file_from_kwargs(self, **kwargs):
         return hashlib.sha1(str(self._supremizer_cache_key_from_kwargs(**kwargs)).encode("utf-8")).hexdigest()
-        
+
     def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         if folder is None:
             folder = self.folder_prefix
@@ -140,7 +140,7 @@ class StokesProblem(StokesProblem_Base):
         if component is None:
             component = "s"
         self.export_solution(folder, filename, supremizer, component=component, suffix=suffix)
-        
+
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         if folder is None:
             folder = self.folder_prefix
@@ -152,18 +152,18 @@ class StokesProblem(StokesProblem_Base):
         if component is None:
             component = "s"
         self.import_solution(folder, filename, supremizer, component=component, suffix=suffix)
-        
+
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
         StokesProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
-        
+
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["u", "p"] # but not "s"
         StokesProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
-        
+
     # Custom combination of inner products *not* to add inner product corresponding to supremizers
     def _combine_all_inner_products(self):
         # Temporarily change self.components
@@ -174,7 +174,7 @@ class StokesProblem(StokesProblem_Base):
         # Restore and return
         self.components = components_bak
         return combined_inner_products
-        
+
     # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
     def _combine_all_projection_inner_products(self):
         # Temporarily change self.components
@@ -185,7 +185,7 @@ class StokesProblem(StokesProblem_Base):
         # Restore and return
         self.components = components_bak
         return combined_projection_inner_products
-        
+
     # Custom combination of Dirichlet BCs *not* to add BCs corresponding to supremizers
     def _combine_and_homogenize_all_dirichlet_bcs(self):
         # Temporarily change self.components

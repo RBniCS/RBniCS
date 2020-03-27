@@ -25,16 +25,16 @@ def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedCla
     AbstractParabolicRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(AbstractParabolicReducedProblem_DerivedClass)
 
     class AbstractParabolicRBReducedProblem_Class(AbstractParabolicRBReducedProblem_Base):
-        
+
         # Default initialization of members.
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             AbstractParabolicRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
-            
+
             # Skip useless Riesz products
             self.riesz_terms.append("m")
             self.error_estimation_terms.extend([("m", "f"), ("m", "a"), ("m", "m")])
-            
+
         # Return an error bound for the current solution
         def estimate_error(self):
             eps2_over_time = self.get_residual_norm_squared()
@@ -53,15 +53,15 @@ def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedCla
                     error_bound_over_time.append(sqrt(abs(initial_error_estimate_squared)))
             #
             return error_bound_over_time
-            
+
         # Return an error bound for the current solution
         def estimate_relative_error(self):
             return NotImplemented
-        
+
         # Return an error bound for the current output
         def estimate_error_output(self):
             return NotImplemented
-            
+
         # Return a relative error bound for the current output
         def estimate_relative_error_output(self):
             return NotImplemented
@@ -95,6 +95,6 @@ def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedCla
                     # Error estimator on initial condition does not use the residual
                     residual_norm_squared_over_time.append(0.)
             return residual_norm_squared_over_time
-            
+
     # return value (a class) for the decorator
     return AbstractParabolicRBReducedProblem_Class

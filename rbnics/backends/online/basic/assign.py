@@ -62,13 +62,13 @@ def assign(backend):
                     assert object_to.vector().N == object_from.vector().N
                     object_to.vector()[:] = object_from.vector()
                     self._preserve_vector_attributes(object_to.vector(), object_from.vector())
-                
+
         @overload(list_of(backend.Function.Type()), list_of(backend.Function.Type()))
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
                 del object_to[:]
                 object_to.extend(object_from)
-        
+
         @overload(backend.Matrix.Type(), backend.Matrix.Type())
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
@@ -76,14 +76,14 @@ def assign(backend):
                 assert object_to.M == object_from.M
                 object_to[:, :] = object_from
                 self._preserve_matrix_attributes(object_to, object_from)
-        
+
         @overload(backend.Vector.Type(), backend.Vector.Type())
         def __call__(self, object_to, object_from):
             if object_from is not object_to:
                 assert object_to.N == object_from.N
                 object_to[:] = object_from
                 self._preserve_vector_attributes(object_to, object_from)
-                
+
         def _preserve_vector_attributes(self, object_to, object_from, subset=False, superset=False):
             # Preserve auxiliary attributes related to basis functions matrix
             assert (object_to._component_name_to_basis_component_index is None) == (object_to._component_name_to_basis_component_length is None)
@@ -101,7 +101,7 @@ def assign(backend):
                 else: # is superset
                     assert set(object_to._component_name_to_basis_component_index.keys()) >= set(object_from._component_name_to_basis_component_index.keys())
                     assert object_to._component_name_to_basis_component_length.items() >= object_from._component_name_to_basis_component_length.items()
-                
+
         def _preserve_matrix_attributes(self, object_to, object_from):
             # Preserve auxiliary attributes related to basis functions matrix
             assert (object_to._component_name_to_basis_component_index[0] is None) == (object_to._component_name_to_basis_component_length[0] is None)

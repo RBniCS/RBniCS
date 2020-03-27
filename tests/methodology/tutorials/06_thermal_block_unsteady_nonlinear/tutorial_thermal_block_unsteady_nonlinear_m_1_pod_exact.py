@@ -21,7 +21,7 @@ from rbnics import *
 
 @ExactParametrizedFunctions()
 class UnsteadyThermalBlock(NonlinearParabolicProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -43,11 +43,11 @@ class UnsteadyThermalBlock(NonlinearParabolicProblem):
                 "report": True
             }
         })
-        
+
     # Return custom problem name
     def name(self):
         return "UnsteadyThermalBlockNonlinearM1PODExact"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -63,7 +63,7 @@ class UnsteadyThermalBlock(NonlinearParabolicProblem):
             return (theta_f0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v
@@ -103,7 +103,7 @@ class UnsteadyThermalBlock(NonlinearParabolicProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-            
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearParabolicProblem)
 def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
@@ -116,9 +116,9 @@ def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
                     "report": True
                 }
             })
-            
+
     return ReducedNonlinearParabolic
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")
 subdomains = MeshFunction("size_t", mesh, "data/thermal_block_physical_region.xml")

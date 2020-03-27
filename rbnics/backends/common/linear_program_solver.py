@@ -48,7 +48,7 @@ class LinearProgramSolver(AbstractLinearProgramSolver):
             bounds_lower[q] = bounds_q[0]
             bounds_upper[q] = bounds_q[1]
         self.inequality_constraints_vector = cvxopt.matrix(hstack((- inequality_constraints_vector, bounds_lower, bounds_upper)))
-        
+
     def solve(self):
         result = cvxopt.solvers.lp(self.cost, self.inequality_constraints_matrix, self.inequality_constraints_vector, solver="glpk", options={"glpk": {"msg_lev": "GLP_MSG_OFF"}})
         if result["status"] != "optimal":

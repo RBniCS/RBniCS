@@ -34,11 +34,11 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         StokesRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
-        
+
         # Skip useless Riesz products
         self.riesz_terms = ["a", "b", "bt", "f", "g"]
         self.error_estimation_terms = [("f", "f"), ("g", "g"), ("a", "f"), ("bt", "f"), ("b", "g"), ("a", "a"), ("a", "bt"), ("bt", "bt"), ("b", "b")]
-    
+
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
@@ -46,19 +46,19 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert beta >= 0.
         return sqrt(abs(eps2)/beta)
-        
+
     # Return a relative error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
-    
+
     # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
-        
+
     # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
-        
+
     # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         N = self._solution.N

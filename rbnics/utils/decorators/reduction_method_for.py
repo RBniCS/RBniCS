@@ -42,5 +42,5 @@ def _ReductionMethodGenerator(ReductionMethod):
     def _ReductionMethodGenerator_Function(truth_problem, **kwargs):
         return ReductionMethod
     return _ReductionMethodGenerator_Function
-    
+
 _cache = types.ModuleType("reduction methods", "Storage for reduction methods")

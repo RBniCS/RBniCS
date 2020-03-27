@@ -23,7 +23,7 @@ from rbnics import *
 @DEIM("online", basis_generation="Greedy")
 @ExactParametrizedFunctions("offline")
 class NavierStokes(NavierStokesProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -49,11 +49,11 @@ class NavierStokes(NavierStokesProblem):
             "maximum_iterations": 20,
             "report": True
         })
-        
+
     # Return custom problem name
     def name(self):
         return "NavierStokesDEIM1"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivatives
     @compute_theta_for_supremizers
@@ -79,7 +79,7 @@ class NavierStokes(NavierStokesProblem):
             return (theta_bc00,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivatives
     @assemble_operator_for_supremizers
@@ -129,7 +129,7 @@ class NavierStokes(NavierStokesProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesProblem)
 def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
@@ -140,7 +140,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
                 "report": True,
                 "line_search": "wolfe"
             })
-            
+
     return ReducedNavierStokes
 
 # 1. Read the mesh for this problem

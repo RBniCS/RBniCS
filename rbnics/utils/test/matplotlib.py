@@ -22,7 +22,7 @@ matplotlib_backend = matplotlib.get_backend()
 
 def disable_matplotlib():
     plt.switch_backend("agg")
-    
+
 def enable_matplotlib():
     plt.switch_backend(matplotlib_backend)
     plt.close("all") # do not trigger matplotlib max_open_warning

@@ -22,42 +22,42 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 class ParametrizedExpressionFactory(object, metaclass=ABCMeta):
     def __init__(self, expression):
         pass
-    
+
     @abstractmethod
     def create_interpolation_locations_container(self):
         pass
-        
+
     @abstractmethod
     def create_snapshots_container(self):
         pass
-        
+
     @abstractmethod
     def create_empty_snapshot(self):
         pass
-        
+
     @abstractmethod
     def create_basis_container(self):
         pass
-        
+
     @abstractmethod
     def create_POD_container(self):
         pass
-        
+
     def interpolation_method_name(self):
         return "EIM"
-        
+
     @abstractmethod
     def name(self):
         pass
-        
+
     @abstractmethod
     def description(self):
         pass
-    
+
     @abstractmethod
     def is_parametrized(self):
         pass
-        
+
     @abstractmethod
     def is_time_dependent(self):
         pass

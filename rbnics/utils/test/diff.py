@@ -32,17 +32,17 @@ def diff(reference_file, current_file):
         return _diff_csv(reference_file, current_file)
     else:
         raise ValueError("Invalid argument to diff")
-    
+
 def _diff_txt(reference_file, current_file):
     reference_content = TextIO.load_file("", reference_file)
     current_content = TextIO.load_file("", current_file)
     return _diff_content(reference_content, current_content, "")
-    
+
 def _diff_csv(reference_file, current_file):
     reference_lines = CSVIO.load_file("", reference_file)
     current_lines = CSVIO.load_file("", current_file)
     return _diff_content(reference_lines, current_lines, "")
-    
+
 @overload
 def _diff_content(reference_items: (list_of(object), tuple_of(object)), current_items: (list_of(object), tuple_of(object)), tab: str):
     if len(reference_items) != len(current_items):
@@ -62,7 +62,7 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)), current_
                         d
                     )
         return diff_items
-        
+
 @overload
 def _diff_content(reference_items: dict_of(object, object), current_items: dict_of(object, object), tab: str):
     if len(reference_items) != len(current_items):
@@ -88,7 +88,7 @@ def _diff_content(reference_items: dict_of(object, object), current_items: dict_
                         d
                     )
         return diff_items
-        
+
 @overload
 def _diff_content(reference_item: str, current_item: str, tab: str):
     try:
@@ -108,7 +108,7 @@ def _diff_content(reference_item: str, current_item: str, tab: str):
         assert isinstance(reference_item, float)
         assert isinstance(current_item, float)
         return _diff_content(reference_item, current_item, tab)
-        
+
 @overload
 def _diff_content(reference_item: Number, current_item: Number, tab: str):
     if not isclose(reference_item, current_item):

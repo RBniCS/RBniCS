@@ -25,7 +25,7 @@ from rbnics import *
     ("mu[0]*x[0]", "x[1]"),
 )
 class StokesUnsteady(NavierStokesUnsteadyProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -53,11 +53,11 @@ class StokesUnsteady(NavierStokesUnsteadyProblem):
                 "report": True
             }
         })
-        
+
     # Return custom problem name
     def name(self):
         return "StokesUnsteadyNonlinearM1"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_supremizers
     def compute_theta(self, term):
@@ -81,7 +81,7 @@ class StokesUnsteady(NavierStokesUnsteadyProblem):
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_supremizers
     def assemble_operator(self, term):
@@ -148,7 +148,7 @@ class StokesUnsteady(NavierStokesUnsteadyProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-            
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesUnsteadyProblem)
 def CustomizeReducedNavierStokesUnsteady(ReducedNavierStokesUnsteady_Base):
@@ -161,7 +161,7 @@ def CustomizeReducedNavierStokesUnsteady(ReducedNavierStokesUnsteady_Base):
                     "report": True
                 }
             })
-            
+
     return ReducedNavierStokesUnsteady
 
 # 1. Read the mesh for this problem

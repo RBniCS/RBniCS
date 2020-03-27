@@ -23,7 +23,7 @@ from sampling import LinearlyDependentUniformDistribution
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -42,15 +42,15 @@ class Stokes(StokesProblem):
         self.inlet = Expression(("- 1./0.25*(x[1] - 1)*(2 - x[1])", "0."), degree=2)
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
-        
+
     # Return custom problem name
     def name(self):
         return "Stokes2RB"
-        
+
     # Return the lower bound for inf-sup constant.
     def get_stability_factor_lower_bound(self):
         return 1.
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_supremizers
     def compute_theta(self, term):
@@ -71,7 +71,7 @@ class Stokes(StokesProblem):
             return (theta_bc0, )
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_supremizers
     def assemble_operator(self, term):

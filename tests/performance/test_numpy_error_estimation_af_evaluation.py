@@ -35,7 +35,7 @@ class Data(object):
         self.N = N
         self.Qa = Qa
         self.Qf = Qf
-        
+
     def generate_random(self):
         af_product = OnlineAffineExpansionStorage(self.Qa, self.Qf)
         af_product_legacy = legacy_tensor((self.Qa, self.Qf, self.N))
@@ -52,13 +52,13 @@ class Data(object):
         u = RandomNumpyVector(self.N)
         # Return
         return (theta_a, theta_f, af_product, af_product_legacy, u)
-        
+
     def evaluate_builtin(self, theta_a, theta_f, af_product, af_product_legacy, u):
         return einsum("i,ijn,j,n", theta_a, af_product_legacy, theta_f, u, optimize=True)
-        
+
     def evaluate_backend(self, theta_a, theta_f, af_product, af_product_legacy, u):
         return transpose(u)*sum(product(theta_a, af_product, theta_f))
-        
+
     def assert_backend(self, theta_a, theta_f, af_product, af_product_legacy, u, result_backend):
         result_builtin = self.evaluate_builtin(theta_a, theta_f, af_product, af_product_legacy, u)
         relative_error = abs(result_builtin - result_backend)/abs(result_builtin)

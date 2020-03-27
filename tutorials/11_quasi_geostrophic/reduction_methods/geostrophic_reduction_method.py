@@ -21,11 +21,11 @@ from rbnics.reduction_methods.base import LinearReductionMethod
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 def GeostrophicReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
-    
+
     GeostrophicReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
 
     class GeostrophicReductionMethod_Class(GeostrophicReductionMethod_Base):
         pass
-    
+
     # return value (a class) for the decorator
     return GeostrophicReductionMethod_Class

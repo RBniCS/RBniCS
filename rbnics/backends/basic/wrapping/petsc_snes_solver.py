@@ -34,7 +34,7 @@ def BasicPETScSNESSolver(backend, wrapping):
             self.set_parameters({
                 "report": True
             })
-             
+
         def set_parameters(self, parameters):
             snes_tolerances = [1.e-10, 1.e-9, 1.e-16, 50]
             for (key, value) in parameters.items():
@@ -71,7 +71,7 @@ def BasicPETScSNESSolver(backend, wrapping):
             self.snes.setTolerances(*snes_tolerances)
             # Finally, read in additional options from the command line
             self.snes.setFromOptions()
-            
+
         def solve(self):
             solution_copy = wrapping.function_copy(self.solution) # create copy to avoid possible internal storage overwriting by linesearch
             petsc_solution_copy = wrapping.to_petsc4py(solution_copy)
@@ -86,5 +86,5 @@ def BasicPETScSNESSolver(backend, wrapping):
             self.problem.update_solution(petsc_solution_copy)
             if self.monitor is not None:
                 self.monitor(self.solution)
-    
+
     return _BasicPETScSNESSolver

@@ -30,7 +30,7 @@ def LinearSolver(backend, wrapping):
             self._apply_bcs(bcs)
             preserve_solution_attributes(self.lhs, self.solution, self.rhs)
             self.monitor = None
-            
+
         @overload(LinearProblemWrapper, backend.Function.Type())
         def __init__(self, problem_wrapper, solution):
             lhs = problem_wrapper.matrix_eval()
@@ -38,33 +38,33 @@ def LinearSolver(backend, wrapping):
             bcs = problem_wrapper.bc_eval()
             self.__init__(lhs, solution, rhs, bcs)
             self.monitor = problem_wrapper.monitor
-            
+
         @overload
         def _init_lhs(self, lhs: backend.Matrix.Type()):
             self.lhs = lhs
-            
+
         @overload
         def _init_lhs(self, lhs: wrapping.DelayedTransposeWithArithmetic):
             self.lhs = lhs.evaluate()
-            
+
         @overload
         def _init_rhs(self, rhs: backend.Vector.Type()):
             self.rhs = rhs
-            
+
         @overload
         def _init_rhs(self, rhs: wrapping.DelayedTransposeWithArithmetic):
             self.rhs = rhs.evaluate()
-            
+
         @overload
         def _apply_bcs(self, bcs: None):
             pass
-            
+
         @overload
         def _apply_bcs(self, bcs: ThetaType):
             bcs = DirichletBC(bcs)
             bcs.apply_to_vector(self.rhs)
             bcs.apply_to_matrix(self.lhs)
-            
+
         @overload
         def _apply_bcs(self, bcs: DictOfThetaType):
             # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
@@ -74,5 +74,5 @@ def LinearSolver(backend, wrapping):
             bcs = DirichletBC(bcs, self.rhs._component_name_to_basis_component_index, self.rhs.N)
             bcs.apply_to_vector(self.rhs)
             bcs.apply_to_matrix(self.lhs)
-            
+
     return LinearSolver_Class

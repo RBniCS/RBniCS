@@ -31,7 +31,7 @@ def str_signature(sig):
         return "None"
     else:
         return str_sig
-        
+
 # == Exception for unavailable signature == #
 class UnavailableSignatureError(NotImplementedError):
     def __init__(self, name, available_signatures, unavailable_signature):
@@ -54,7 +54,7 @@ class AmbiguousSignatureError(NotImplementedError):
         for ambiguous_signature_pair in ambiguous_signatures:
             error_message += "\t" + str_signature(ambiguous_signature_pair[0]) + " and " + str_signature(ambiguous_signature_pair[1]) + "\n"
         NotImplementedError.__init__(self, error_message)
-        
+
 def ambiguity_error(dispatcher, ambiguities):
     """
     Raise error when ambiguity is detected
@@ -66,7 +66,7 @@ def ambiguity_error(dispatcher, ambiguities):
         Set of type signature pairs that are ambiguous within this dispatcher
     """
     raise AmbiguousSignatureError(dispatcher.name, dispatcher.funcs.keys(), ambiguities)
-    
+
 # == Exception for invalid signature == #
 class InvalidSignatureError(TypeError):
     def __init__(self, name, invalid_signature):
@@ -79,11 +79,11 @@ class InvalidSignatureError(TypeError):
 # == Customize Dispatcher == #
 class Dispatcher(OriginalDispatcher):
     __slots__ = '__name__', 'name', 'funcs', '_ordering', '_cache', 'doc', 'signature_to_provided_signature' # extended with new private members
-    
+
     def __init__(self, name, doc=None):
         OriginalDispatcher.__init__(self, name, doc)
         self.signature_to_provided_signature = dict()
-        
+
     def add(self, signature, func, replaces=None, replaces_if=None):
         for types in expand_tuples(signature):
             self._add(types, signature, func, replaces, replaces_if)
@@ -93,13 +93,13 @@ class Dispatcher(OriginalDispatcher):
             del self._ordering
         except AttributeError:
             pass
-        
+
     def _add(self, types, provided_signature, func, replaces=None, replaces_if=None):
         try:
             validate_types(types, allow_lambda=False)
         except AssertionError:
             raise InvalidSignatureError(self.name, types)
-        
+
         if replaces is None:
             if types in self.funcs:
                 len_types = len(types)
@@ -134,21 +134,21 @@ class Dispatcher(OriginalDispatcher):
                 self.signature_to_provided_signature[types] = provided_signature
     add.__doc__ = OriginalDispatcher.add.__doc__ + \
         """
-        
+
         This is a customization of the Dispatcher.add method provided by the multipledispatch
         package so that:
             * replacement of existing signatures is not done silently as in the original library.
               It is only possible to replace a previously added function/method with the same signature
               by means of replaces and replaces_if input arguments.
         """
-        
+
     def reorder(self, on_ambiguity=ambiguity_error):
         return OriginalDispatcher.reorder(self, on_ambiguity)
-    
+
     def __call__(self, *args, **kwargs):
         func = self._get_func(*args)
         return func(*args, **kwargs)
-        
+
     def _get_func(self, *args):
         if len(args) > 1:
             types = get_types(args)
@@ -172,7 +172,7 @@ class Dispatcher(OriginalDispatcher):
             * a custom UnavailableSignatureError is thrown if no corresponding signature is provided
         It is based on the original multipledispatch implementation of Dispatcher.__call__
         """
-        
+
     def dispatch_iter(self, *types):
         for signature in self.ordering:
             if supercedes(types, signature):
@@ -183,56 +183,56 @@ class Dispatcher(OriginalDispatcher):
         This is a customization of the Dispatcher.dispatch_iter method provided by the multipledispatch
         package so that the custom implementation of supercedes() is used
         """
-        
+
     @property
     def __doc__(self):
         return OriginalDispatcher.__doc__.fget(self) # properties are not inherited
 
-        
+
 # == Customize MethodDispatcher == #
 class MethodDispatcher_Wrapper(object):
     __slots__ = 'name', 'standard_funcs', 'lambda_funcs', 'dispatchers'
-    
+
     def __init__(self, name, doc=None):
         self.name = name
         self.standard_funcs = OrderedDict()
         self.lambda_funcs = OrderedDict()
         self.dispatchers = OrderedDict()
-        
+
     def add(self, signature, func):
         for types in expand_tuples(signature):
             self._add(types, signature, func)
-        
+
     def _add(self, types, provided_signature, func):
         if any(islambda(typ) for typ in types):
             try:
                 validate_types(types, allow_lambda=True)
             except AssertionError:
                 raise InvalidSignatureError(self.name, types)
-            
+
             if types in self.lambda_funcs:
                 raise AmbiguousSignatureError(self.name, self.lambda_funcs.keys(), {(types, types)})
-                
+
             self.lambda_funcs[types] = func
         else: # no lambda functions
             try:
                 validate_types(types, allow_lambda=False)
             except AssertionError:
                 raise InvalidSignatureError(self.name, types)
-                
+
             # Delay proper ambiguity checking to MethodDispatcher, other than a simple check
             # on overwriting existing storage
             if (types, provided_signature) in self.standard_funcs:
                 raise AmbiguousSignatureError(self.name, self.standard_funcs.keys(), {(types, types)})
-                
+
             self.standard_funcs[(types, provided_signature)] = func
-            
+
     def register(self, *types, **kwargs):
         def _(func):
             self.add(types, func, **kwargs)
             return func
         return _
-        
+
     def __get__(self, instance, owner):
         # Create a new dispatcher based on the current class. This is required to not share dispatcher among inherited classes
         assert owner is not None
@@ -245,10 +245,10 @@ class MethodDispatcher_Wrapper(object):
         dispatcher.obj = instance
         # Return
         return dispatcher
-        
+
 class MethodDispatcher(Dispatcher):
     __slots__ = '__name__', 'name', 'funcs', '_ordering', '_cache', 'doc', 'signature_to_provided_signature', 'origin', 'obj' # extended with new private members
-    
+
     def __init__(self, origin, cls, name, doc=None):
         Dispatcher.__init__(self, name, doc)
         self.origin = origin
@@ -316,7 +316,7 @@ class MethodDispatcher(Dispatcher):
             del self._ordering
         except AttributeError:
             pass
-        
+
     def __call__(self, *args, **kwargs):
         if self.obj is not None: # called as instance.method(...)
             obj = self.obj
@@ -325,7 +325,7 @@ class MethodDispatcher(Dispatcher):
             args = args[1:]
         func = self._get_func(*args)
         return func(obj, *args, **kwargs)
-        
+
     @property
     def __doc__(self):
         return Dispatcher.__doc__.fget(self) # properties are not inherited
@@ -337,14 +337,14 @@ def dispatch(*types, **kwargs):
     replaces = kwargs.get("replaces", None)
     replaces_if = kwargs.get("replaces_if", None)
     frame_back_times = kwargs.get("frame_back_times", 1)
-    
+
     def _(func_or_class):
         nonlocal name
         name = func_or_class.__name__ if name is None else name
         is_class = inspect.isclass(func_or_class)
         is_method = not is_class and ismethod(func_or_class)
         module = inspect.getmodule(func_or_class)
-        
+
         nonlocal types
         if len(types) == 0:
             assert is_method or not is_class # is method or function
@@ -357,7 +357,7 @@ def dispatch(*types, **kwargs):
         if is_method or not is_class: # is method or function
             signature = inspect.signature(func_or_class)
             assert len(types) == len(tuple(param_name for (param_name, param_value) in signature.parameters.items() if param_value.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))) - (1 if is_method else 0) # throw self away
-        
+
         if is_method:
             assert module_kwarg is None
             assert replaces is None
@@ -390,7 +390,7 @@ def dispatch(*types, **kwargs):
     return _
 dispatch.__doc__ = original_dispatch.__doc__ + \
     """
-    
+
     This is a customized version of the @dispatch decorator provided by the
     multipledispatch package, such that an optional module kwarg is passed
     (instead of the namespace one).
@@ -438,7 +438,7 @@ dispatch.__doc__ = original_dispatch.__doc__ + \
                   #> we would like to provide as module kwarg the rbnics.backends
                      module
     """
-    
+
 # == Define an @overload to be used for method dispatch, in order to have a more expressive name == #
 # == that hides the details of the implementation                                                == #
 def overload(*args, **kwargs):
@@ -453,7 +453,7 @@ def overload(*args, **kwargs):
 class _iterable_of(object):
     def __init__(self, types):
         self.types = types
-        
+
     def __str__(self):
         return "iterable_of(" + str(self.types) + ")"
     __repr__ = __str__
@@ -462,16 +462,16 @@ class _array_of(_iterable_of):
     def __str__(self):
         return "array_of(" + str(self.types) + ")"
     __repr__ = __str__
-    
+
 class _dict_of(object):
     def __init__(self, types_from, types_to):
         self.types_from = types_from
         self.types_to = types_to
-        
+
     def __str__(self):
         return "dict_of(" + str(self.types_from) + ": " + str(self.types_to) + ")"
     __repr__ = __str__
-    
+
 class _list_of(_iterable_of):
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
@@ -481,12 +481,12 @@ class _set_of(_iterable_of):
     def __str__(self):
         return "set_of(" + str(self.types) + ")"
     __repr__ = __str__
-        
+
 class _tuple_of(_iterable_of):
     def __str__(self):
         return "tuple_of(" + str(self.types) + ")"
     __repr__ = __str__
-    
+
 _all_iterable_of_instances = dict()
 _all_array_of_instances = dict()
 _all_dict_of_instances = dict()
@@ -519,7 +519,7 @@ def array_of(types):
     if types_set not in _all_array_of_instances:
         _all_array_of_instances[types_set] = _array_of(types)
     return _all_array_of_instances[types_set]
-    
+
 def dict_of(types_from, types_to):
     (types_from, types_from_set) = _remove_repeated_types(types_from)
     (types_to, types_to_set) = _remove_repeated_types(types_to)
@@ -532,19 +532,19 @@ def list_of(types):
     if types_set not in _all_list_of_instances:
         _all_list_of_instances[types_set] = _list_of(types)
     return _all_list_of_instances[types_set]
-    
+
 def set_of(types):
     (types, types_set) = _remove_repeated_types(types)
     if types_set not in _all_set_of_instances:
         _all_set_of_instances[types_set] = _set_of(types)
     return _all_set_of_instances[types_set]
-    
+
 def tuple_of(types):
     (types, types_set) = _remove_repeated_types(types)
     if types_set not in _all_tuple_of_instances:
         _all_tuple_of_instances[types_set] = _tuple_of(types)
     return _all_tuple_of_instances[types_set]
-    
+
 # == Validation that no array, dict, list, tuple are provided as types to @dispatch == #
 def validate_types(inputs, allow_lambda):
     for input_ in inputs:
@@ -583,7 +583,7 @@ def get_types(inputs):
         types.append(get_type(input_))
     types = tuple(types)
     return types
-    
+
 def get_type(input_):
     type_input_ = type(input_)
     if (
@@ -620,7 +620,7 @@ def get_type(input_):
             return type_input_
         else:
             return None
-    
+
 # == Customize tuple expansion to handle array_of, dict_of, iterable_of, list_of, set_of, tuple_of == #
 def expand_tuples(L):
     if not L:
@@ -628,7 +628,7 @@ def expand_tuples(L):
     else:
         output = set((item,) + t for t in expand_tuples(L[1:]) for item in expand_arg(L[0]))
     return output
-    
+
 def expand_arg(arg, tuple_expansion=True):
     if isinstance(arg, tuple) and tuple_expansion:
         for i in arg:
@@ -647,7 +647,7 @@ def expand_arg(arg, tuple_expansion=True):
                         yield dict_of(j, l)
     else:
         yield arg
-        
+
 _generator_of = {
     _array_of: array_of,
     _dict_of: dict_of,
@@ -766,13 +766,13 @@ def remove_trailing_None(inputs):
         return inputs[:i]
     else:
         raise TypeError("This type is unsupported")
-    
+
 # == Helper function to create itertools.powerset without empty tuple == #
 def powerset(types):
     if not isinstance(types, (list, tuple)):
         types = (types, )
     return itertools.chain.from_iterable(itertools.combinations(types, r) for r in range(1, len(types)+1))
-    
+
 # == Helper function to determine if function is a lambda function == #
 def islambda(arg):
     return isinstance(arg, _reference_lambda_type) and arg.__name__ == _reference_lambda_name

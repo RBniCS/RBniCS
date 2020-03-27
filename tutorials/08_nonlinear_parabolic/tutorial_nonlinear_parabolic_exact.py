@@ -22,7 +22,7 @@ from utils import *
 
 @ExactParametrizedFunctions()
 class FitzHughNagumo(NonlinearParabolicProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -55,11 +55,11 @@ class FitzHughNagumo(NonlinearParabolicProblem):
                 "report": True
             }
         })
-        
+
     # Return custom problem name
     def name(self):
         return "FitzHughNagumoExact"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivatives
     def compute_theta(self, term):
@@ -83,7 +83,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             return (theta_f0, theta_f1)
         else:
             raise ValueError("Invalid term for compute_theta().")
-    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivatives
     def assemble_operator(self, term):
@@ -116,7 +116,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearParabolicProblem)
 def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
@@ -130,7 +130,7 @@ def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
                     "line_search": "wolfe"
                 }
             })
-            
+
     return ReducedNonlinearParabolic
 
 # 1. Read the mesh for this problem

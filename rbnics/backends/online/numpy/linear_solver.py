@@ -33,7 +33,7 @@ LinearSolver_Base = BasicLinearSolver(backend, wrapping)
 class LinearSolver(LinearSolver_Base):
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "NumPy linear solver does not accept parameters yet"
-        
+
     def solve(self):
         solution = solve(self.lhs, self.rhs)
         self.solution.vector()[:] = solution

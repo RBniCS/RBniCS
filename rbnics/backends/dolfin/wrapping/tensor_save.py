@@ -45,7 +45,7 @@ def basic_tensor_save(backend, wrapping):
         _permutation_save(tensor, directory, form, form_name + "_" + str(mpi_comm.size), mpi_comm)
         # Write out content
         _tensor_save(tensor, directory, filename, mpi_comm)
-            
+
     @overload(backend.Matrix.Type(), (Folders.Folder, str), object, str, object)
     def _permutation_save(tensor, directory, form, form_name, mpi_comm):
         if not PickleIO.exists_file(directory, "." + form_name):
@@ -67,7 +67,7 @@ def basic_tensor_save(backend, wrapping):
             gathered_matrix_col_mapping = mpi_comm.reduce(matrix_col_mapping, root=0, op=_dict_update_op)
             gathered_matrix_mapping = (gathered_matrix_row_mapping, gathered_matrix_col_mapping)
             PickleIO.save_file(gathered_matrix_mapping, directory, "." + form_name)
-                
+
     @overload(backend.Vector.Type(), (Folders.Folder, str), object, str, object)
     def _permutation_save(tensor, directory, form, form_name, mpi_comm):
         if not PickleIO.exists_file(directory, "." + form_name):
@@ -80,18 +80,18 @@ def basic_tensor_save(backend, wrapping):
                 vector_mapping[row] = V_0__dof_map_writer_mapping[row]
             gathered_vector_mapping = mpi_comm.reduce(vector_mapping, root=0, op=_dict_update_op)
             PickleIO.save_file(gathered_vector_mapping, directory, "." + form_name)
-    
+
     def _tensor_save(tensor, directory, filename, mpi_comm):
         tensor = wrapping.to_petsc4py(tensor)
         viewer = PETSc.Viewer().createBinary(os.path.join(str(directory), filename + ".dat"), "w", mpi_comm)
         viewer.view(tensor)
-        
+
     def _dict_update(dict1, dict2, datatype):
         dict1.update(dict2)
         return dict1
 
     _dict_update_op = Op.Create(_dict_update, commute=True)
-    
+
     return _basic_tensor_save
 
 # No explicit instantiation for backend = rbnics.backends.dolfin for symmetry

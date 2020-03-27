@@ -28,7 +28,7 @@ def basic_tensor_copy(backend, wrapping):
         m._component_name_to_basis_component_length = tensor._component_name_to_basis_component_length
         # Return
         return m
-        
+
     @overload
     def _basic_tensor_copy(tensor: backend.Vector.Type()):
         v = backend.Vector(tensor.N)
@@ -38,5 +38,5 @@ def basic_tensor_copy(backend, wrapping):
         v._component_name_to_basis_component_length = tensor._component_name_to_basis_component_length
         # Return
         return v
-        
+
     return _basic_tensor_copy

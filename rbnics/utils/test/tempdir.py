@@ -21,10 +21,10 @@ try:
 except ImportError:
     def tempdir(request):
         return NotImplemented
-        
+
     def save_tempdir(request):
         return NotImplemented
-        
+
     def load_tempdir(request):
         return NotImplemented
 else:
@@ -32,12 +32,12 @@ else:
     import shutil
     from collections import defaultdict
     from mpi4py.MPI import COMM_WORLD, SUM
-    
+
     def _create_tempdir(request, mode=None):
         """
         Adapted from DOLFIN's dolfin_utils/test/fixtures.py.
         """
-        
+
         # Get directory name of test_foo.py file
         testfile = request.module.__file__
         testfiledir = os.path.dirname(os.path.abspath(testfile))
@@ -98,14 +98,14 @@ else:
         COMM_WORLD.barrier()
 
         return path
-        
+
     _create_tempdir._sequencenumber = defaultdict(int)
     _create_tempdir._basepaths = set()
-        
+
     @pytest.fixture(scope="function")
     def tempdir(request):
         return _create_tempdir(request)
-        
+
     @pytest.fixture(scope="function")
     def save_tempdir(request):
         return _create_tempdir(request, mode="save")

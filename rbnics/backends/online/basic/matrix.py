@@ -71,7 +71,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
             else:
                 self._component_name_to_basis_component_index = (None, None)
                 self._component_name_to_basis_component_length = (None, None)
-            
+
         def __getitem__(self, key):
             assert isinstance(key, tuple)
             assert len(key) == 2
@@ -124,7 +124,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return output
             else:
                 raise TypeError("Unsupported key type in Matrix.__getitem__")
-                
+
         def __setitem__(self, key, value):
             assert isinstance(key, tuple)
             assert len(key) == 2
@@ -153,7 +153,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 self.content[key] = value
             else:
                 raise TypeError("Unsupported key type in Matrix.__setitem__")
-                
+
         def __abs__(self):
             self._arithmetic_operations_assert_attributes(None, other_order=0)
             output_content = self.content.__abs__()
@@ -162,7 +162,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
             output.__init__(output_size[0], output_size[1], output_content)
             self._arithmetic_operations_preserve_attributes(output, other_order=0)
             return output
-            
+
         def __neg__(self):
             self._arithmetic_operations_assert_attributes(None, other_order=0)
             output_content = self.content.__neg__()
@@ -171,7 +171,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
             output.__init__(output_size[0], output_size[1], output_content)
             self._arithmetic_operations_preserve_attributes(output, other_order=0)
             return output
-            
+
         def __add__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -183,7 +183,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __iadd__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -191,7 +191,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return self
             else:
                 return NotImplemented
-            
+
         def __sub__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -203,7 +203,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __isub__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -211,7 +211,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return self
             else:
                 return NotImplemented
-            
+
         def __mul__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -232,7 +232,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return self.__mul__(other.vector())
             else:
                 return NotImplemented
-            
+
         def __rmul__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -244,7 +244,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __imul__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -258,7 +258,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return self.__imul__(other.vector())
             else:
                 return NotImplemented
-                
+
         def __truediv__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -270,7 +270,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __itruediv__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -278,7 +278,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 return self
             else:
                 return NotImplemented
-            
+
         def _arithmetic_operations_assert_attributes(self, other, other_order=2):
             assert other_order in (0, 1, 2)
             if other_order == 2:
@@ -290,7 +290,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 assert self.N == other.N
                 assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
-                
+
         def _arithmetic_operations_preserve_attributes(self, output, other_order=2):
             assert other_order in (0, 1, 2)
             if other_order == 0 or other_order == 2:
@@ -299,8 +299,8 @@ def Matrix(backend, wrapping, MatrixBaseType):
             elif other_order == 1:
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index[0]
                 output._component_name_to_basis_component_length = self._component_name_to_basis_component_length[0]
-        
+
         def __str__(self):
             return str(self.content)
-            
+
     return Matrix_Class

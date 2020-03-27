@@ -28,7 +28,7 @@ of a Stokes problem on a square
 # ~~~ Sparse case ~~~ #
 def _test_eigen_solver_sparse(callback_type):
     from rbnics.backends.dolfin import EigenSolver
-    
+
     # Define mesh
     mesh = UnitSquareMesh(10, 10)
 
@@ -42,7 +42,7 @@ def _test_eigen_solver_sparse(callback_type):
     class Wall(SubDomain):
         def inside(self, x, on_boundary):
             return on_boundary and (x[1] < 0 + DOLFIN_EPS or x[1] > 1 - DOLFIN_EPS)
-        
+
     boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
     boundaries.set_all(0)
     wall = Wall()
@@ -86,13 +86,13 @@ def _test_eigen_solver_sparse(callback_type):
 # ~~~ Dense case ~~~ #
 def _test_eigen_solver_dense(sparse_LHS, sparse_RHS):
     from rbnics.backends.online.numpy import EigenSolver, Matrix
-    
+
     # Extract constrained matrices from sparse eigensolver
     LHS = Matrix(*sparse_LHS.array().shape)
     RHS = Matrix(*sparse_RHS.array().shape)
     LHS[:, :] = sparse_LHS.array()
     RHS[:, :] = sparse_RHS.array()
-    
+
     # Solve the eigenproblem
     solver = EigenSolver(None, LHS, RHS)
     solver.set_parameters({
@@ -105,7 +105,7 @@ def _test_eigen_solver_dense(sparse_LHS, sparse_RHS):
     assert r > 0., "r = " + str(r) + " is not positive"
     print("Dense inf-sup constant: ", sqrt(r))
     return (sqrt(r), LHS, RHS)
-    
+
 # ~~~ Test function ~~~ #
 def test_eigen_solver():
     sqrt_r_exact = 0.6051627263949135

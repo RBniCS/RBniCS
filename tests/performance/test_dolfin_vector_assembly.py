@@ -36,7 +36,7 @@ class Data(object):
         self.V = FunctionSpace(mesh, "Lagrange", 1)
         v = TestFunction(self.V)
         self.f = lambda g: g*v*dx
-        
+
     def generate_random(self):
         f = ()
         for i in range(self.Q):
@@ -49,7 +49,7 @@ class Data(object):
         theta = RandomTuple(self.Q)
         # Return
         return (theta, F)
-        
+
     def evaluate_builtin(self, theta, F):
         result_builtin = F[0].copy()
         result_builtin.zero()
@@ -57,15 +57,15 @@ class Data(object):
             result_builtin.add_local(theta[i]*F[i].get_local())
         result_builtin.apply("insert")
         return result_builtin
-        
+
     def evaluate_backend(self, theta, F):
         return sum(product(theta, F))
-        
+
     def assert_backend(self, theta, F, result_backend):
         result_builtin = self.evaluate_builtin(theta, F)
         relative_error = (result_builtin - result_backend).norm("l2")/result_builtin.norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))

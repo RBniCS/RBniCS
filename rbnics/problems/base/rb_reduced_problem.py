@@ -25,20 +25,20 @@ from rbnics.utils.decorators import overload, PreserveClassName, RequiredBaseDec
 
 @RequiredBaseDecorators(None)
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     @PreserveClassName
     class RBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass, metaclass=ABCMeta):
         """
         Abstract class. All the terms for error estimator are initialized.
-        
+
         :param truth_problem: class of the truth problem to be solved.
         """
-        
+
         # Default initialization of members.
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
+
             # $$ ONLINE DATA STRUCTURES $$ #
             # Residual terms
             self.RieszExpansionStorage = OnlineAffineExpansionStorage
@@ -47,7 +47,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self.ErrorEstimationOperatorExpansionStorage = OnlineAffineExpansionStorage
             self.error_estimation_operator = dict() # from string to ErrorEstimationOperatorExpansionStorage
             self.error_estimation_terms = list() # of tuple
-            
+
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Residual terms
             self._riesz_solve_storage = Function(self.truth_problem.V)
@@ -56,18 +56,18 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             self._error_estimation_inner_product = None # setup by init()
             # I/O
             self.folder["error_estimation"] = os.path.join(self.folder_prefix, "error_estimation")
-            
+
             # Provide a default value for Riesz terms and Riesz product terms
             self.riesz_terms = [term for term in self.terms]
             self.error_estimation_terms = [(term1, term2) for term1 in self.terms for term2 in self.terms if self.terms_order[term1] >= self.terms_order[term2]]
-        
+
         def init(self, current_stage="online"):
             """
             Initialize data structures required for the online phase.
             """
             ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
             self._init_error_estimation_operators(current_stage)
-            
+
         def _init_error_estimation_operators(self, current_stage="online"):
             """
             Initialize data structures related to error estimation.
@@ -116,41 +116,41 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 pass # Nothing else to be done
             else:
                 raise ValueError("Invalid stage in _init_error_estimation_operators().")
-                
+
         @abstractmethod
         def estimate_error(self):
             """
             Returns an error bound for the current solution.
             """
             raise NotImplementedError("The method estimate_error() is problem-specific and needs to be overridden.")
-            
+
         @abstractmethod
         def estimate_relative_error(self):
             """
             It returns a relative error bound for the current solution.
             """
             raise NotImplementedError("The method estimate_relative_error() is problem-specific and needs to be overridden.")
-        
+
         def estimate_error_output(self):
             """
             It returns an error bound for the current output.
             """
             return NotImplemented
-            
+
         def estimate_relative_error_output(self):
             """
             It returns an relative error bound for the current output.
             """
             return NotImplemented
-            
+
         def build_error_estimation_operators(self, current_stage="offline"):
             self._build_error_estimation_operators(current_stage)
-        
+
         def _build_error_estimation_operators(self, current_stage="offline"):
             """
             It builds operators for error estimation.
             """
-            
+
             # Update the Riesz representation with the new basis function(s)
             for term in self.riesz_terms:
                 if self.terms_order[term] == 1:
@@ -166,16 +166,16 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                             self.assemble_error_estimation_operators((term, term), current_stage)
                 else: # self.terms_order[term] > 1:
                     self.compute_riesz_representation(term, current_stage)
-            
+
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.error_estimation_terms:
                 if (self.terms_order[term[0]], self.terms_order[term[1]]) != (1, 1): # this part does not depend on N, and was computed in the previous loop
                     self.assemble_error_estimation_operators(term, current_stage)
-        
+
         def compute_riesz_representation(self, term, current_stage="offline"):
             """
             It computes the Riesz representation of term.
-            
+
             :param term: the forms of the truth problem.
             """
             solver = self.RieszSolver(self)
@@ -203,11 +203,11 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 self.riesz[term].save(self.folder["error_estimation"], "riesz_" + term)
             else:
                 raise ValueError("Invalid value for order of term " + term)
-                
+
         class RieszSolver(object):
             def __init__(self, problem):
                 self.problem = problem
-            
+
             @overload
             def solve(self, rhs: object):
                 problem = self.problem
@@ -215,11 +215,11 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 solver.set_parameters(problem._linear_solver_parameters)
                 solver.solve()
                 return problem._riesz_solve_storage
-                
+
             @overload
             def solve(self, coef: Number, matrix: object, basis_function: object):
                 return self.solve(coef*matrix*basis_function)
-                
+
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             """
             It assembles operators for error estimation.
@@ -255,6 +255,6 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 return self.error_estimation_operator[term]
             else:
                 raise ValueError("Invalid stage in assemble_error_estimation_operators().")
-        
+
     # return value (a class) for the decorator
     return RBReducedProblem_Class

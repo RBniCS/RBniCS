@@ -23,7 +23,7 @@ from rbnics.sampling.distributions.equispaced_distribution import EquispacedDist
 class LogEquispacedDistribution(Distribution):
     def __init__(self):
         self.equispaced_distribution = EquispacedDistribution()
-        
+
     def sample(self, box, n):
         log_box = [(log(box_p[0]), log(box_p[1])) for box_p in box]
         log_set = self.equispaced_distribution.sample(log_box, n)

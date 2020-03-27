@@ -29,27 +29,27 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
         y in Y, u in U
         s.t.
         a(y, q) = c(u, q) + <f, q>      for all q in Q = Y
-        
+
     This class will solve the following optimality conditions:
         m(y, z)           + a*(p, z) = <g, z>     for all z in Y
                   n(u, v) - c*(p, v) = 0          for all v in U
         a(y, q) - c(u, q)            = <f, q>     for all q in Q
-        
+
     and compute the cost functional
         J(y, u) = 1/2 m(y, y) + 1/2 n(u, u) - <g, y> + 1/2 h
-        
+
     where
         a*(., .) is the adjoint of a
         c*(., .) is the adjoint of c
         <g, y> = m(y_d, y)
         h = m(y_d, y_d)
     """
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         EllipticOptimalControlProblem_Base.__init__(self, V, **kwargs)
-        
+
         # Form names for saddle point problems
         self.terms = ["a", "a*", "c", "c*", "m", "n", "f", "g", "h"]
         self.terms_order = {
@@ -60,7 +60,7 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
             "h": 0
         }
         self.components = ["y", "u", "p"]
-        
+
     class ProblemSolver(EllipticOptimalControlProblem_Base.ProblemSolver):
         def matrix_eval(self):
             problem = self.problem
@@ -72,7 +72,7 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
                                           + assembled_operator["n"] - assembled_operator["c*"]
                 + assembled_operator["a"] - assembled_operator["c"]
             )
-            
+
         def vector_eval(self):
             problem = self.problem
             assembled_operator = dict()
@@ -80,10 +80,10 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
                   assembled_operator["g"]
-                
+
                 + assembled_operator["f"]
             )
-                    
+
     # Perform a truth evaluation of the cost functional
     def _compute_output(self):
         assembled_operator = dict()

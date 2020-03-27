@@ -33,27 +33,27 @@ def AffineExpansionStorage(args):
 class AffineExpansionStorage_Base(AbstractAffineExpansionStorage):
     def __init__(self, args):
         self._content = None
-        
+
     def __getitem__(self, key):
         return self._content[key]
-        
+
     def __iter__(self):
         return self._content.__iter__()
-        
+
     def __len__(self):
         assert self._content is not None
         return len(self._content)
-    
+
 # Specialization for Dirichlet BCs
 class AffineExpansionStorage_DirichletBC(AffineExpansionStorage_Base):
     def __init__(self, args):
         AffineExpansionStorage_Base.__init__(self, args)
         self._content = args
-    
+
 @overload
 def _AffineExpansionStorage(args: tuple_of(list_of(DirichletBC))):
     return AffineExpansionStorage_DirichletBC(args)
-    
+
 # Specialization for forms
 class AffineExpansionStorage_Form(AffineExpansionStorage_Base):
     def __init__(self, args):
@@ -77,7 +77,7 @@ def _AffineExpansionStorage(args: (
     tuple_of((Form, Vector.Type()))
 )):
     return AffineExpansionStorage_Form(args)
-    
+
 # Specialization for functions
 class AffineExpansionStorage_Function(AffineExpansionStorage_Base):
     def __init__(self, args):

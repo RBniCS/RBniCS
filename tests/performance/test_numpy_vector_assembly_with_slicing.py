@@ -33,7 +33,7 @@ class Data(object):
     def __init__(self, Nmax, Q):
         self.Nmax = Nmax
         self.Q = Q
-        
+
     def generate_random(self):
         F = OnlineAffineExpansionStorage(self.Q)
         for i in range(self.Q):
@@ -46,17 +46,17 @@ class Data(object):
         N_start = RandomSize(0, N_stop)
         # Return
         return (theta, F, slice(N_start, N_stop))
-        
+
     def evaluate_builtin(self, theta, F, slice_):
         result_builtin = theta[0]*F[0][slice_]
         for i in range(1, self.Q):
             result_builtin += theta[i]*F[i][slice_]
         result_builtin.N = slice_.stop - slice_.start
         return result_builtin
-        
+
     def evaluate_backend(self, theta, F, slice_):
         return sum(product(theta, F[slice_]))
-        
+
     def assert_backend(self, theta, F, slice_, result_backend):
         result_builtin = self.evaluate_builtin(theta, F, slice_)
         relative_error = norm(result_builtin - result_backend)/norm(result_builtin)

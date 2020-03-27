@@ -20,11 +20,11 @@ from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.backends import product, sum
 
 def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
-    
+
     NavierStokesReducedProblem_Base = NonlinearReducedProblem(StokesReducedProblem_DerivedClass)
-    
+
     class NavierStokesReducedProblem_Class(NavierStokesReducedProblem_Base):
-        
+
         class ProblemSolver(NavierStokesReducedProblem_Base.ProblemSolver):
             def residual_eval(self, solution):
                 problem = self.problem
@@ -43,7 +43,7 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                     + assembled_operator["c"]
                     - assembled_operator["f"] - assembled_operator["g"]
                 )
-                
+
             def jacobian_eval(self, solution):
                 problem = self.problem
                 N = self.N
@@ -55,6 +55,6 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                       assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                     + assembled_operator["dc"]
                 )
-        
+
     # return value (a class) for the decorator
     return NavierStokesReducedProblem_Class

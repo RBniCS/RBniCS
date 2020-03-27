@@ -23,12 +23,12 @@ from rbnics.backends import product, sum
 NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
 
 class NavierStokesProblem(NavierStokesProblem_Base):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         NavierStokesProblem_Base.__init__(self, V, **kwargs)
-        
+
         # Form names for Navier-Stokes problems
         self.terms.extend([
             "c", "dc"
@@ -36,7 +36,7 @@ class NavierStokesProblem(NavierStokesProblem_Base):
         self.terms_order.update({
             "c": 1, "dc": 2
         })
-        
+
     class ProblemSolver(NavierStokesProblem_Base.ProblemSolver):
         def residual_eval(self, solution):
             problem = self.problem
@@ -48,7 +48,7 @@ class NavierStokesProblem(NavierStokesProblem_Base):
                  + assembled_operator["c"]
                  - assembled_operator["f"] - assembled_operator["g"]
             )
-            
+
         def jacobian_eval(self, solution):
             problem = self.problem
             assembled_operator = dict()

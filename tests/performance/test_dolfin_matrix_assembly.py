@@ -37,7 +37,7 @@ class Data(object):
         u = TrialFunction(self.V)
         v = TestFunction(self.V)
         self.a = lambda k: k*inner(grad(u), grad(v))*dx
-        
+
     def generate_random(self):
         a = ()
         for i in range(self.Q):
@@ -50,21 +50,21 @@ class Data(object):
         theta = RandomTuple(self.Q)
         # Return
         return (theta, A)
-        
+
     def evaluate_builtin(self, theta, A):
         result_builtin = theta[0]*A[0]
         for i in range(1, self.Q):
             result_builtin += theta[i]*A[i]
         return result_builtin
-        
+
     def evaluate_backend(self, theta, A):
         return sum(product(theta, A))
-        
+
     def assert_backend(self, theta, A, result_backend):
         result_builtin = self.evaluate_builtin(theta, A)
         relative_error = (result_builtin - result_backend).norm("frobenius")/result_builtin.norm("frobenius")
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("Q", [10 + 4*j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))

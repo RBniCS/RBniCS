@@ -61,10 +61,10 @@ expr17 = Function(tensor_V) # f_35
 class Problem(object):
     def __init__(self, name):
         self._name = name
-    
+
     def name(self):
         return self._name
-        
+
 _solution_to_problem_map[expr12] = Problem("problem12")
 _solution_to_problem_map[expr13] = Problem("problem13")
 _solution_to_problem_map[expr14] = Problem("problem14")
@@ -87,13 +87,13 @@ def test_separated_parametrized_forms_scalar_1():
     a1_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients)))
-    
+
     assert 3 == len(a1_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep.coefficients[2])))
-    
+
     assert 2 == len(a1_sep.coefficients[0])
     assert 1 == len(a1_sep.coefficients[1])
     assert 1 == len(a1_sep.coefficients[2])
@@ -101,7 +101,7 @@ def test_separated_parametrized_forms_scalar_1():
     test_logger.log(DEBUG, "\t\t(" + str(a1_sep.coefficients[0][0]) + ", " + str(a1_sep.coefficients[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a1_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep.coefficients[2][0]))
-    
+
     assert "(f_7, f_6)" == "(" + str(a1_sep.coefficients[0][0]) + ", " + str(a1_sep.coefficients[0][1]) + ")"
     assert "f_6" == str(a1_sep.coefficients[1][0])
     assert "f_7" == str(a1_sep.coefficients[2][0])
@@ -109,7 +109,7 @@ def test_separated_parametrized_forms_scalar_1():
     test_logger.log(DEBUG, "\t\t(" + str(a1_sep._placeholders[0][0]) + ", " + str(a1_sep._placeholders[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._placeholders[2][0]))
-    
+
     assert "(f_38, f_39)" == "(" + str(a1_sep._placeholders[0][0]) + ", " + str(a1_sep._placeholders[0][1]) + ")"
     assert "f_40" == str(a1_sep._placeholders[1][0])
     assert "f_41" == str(a1_sep._placeholders[2][0])
@@ -117,13 +117,13 @@ def test_separated_parametrized_forms_scalar_1():
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a1_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "f_39 * f_38 * (sum_{i_8} (grad(v_0))[i_8] * (grad(v_1))[i_8] )" == str(a1_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "f_40 * (grad(v_1))[0] * v_0" == str(a1_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_41 * v_0 * v_1" == str(a1_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a1_sep._form_unchanged)))
-    
+
     assert 0 == len(a1_sep._form_unchanged)
 
 @skip_in_parallel
@@ -137,13 +137,13 @@ def test_separated_parametrized_forms_scalar_2():
     a2_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients)))
-    
+
     assert 3 == len(a2_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep.coefficients[2])))
-    
+
     assert 2 == len(a2_sep.coefficients[0])
     assert 1 == len(a2_sep.coefficients[1])
     assert 1 == len(a2_sep.coefficients[2])
@@ -151,7 +151,7 @@ def test_separated_parametrized_forms_scalar_2():
     test_logger.log(DEBUG, "\t\t(" + str(a2_sep.coefficients[0][0]) + ", " + str(a2_sep.coefficients[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a2_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep.coefficients[2][0]))
-    
+
     assert "(f_7, f_6)" == "(" + str(a2_sep.coefficients[0][0]) + ", " + str(a2_sep.coefficients[0][1]) + ")"
     assert "f_6" == str(a2_sep.coefficients[1][0])
     assert "f_7" == str(a2_sep.coefficients[2][0])
@@ -159,7 +159,7 @@ def test_separated_parametrized_forms_scalar_2():
     test_logger.log(DEBUG, "\t\t(" + str(a2_sep._placeholders[0][0]) + ", " + str(a2_sep._placeholders[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._placeholders[2][0]))
-    
+
     assert "(f_42, f_43)" == "(" + str(a2_sep._placeholders[0][0]) + ", " + str(a2_sep._placeholders[0][1]) + ")"
     assert "f_44" == str(a2_sep._placeholders[1][0])
     assert "f_45" == str(a2_sep._placeholders[2][0])
@@ -167,13 +167,13 @@ def test_separated_parametrized_forms_scalar_2():
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a2_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{11}} ({ A | A_{i_9} = (grad(v_1))[i_9] * f_42 })[i_{11}] * ({ A | A_{i_{10}} = (grad(v_0))[i_{10}] * f_43 })[i_{11}] " == str(a2_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * f_44" == str(a2_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "v_0 * v_1 * f_45" == str(a2_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep._form_unchanged)))
-    
+
     assert 0 == len(a2_sep._form_unchanged)
 
 @skip_in_parallel
@@ -187,7 +187,7 @@ def test_separated_parametrized_forms_scalar_3():
     a3_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients)))
-    
+
     assert 6 == len(a3_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[0])))
@@ -196,7 +196,7 @@ def test_separated_parametrized_forms_scalar_3():
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[3])))
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[4])))
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep.coefficients[5])))
-    
+
     assert 3 == len(a3_sep.coefficients[0])
     assert 2 == len(a3_sep.coefficients[1])
     assert 1 == len(a3_sep.coefficients[2])
@@ -210,7 +210,7 @@ def test_separated_parametrized_forms_scalar_3():
     test_logger.log(DEBUG, "\t\t(" + str(a3_sep.coefficients[3][0]) + ", " + str(a3_sep.coefficients[3][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a3_sep.coefficients[4][0]))
     test_logger.log(DEBUG, "\t\t(" + str(a3_sep.coefficients[5][0]) + ", " + str(a3_sep.coefficients[5][1]) + ", " + str(a3_sep.coefficients[5][2]) + ")")
-    
+
     assert "f_5" == str(a3_sep.coefficients[0][0])
     assert "f_7" == str(a3_sep.coefficients[0][1])
     assert "f_6 * f_6" == str(a3_sep.coefficients[0][2])
@@ -230,7 +230,7 @@ def test_separated_parametrized_forms_scalar_3():
     test_logger.log(DEBUG, "\t\t(" + str(a3_sep._placeholders[3][0]) + ", " + str(a3_sep._placeholders[3][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._placeholders[4][0]))
     test_logger.log(DEBUG, "\t\t(" + str(a3_sep._placeholders[5][0]) + ", " + str(a3_sep._placeholders[5][1]) + ", " + str(a3_sep._placeholders[5][2]) + ")")
-    
+
     assert "f_46" == str(a3_sep._placeholders[0][0])
     assert "f_47" == str(a3_sep._placeholders[0][1])
     assert "f_48" == str(a3_sep._placeholders[0][2])
@@ -250,7 +250,7 @@ def test_separated_parametrized_forms_scalar_3():
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._form_with_placeholders[3].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._form_with_placeholders[4].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a3_sep._form_with_placeholders[5].integrals()[0].integrand()))
-    
+
     assert "f_48 * f_47 * f_46 * (sum_{i_{12}} (grad(v_0))[i_{12}] * (grad(v_1))[i_{12}] )" == str(a3_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "f_50 * f_49 * (sum_{i_{12}} (grad(v_0))[i_{12}] * (grad(v_1))[i_{12}] )" == str(a3_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_51 * (grad(v_1))[0] * v_0" == str(a3_sep._form_with_placeholders[2].integrals()[0].integrand())
@@ -259,7 +259,7 @@ def test_separated_parametrized_forms_scalar_3():
     assert "f_57 * f_56 * v_0 * v_1 * f_55" == str(a3_sep._form_with_placeholders[5].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a3_sep._form_unchanged)))
-    
+
     assert 0 == len(a3_sep._form_unchanged)
 
 @skip_in_parallel
@@ -273,14 +273,14 @@ def test_separated_parametrized_forms_scalar_4():
     a4_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients)))
-    
+
     assert 4 == len(a4_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[2])))
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep.coefficients[3])))
-    
+
     assert 1 == len(a4_sep.coefficients[0])
     assert 1 == len(a4_sep.coefficients[1])
     assert 1 == len(a4_sep.coefficients[2])
@@ -290,7 +290,7 @@ def test_separated_parametrized_forms_scalar_4():
     test_logger.log(DEBUG, "\t\t" + str(a4_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep.coefficients[2][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep.coefficients[3][0]))
-    
+
     assert "{ A | A_{i_{13}, i_{14}} = f_10[i_{13}, i_{14}] }" == str(a4_sep.coefficients[0][0])
     assert "{ A | A_{i_{13}, i_{14}} = f_5 * f_10[i_{13}, i_{14}] * f_6 }" == str(a4_sep.coefficients[1][0])
     assert "f_9" == str(a4_sep.coefficients[2][0])
@@ -300,7 +300,7 @@ def test_separated_parametrized_forms_scalar_4():
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[2][0]))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._placeholders[3][0]))
-    
+
     assert "f_58" == str(a4_sep._placeholders[0][0])
     assert "f_59" == str(a4_sep._placeholders[1][0])
     assert "f_60" == str(a4_sep._placeholders[2][0])
@@ -310,14 +310,14 @@ def test_separated_parametrized_forms_scalar_4():
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._form_with_placeholders[2].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a4_sep._form_with_placeholders[3].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{17}} ({ A | A_{i_{15}} = sum_{i_{16}} f_58[i_{15}, i_{16}] * (grad(v_1))[i_{16}]  })[i_{17}] * (grad(v_0))[i_{17}] " == str(a4_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "sum_{i_{17}} ({ A | A_{i_{15}} = sum_{i_{16}} f_59[i_{15}, i_{16}] * (grad(v_1))[i_{16}]  })[i_{17}] * (grad(v_0))[i_{17}] " == str(a4_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{18}} f_60[i_{18}] * (grad(v_1))[i_{18}] )" == str(a4_sep._form_with_placeholders[2].integrals()[0].integrand())
     assert "f_61 * v_0 * v_1" == str(a4_sep._form_with_placeholders[3].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a4_sep._form_unchanged)))
-    
+
     assert 0 == len(a4_sep._form_unchanged)
 
 @skip_in_parallel
@@ -331,13 +331,13 @@ def test_separated_parametrized_forms_scalar_5():
     a5_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients)))
-    
+
     assert 3 == len(a5_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep.coefficients[2])))
-    
+
     assert 2 == len(a5_sep.coefficients[0])
     assert 1 == len(a5_sep.coefficients[1])
     assert 1 == len(a5_sep.coefficients[2])
@@ -345,7 +345,7 @@ def test_separated_parametrized_forms_scalar_5():
     test_logger.log(DEBUG, "\t\t(" + str(a5_sep.coefficients[0][0]) + ", " + str(a5_sep.coefficients[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a5_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep.coefficients[2][0]))
-    
+
     assert "(f_7, f_6)" == "(" + str(a5_sep.coefficients[0][0]) + ", " + str(a5_sep.coefficients[0][1]) + ")"
     assert "f_6" == str(a5_sep.coefficients[1][0])
     assert "f_7" == str(a5_sep.coefficients[2][0])
@@ -353,7 +353,7 @@ def test_separated_parametrized_forms_scalar_5():
     test_logger.log(DEBUG, "\t\t(" + str(a5_sep._placeholders[0][0]) + ", " + str(a5_sep._placeholders[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._placeholders[2][0]))
-    
+
     assert "(f_62, f_63)" == "(" + str(a5_sep._placeholders[0][0]) + ", " + str(a5_sep._placeholders[0][1]) + ")"
     assert "f_64" == str(a5_sep._placeholders[1][0])
     assert "f_65" == str(a5_sep._placeholders[2][0])
@@ -361,13 +361,13 @@ def test_separated_parametrized_forms_scalar_5():
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a5_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "f_63 * f_62 * (sum_{i_{19}} (grad(v_0))[i_{19}] * (grad(v_1))[i_{19}] )" == str(a5_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "f_64 * (grad(v_1))[0] * v_0" == str(a5_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_65 * v_0 * v_1" == str(a5_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a5_sep._form_unchanged)))
-    
+
     assert 0 == len(a5_sep._form_unchanged)
 
 @skip_in_parallel
@@ -382,27 +382,27 @@ def test_separated_parametrized_forms_scalar_6():
     a6_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a6_sep.coefficients)))
-    
+
     assert 1 == len(a6_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a6_sep.coefficients[0])))
-    
+
     assert 1 == len(a6_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a6_sep.coefficients[0][0]))
-    
+
     assert "f_7" == str(a6_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a6_sep._placeholders[0][0]))
-    
+
     assert "f_66" == str(a6_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a6_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * diameter * f_66" == str(a6_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a6_sep._form_unchanged)))
-    
+
     assert 0 == len(a6_sep._form_unchanged)
 
 @skip_in_parallel
@@ -416,17 +416,17 @@ def test_separated_parametrized_forms_scalar_7():
     a7_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a7_sep.coefficients)))
-    
+
     assert 0 == len(a7_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a7_sep._form_unchanged)))
-    
+
     assert 3 == len(a7_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a7_sep._form_unchanged[2].integrals()[0].integrand()))
-    
+
     assert "f_12 * f_13 * (sum_{i_{20}} (grad(v_0))[i_{20}] * (grad(v_1))[i_{20}] )" == str(a7_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_12 * (grad(v_1))[0] * v_0" == str(a7_sep._form_unchanged[1].integrals()[0].integrand())
     assert "f_13 * v_0 * v_1" == str(a7_sep._form_unchanged[2].integrals()[0].integrand())
@@ -442,32 +442,32 @@ def test_separated_parametrized_forms_scalar_8():
     a8_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a8_sep.coefficients)))
-    
+
     assert 1 == len(a8_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a8_sep.coefficients[0])))
-    
+
     assert 1 == len(a8_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep.coefficients[0][0]))
-    
+
     assert "f_6" == str(a8_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._placeholders[0][0]))
-    
+
     assert "f_67" == str(a8_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "f_67 * f_13 * (sum_{i_{21}} (grad(v_0))[i_{21}] * (grad(v_1))[i_{21}] )" == str(a8_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a8_sep._form_unchanged)))
-    
+
     assert 2 == len(a8_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a8_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * (grad(v_1))[0] * f_12" == str(a8_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_13 * v_0 * v_1" == str(a8_sep._form_unchanged[1].integrals()[0].integrand())
 
@@ -482,32 +482,32 @@ def test_separated_parametrized_forms_scalar_9():
     a9_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a9_sep.coefficients)))
-    
+
     assert 1 == len(a9_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a9_sep.coefficients[0])))
-    
+
     assert 1 == len(a9_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep.coefficients[0][0]))
-    
+
     assert "f_6 * f_13 * 1.0 / f_5" == str(a9_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._placeholders[0][0]))
-    
+
     assert "f_68" == str(a9_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "f_68 * (sum_{i_{22}} (grad(v_0))[i_{22}] * (grad(v_1))[i_{22}] )" == str(a9_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a9_sep._form_unchanged)))
-    
+
     assert 2 == len(a9_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a9_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * (grad(v_1))[0] * f_12" == str(a9_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_13 * v_0 * v_1" == str(a9_sep._form_unchanged[1].integrals()[0].integrand())
 
@@ -523,15 +523,15 @@ def test_separated_parametrized_forms_scalar_10():
     a10_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a10_sep.coefficients)))
-    
+
     assert 0 == len(a10_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a10_sep._form_unchanged)))
-    
+
     assert 1 == len(a10_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_unchanged[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * diameter * f_13" == str(a10_sep._form_unchanged[0].integrals()[0].integrand())
 
 @skip_in_parallel
@@ -546,27 +546,27 @@ def test_separated_parametrized_forms_scalar_11():
     a11_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients)))
-    
+
     assert 1 == len(a11_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep.coefficients[0])))
-    
+
     assert 1 == len(a11_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a11_sep.coefficients[0][0]))
-    
+
     assert "f_7" == str(a11_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._placeholders[0][0]))
-    
+
     assert "f_69" == str(a11_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a11_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * diameter * f_13 * f_69" == str(a11_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a11_sep._form_unchanged)))
-    
+
     assert 0 == len(a11_sep._form_unchanged)
 
 @skip_in_parallel
@@ -581,27 +581,27 @@ def test_separated_parametrized_forms_scalar_12():
     a12_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep.coefficients)))
-    
+
     assert 1 == len(a12_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep.coefficients[0])))
-    
+
     assert 1 == len(a12_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a12_sep.coefficients[0][0]))
-    
+
     assert "diameter * f_7" == str(a12_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a12_sep._placeholders[0][0]))
-    
+
     assert "f_70" == str(a12_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a12_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * f_70 * 1.0 / f_13" == str(a12_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep._form_unchanged)))
-    
+
     assert 0 == len(a12_sep._form_unchanged)
 
 @skip_in_parallel
@@ -615,13 +615,13 @@ def test_separated_parametrized_forms_scalar_13():
     a13_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep.coefficients)))
-    
+
     assert 3 == len(a13_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep.coefficients[2])))
-    
+
     assert 1 == len(a13_sep.coefficients[0])
     assert 1 == len(a13_sep.coefficients[1])
     assert 1 == len(a13_sep.coefficients[2])
@@ -629,7 +629,7 @@ def test_separated_parametrized_forms_scalar_13():
     test_logger.log(DEBUG, "\t\t" + str(a13_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a13_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a13_sep.coefficients[2][0]))
-    
+
     assert "f_10" == str(a13_sep.coefficients[0][0])
     assert "f_9" == str(a13_sep.coefficients[1][0])
     assert "f_7" == str(a13_sep.coefficients[2][0])
@@ -637,7 +637,7 @@ def test_separated_parametrized_forms_scalar_13():
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._placeholders[2][0]))
-    
+
     assert "f_71" == str(a13_sep._placeholders[0][0])
     assert "f_72" == str(a13_sep._placeholders[1][0])
     assert "f_73" == str(a13_sep._placeholders[2][0])
@@ -645,13 +645,13 @@ def test_separated_parametrized_forms_scalar_13():
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a13_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{31}} ({ A | A_{i_{28}} = sum_{i_{29}} ({ A | A_{i_{26}, i_{27}} = ({ A | A_{i_{23}, i_{24}} = sum_{i_{25}} f_15[i_{23}, i_{25}] * f_71[i_{25}, i_{24}]  })[i_{26}, i_{27}] * f_14 })[i_{28}, i_{29}] * (grad(v_1))[i_{29}]  })[i_{31}] * (grad(v_0))[i_{31}] " == str(a13_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{32}} ({ A | A_{i_{30}} = f_72[i_{30}] * f_14 })[i_{32}] * (grad(v_1))[i_{32}] )" == str(a13_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_14 * f_73 * v_0 * v_1" == str(a13_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a13_sep._form_unchanged)))
-    
+
     assert 0 == len(a13_sep._form_unchanged)
 
 @skip_in_parallel
@@ -665,13 +665,13 @@ def test_separated_parametrized_forms_scalar_14():
     a14_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep.coefficients)))
-    
+
     assert 3 == len(a14_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep.coefficients[2])))
-    
+
     assert 2 == len(a14_sep.coefficients[0])
     assert 1 == len(a14_sep.coefficients[1])
     assert 2 == len(a14_sep.coefficients[2])
@@ -679,7 +679,7 @@ def test_separated_parametrized_forms_scalar_14():
     test_logger.log(DEBUG, "\t\t(" + str(a14_sep.coefficients[0][0]) + ", " + str(a14_sep.coefficients[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a14_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t(" + str(a14_sep.coefficients[2][0]) + ", " + str(a14_sep.coefficients[2][1]) + ")")
-    
+
     assert "(f_20, f_7)" == "(" + str(a14_sep.coefficients[0][0]) + ", " + str(a14_sep.coefficients[0][1]) + ")"
     assert "f_20 * 1.0 / f_6" == str(a14_sep.coefficients[1][0])
     assert "(f_20, f_7)" == "(" + str(a14_sep.coefficients[2][0]) + ", " + str(a14_sep.coefficients[2][1]) + ")"
@@ -687,7 +687,7 @@ def test_separated_parametrized_forms_scalar_14():
     test_logger.log(DEBUG, "\t\t(" + str(a14_sep._placeholders[0][0]) + ", " + str(a14_sep._placeholders[0][1]) + ")")
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t(" + str(a14_sep._placeholders[2][0]) + ", " + str(a14_sep._placeholders[2][1]) + ")")
-    
+
     assert "(f_78, f_79)" == "(" + str(a14_sep._placeholders[0][0]) + ", " + str(a14_sep._placeholders[0][1]) + ")"
     assert "f_80" == str(a14_sep._placeholders[1][0])
     assert "(f_81, f_82)" == "(" + str(a14_sep._placeholders[2][0]) + ", " + str(a14_sep._placeholders[2][1]) + ")"
@@ -695,13 +695,13 @@ def test_separated_parametrized_forms_scalar_14():
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a14_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "f_79 * f_78 * (sum_{i_{33}} (grad(v_0))[i_{33}] * (grad(v_1))[i_{33}] )" == str(a14_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * f_80" == str(a14_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_82 * f_81 * v_0 * v_1" == str(a14_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep._form_unchanged)))
-    
+
     assert 0 == len(a14_sep._form_unchanged)
 
 @skip_in_parallel
@@ -715,13 +715,13 @@ def test_separated_parametrized_forms_scalar_15():
     a15_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep.coefficients)))
-    
+
     assert 3 == len(a15_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep.coefficients[2])))
-    
+
     assert 1 == len(a15_sep.coefficients[0])
     assert 1 == len(a15_sep.coefficients[1])
     assert 1 == len(a15_sep.coefficients[2])
@@ -729,7 +729,7 @@ def test_separated_parametrized_forms_scalar_15():
     test_logger.log(DEBUG, "\t\t" + str(a15_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep.coefficients[2][0]))
-    
+
     assert "f_26" == str(a15_sep.coefficients[0][0])
     assert "f_23" == str(a15_sep.coefficients[1][0])
     assert "f_20" == str(a15_sep.coefficients[2][0])
@@ -737,7 +737,7 @@ def test_separated_parametrized_forms_scalar_15():
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._placeholders[2][0]))
-    
+
     assert "f_83" == str(a15_sep._placeholders[0][0])
     assert "f_84" == str(a15_sep._placeholders[1][0])
     assert "f_85" == str(a15_sep._placeholders[2][0])
@@ -745,13 +745,13 @@ def test_separated_parametrized_forms_scalar_15():
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a15_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{36}} ({ A | A_{i_{34}} = sum_{i_{35}} f_83[i_{34}, i_{35}] * (grad(v_1))[i_{35}]  })[i_{36}] * (grad(v_0))[i_{36}] " == str(a15_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{37}} f_84[i_{37}] * (grad(v_1))[i_{37}] )" == str(a15_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "v_1 * v_0 * f_85" == str(a15_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep._form_unchanged)))
-    
+
     assert 0 == len(a15_sep._form_unchanged)
 
 @skip_in_parallel
@@ -765,13 +765,13 @@ def test_separated_parametrized_forms_scalar_16():
     a16_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep.coefficients)))
-    
+
     assert 3 == len(a16_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep.coefficients[2])))
-    
+
     assert 1 == len(a16_sep.coefficients[0])
     assert 1 == len(a16_sep.coefficients[1])
     assert 1 == len(a16_sep.coefficients[2])
@@ -779,7 +779,7 @@ def test_separated_parametrized_forms_scalar_16():
     test_logger.log(DEBUG, "\t\t" + str(a16_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a16_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a16_sep.coefficients[2][0]))
-    
+
     assert "f_26" == str(a16_sep.coefficients[0][0])
     assert "f_23" == str(a16_sep.coefficients[1][0])
     assert "f_20" == str(a16_sep.coefficients[2][0])
@@ -787,7 +787,7 @@ def test_separated_parametrized_forms_scalar_16():
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._placeholders[2][0]))
-    
+
     assert "f_86" == str(a16_sep._placeholders[0][0])
     assert "f_87" == str(a16_sep._placeholders[1][0])
     assert "f_88" == str(a16_sep._placeholders[2][0])
@@ -795,13 +795,13 @@ def test_separated_parametrized_forms_scalar_16():
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a16_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{44}} ({ A | A_{i_{42}} = sum_{i_{43}} ({ A | A_{i_{40}, i_{41}} = ({ A | A_{i_{38}, i_{39}} = f_86[i_{38}, i_{39}] * f_13 })[i_{40}, i_{41}] * f_12 })[i_{42}, i_{43}] * (grad(v_1))[i_{43}]  })[i_{44}] * (grad(v_0))[i_{44}] " == str(a16_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{45}} f_87[i_{45}] * (grad(v_1))[i_{45}] )" == str(a16_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "v_1 * v_0 * f_88" == str(a16_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a16_sep._form_unchanged)))
-    
+
     assert 0 == len(a16_sep._form_unchanged)
 
 @skip_in_parallel
@@ -815,37 +815,37 @@ def test_separated_parametrized_forms_scalar_17():
     a17_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients)))
-    
+
     assert 2 == len(a17_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep.coefficients[1])))
-    
+
     assert 1 == len(a17_sep.coefficients[0])
     assert 1 == len(a17_sep.coefficients[1])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a17_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep.coefficients[1][0]))
-    
+
     assert "f_23[0]" == str(a17_sep.coefficients[0][0])
     assert "f_23[1]" == str(a17_sep.coefficients[1][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._placeholders[1][0]))
-    
+
     assert "f_89" == str(a17_sep._placeholders[0][0])
     assert "f_90" == str(a17_sep._placeholders[1][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a17_sep._form_with_placeholders[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * f_89" == str(a17_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "(grad(v_1))[0] * v_0 * f_90" == str(a17_sep._form_with_placeholders[1].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep._form_unchanged)))
-    
+
     assert 0 == len(a17_sep._form_unchanged)
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="18", depends=["17"])
@@ -857,13 +857,13 @@ def test_separated_parametrized_forms_scalar_18():
     a18_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients)))
-    
+
     assert 3 == len(a18_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients[1])))
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep.coefficients[2])))
-    
+
     assert 1 == len(a18_sep.coefficients[0])
     assert 1 == len(a18_sep.coefficients[1])
     assert 1 == len(a18_sep.coefficients[2])
@@ -871,7 +871,7 @@ def test_separated_parametrized_forms_scalar_18():
     test_logger.log(DEBUG, "\t\t" + str(a18_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep.coefficients[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep.coefficients[2][0]))
-    
+
     assert "f_7" == str(a18_sep.coefficients[0][0])
     assert "f_6" == str(a18_sep.coefficients[1][0])
     assert "f_7" == str(a18_sep.coefficients[2][0])
@@ -879,7 +879,7 @@ def test_separated_parametrized_forms_scalar_18():
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._placeholders[1][0]))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._placeholders[2][0]))
-    
+
     assert "f_91" == str(a18_sep._placeholders[0][0])
     assert "f_92" == str(a18_sep._placeholders[1][0])
     assert "f_93" == str(a18_sep._placeholders[2][0])
@@ -887,15 +887,15 @@ def test_separated_parametrized_forms_scalar_18():
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._form_with_placeholders[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a18_sep._form_with_placeholders[2].integrals()[0].integrand()))
-    
+
     assert "f_91 * f_29 * (sum_{i_{46}} (grad(v_0))[i_{46}] * (grad(v_1))[i_{46}] )" == str(a18_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "f_29 * v_0 * (grad(v_1))[0] * f_92" == str(a18_sep._form_with_placeholders[1].integrals()[0].integrand())
     assert "f_93 * f_29 * v_0 * v_1" == str(a18_sep._form_with_placeholders[2].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a18_sep._form_unchanged)))
-    
+
     assert 0 == len(a18_sep._form_unchanged)
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="19", depends=["18"])
@@ -907,21 +907,21 @@ def test_separated_parametrized_forms_scalar_19():
     a19_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a19_sep.coefficients)))
-    
+
     assert 0 == len(a19_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a19_sep._form_unchanged)))
-    
+
     assert 3 == len(a19_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._form_unchanged[1].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a19_sep._form_unchanged[2].integrals()[0].integrand()))
-    
+
     assert "sum_{i_{53}} ({ A | A_{i_{51}} = sum_{i_{52}} ({ A | A_{i_{49}, i_{50}} = ({ A | A_{i_{47}, i_{48}} = f_35[i_{47}, i_{48}] * f_13 })[i_{49}, i_{50}] * f_12 })[i_{51}, i_{52}] * (grad(v_1))[i_{52}]  })[i_{53}] * (grad(v_0))[i_{53}] " == str(a19_sep._form_unchanged[0].integrals()[0].integrand())
     assert "v_0 * (sum_{i_{54}} f_32[i_{54}] * (grad(v_1))[i_{54}] )" == str(a19_sep._form_unchanged[1].integrals()[0].integrand())
     assert "v_1 * v_0 * f_29" == str(a19_sep._form_unchanged[2].integrals()[0].integrand())
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="20", depends=["19"])
@@ -933,19 +933,19 @@ def test_separated_parametrized_forms_scalar_20():
     a20_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a20_sep.coefficients)))
-    
+
     assert 0 == len(a20_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a20_sep._form_unchanged)))
-    
+
     assert 2 == len(a20_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a20_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a20_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * f_32[0] * v_1" == str(a20_sep._form_unchanged[0].integrals()[0].integrand())
     assert "(grad(v_1))[0] * f_32[1] * v_0" == str(a20_sep._form_unchanged[1].integrals()[0].integrand())
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="21", depends=["20"])
@@ -957,37 +957,37 @@ def test_separated_parametrized_forms_scalar_21():
     a21_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a21_sep.coefficients)))
-    
+
     assert 2 == len(a21_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a21_sep.coefficients[0])))
     test_logger.log(DEBUG, "\t\t" + str(len(a21_sep.coefficients[1])))
-    
+
     assert 1 == len(a21_sep.coefficients[0])
     assert 1 == len(a21_sep.coefficients[1])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a21_sep.coefficients[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a21_sep.coefficients[1][0]))
-    
+
     assert "grad(f_23)" == str(a21_sep.coefficients[0][0])
     assert "(grad(f_23))[1, 0]" == str(a21_sep.coefficients[1][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a21_sep._placeholders[0][0]))
     test_logger.log(DEBUG, "\t\t" + str(a21_sep._placeholders[1][0]))
-    
+
     assert "f_94" == str(a21_sep._placeholders[0][0])
     assert "f_95" == str(a21_sep._placeholders[1][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a21_sep._form_with_placeholders[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a21_sep._form_with_placeholders[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * (sum_{i_{55}} f_94[0, i_{55}] * (grad(v_1))[i_{55}] )" == str(a21_sep._form_with_placeholders[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * f_95" == str(a21_sep._form_with_placeholders[1].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a21_sep._form_unchanged)))
-    
+
     assert 0 == len(a21_sep._form_unchanged)
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="22", depends=["21"])
@@ -999,19 +999,19 @@ def test_separated_parametrized_forms_scalar_22():
     a22_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a22_sep.coefficients)))
-    
+
     assert 0 == len(a22_sep.coefficients)
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a22_sep._form_unchanged)))
-    
+
     assert 2 == len(a22_sep._form_unchanged)
     test_logger.log(DEBUG, "\tUnchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(a22_sep._form_unchanged[0].integrals()[0].integrand()))
     test_logger.log(DEBUG, "\t\t" + str(a22_sep._form_unchanged[1].integrals()[0].integrand()))
-    
+
     assert "v_0 * (sum_{i_{58}} (grad(f_32))[0, i_{58}] * (grad(v_1))[i_{58}] )" == str(a22_sep._form_unchanged[0].integrals()[0].integrand())
     assert "v_0 * (grad(v_1))[0] * (grad(f_32))[1, 0]" == str(a22_sep._form_unchanged[1].integrals()[0].integrand())
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="23", depends=["22"])
@@ -1023,29 +1023,29 @@ def test_separated_parametrized_forms_scalar_23():
     a23_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a23_sep.coefficients)))
-    
+
     assert 1 == len(a23_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a23_sep.coefficients[0])))
-    
+
     assert 1 == len(a23_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t" + str(a23_sep.coefficients[0][0]))
-    
+
     assert "f_7 * 1.0 / f_6" == str(a23_sep.coefficients[0][0])
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t" + str(a23_sep._placeholders[0][0]))
-    
+
     assert "f_96" == str(a23_sep._placeholders[0][0])
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a23_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "v_0 * v_1 * f_96" == str(a23_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a23_sep._form_unchanged)))
-    
+
     assert 0 == len(a23_sep._form_unchanged)
-    
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="24", depends=["23"])
@@ -1057,25 +1057,25 @@ def test_separated_parametrized_forms_scalar_24():
     a24_sep.separate()
     test_logger.log(DEBUG, "\tLen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a24_sep.coefficients)))
-    
+
     assert 1 == len(a24_sep.coefficients)
     test_logger.log(DEBUG, "\tSublen coefficients:")
     test_logger.log(DEBUG, "\t\t" + str(len(a24_sep.coefficients[0])))
-    
+
     assert 2 == len(a24_sep.coefficients[0])
     test_logger.log(DEBUG, "\tCoefficients:")
     test_logger.log(DEBUG, "\t\t(" + str(a24_sep.coefficients[0][0]) + ", " + str(a24_sep.coefficients[0][1]) + ")")
-    
+
     assert "(1.0 / f_6, f_7)" == "(" + str(a24_sep.coefficients[0][0]) + ", " + str(a24_sep.coefficients[0][1]) + ")"
     test_logger.log(DEBUG, "\tPlaceholders:")
     test_logger.log(DEBUG, "\t\t(" + str(a24_sep._placeholders[0][0]) + ", " + str(a24_sep._placeholders[0][1]) + ")")
-    
+
     assert "(f_97, f_98)" == "(" + str(a24_sep._placeholders[0][0]) + ", " + str(a24_sep._placeholders[0][1]) + ")"
     test_logger.log(DEBUG, "\tForms with placeholders:")
     test_logger.log(DEBUG, "\t\t" + str(a24_sep._form_with_placeholders[0].integrals()[0].integrand()))
-    
+
     assert "f_97 * v_0 * v_1 * f_98" == str(a24_sep._form_with_placeholders[0].integrals()[0].integrand())
     test_logger.log(DEBUG, "\tLen unchanged forms:")
     test_logger.log(DEBUG, "\t\t" + str(len(a24_sep._form_unchanged)))
-    
+
     assert 0 == len(a24_sep._form_unchanged)

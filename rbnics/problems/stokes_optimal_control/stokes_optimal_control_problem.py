@@ -31,17 +31,17 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         s.t.
         a(v, phi) + b(phi, p) = c(u, phi) + <f, phi>    for all phi in V
         b(v, xi)              = <l, xi>                 for all xi  in P
-        
+
     This class will solve the following optimality conditions:
         m(v, psi)                         + a*(psi, w) + b*(psi, q) = <g, psi>     for all psi in V
                                             b*(w, pi )              = 0            for all pi  in P
                                 n(u, tau) - c*(tau, w)              = 0            for all tau in U
         a(v, phi) + b(phi, p) - c(u, phi)                           = <f, phi>     for all phi in V
         b(v, xi)                                                    = <l, xi>      for all xi  in P
-        
+
     and compute the cost functional
         J(y, u) = 1/2 m(v, v) + 1/2 n(u, u) - <g, v> + 1/2 h
-        
+
     where
         a*(., .) is the adjoint of a
         b*(., .) is the adjoint of b
@@ -49,12 +49,12 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         <g, v> = m(v_d, v)
         h = m(v_d, v_d)
     """
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call to parent
         StokesOptimalControlProblem_Base.__init__(self, V, **kwargs)
-        
+
         # Form names for saddle point problems
         self.terms = [
             "a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n", "f", "g", "h", "l",
@@ -74,7 +74,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             "bt*_restricted": 2
         }
         self.components = ["v", "s", "p", "u", "w", "r", "q"]
-        
+
         # Auxiliary storage for supremizer enrichment, using a subspace of V
         self._supremizer = {
             "s": Function(V, "s"),
@@ -115,7 +115,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
                 filename_generator=_supremizer_cache_filename_generator
             )
         }
-        
+
     class ProblemSolver(StokesOptimalControlProblem_Base.ProblemSolver):
         def matrix_eval(self):
             problem = self.problem
@@ -129,7 +129,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
                 + assembled_operator["a"] + assembled_operator["bt"] - assembled_operator["c"]
                 + assembled_operator["b"]
             )
-            
+
         def vector_eval(self):
             problem = self.problem
             assembled_operator = dict()
@@ -137,12 +137,12 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
             return (
                   assembled_operator["g"]
-                
-                
+
+
                 + assembled_operator["f"]
                 + assembled_operator["l"]
             )
-        
+
         # Custom combination of boundary conditions *not* to add BCs of supremizers
         def bc_eval(self):
             problem = self.problem
@@ -154,7 +154,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             # Restore and return
             problem.components = components_bak
             return bcs
-            
+
     def solve_state_supremizer(self, solution):
         kwargs = self._latest_solve_kwargs
         try:
@@ -163,7 +163,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             self._solve_state_supremizer(solution)
             self._supremizer_cache["s"][self.mu, kwargs] = copy(self._supremizer["s"])
         return self._supremizer["s"]
-        
+
     def _solve_state_supremizer(self, solution):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
@@ -181,7 +181,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         )
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
-        
+
     def solve_adjoint_supremizer(self, solution):
         kwargs = self._latest_solve_kwargs
         try:
@@ -190,7 +190,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             self._solve_adjoint_supremizer(solution)
             self._supremizer_cache["r"][self.mu, kwargs] = copy(self._supremizer["r"])
         return self._supremizer["r"]
-        
+
     def _solve_adjoint_supremizer(self, solution):
         assert len(self.inner_product["r"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["r"][0]
@@ -208,13 +208,13 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         )
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
-        
+
     def _supremizer_cache_key_from_kwargs(self, **kwargs):
         return self._cache_key_from_kwargs(**kwargs)
-        
+
     def _supremizer_cache_file_from_kwargs(self, **kwargs):
         return hashlib.sha1(str(self._supremizer_cache_key_from_kwargs(**kwargs)).encode("utf-8")).hexdigest()
-        
+
     # Perform a truth evaluation of the cost functional
     def _compute_output(self):
         assembled_operator = dict()
@@ -226,7 +226,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             transpose(assembled_operator["g"])*self._solution +
             0.5*assembled_operator["h"]
         )
-        
+
     def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         assert folder is not None
         assert filename is not None
@@ -235,7 +235,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         if supremizer is None:
             supremizer = self._supremizer[component]
         self.export_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
-        
+
     def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
         assert folder is not None
         assert filename is not None
@@ -244,17 +244,17 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         if supremizer is None:
             supremizer = self._supremizer[component]
         self.import_solution(folder, filename, solution=supremizer, component=component, suffix=suffix)
-        
+
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
         StokesOptimalControlProblem_Base.export_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
-        
+
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
             component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
         StokesOptimalControlProblem_Base.import_solution(self, folder, filename, solution=solution, component=component, suffix=suffix)
-        
+
     # Custom combination of inner products *not* to add inner product corresponding to supremizers
     def _combine_all_inner_products(self):
         # Temporarily change self.components
@@ -265,7 +265,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         # Restore and return
         self.components = components_bak
         return combined_inner_products
-        
+
     # Custom combination of inner products *not* to add projection inner product corresponding to supremizers
     def _combine_all_projection_inner_products(self):
         # Temporarily change self.components
@@ -276,7 +276,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         # Restore and return
         self.components = components_bak
         return combined_projection_inner_products
-        
+
     # Custom combination of Dirichlet BCs *not* to add BCs corresponding to supremizers
     def _combine_and_homogenize_all_dirichlet_bcs(self):
         # Temporarily change self.components

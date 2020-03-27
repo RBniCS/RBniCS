@@ -26,7 +26,7 @@ def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_
             @PreserveClassName
             class DecoratedProblem(ProblemDecorator(Problem)):
                 pass
-            
+
             # Return
             return DecoratedProblem
         # Done with the storage, return the new problem decorator

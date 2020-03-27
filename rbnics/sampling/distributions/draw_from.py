@@ -23,7 +23,7 @@ class DrawFrom(Distribution):
         self.generator = generator # of a distribution in [0, 1]
         self.args = args
         self.kwargs = kwargs
-        
+
     def sample(self, box, n):
         set_ = list() # of tuples
         for i in range(n):

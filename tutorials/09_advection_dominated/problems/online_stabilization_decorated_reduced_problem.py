@@ -23,7 +23,7 @@ from .online_stabilization import OnlineStabilization
 
 @ReducedProblemDecoratorFor(OnlineStabilization)
 def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
-    
+
     @PreserveClassName
     class OnlineStabilizationDecoratedReducedProblem_Class(EllipticCoerciveReducedProblem_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
@@ -33,12 +33,12 @@ def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             self._online_solve_default_kwargs = OrderedDict()
             self._online_solve_default_kwargs["online_stabilization"] = True
             self.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self._online_solve_default_kwargs)
-            
+
         def _online_size_from_kwargs(self, N, **kwargs):
             N, kwargs = EllipticCoerciveReducedProblem_DerivedClass._online_size_from_kwargs(self, N, **kwargs)
             kwargs = self.OnlineSolveKwargs(**kwargs)
             return N, kwargs
-            
+
         def _solve(self, N, **kwargs):
             # Temporarily change value of stabilized attribute in truth problem
             bak_stabilized = self.truth_problem.stabilized
@@ -47,6 +47,6 @@ def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
             EllipticCoerciveReducedProblem_DerivedClass._solve(self, N, **kwargs)
             # Restore original value of stabilized attribute in truth problem
             self.truth_problem.stabilized = bak_stabilized
-            
+
     # return value (a class) for the decorator
     return OnlineStabilizationDecoratedReducedProblem_Class

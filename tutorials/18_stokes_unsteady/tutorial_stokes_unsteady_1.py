@@ -24,7 +24,7 @@ from rbnics import *
     ("mu[0]*x[0]", "x[1]"),
 )
 class StokesUnsteady(StokesUnsteadyProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -44,11 +44,11 @@ class StokesUnsteady(StokesUnsteadyProblem):
         self.bc2 = Expression(("0.0 + 1.0*(x[1] == 1.0)", "0.0"), element=self.V.sub(0).ufl_element())
         self.f = Constant((0.0, 0.0))
         self.g = Constant(0.0)
-        
+
     # Return custom problem name
     def name(self):
         return "StokesUnsteady1"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_supremizers
     def compute_theta(self, term):
@@ -72,7 +72,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_supremizers
     def assemble_operator(self, term):

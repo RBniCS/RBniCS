@@ -39,7 +39,7 @@ class Boundary1(SubDomain):
                 or
             (abs(x[0] - 0.) < DOLFIN_EPS and x[1] <= 0.25)
         )
-        
+
 class Boundary2(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (

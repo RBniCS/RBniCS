@@ -24,7 +24,7 @@ from sampling import LinearlyDependentUniformDistribution
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(NavierStokesProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -48,11 +48,11 @@ class Stokes(NavierStokesProblem):
             "maximum_iterations": 20,
             "report": True
         })
-        
+
     # Return custom problem name
     def name(self):
         return "StokesNonlinear1PODExact"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_supremizers
     def compute_theta(self, term):
@@ -70,7 +70,7 @@ class Stokes(NavierStokesProblem):
             return (theta_g0, )
         else:
             raise ValueError("Invalid term for compute_theta().")
-                
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_supremizers
     def assemble_operator(self, term):
@@ -118,7 +118,7 @@ class Stokes(NavierStokesProblem):
             return (x0, )
         else:
             raise ValueError("Invalid term for assemble_operator().")
-            
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesProblem)
 def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
@@ -128,7 +128,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             self._nonlinear_solver_parameters.update({
                 "report": True
             })
-            
+
     return ReducedNavierStokes
 
 # 1. Read the mesh for this problem

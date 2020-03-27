@@ -33,7 +33,7 @@ class Data(object):
         u = TrialFunction(self.V)
         v = TestFunction(self.V)
         self.a = lambda k: k*inner(grad(u), grad(v))*dx
-        
+
     def generate_random(self):
         # Generate random vectors
         v1 = RandomDolfinFunction(self.V).vector()
@@ -43,18 +43,18 @@ class Data(object):
         A = assemble(self.a(k))
         # Return
         return (v1, v2, A)
-        
+
     def evaluate_builtin(self, v1, v2, A):
         return v1.inner(A*v2)
-        
+
     def evaluate_backend(self, v1, v2, A):
         return transpose(v1)*A*v2
-        
+
     def assert_backend(self, v1, v2, A, result_backend):
         result_builtin = self.evaluate_builtin(v1, v2, A)
         relative_error = (result_builtin - result_backend)/result_builtin
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(1, 9)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_dolfin_v1_dot_A_v2(Th, test_type, benchmark):

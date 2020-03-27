@@ -25,7 +25,7 @@ def BasicPETScKSPSolver(backend, wrapping):
             self.solution = solution
             self.rhs = rhs
             self.ksp = PETSc.KSP().create(wrapping.get_mpi_comm(solution))
-                 
+
         def set_parameters(self, parameters):
             for (key, value) in parameters.items():
                 if key == "linear_solver":
@@ -41,9 +41,9 @@ def BasicPETScKSPSolver(backend, wrapping):
                     raise ValueError("Invalid paramater passed to PETSc KSP object.")
             # Finally, read in additional options from the command line
             self.ksp.setFromOptions()
-            
+
         def solve(self):
             self.ksp.setOperators(wrapping.to_petsc4py(self.lhs))
             self.ksp.solve(wrapping.to_petsc4py(self.rhs), wrapping.to_petsc4py(self.solution))
-    
+
     return _BasicPETScKSPSolver

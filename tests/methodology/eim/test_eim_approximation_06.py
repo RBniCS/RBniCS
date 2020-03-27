@@ -34,12 +34,12 @@ def test_eim_approximation_06(expression_type, basis_generation):
     * DEIM: test interpolation of form with integrand given by the inner product of a vector valued function
       and some derivative of a test/trial functions of a scalar space
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_06_" + expression_type + "_" + basis_generation
 

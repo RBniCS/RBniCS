@@ -33,7 +33,7 @@ class Data(object):
     def __init__(self, N, Q):
         self.N = N
         self.Q = Q
-        
+
     def generate_random(self):
         F = OnlineAffineExpansionStorage(self.Q)
         for i in range(self.Q):
@@ -43,16 +43,16 @@ class Data(object):
         theta = RandomTuple(self.Q)
         # Return
         return (theta, F)
-        
+
     def evaluate_builtin(self, theta, F):
         result_builtin = theta[0]*F[0]
         for i in range(1, self.Q):
             result_builtin += theta[i]*F[i]
         return result_builtin
-        
+
     def evaluate_backend(self, theta, F):
         return sum(product(theta, F))
-        
+
     def assert_backend(self, theta, F, result_backend):
         result_builtin = self.evaluate_builtin(theta, F)
         relative_error = norm(result_builtin - result_backend)/norm(result_builtin)

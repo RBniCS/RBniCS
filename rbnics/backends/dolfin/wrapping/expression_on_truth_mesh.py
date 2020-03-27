@@ -35,7 +35,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
             t = expression_problem.t
         else:
             t = None
-        
+
         if expression_name not in reduced_problem_to_truth_solution_cache:
             visited = set()
             truth_problems = list()
@@ -56,7 +56,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
             reduced_problem_to_truth_solution_copy = dict()
             reduced_problem_to_truth_solution_dot = dict()
             reduced_problem_to_truth_solution_dot_copy = dict()
-            
+
             # Look for terminals on truth mesh
             logger.log(DEBUG, "Traversing terminals of expression " + expression_name)
             for node in wrapping.expression_iterator(expression):
@@ -111,7 +111,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                         visited.add(parent_node)
                 else:
                     visited.add(node)
-                        
+
             # Cache the resulting dicts
             truth_problems_cache[expression_name] = truth_problems
             truth_problem_to_components_cache[expression_name] = truth_problem_to_components
@@ -125,7 +125,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
             reduced_problem_to_truth_solution_copy_cache[expression_name] = reduced_problem_to_truth_solution_copy
             reduced_problem_to_truth_solution_dot_cache[expression_name] = reduced_problem_to_truth_solution_dot
             reduced_problem_to_truth_solution_dot_copy_cache[expression_name] = reduced_problem_to_truth_solution_dot_copy
-            
+
         # Extract from cache
         truth_problems = truth_problems_cache[expression_name]
         truth_problem_to_components = truth_problem_to_components_cache[expression_name]
@@ -139,7 +139,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
         reduced_problem_to_truth_solution_copy = reduced_problem_to_truth_solution_copy_cache[expression_name]
         reduced_problem_to_truth_solution_dot = reduced_problem_to_truth_solution_dot_cache[expression_name]
         reduced_problem_to_truth_solution_dot_copy = reduced_problem_to_truth_solution_dot_cache[expression_name]
-        
+
         # Get list of truth and reduced problems that need to be solved, possibly updating cache
         required_truth_problems = list()
         required_reduced_problems = list()
@@ -242,7 +242,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                 assert not reduced_problem_is_solving
                 # Append to list of required truth problems which are currently solving
                 required_truth_problems.append((truth_problem, True, False))
-        
+
         # Solve truth problems (which have not been reduced yet) associated to nonlinear terms
         for (truth_problem, truth_problem_is_solving, reduced_problem_is_solving) in required_truth_problems:
             if not reduced_problem_is_solving:
@@ -291,7 +291,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                     else:
                         solution_dot_from = _sub_from_tuple(reduced_problem.basis_functions[:reduced_problem._solution_dot.N]*reduced_problem._solution_dot, component)
                     backend.assign(solution_dot_to, solution_dot_from)
-            
+
         # Solve reduced problems associated to nonlinear terms
         for (reduced_problem, is_solving) in required_reduced_problems:
             # Solve (if necessary)
@@ -324,12 +324,12 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                     else:
                         solution_dot_from = _sub_from_tuple(reduced_problem.basis_functions[:reduced_problem._solution_dot.N]*reduced_problem._solution_dot_over_time.at(t), component)
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Evaluate
         if function is None:
             function = backend.Function(space)
         wrapping.evaluate_expression(expression, function)
-        
+
         # Undo any side effect of truth problem solves
         for (truth_problem, _, _) in required_truth_problems:
             if truth_problem in truth_problem_to_truth_solution:
@@ -346,7 +346,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                     solution_dot_to = _sub_from_tuple(truth_solution_dot, component)
                     solution_dot_from = _sub_from_tuple(truth_solution_dot_copy, component)
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Undo any side effect of reduced problem solves
         for (reduced_problem, _) in required_reduced_problems:
             if reduced_problem in reduced_problem_to_truth_solution:
@@ -363,10 +363,10 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                     solution_dot_to = _sub_from_tuple(truth_solution_dot, component)
                     solution_dot_from = _sub_from_tuple(truth_solution_dot_copy, component)
                     backend.assign(solution_dot_to, solution_dot_from)
-        
+
         # Return
         return function
-    
+
     truth_problems_cache = Cache()
     truth_problem_to_components_cache = Cache()
     truth_problem_to_exact_truth_problem_cache = Cache()
@@ -379,7 +379,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
     reduced_problem_to_truth_solution_copy_cache = Cache()
     reduced_problem_to_truth_solution_dot_cache = Cache()
     reduced_problem_to_truth_solution_dot_copy_cache = Cache()
-    
+
     return _basic_expression_on_truth_mesh
 
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid

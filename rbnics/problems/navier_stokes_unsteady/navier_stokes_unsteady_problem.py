@@ -37,7 +37,7 @@ class NavierStokesUnsteadyProblem(NavierStokesUnsteadyProblem_Base):
                 + assembled_operator["c"]
                 - assembled_operator["f"] - assembled_operator["g"]
             )
-            
+
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             problem = self.problem
             assembled_operator = dict()

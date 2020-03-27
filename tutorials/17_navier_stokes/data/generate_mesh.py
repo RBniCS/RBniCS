@@ -50,11 +50,11 @@ class Bottom(SubDomain):
             (x[1] <= after_step_height - pre_step_height and abs(x[0] - pre_step_length) < DOLFIN_EPS) or
             (x[0] >= pre_step_length and abs(x[1]) < DOLFIN_EPS)
         )
-        
+
 class Top(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - after_step_height) < DOLFIN_EPS
-    
+
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 inlet = Inlet()

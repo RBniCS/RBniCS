@@ -23,17 +23,17 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 class HighOrderProperOrthogonalDecomposition(object, metaclass=ABCMeta):
     def __init__(self, space):
         pass
-        
+
     # Clean up
     @abstractmethod
     def clear(self):
         pass
-        
+
     # Store a snapshot in the snapshot matrix
     @abstractmethod
     def store_snapshot(self, snapshot):
         pass
-            
+
     # Perform POD on the snapshots previously computed, and store the first
     # POD modes in the basis functions matrix.
     # Input arguments are: Nmax, tol
@@ -45,11 +45,11 @@ class HighOrderProperOrthogonalDecomposition(object, metaclass=ABCMeta):
     @abstractmethod
     def print_eigenvalues(self, N=None):
         pass
-        
+
     @abstractmethod
     def save_eigenvalues_file(self, output_directory, eigenvalues_file):
         pass
-        
+
     @abstractmethod
     def save_retained_energy_file(self, output_directory, retained_energy_file):
         pass

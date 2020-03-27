@@ -20,7 +20,7 @@ from dolfin import *
 from rbnics import *
 
 class EllipticOptimalControl(EllipticOptimalControlProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -43,15 +43,15 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         self._linear_solver_parameters.update({
             "linear_solver": "mumps"
         })
-        
+
     # Return custom problem name
     def name(self):
         return "EllipticOptimalControl2RB"
-        
+
     # Return stability factor
     def get_stability_factor_lower_bound(self):
         return 1.
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -83,7 +83,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             return (theta_bc0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         dx = self.dx
@@ -156,7 +156,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/mesh2.xml")
 subdomains = MeshFunction("size_t", mesh, "data/mesh2_physical_region.xml")

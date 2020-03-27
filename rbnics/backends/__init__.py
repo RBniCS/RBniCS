@@ -33,7 +33,7 @@ def load_backends(required_backends):
             assert class_or_function_name in sys.modules[__name__].__all__
             sys.modules[__name__].__all__.remove(class_or_function_name)
     backends_cache.__all__ = set()
-    
+
     # Make sure to import all available backends, so that they are added to the backends cache
     # TODO use reload TODO #
     importlib.import_module(__name__ + ".abstract")
@@ -42,7 +42,7 @@ def load_backends(required_backends):
         importlib.import_module(__name__ + "." + backend)
         importlib.import_module(__name__ + "." + backend + ".wrapping")
     importlib.import_module(__name__ + ".online")
-        
+
     # Copy imported backends from backends cache to this module
     for class_or_function_name in backends_cache.__all__:
         assert not hasattr(sys.modules[__name__], class_or_function_name)

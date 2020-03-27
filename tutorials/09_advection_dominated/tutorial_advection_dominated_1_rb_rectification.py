@@ -24,7 +24,7 @@ from reduction_methods import *
 @OnlineRectification()
 @OnlineStabilization()
 class AdvectionDominated(EllipticCoerciveProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -43,15 +43,15 @@ class AdvectionDominated(EllipticCoerciveProblem):
         # Store terms related to stabilization
         self.delta = 0.5
         self.h = CellDiameter(V.mesh())
-        
+
     # Return custom problem name
     def name(self):
         return "AdvectionDominated1RBRectification"
-        
+
     # Return stability factor
     def get_stability_factor_lower_bound(self):
         return 1.
-    
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
         mu = self.mu
@@ -76,7 +76,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             return (theta_f0, theta_f1)
         else:
             raise ValueError("Invalid term for compute_theta().")
-                    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     def assemble_operator(self, term):
         v = self.v

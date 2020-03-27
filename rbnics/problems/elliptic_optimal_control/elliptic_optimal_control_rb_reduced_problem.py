@@ -33,11 +33,11 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
     def __init__(self, truth_problem, **kwargs):
         # Call to parent
         EllipticOptimalControlRBReducedProblem_Base.__init__(self, truth_problem, **kwargs)
-        
+
         # Riesz terms names
         self.riesz_terms = ["a", "a*", "c", "c*", "m", "n", "g", "f"]
         self.error_estimation_terms = [("g", "g"), ("f", "f"), ("m", "g"), ("a*", "g"), ("a", "f"), ("c", "f"), ("m", "a*"), ("n", "c*"), ("a", "c"), ("m", "m"), ("a*", "a*"), ("n", "n"), ("c*", "c*"), ("a", "a"), ("c", "c")]
-        
+
     # Return an error bound for the current solution
     def estimate_error(self):
         eps2 = self.get_residual_norm_squared()
@@ -45,19 +45,19 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert beta >= 0.
         return sqrt(abs(eps2)/beta)
-        
+
     # Return a relative error bound for the current solution
     def estimate_relative_error(self):
         return NotImplemented
-    
+
     # Return an error bound for the current output
     def estimate_error_output(self):
         return NotImplemented
-        
+
     # Return a relative error bound for the current output
     def estimate_relative_error_output(self):
         return NotImplemented
-        
+
     # Return the numerator of the error bound for the current solution
     def get_residual_norm_squared(self):
         N = self._solution.N
@@ -69,7 +69,7 @@ class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProb
         theta_n = self.compute_theta("n")
         theta_f = self.compute_theta("f")
         theta_g = self.compute_theta("g")
-        
+
         return (
               sum(product(theta_g, self.error_estimation_operator["g", "g"], theta_g))
             + sum(product(theta_f, self.error_estimation_operator["f", "f"], theta_f))

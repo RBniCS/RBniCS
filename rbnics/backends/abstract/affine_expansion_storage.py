@@ -22,27 +22,27 @@ from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, ab
 class AffineExpansionStorage(object, metaclass=ABCMeta):
     def __init__(self):
         pass
-        
+
     @abstractonlinemethod
     def save(self, directory, filename):
         pass
-        
+
     @abstractonlinemethod
     def load(self, directory, filename):
         pass
-    
+
     @abstractmethod
     def __getitem__(self, key):
         pass
-        
+
     @abstractmethod
     def __iter__(self):
         pass
-        
+
     @abstractonlinemethod
     def __setitem__(self, key, item):
         pass
-        
+
     @abstractmethod
     def __len__(self):
         pass

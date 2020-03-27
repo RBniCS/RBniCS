@@ -38,7 +38,7 @@ def create_submesh(mesh, markers):
     assert isinstance(markers, MeshFunctionBool)
     assert markers.dim() == mesh.topology().dim()
     marker_id = True
-    
+
     # == 1. Extract marked cells == #
     # Dolfin does not support a distributed mesh that is empty on some processes.
     # cbcpost gets around this by moving a single cell from the a non-empty processor to an empty one.
@@ -52,7 +52,7 @@ def create_submesh(mesh, markers):
         backup_first_marker_id = markers.array()[0]
         markers.array()[0] = marker_id
     assert marker_id in markers.array()
-    
+
     # == 2. Create submesh == #
     submesh = Mesh(mesh.mpi_comm())
     mesh_editor = MeshEditor()
@@ -153,7 +153,7 @@ def create_submesh(mesh, markers):
             local_index,
             allgathered_mesh_to_submesh_cell_global_indices[mesh_global_cell_indices[local_index]]
         )
-    
+
     # == 3. Store (local) mesh to/from submesh map for cells, facets and vertices == #
     # Cells
     submesh.mesh_to_submesh_cell_local_indices = mesh_to_submesh_cell_local_indices
@@ -212,12 +212,12 @@ def create_submesh(mesh, markers):
         #include <pybind11/pybind11.h>
         #include <dolfin/mesh/DistributedMeshTools.h>
         #include <dolfin/mesh/Mesh.h>
-        
+
         void initialize_global_indices(std::shared_ptr<dolfin::Mesh> mesh, std::size_t dim)
         {
             dolfin::DistributedMeshTools::number_entities(*mesh, dim);
         }
-        
+
         PYBIND11_MODULE(SIGNATURE, m)
         {
             m.def("initialize_global_indices", &initialize_global_indices);
@@ -244,7 +244,7 @@ def create_submesh(mesh, markers):
     submesh_facets_local_to_global_indices = dict()
     for (submesh_facet_local_index, mesh_facet_local_index) in submesh_to_mesh_facets_local_indices.items():
         submesh_facets_local_to_global_indices[submesh_facet_local_index] = mesh_to_submesh_facets_global_indices[mesh_facets_local_to_global_indices[mesh_facet_local_index]]
-    
+
     # == 4. Assign shared vertices == #
     shared_entities_dimensions = {
         "vertex": 0,
@@ -323,9 +323,9 @@ def create_submesh(mesh, markers):
                 #include <pybind11/pybind11.h>
                 #include <pybind11/eigen.h>
                 #include <dolfin/mesh/Mesh.h>
-                
+
                 using OtherProcesses = Eigen::Ref<const Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>;
-                
+
                 void set_shared_entities(std::shared_ptr<dolfin::Mesh> submesh, std::size_t idx, const OtherProcesses other_processes, std::size_t dim)
                 {
                     std::set<unsigned int> set_other_processes;
@@ -333,7 +333,7 @@ def create_submesh(mesh, markers):
                         set_other_processes.insert(other_processes[i]);
                     submesh->topology().shared_entities(dim)[idx] = set_other_processes;
                 }
-                
+
                 PYBIND11_MODULE(SIGNATURE, m)
                 {
                     m.def("set_shared_entities", &set_shared_entities);
@@ -342,13 +342,13 @@ def create_submesh(mesh, markers):
             set_shared_entities = compile_cpp_code(cpp_code).set_shared_entities
             for (submesh_entity_local_index, other_processors) in submesh_shared_entities.items():
                 set_shared_entities(submesh, submesh_entity_local_index, other_processors, dim)
-                
+
             logger.log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(list(submesh.topology().shared_entities(0).keys())))
             logger.log(DEBUG, "Global indices of shared entities for dimension " + str(dim) + ": " + str([class_(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(dim).keys()]))
-    
+
     # == 5. Also initialize submesh facets global indices, now that shared facets have been computed == #
     initialize_global_indices(submesh, submesh.topology().dim() - 1) # note that DOLFIN might change the numbering when compared to the one at 3bis
-    
+
     # == 6. Restore backup_first_marker_id and return == #
     if backup_first_marker_id is not None:
         markers.array()[0] = backup_first_marker_id
@@ -374,13 +374,13 @@ def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
             raise TypeError("Invalid arguments in convert_meshfunctions_to_submesh.")
         meshfunctions_on_submesh.append(submesh_subdomain)
     return meshfunctions_on_submesh
-    
+
 def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, CustomFunctionSpace=None):
     if CustomFunctionSpace is None:
         CustomFunctionSpace = FunctionSpace
     functionspace_on_submesh = CustomFunctionSpace(submesh, functionspace_on_mesh.ufl_element())
     return functionspace_on_submesh
-    
+
 # This function is similar to cbcpost restriction_map. The main difference are:
 # a) it builds a KDTree for each cell, rather than exploring the entire submesh at a time, so that
 #    no ambiguity should arise even in DG function spaces
@@ -390,7 +390,7 @@ def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, CustomFunct
 def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, functionspace_on_submesh, submesh, global_indices=True):
     mesh_dofs_to_submesh_dofs = dict()
     submesh_dofs_to_mesh_dofs = dict()
-    
+
     # Initialize map from mesh dofs to submesh dofs, and viceversa
     if functionspace_on_mesh.num_sub_spaces() > 0:
         assert functionspace_on_mesh.num_sub_spaces() == functionspace_on_submesh.num_sub_spaces()

@@ -24,7 +24,7 @@ from rbnics.utils.decorators import BackendFor, tuple_of
 class SymbolicParameters(AbstractSymbolicParameters, tuple):
     def __new__(cls, problem, V, mu):
         return tuple.__new__(cls, ())
-        
+
     def __str__(self):
         assert len(self) == 0
         return "()"

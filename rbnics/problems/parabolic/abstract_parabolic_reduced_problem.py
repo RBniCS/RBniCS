@@ -20,11 +20,11 @@ from rbnics.problems.base import LinearTimeDependentReducedProblem
 from rbnics.backends import product, sum
 
 def AbstractParabolicReducedProblem(EllipticReducedProblem_DerivedClass):
-    
+
     AbstractParabolicReducedProblem_Base = LinearTimeDependentReducedProblem(EllipticReducedProblem_DerivedClass)
-    
+
     class AbstractParabolicReducedProblem_Class(AbstractParabolicReducedProblem_Base):
-        
+
         class ProblemSolver(AbstractParabolicReducedProblem_Base.ProblemSolver):
             def residual_eval(self, t, solution, solution_dot):
                 problem = self.problem
@@ -38,7 +38,7 @@ def AbstractParabolicReducedProblem(EllipticReducedProblem_DerivedClass):
                     + assembled_operator["a"]*solution
                     - assembled_operator["f"]
                 )
-                
+
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
                 N = self.N
@@ -49,6 +49,6 @@ def AbstractParabolicReducedProblem(EllipticReducedProblem_DerivedClass):
                       assembled_operator["m"]*solution_dot_coefficient
                     + assembled_operator["a"]
                 )
-            
+
     # return value (a class) for the decorator
     return AbstractParabolicReducedProblem_Class

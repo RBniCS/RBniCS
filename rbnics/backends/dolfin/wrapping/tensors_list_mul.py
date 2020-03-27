@@ -25,14 +25,14 @@ def basic_tensors_list_mul_online_function(backend, wrapping):
         output = wrapping.tensor_copy(tensors_list._list[0])
         _multiply(tensors_list, online_function, output)
         return output
-        
+
     @overload
     def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(), output: backend.Matrix.Type()):
         output.zero()
         for (i, matrix_i) in enumerate(tensors_list._list):
             online_vector_i = online_function.vector()[i]
             output += matrix_i*online_vector_i
-            
+
     @overload
     def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(), output: backend.Vector.Type()):
         output.zero()
@@ -40,9 +40,9 @@ def basic_tensors_list_mul_online_function(backend, wrapping):
             online_vector_i = online_function.vector()[i]
             output.add_local(vector_i.get_local()*online_vector_i)
         output.apply("add")
-        
+
     return _basic_tensors_list_mul_online_function
-    
+
 # No explicit instantiation for backend = rbnics.backends.dolfin to avoid
 # circular dependencies. The concrete instatiation will be carried out in
 # rbnics.backends.dolfin.tensors_list

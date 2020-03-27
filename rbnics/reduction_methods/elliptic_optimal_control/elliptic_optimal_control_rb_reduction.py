@@ -33,11 +33,11 @@ class EllipticOptimalControlRBReduction(EllipticOptimalControlRBReduction_Base):
                 new_basis_function = self.GS[component_to].apply(snapshot, self.reduced_problem.basis_functions[component_to][self.reduced_problem.N_bc[component_to]:], component={component_from: component_to})
                 self.reduced_problem.basis_functions.enrich(new_basis_function, component=component_to)
                 self.reduced_problem.N[component_to] += 1
-                
+
         # Store snapshots components related to control as usual
         new_basis_function = self.GS["u"].apply(snapshot, self.reduced_problem.basis_functions["u"][self.reduced_problem.N_bc["u"]:])
         self.reduced_problem.basis_functions.enrich(new_basis_function, component="u")
         self.reduced_problem.N["u"] += 1
-        
+
         # Save
         self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")

@@ -29,14 +29,14 @@ class NumpyIO(object):
         def save_file_task():
             numpy.save(os.path.join(str(directory), filename), content, allow_pickle=True)
         parallel_io(save_file_task)
-    
+
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
         if not filename.endswith(".npy"):
             filename = filename + ".npy"
         return numpy.load(os.path.join(str(directory), filename), allow_pickle=True)
-            
+
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):

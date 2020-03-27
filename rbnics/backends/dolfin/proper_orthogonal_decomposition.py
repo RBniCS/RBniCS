@@ -41,6 +41,6 @@ ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(backend,
 class ProperOrthogonalDecomposition(ProperOrthogonalDecomposition_Base):
     def __init__(self, V, inner_product, component=None):
         ProperOrthogonalDecomposition_Base.__init__(self, V, inner_product, component)
-        
+
     def store_snapshot(self, snapshot, component=None, weight=None):
         self.snapshots_matrix.enrich(snapshot, component, weight)

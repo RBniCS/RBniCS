@@ -57,13 +57,13 @@ def test_eim_approximation_11(expression_type, basis_generation):
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
             self.inner_product = assemble(f*g*dx)
-            
+
         def name(self):
             return "MockProblem_11_" + expression_type + "_" + basis_generation
-            
+
         def init(self):
             pass
-            
+
         def solve(self):
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
@@ -84,13 +84,13 @@ def test_eim_approximation_11(expression_type, basis_generation):
             self.folder["basis"] = os.path.join(self.truth_problem.folder_prefix, "basis")
             # Gram Schmidt
             self.GS = GramSchmidt(self.truth_problem.inner_product)
-            
+
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
-            
+
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
-            
+
         def offline(self):
             self.reduced_problem = MockReducedProblem(self.truth_problem)
             if self.folder["basis"].create(): # basis folder was not available yet
@@ -104,14 +104,14 @@ def test_eim_approximation_11(expression_type, basis_generation):
                 self.reduced_problem.basis_functions.load(self.folder["basis"], "basis")
             self._finalize_offline()
             return self.reduced_problem
-            
+
         def update_basis_matrix(self, snapshot):
             self.reduced_problem.basis_functions.enrich(snapshot)
             self.GS.apply(self.reduced_problem.basis_functions, 0)
-            
+
         def error_analysis(self, N=None, **kwargs):
             pass
-            
+
         def speedup_analysis(self, N=None, **kwargs):
             pass
 
@@ -127,7 +127,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             self.basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
             self.basis_functions.init(self.truth_problem.components)
             self._solution = None
-            
+
         def solve(self):
             print("solving mock reduced problem at mu =", self.mu)
             assert not hasattr(self, "_is_solving")
@@ -138,7 +138,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             self._solution = OnlineFunction(f_N)
             delattr(self, "_is_solving")
             return self._solution
-            
+
     class ParametrizedFunctionApproximation(EIMApproximation):
         def __init__(self, truth_problem, expression_type, basis_generation, function):
             self.V = truth_problem.V

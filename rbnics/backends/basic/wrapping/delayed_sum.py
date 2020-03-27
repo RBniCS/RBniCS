@@ -22,7 +22,7 @@ class DelayedSum(object):
     def __init__(self, arg):
         assert not isinstance(arg, DelayedSum)
         self._args = [arg]
-        
+
     def __iadd__(self, other):
         assert isinstance(other, DelayedProduct)
         self._args.append(other)

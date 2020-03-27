@@ -48,7 +48,7 @@ def Vector(backend, wrapping, VectorBaseType):
             else:
                 self._component_name_to_basis_component_index = None
                 self._component_name_to_basis_component_length = None
-            
+
         def __getitem__(self, key):
             if (
                 isinstance(key, slice)  # vector[:5]
@@ -88,7 +88,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return output
             else:
                 raise TypeError("Unsupported key type in Vector.__getitem__")
-                
+
         def __setitem__(self, key, value):
             if (
                 isinstance(key, slice)  # vector[:5]
@@ -106,7 +106,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 self.content[key] = value
             else:
                 raise TypeError("Unsupported key type in Vector.__setitem__")
-                
+
         def __abs__(self):
             self._arithmetic_operations_assert_attributes(None, other_order=0)
             output_content = self.content.__abs__()
@@ -115,7 +115,7 @@ def Vector(backend, wrapping, VectorBaseType):
             output.__init__(output_size, output_content)
             self._arithmetic_operations_preserve_attributes(output, other_order=0)
             return output
-            
+
         def __neg__(self):
             self._arithmetic_operations_assert_attributes(None, other_order=0)
             output_content = self.content.__neg__()
@@ -124,7 +124,7 @@ def Vector(backend, wrapping, VectorBaseType):
             output.__init__(output_size, output_content)
             self._arithmetic_operations_preserve_attributes(output, other_order=0)
             return output
-            
+
         def __add__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -136,7 +136,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __iadd__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -144,7 +144,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return self
             else:
                 return NotImplemented
-            
+
         def __sub__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -156,7 +156,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __isub__(self, other):
             if isinstance(other, type(self)):
                 self._arithmetic_operations_assert_attributes(other)
@@ -164,7 +164,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return self
             else:
                 return NotImplemented
-            
+
         def __mul__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -176,7 +176,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return output
             else:
                 return NotImplemented
-            
+
         def __rmul__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -188,7 +188,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __imul__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -196,7 +196,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return self
             else:
                 return NotImplemented
-                
+
         def __truediv__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -208,7 +208,7 @@ def Vector(backend, wrapping, VectorBaseType):
                 return output
             else:
                 return NotImplemented
-                
+
         def __itruediv__(self, other):
             if isinstance(other, Number):
                 self._arithmetic_operations_assert_attributes(other, other_order=0)
@@ -216,23 +216,23 @@ def Vector(backend, wrapping, VectorBaseType):
                 return self
             else:
                 return NotImplemented
-        
+
         def _arithmetic_operations_assert_attributes(self, other, other_order=1):
             assert other_order in (0, 1)
             if other_order == 1:
                 assert self.N == other.N
                 assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
-        
+
         def _arithmetic_operations_preserve_attributes(self, output, other_order=1):
             assert other_order in (0, 1)
             output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
             output._component_name_to_basis_component_length = self._component_name_to_basis_component_length
-        
+
         def __str__(self):
             return str(self.content)
-            
+
         def __iter__(self):
             return self.content.__iter__()
-            
+
     return Vector_Class

@@ -25,6 +25,6 @@ def compute_theta_for_restriction(restricted_term_to_original_term):
             else:
                 assert term.endswith("_restricted")
                 return compute_theta(self, original_term)
-            
+
         return compute_theta_for_restriction_decorator_impl
     return compute_theta_for_restriction_decorator

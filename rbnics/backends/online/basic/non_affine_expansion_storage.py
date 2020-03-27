@@ -40,7 +40,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         else:
             self._smallest_key = (0, 0)
             self._largest_key = (shape[0] - 1, shape[1] - 1)
-            
+
     def save(self, directory, filename):
         # Get full directory name
         full_directory = Folders.Folder(os.path.join(str(directory), filename))
@@ -100,7 +100,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 BasisFunctionsProblemNameIO.save_file(basis_functions._components_name, full_directory, "basis_functions_" + str(index) + "_components_name")
         else:
             raise ValueError("Invalid type")
-        
+
     def load(self, directory, filename):
         if self._type != "empty": # avoid loading multiple times
             if self._type in ("basis_functions_matrix", "functions_list"):
@@ -223,7 +223,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         else:
             raise ValueError("Invalid type")
         return True
-        
+
     def _prepare_trivial_precomputed_slice(self):
         empty_slice = slice(None)
         assert self._type in ("error_estimation_operators_11", "error_estimation_operators_21", "error_estimation_operators_22", "operators")
@@ -233,20 +233,20 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "delayed_functions" in self._content
             assert len(self._content["delayed_functions"]) == 2
             assert "delayed_functions_shape" in self._content
-            
+
             slice_ = slice_to_array(self._content["delayed_functions_shape"], empty_slice, self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
             self._precomputed_slices[slice_] = self
         elif self._type == "error_estimation_operators_22":
             assert "delayed_functions" in self._content
             assert len(self._content["delayed_functions"]) == 2
             assert "delayed_functions_shape" in self._content
-            
+
             slice_ = slice_to_array(self._content["delayed_functions_shape"], (empty_slice, empty_slice), self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
             self._precomputed_slices[slice_] = self
         elif self._type == "operators":
             assert len(self._content["basis_functions"]) in (0, 1, 2)
             assert "basis_functions_shape" in self._content
-            
+
             if len(self._content["basis_functions"]) == 0:
                 pass # nothing to be done (scalar content)
             elif len(self._content["basis_functions"]) == 1:
@@ -259,7 +259,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 raise ValueError("Invalid length")
         else:
             raise ValueError("Invalid type")
-        
+
     @overload(slice, )
     def __getitem__(self, key):
         assert self._type in ("error_estimation_operators_21", "operators")
@@ -267,9 +267,9 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "delayed_functions" in self._content
             assert len(self._content["delayed_functions"]) == 2
             assert "delayed_functions_shape" in self._content
-            
+
             slice_ = slice_to_array(self._content["delayed_functions_shape"], key, self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
-            
+
             if slice_ not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
@@ -287,9 +287,9 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "basis_functions" in self._content
             assert len(self._content["basis_functions"]) == 1
             assert "basis_functions_shape" in self._content
-            
+
             slice_ = slice_to_array(self._content["basis_functions_shape"], key, self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
-            
+
             if slice_ not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
@@ -303,7 +303,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             return self._precomputed_slices[slice_]
         else:
             raise ValueError("Invalid type")
-        
+
     @overload(tuple_of(slice), )
     def __getitem__(self, key):
         assert self._type in ("error_estimation_operators_22", "operators")
@@ -312,9 +312,9 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "delayed_functions" in self._content
             assert len(self._content["delayed_functions"]) == 2
             assert "delayed_functions_shape" in self._content
-            
+
             slice_ = slice_to_array(self._content["delayed_functions_shape"], key, self._content["delayed_functions_shape"]._component_name_to_basis_component_length, self._content["delayed_functions_shape"]._component_name_to_basis_component_index)
-            
+
             if slice_ not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
@@ -333,9 +333,9 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "basis_functions" in self._content
             assert len(self._content["basis_functions"]) == 2
             assert "basis_functions_shape" in self._content
-            
+
             slices = slice_to_array(self._content["basis_functions_shape"], key, self._content["basis_functions_shape"]._component_name_to_basis_component_length, self._content["basis_functions_shape"]._component_name_to_basis_component_index)
-            
+
             if slices not in self._precomputed_slices:
                 output = NonAffineExpansionStorage.__new__(type(self), *self._shape)
                 output.__init__(*self._shape)
@@ -350,7 +350,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             return self._precomputed_slices[slices]
         else:
             raise ValueError("Invalid type")
-        
+
     @overload(int, )
     def __getitem__(self, key):
         assert self._type in ("basis_functions_matrix", "functions_list", "operators")
@@ -360,7 +360,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             return self._delay_transpose(self._content["basis_functions"], self._content["truth_operators"][key])
         else:
             raise ValueError("Invalid type")
-            
+
     @overload(tuple_of(int), )
     def __getitem__(self, key):
         assert self._type in ("error_estimation_operators_11", "error_estimation_operators_21", "error_estimation_operators_22")
@@ -368,7 +368,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             (self._content["delayed_functions"][0][key[0]], self._content["delayed_functions"][1][key[1]]),
             self._content["inner_product_matrix"]
         )
-        
+
     def __iter__(self):
         assert self._type in ("basis_functions_matrix", "functions_list", "operators")
         if self._type in ("basis_functions_matrix", "functions_list"):
@@ -387,7 +387,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             self._content[self._type] = NonAffineExpansionStorageContent_Base(self._shape, dtype=object)
         self._content[self._type][key] = DelayedBasisFunctionsMatrix(item.space)
         self._content[self._type][key].init(item._components_name)
-    
+
     @overload((int, tuple_of(int)), AbstractFunctionsList)
     def __setitem__(self, key, item):
         if self._type != "empty":
@@ -396,7 +396,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             self._type = "functions_list"
             self._content[self._type] = NonAffineExpansionStorageContent_Base(self._shape, dtype=object)
         self._content[self._type][key] = DelayedFunctionsList(item.space)
-    
+
     @overload((int, tuple_of(int)), DelayedTranspose)
     def __setitem__(self, key, item):
         assert isinstance(item._args[0], (AbstractBasisFunctionsMatrix, DelayedBasisFunctionsMatrix, DelayedLinearSolver))
@@ -486,7 +486,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
                 self._prepare_trivial_precomputed_slice()
         else:
             raise TypeError("Invalid arguments to NonAffineExpansionStorage")
-            
+
     @overload((int, tuple_of(int)), (AbstractParametrizedTensorFactory, Number))
     def __setitem__(self, key, item):
         if self._type != "empty":
@@ -512,7 +512,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         # Compute truth expansion storage and prepare precomputed slices
         if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
             self._prepare_truth_operators_as_expansion_storage()
-        
+
     def _prepare_truth_operators_as_expansion_storage(self):
         from rbnics.backends import NonAffineExpansionStorage
         assert self._type == "operators"
@@ -525,16 +525,16 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert all([problem is problems[0] for problem in problems])
             for extracted_operator in self._content["truth_operators_as_expansion_storage"]:
                 add_to_map_from_parametrized_operator_to_problem(extracted_operator, problems[0])
-        
+
     def __len__(self):
         assert self._type == "operators"
         assert self.order() == 1
         return self._shape[0]
-    
+
     def order(self):
         assert self._type in ("error_estimation_operators_11", "error_estimation_operators_21", "error_estimation_operators_22", "operators")
         return len(self._shape)
-        
+
     def _delay_transpose(self, pre_post, op):
         assert len(pre_post) in (0, 1, 2)
         if len(pre_post) == 0:
@@ -543,7 +543,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             return DelayedTranspose(pre_post[0])*op
         else:
             return DelayedTranspose(pre_post[0])*op*pre_post[1]
-        
+
 class DelayedTransposeShape(object):
     def __init__(self, basis_functions):
         assert len(basis_functions) in (0, 1, 2)
@@ -572,20 +572,20 @@ class DelayedTransposeShape(object):
             raise ValueError("Invalid length")
         self._component_name_to_basis_component_index = tuple(component_name_to_basis_component_index)
         self._component_name_to_basis_component_length = tuple(component_name_to_basis_component_length)
-        
+
     def __eq__(self, other):
         return (
             self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 and
             self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
         )
-        
+
 class NumericForm(object):
     def __init__(self, value):
         self._form = value
-        
+
     def __str__(self):
         return str(self._form)
-        
+
     def __repr__(self):
         return repr(self._form)

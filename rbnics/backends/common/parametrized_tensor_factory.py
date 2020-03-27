@@ -24,30 +24,30 @@ from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParame
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     def __init__(self, scalar):
         AbstractParametrizedTensorFactory.__init__(self, scalar)
-    
+
     def create_interpolation_locations_container(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def create_snapshots_container(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def create_empty_snapshot(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def create_basis_container(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def create_POD_container(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def name(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def description(self):
         raise RuntimeError("This method should have never been called.")
-        
+
     def is_parametrized(self):
         return False
-        
+
     def is_time_dependent(self):
         return False

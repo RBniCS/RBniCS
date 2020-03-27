@@ -27,6 +27,6 @@ def assemble_operator_for_derivative(jacobian_term_to_residual_term):
             else:
                 trial = TrialFunction(self.V)
                 return tuple(derivative(op, self._solution, trial) for op in assemble_operator(self, residual_term))
-            
+
         return assemble_operator_for_derivative_decorator_impl
     return assemble_operator_for_derivative_decorator

@@ -37,11 +37,11 @@ def set_mu_decorator(set_mu):
             self.set_time(mu["t"])
         else:
             raise ValueError("Invalid mu")
-        
+
     return decorated_set_mu
 
 class TimeDependentEIMApproximation(EIMApproximation):
-    
+
     @sync_setters("truth_problem", "set_mu", "mu", set_mu_decorator)
     @sync_setters("truth_problem", "set_time", "t")
     @sync_setters("truth_problem", "set_initial_time", "t0")
@@ -50,13 +50,13 @@ class TimeDependentEIMApproximation(EIMApproximation):
     def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):
         # Call the parent initialization
         EIMApproximation.__init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation)
-        
+
         # Store quantities related to the time discretization
         self.t0 = 0.
         self.t = 0.
         self.dt = None
         self.T = None
-        
+
         # I/O
         def _snapshot_cache_key_generator(*args, **kwargs):
             assert len(args) == 2
@@ -83,34 +83,34 @@ class TimeDependentEIMApproximation(EIMApproximation):
             export=_snapshot_cache_export,
             filename_generator=_snapshot_cache_filename_generator
         )
-        
+
     # Set initial time
     def set_initial_time(self, t0):
         assert isinstance(t0, Number)
         self.t0 = t0
-        
+
     # Set current time
     def set_time(self, t):
         assert isinstance(t, Number)
         self.t = t
-        
+
     # Set time step size
     def set_time_step_size(self, dt):
         assert isinstance(dt, Number)
         self.dt = dt
-        
+
     # Set final time
     def set_final_time(self, T):
         assert isinstance(T, Number)
         self.T = T
-        
+
     def evaluate_parametrized_expression(self):
         try:
             assign(self.snapshot, self._snapshot_cache[self.mu, self.t])
         except KeyError:
             self.snapshot = evaluate(self.parametrized_expression)
             self._snapshot_cache[self.mu, self.t] = copy(self.snapshot)
-            
+
     def _cache_key(self):
         return (self.mu, self.t)
 

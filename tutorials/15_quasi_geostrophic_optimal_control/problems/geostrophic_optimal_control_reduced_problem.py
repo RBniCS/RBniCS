@@ -20,11 +20,11 @@ from rbnics.backends import product, sum, transpose
 from rbnics.problems.base import LinearReducedProblem
 
 def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     GeostrophicOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
 
     class GeostrophicOptimalControlReducedProblem_Class(GeostrophicOptimalControlReducedProblem_Base):
-        
+
         class ProblemSolver(GeostrophicOptimalControlReducedProblem_Base.ProblemSolver):
             def matrix_eval(self):
                 problem = self.problem
@@ -36,9 +36,9 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                       assembled_operator["m"]                                                      + assembled_operator["a*"]
                                                                          + assembled_operator["n"] - assembled_operator["c*"]
                     + assembled_operator["a"] - assembled_operator["c"]
-              
+
                 )
-                
+
             def vector_eval(self):
                 problem = self.problem
                 N = self.N
@@ -47,11 +47,11 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
                 return (
                       assembled_operator["g"]
-                    
-                    
+
+
                     + assembled_operator["f"]
                 )
-                
+
         # Perform an online evaluation of the cost functional
         def _compute_output(self, N):
             assembled_operator = dict()
@@ -71,7 +71,7 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                 transpose(assembled_operator["g"])*self._solution +
                 0.5*assembled_operator["h"]
             )
-        
+
         def _online_size_from_kwargs(self, N, **kwargs):
             if N is None:
                 # then either,
@@ -85,5 +85,5 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                 for component in ("ypsi", "yq", "ppsi", "pq"):
                     N[component] *= 2
                 return N, kwargs
-                
+
     return GeostrophicOptimalControlReducedProblem_Class

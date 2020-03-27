@@ -23,6 +23,6 @@ def AbstractParabolicPODGalerkinReducedProblem(AbstractParabolicReducedProblem_D
 
     class AbstractParabolicPODGalerkinReducedProblem_Class(AbstractParabolicPODGalerkinReducedProblem_Base):
         pass
-        
+
     # return value (a class) for the decorator
     return AbstractParabolicPODGalerkinReducedProblem_Class

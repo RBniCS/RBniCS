@@ -52,7 +52,7 @@ class Data(object):
                 return assemble(arg)
         self.callback_type = callback_type
         self.callback = callback
-        
+
     def generate_random(self):
         # Generate random forcing
         g = RandomDolfinFunction(self.V)
@@ -66,18 +66,18 @@ class Data(object):
                 return self.callback(r)
             def jacobian_eval(self_, solution):
                 return self.callback(j)
-            
+
             # Define boundary condition
             def bc_eval(self_):
                 return None
-                
+
             # Empty solution monitor
             def monitor(self_, solution):
                 pass
         problem_wrapper = ProblemWrapper()
         # Return
         return (r, j, problem_wrapper)
-        
+
     def evaluate_builtin(self, r, j, problem_wrapper):
         project(self.initial_guess_expression, self.V, function=self.u)
         solve(
@@ -95,7 +95,7 @@ class Data(object):
             }
         )
         return self.u.copy(deepcopy=True)
-        
+
     def evaluate_backend(self, r, j, problem_wrapper):
         project(self.initial_guess_expression, self.V, function=self.u)
         solver = NonlinearSolver(problem_wrapper, self.u)
@@ -108,7 +108,7 @@ class Data(object):
         })
         solver.solve()
         return self.u.copy(deepcopy=True)
-        
+
     def assert_backend(self, r, j, problem_wrapper, result_backend):
         result_builtin = self.evaluate_builtin(r, j, problem_wrapper)
         error = Function(self.V)
@@ -117,7 +117,7 @@ class Data(object):
         error.vector().apply("add")
         relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 8)])
 @pytest.mark.parametrize("callback_type", ["form callbacks", "tensor callbacks"])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(AllNonlinearSolver.keys()))

@@ -105,21 +105,21 @@ class ProductOutputDirichletBC(list):
     # to zero rows and columns associated to Dirichlet BCs
     def __invert__(self):
         return InvertProductOutputDirichletBC(self)
-        
+
     def __eq__(self, other):
         assert isinstance(other, ProductOutputDirichletBC)
         return list.__eq__(self, other)
-        
+
     def __hash__(self):
         return hash(tuple(self))
-        
+
 class InvertProductOutputDirichletBC(object):
     def __init__(self, bc_list):
         self.bc_list = bc_list
-        
+
     def __eq__(self, other):
         assert isinstance(other, InvertProductOutputDirichletBC)
         return self.bc_list == other.bc_list
-        
+
     def __hash__(self):
         return hash(self.bc_list)

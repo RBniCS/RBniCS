@@ -24,12 +24,12 @@ from rbnics.utils.decorators import overload
 
 def assemble_operator_for_stability_factor(assemble_operator):
     from rbnics.problems.elliptic import EllipticCoerciveProblem
-    
+
     module = types.ModuleType("assemble_operator_for_stability_factor", "Storage for implementation of assemble_operator_for_stability_factor")
-    
+
     def assemble_operator_for_stability_factor_impl(self, term):
         return module._assemble_operator_for_stability_factor_impl(self, term)
-        
+
     # Elliptic coercive problem
     @overload(EllipticCoerciveProblem, str, module=module)
     def _assemble_operator_for_stability_factor_impl(self_, term):
@@ -56,5 +56,5 @@ def assemble_operator_for_stability_factor(assemble_operator):
             return tuple(zeroed_dirichlet_bcs)
         else:
             return assemble_operator(self_, term)
-    
+
     return assemble_operator_for_stability_factor_impl

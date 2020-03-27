@@ -30,7 +30,7 @@ class PickleIO(object):
             with open(os.path.join(str(directory), filename), "wb") as outfile:
                 pickle.dump(content, outfile, protocol=pickle.HIGHEST_PROTOCOL)
         parallel_io(save_file_task)
-        
+
     # Load a variable from file
     @staticmethod
     def load_file(directory, filename):
@@ -38,7 +38,7 @@ class PickleIO(object):
             filename = filename + ".pkl"
         with open(os.path.join(str(directory), filename), "rb") as infile:
             return pickle.load(infile)
-            
+
     # Check if the file exists
     @staticmethod
     def exists_file(directory, filename):

@@ -45,7 +45,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
         self._relative_tolerance = None
         self._report = False
         self._solution_tolerance = None
-                        
+
     def set_parameters(self, parameters):
         for (key, value) in parameters.items():
             if key == "absolute_tolerance":
@@ -65,7 +65,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 self._solution_tolerance = value
             else:
                 raise ValueError("Invalid paramater passed to scipy object.")
-                
+
     def solve(self):
         residual = self.problem.residual_vector_eval
         initial_guess_vector = self.problem.solution.vector()
@@ -87,7 +87,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
             if self._report:
                 print("scipy solver diverged due to arithmetic error " + str(error))
         self.monitor(self.problem.solution)
-        
+
 class _NonlinearProblem(_NonlinearProblem_Base):
     def residual_vector_eval(self, solution):
         # Store solution
@@ -99,7 +99,7 @@ class _NonlinearProblem(_NonlinearProblem_Base):
             self.bcs.apply_to_vector(residual_vector, self.solution.vector())
         # Return
         return residual_vector
-        
+
     def jacobian_matrix_eval(self, solution):
         # Store solution
         self.solution.vector()[:] = solution
@@ -110,23 +110,23 @@ class _NonlinearProblem(_NonlinearProblem_Base):
             self.bcs.apply_to_matrix(jacobian_matrix)
         # Return
         return jacobian_matrix
-        
+
 # Adapted from scipy/optimize/nonlin.py, asjacobian method
 class _Jacobian(Jacobian):
     def __init__(self, jacobian_eval):
         self.jacobian_eval = jacobian_eval
-    
+
     def setup(self, x, F, func):
         Jacobian.setup(self, x, F, func)
         self.x = x
-    
+
     def update(self, x, F):
         self.x = x
 
     def solve(self, v, tol=0):
         J = self.jacobian_eval(self.x)
         return solve(J, v)
-        
+
     def matvec(self, v):
         J = self.jacobian_eval(self.x)
         return dot(J, v)

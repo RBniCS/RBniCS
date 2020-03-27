@@ -23,11 +23,11 @@ from rbnics.eim.problems.time_dependent_eim_approximation import EnlargedMu
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
 class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMethod):
-    
+
     def __init__(self, EIM_approximation):
         # Call the parent initialization
         EIMApproximationReductionMethod.__init__(self, EIM_approximation)
-        
+
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = EIMApproximationReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
         # Initialize time training set
@@ -48,7 +48,7 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         # Return
         assert time_import_successful == import_successful
         return import_successful
-        
+
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
         import_successful = EIMApproximationReductionMethod.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
         # Initialize time testing set
@@ -72,7 +72,7 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         # Return
         assert time_import_successful == import_successful
         return import_successful
-        
+
     def _generate_time_sampling(self, **kwargs):
         if "time_sampling" in kwargs:
             time_sampling = kwargs["time_sampling"]
@@ -84,7 +84,7 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
             assert self.EIM_approximation.dt is not None
             dt = self.EIM_approximation.dt
         return DiscreteDistribution(time_sampling, (dt, ))
-        
+
     def _combine_sets(self, mu_set, time_set):
         for (n, (mu, t)) in enumerate(zip(mu_set, time_set)):
             mu_t = EnlargedMu()
@@ -92,10 +92,10 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
             assert len(t) == 1
             mu_t["t"] = t[0]
             mu_set[n] = mu_t
-            
+
     def _print_greedy_interpolation_solve_message(self):
         print("solve interpolation for mu =", self.EIM_approximation.mu, "and t =", self.EIM_approximation.t)
-        
+
     # Load the precomputed snapshot. Overridden to correct the assert
     def load_snapshot(self):
         assert self.EIM_approximation.basis_generation == "Greedy"

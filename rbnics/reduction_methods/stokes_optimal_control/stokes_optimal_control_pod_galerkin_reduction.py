@@ -26,15 +26,15 @@ StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(Stoke
 
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):
-    
+
     # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
-        
+
         # Call parent of parent (!) to initialize inner product and reduced problem
         output = StokesOptimalControlPODGalerkinReduction_Base._init_offline(self)
-        
+
         # Declare a new POD for each basis component
         self.POD = dict()
         for component in ("v", "p", "u", "w", "q"):
@@ -43,10 +43,10 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         for component in ("s", "r"):
             inner_product = self.truth_problem.inner_product[component][0]
             self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product, component=component)
-            
+
         # Return
         return output
-    
+
     # Update the snapshots matrix: overridden version because supremizer POD is different from a standard component
     def update_snapshots_matrix(self, snapshot_and_supremizers):
         assert isinstance(snapshot_and_supremizers, tuple)
@@ -59,7 +59,7 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
             self.POD[component].store_snapshot(snapshot, component=component)
         for component in ("s", "r"):
             self.POD[component].store_snapshot(supremizer[component])
-    
+
     # Compute basis functions performing POD: overridden to handle aggregated spaces
     def compute_basis_functions(self):
         # Carry out POD
@@ -73,11 +73,11 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
             POD.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
-        
+
         # Store POD modes related to control as usual
         self.reduced_problem.basis_functions.enrich(basis_functions["u"], component="u")
         self.reduced_problem.N["u"] += N["u"]
-        
+
         # Aggregate POD modes related to state and adjoint
         for pair in (("v", "w"), ("s", "r"), ("p", "q")):
             for component_to in pair:
@@ -85,14 +85,14 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
                     for component_from in pair:
                         self.reduced_problem.basis_functions.enrich(basis_functions[component_from][i], component={component_from: component_to})
                     self.reduced_problem.N[component_to] += 2
-        
+
         # Save
         self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
-    
+
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
     def error_analysis(self, N_generator=None, filename=None, **kwargs):
         components = ["v", "p", "u", "w", "q"] # but not supremizers
         kwargs["components"] = components
-                
+
         StokesOptimalControlPODGalerkinReduction_Base.error_analysis(self, N_generator, filename, **kwargs)

@@ -25,7 +25,7 @@ from rbnics.utils.test import PatchInstanceMethod
 
 @RequiredBaseDecorators(None)
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
-    
+
     @StoreMapFromSolutionDotToProblem
     @PreserveClassName
     class TimeDependentProblem_Class(ParametrizedDifferentialProblem_DerivedClass):
@@ -116,30 +116,30 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 filename_generator=_output_cache_filename_generator
             )
             del self._output_cache
-            
+
         # Set current time
         def set_time(self, t):
             assert isinstance(t, Number)
             self.t = t
-            
+
         # Set initial time
         def set_initial_time(self, t0):
             assert isinstance(t0, Number)
             self.t0 = t0
             self._time_stepping_parameters["initial_time"] = t0
-                    
+
         # Set time step size
         def set_time_step_size(self, dt):
             assert isinstance(dt, Number)
             self.dt = dt
             self._time_stepping_parameters["time_step_size"] = dt
-            
+
         # Set final time
         def set_final_time(self, T):
             assert isinstance(T, Number)
             self.T = T
             self._time_stepping_parameters["final_time"] = T
-            
+
         # Export solution to file
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if folder is None:
@@ -157,7 +157,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution = solution_over_time
                 assert suffix is not None
                 ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=suffix)
-                
+
         # Import solution from file
         def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if folder is None:
@@ -178,7 +178,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution = solution_over_time
                 assert suffix is not None
                 ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component=component, suffix=suffix)
-                
+
         def export_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
             if folder is None:
                 folder = self.folder_prefix
@@ -189,7 +189,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             assert suffix is None
             for (k, output) in enumerate(output_over_time):
                 ParametrizedDifferentialProblem_DerivedClass.export_output(self, folder, filename, [output], suffix=k)
-                
+
         def import_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
             if folder is None:
                 folder = self.folder_prefix
@@ -204,13 +204,13 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 ParametrizedDifferentialProblem_DerivedClass.import_output(self, folder, filename, output, suffix=k)
                 assert len(output) == 1
                 output_over_time.append(output[0])
-                
+
         # Initialize data structures required for the offline phase
         def init(self):
             ParametrizedDifferentialProblem_DerivedClass.init(self)
             self._init_initial_condition()
             self._init_time_series()
-            
+
         def _init_initial_condition(self):
             # Get helper strings depending on the number of basis components
             n_components = len(self.components)
@@ -288,7 +288,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                         pass
                     else:
                         raise RuntimeError("Impossible to arrive here.")
-                        
+
         def _init_time_series(self):
             try:
                 monitor_t0 = self._time_stepping_parameters["monitor"]["initial_time"]
@@ -304,7 +304,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._solution_over_time = TimeSeries((monitor_t0, monitor_T), monitor_dt)
             self._solution_dot_over_time = TimeSeries((monitor_t0, monitor_T), monitor_dt)
             self._output_over_time = TimeSeries((monitor_t0, monitor_T), monitor_dt)
-        
+
         def solve(self, **kwargs):
             self._latest_solve_kwargs = kwargs
             key_error_raised = False
@@ -349,16 +349,16 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             assign(self._solution, self._solution_over_time[-1])
             assign(self._solution_dot, self._solution_dot_over_time[-1])
             return self._solution_over_time
-            
+
         class ProblemSolver(ParametrizedDifferentialProblem_DerivedClass.ProblemSolver, TimeDependentProblemWrapper):
             def set_time(self, t):
                 problem = self.problem
                 problem.set_time(t)
-                
+
             def bc_eval(self, t):
                 assert self.problem.t == t
                 return ParametrizedDifferentialProblem_DerivedClass.ProblemSolver.bc_eval(self)
-                
+
             def ic_eval(self):
                 problem = self.problem
                 if len(problem.components) > 1:
@@ -387,7 +387,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     return sum(product(all_initial_conditions_thetas, all_initial_conditions))
                 else:
                     return None
-                    
+
             def monitor(self, t, solution, solution_dot):
                 problem = self.problem
                 solution_copy = copy(solution)
@@ -396,7 +396,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solution_dot_copy = copy(solution_dot)
                 problem._solution_dot_over_time.append(solution_dot_copy)
                 problem._solution_dot_over_time_cache[problem.mu, self.kwargs].append(solution_dot_copy)
-                
+
             def solve(self):
                 problem = self.problem
                 problem._solution_over_time_cache[problem.mu, self.kwargs] = copy(problem._solution_over_time)
@@ -404,11 +404,11 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 solver = TimeStepping(self, problem._solution, problem._solution_dot)
                 solver.set_parameters(problem._time_stepping_parameters)
                 solver.solve()
-        
+
         # Perform a truth evaluation of the output
         def compute_output(self):
             """
-            
+
             :return: output evaluation.
             """
             kwargs = self._latest_solve_kwargs
@@ -425,12 +425,12 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             else:
                 self._output = self._output_over_time[-1]
             return self._output_over_time
-            
+
         # Perform a truth evaluation of the output
         def _compute_output(self):
             self._output_over_time.clear()
             self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
             self._output = NotImplemented
-            
+
     # return value (a class) for the decorator
     return TimeDependentProblem_Class

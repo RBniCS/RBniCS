@@ -35,12 +35,12 @@ def test_eim_approximation_08(expression_type, basis_generation):
     * DEIM: define a test function on a collapsed subspace (while, in case of rank 2 forms, the trial is defined
       on the full space), and integrate.
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_08_" + expression_type + "_" + basis_generation
 

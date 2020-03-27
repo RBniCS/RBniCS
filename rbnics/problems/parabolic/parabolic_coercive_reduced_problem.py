@@ -21,11 +21,11 @@ from rbnics.problems.parabolic.abstract_parabolic_reduced_problem import Abstrac
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.
 def ParabolicCoerciveReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
-    
+
     ParabolicCoerciveReducedProblem_Base = AbstractParabolicReducedProblem(EllipticCoerciveReducedProblem_DerivedClass)
-    
+
     class ParabolicCoerciveReducedProblem_Class(ParabolicCoerciveReducedProblem_Base):
         pass
-            
+
     # return value (a class) for the decorator
     return ParabolicCoerciveReducedProblem_Class

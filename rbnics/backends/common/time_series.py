@@ -36,17 +36,17 @@ class TimeSeries(AbstractTimeSeries):
             self._time_step_size = time_step_size
         self._times = arange(self._time_interval[0], self._time_interval[1] + self._time_step_size/2., self._time_step_size).tolist()
         self._list = list()
-        
+
     def stored_times(self):
         return self._times[:len(self._list)]
-        
+
     def expected_times(self):
         return self._times
-        
+
     @overload(int)
     def __getitem__(self, key):
         return self._list[key]
-        
+
     @overload(slice)
     def __getitem__(self, key):
         if key.start is None:
@@ -64,31 +64,31 @@ class TimeSeries(AbstractTimeSeries):
         output = TimeSeries((time_interval_0, time_interval_1), time_step_size)
         output.extend(self._list[key])
         return output
-        
+
     def at(self, time):
         assert time >= self._time_interval[0]
         assert time <= self._time_interval[1]
         index = int(round(time/self._time_step_size))
         assert isclose(index*self._time_step_size, time), "Requested time should be a multiple of discretization time step size"
         return self._list[index]
-        
+
     def __iter__(self):
         return iter(self._list)
-        
+
     def __len__(self):
         return len(self._list)
-        
+
     def __delitem__(self, key):
         del self._list[key]
-        
+
     def append(self, item):
         self._list.append(item)
-        
+
     def extend(self, iterable):
         self._list.extend(iterable)
-        
+
     def clear(self):
         del self._list[:]
-        
+
     def __str__(self):
         return str([e if isinstance(e, Number) else str(e) for e in self._list])

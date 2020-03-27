@@ -24,18 +24,18 @@ from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
 @RequiredBaseDecorators(RBReducedProblem, TimeDependentReducedProblem)
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
     @PreserveClassName
     class TimeDependentRBReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-    
+
         # Default initialization of members.
         def __init__(self, truth_problem, **kwargs):
             # Call to parent
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
+
             # Storage related to error estimation for initial condition
             self.initial_condition_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
-        
+
         def _init_error_estimation_operators(self, current_stage="online"):
             ParametrizedReducedDifferentialProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
             # Also initialize data structures related to initial condition error estimation
@@ -63,13 +63,13 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                         pass # Nothing else to be done
                     else:
                         raise ValueError("Invalid stage in _init_error_estimation_operators().")
-                    
+
         # Build operators for error estimation
         def build_error_estimation_operators(self, current_stage="offline"):
             ParametrizedReducedDifferentialProblem_DerivedClass.build_error_estimation_operators(self, current_stage)
             # Initial condition
             self._build_reduced_initial_condition_error_estimation(current_stage)
-            
+
         def _build_reduced_initial_condition_error_estimation(self, current_stage="offline"):
             # Assemble initial condition product error estimation operator
             if len(self.components) > 1:
@@ -79,7 +79,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             else:
                 if self.initial_condition and not self.initial_condition_is_homogeneous:
                     self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), current_stage)
-        
+
         # Assemble operators for error estimation
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             if term[0].startswith("initial_condition") and term[1].startswith("initial_condition"):
@@ -117,17 +117,17 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     raise ValueError("Invalid stage in assemble_error_estimation_operators().")
             else:
                 return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
-                
+
         # Return the error bound for the initial condition
         def get_initial_error_estimate_squared(self):
             self._solution = self._solution_over_time[0]
             N = self._solution.N
-            
+
             at_least_one_non_homogeneous_initial_condition = False
-            
+
             addend_0 = 0.
             addend_1_right = OnlineFunction(N)
-            
+
             if len(self.components) > 1:
                 for component in self.components:
                     if self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]:
@@ -141,7 +141,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     theta_ic = self.compute_theta("initial_condition")
                     addend_0 += sum(product(theta_ic, self.initial_condition_product, theta_ic))
                     addend_1_right += sum(product(theta_ic, self.initial_condition[:N]))
-            
+
             if at_least_one_non_homogeneous_initial_condition:
                 inner_product_N = self._combined_projection_inner_product[:N, :N]
                 addend_1_left = self._solution
@@ -149,6 +149,6 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 return addend_0 - 2.0*(transpose(addend_1_left)*addend_1_right) + addend_2
             else:
                 return 0.
-                
+
     # return value (a class) for the decorator
     return TimeDependentRBReducedProblem_Class

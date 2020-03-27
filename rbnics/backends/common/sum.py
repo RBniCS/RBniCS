@@ -26,11 +26,11 @@ python_sum = sum
 @backend_for("common", inputs=((list_of(Number), ProductOutput, tuple_of(Number)), ))
 def sum(args):
     return _sum(args)
-    
+
 @overload
 def _sum(args: ProductOutput):
     return args.sum_product_return_value
-    
+
 @overload
 def _sum(args: (list_of(Number), tuple_of(Number))):
     return python_sum(args)

@@ -22,7 +22,7 @@ from rbnics import *
 @DEIM("online", basis_generation="Greedy")
 @ExactParametrizedFunctions("offline")
 class NonlinearElliptic(NonlinearEllipticProblem):
-    
+
     # Default initialization of members
     def __init__(self, V, **kwargs):
         # Call the standard initialization
@@ -44,11 +44,11 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             "maximum_iterations": 20,
             "report": True
         })
-        
+
     # Return custom problem name
     def name(self):
         return "NonlinearEllipticDEIM"
-        
+
     # Return theta multiplicative terms of the affine expansion of the problem.
     @compute_theta_for_derivatives
     def compute_theta(self, term):
@@ -64,7 +64,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             return (theta_f0,)
         else:
             raise ValueError("Invalid term for compute_theta().")
-    
+
     # Return forms resulting from the discretization of the affine expansion of the problem operators.
     @assemble_operator_for_derivatives
     def assemble_operator(self, term):
@@ -92,7 +92,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
-        
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearEllipticProblem)
 def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
@@ -103,9 +103,9 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
                 "report": True,
                 "line_search": "wolfe"
             })
-            
+
     return ReducedNonlinearElliptic
-        
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")
 subdomains = MeshFunction("size_t", mesh, "data/square_physical_region.xml")

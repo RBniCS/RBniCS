@@ -46,13 +46,13 @@ class Data(object):
                 return assemble(arg)
         self.callback_type = callback_type
         self.callback = callback
-        
+
     def generate_random(self):
         # Generate random rhs
         g = RandomDolfinFunction(self.V)
         # Return
         return (self.a, self.f(g))
-        
+
     def evaluate_builtin(self, a, f):
         a = self.callback(a)
         f = self.callback(f)
@@ -62,7 +62,7 @@ class Data(object):
         elif self.callback_type == "tensor callbacks":
             solve(a, result_builtin.vector(), f, "mumps")
         return result_builtin
-        
+
     def evaluate_backend(self, a, f):
         a = self.callback(a)
         f = self.callback(f)
@@ -73,7 +73,7 @@ class Data(object):
         })
         solver.solve()
         return result_backend
-        
+
     def assert_backend(self, a, f, result_backend):
         result_builtin = self.evaluate_builtin(a, f)
         error = Function(self.V)
@@ -82,7 +82,7 @@ class Data(object):
         error.vector().apply("add")
         relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
-        
+
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 9)])
 @pytest.mark.parametrize("callback_type", ["form callbacks", "tensor callbacks"])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(AllLinearSolver.keys()))

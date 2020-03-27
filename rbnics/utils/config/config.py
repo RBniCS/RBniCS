@@ -24,7 +24,7 @@ from rbnics.utils.mpi import parallel_io
 
 class Config(object):
     rbnics_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
-    
+
     # Set class defaults
     defaults = {
         "backends": {
@@ -51,7 +51,7 @@ class Config(object):
             "RAM cache limit": "1"
         }
     }
-    
+
     # Read in required backends
     required_backends = set()
     for root, dirs, files in os.walk(os.path.join(rbnics_directory, "backends")):
@@ -61,7 +61,7 @@ class Config(object):
         break # prevent recursive exploration
     defaults["backends"]["required backends"] = required_backends
     del required_backends
-    
+
     def __init__(self):
         # Setup configparser from defaults
         self._config_as_parser = configparser.ConfigParser()
@@ -73,7 +73,7 @@ class Config(object):
         # Setup dict
         self._config_as_dict = dict()
         self._parser_to_dict()
-        
+
     def read(self, directory=None):
         # Read from configparser
         config_files_list = list()
@@ -97,29 +97,29 @@ class Config(object):
         self._config_as_parser.read(config_files_list)
         # Update dict
         self._parser_to_dict()
-        
+
     def write(self, file_):
         def write_config_parser():
             self._config_as_parser.write(file_)
         parallel_io(write_config_parser)
-        
+
     def get(self, section, option):
         return self._config_as_dict[section][option]
-        
+
     def set(self, section, option, value):
         self._config_as_parser.set(section, option, self._value_to_parser(section, option, value))
         self._config_as_dict[section][option] = value
-        
+
     @overload(str, str, str)
     def _value_to_parser(self, section, option, value):
         assert isinstance(self.defaults[section][option], str)
         return value
-        
+
     @overload(str, str, bool)
     def _value_to_parser(self, section, option, value):
         assert isinstance(self.defaults[section][option], bool)
         return str(value)
-        
+
     @overload(str, str, set_of(str))
     def _value_to_parser(self, section, option, value):
         default = self.defaults[section][option]
@@ -129,7 +129,7 @@ class Config(object):
         if len(value) < 2:
             value_str += "," # to differentiate between str and a set with one element
         return value_str
-        
+
     def _value_from_parser(self, section, option, value):
         assert isinstance(value, str)
         if "," in value:
@@ -146,19 +146,19 @@ class Config(object):
             else:
                 assert isinstance(self.defaults[section][option], str)
                 return value
-            
+
     def _parser_to_dict(self):
         for section in self._config_as_parser.sections():
             self._config_as_dict[section] = dict()
             for (option, value) in self._config_as_parser.items(section):
                 self._config_as_dict[section][option] = self._value_from_parser(section, option, value)
-                
+
     def __eq__(self, other):
         return (
             self._config_as_parser == other._config_as_parser
                 and
             self._config_as_dict == other._config_as_dict
         )
-        
+
 config = Config()
 config.read()

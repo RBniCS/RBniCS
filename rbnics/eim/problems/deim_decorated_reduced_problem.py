@@ -26,10 +26,10 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
 
     def _AlsoDecorateErrorEstimationOperators(ParametrizedReducedDifferentialProblem_DecoratedClass):
         if hasattr(ParametrizedReducedDifferentialProblem_DecoratedClass, "assemble_error_estimation_operators"):
-        
+
             @PreserveClassName
             class _AlsoDecorateErrorEstimationOperators_Class(ParametrizedReducedDifferentialProblem_DecoratedClass):
-                
+
                 def init(self, current_stage="online"):
                     # Call parent's method (enforcing an empty parent call to _init_error_estimation_operators)
                     self.disable_init_error_estimation_operators = PatchInstanceMethod(self, "_init_error_estimation_operators", lambda self_, current_stage="online": None) # may be shared between DEIM and exact evaluation
@@ -39,7 +39,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     del self.disable_init_error_estimation_operators
                     # Then, initialize error estimation operators associated to DEIM operators
                     self._init_error_estimation_operators_DEIM(current_stage)
-                    
+
                 def _init_error_estimation_operators_DEIM(self, current_stage="online"):
                     # Initialize offline/online switch storage only once (may be shared between DEIM and exact evaluation)
                     OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
@@ -72,7 +72,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         self.RieszSolver.unset_is_affine()
                     # Update current stage in offline/online switch
                     OfflineOnlineSwitch.set_current_stage(current_stage)
-                    
+
                 def build_error_estimation_operators(self, current_stage="offline"):
                     # Call parent's method (enforcing an empty parent call to _build_error_estimation_operators)
                     self.disable_build_error_estimation_operators = PatchInstanceMethod(self, "_build_error_estimation_operators", lambda self_, current_stage="offline": None) # may be shared between DEIM and exact evaluation
@@ -82,7 +82,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     del self.disable_build_error_estimation_operators
                     # Then, build error estimators associated to DEIM operators
                     self._build_error_estimation_operators_DEIM(current_stage)
-                    
+
                 def _build_error_estimation_operators_DEIM(self, current_stage="offline"):
                     # Build offline/online error estimators storage from DEIM operators
                     OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -91,22 +91,22 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         OfflineOnlineSwitch.set_current_stage(stage_DEIM)
                         self._build_error_estimation_operators(current_stage)
                         OfflineOnlineSwitch.set_current_stage(current_stage)
-                                
+
             return _AlsoDecorateErrorEstimationOperators_Class
         else:
             return ParametrizedReducedDifferentialProblem_DecoratedClass
-    
+
     @_AlsoDecorateErrorEstimationOperators
     @PreserveClassName
     class DEIMDecoratedReducedProblem_Class(ParametrizedReducedDifferentialProblem_DerivedClass):
-        
+
         def __init__(self, truth_problem, **kwargs):
             # Call parent's method
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
-            
+
             # Copy offline online backend for current problem
             self.offline_online_backend = truth_problem.offline_online_backend
-            
+
         def init(self, current_stage="online"):
             # Call parent's method (enforcing an empty parent call to _init_operators)
             self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_, current_stage="online": None) # may be shared between DEIM and exact evaluation
@@ -116,7 +116,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             del self.disable_init_operators
             # Then, initialize DEIM operators
             self._init_operators_DEIM(current_stage)
-            
+
         def _init_operators_DEIM(self, current_stage="online"):
             # Initialize offline/online switch storage only once (may be shared between DEIM and exact evaluation)
             OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
@@ -142,14 +142,14 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self.operator.unset_is_affine()
             # Update current stage in offline/online switch
             OfflineOnlineSwitch.set_current_stage(current_stage)
-            
+
         def _solve(self, N, **kwargs):
             self._update_N_DEIM(**kwargs)
             ParametrizedReducedDifferentialProblem_DerivedClass._solve(self, N, **kwargs)
-            
+
         def _update_N_DEIM(self, **kwargs):
             self.truth_problem._update_N_DEIM(**kwargs)
-            
+
         def build_reduced_operators(self, current_stage="offline"):
             # Call parent's method (enforcing an empty parent call to _build_reduced_operators)
             self.disable_build_reduced_operators = PatchInstanceMethod(self, "_build_reduced_operators", lambda self_, current_stage="offline": None) # may be shared between DEIM and exact evaluation
@@ -159,7 +159,7 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             del self.disable_build_reduced_operators
             # Then, build DEIM operators
             self._build_reduced_operators_DEIM(current_stage)
-            
+
         def _build_reduced_operators_DEIM(self, current_stage="offline"):
             # Build offline/online operators storage from DEIM operators
             OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -169,6 +169,6 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 self._build_reduced_operators(current_stage)
             # Update current stage in offline/online switch
             OfflineOnlineSwitch.set_current_stage(current_stage)
-            
+
     # return value (a class) for the decorator
     return DEIMDecoratedReducedProblem_Class

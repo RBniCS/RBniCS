@@ -38,7 +38,7 @@ def AffineExpansionStorage(backend, wrapping):
             self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
             # Initialize arguments from inputs
             self._init(arg1, arg2)
-            
+
         @overload((tuple_of(backend.Matrix.Type()), tuple_of(backend.Vector.Type())), None)
         def _init(self, arg1, arg2):
             self._content = AffineExpansionStorageContent_Base((len(arg1), ), dtype=object)
@@ -46,19 +46,19 @@ def AffineExpansionStorage(backend, wrapping):
             self._largest_key = len(arg1) - 1
             for (i, arg1i) in enumerate(arg1):
                 self[i] = arg1i
-            
+
         @overload(int, None)
         def _init(self, arg1, arg2):
             self._content = AffineExpansionStorageContent_Base((arg1, ), dtype=object)
             self._smallest_key = 0
             self._largest_key = arg1 - 1
-        
+
         @overload(int, int)
         def _init(self, arg1, arg2):
             self._content = AffineExpansionStorageContent_Base((arg1, arg2), dtype=object)
             self._smallest_key = (0, 0)
             self._largest_key = (arg1 - 1, arg2 - 1)
-            
+
         def save(self, directory, filename):
             # Get full directory name
             full_directory = Folders.Folder(os.path.join(str(directory), filename))
@@ -74,86 +74,86 @@ def AffineExpansionStorage(backend, wrapping):
             self._save_content(self._content[it.multi_index], it, full_directory)
             # Save dicts
             self._save_dicts(full_directory)
-        
+
         @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("matrix", full_directory, "content_item_type")
             ContentItemShapeIO.save_file((item.M, item.N), full_directory, "content_item_shape")
-        
+
         @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("vector", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(item.N, full_directory, "content_item_shape")
-        
+
         @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("function", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(item.N, full_directory, "content_item_shape")
-        
+
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("scalar", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
-        
+
         @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("functions_list", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
-            
+
         @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("basis_functions_matrix", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
-        
+
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content_item_type_shape(self, item, it, full_directory):
             ContentItemTypeIO.save_file("empty", full_directory, "content_item_type")
             ContentItemShapeIO.save_file(None, full_directory, "content_item_shape")
-        
+
         @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 wrapping.tensor_save(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 wrapping.tensor_save(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 wrapping.function_save(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 ScalarContentIO.save_file(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-                
+
         @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index].save(full_directory, "content_item_" + str(it.index))
                 it.iternext()
-                
+
         @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index].save(full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             pass
-            
+
         def _save_dicts(self, full_directory):
             DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
             DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
-            
+
         def load(self, directory, filename):
             if self._content is not None: # avoid loading multiple times
                 if self._content.size > 0:
@@ -187,7 +187,7 @@ def AffineExpansionStorage(backend, wrapping):
             self._prepare_trivial_precomputed_slice(reference_item)
             # Return
             return True
-            
+
         def _load_content_item_type_shape(self, full_directory):
             assert ContentItemTypeIO.exists_file(full_directory, "content_item_type")
             content_item_type = ContentItemTypeIO.load_file(full_directory, "content_item_type")
@@ -214,50 +214,50 @@ def AffineExpansionStorage(backend, wrapping):
                 return None
             else: # impossible to arrive here anyway thanks to the assert
                 raise ValueError("Invalid content item type.")
-        
+
         @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.tensor_copy(item)
                 wrapping.tensor_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(backend.Vector.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.tensor_copy(item)
                 wrapping.tensor_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(backend.Function.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = wrapping.function_copy(item)
                 wrapping.function_load(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index] = ScalarContentIO.load_file(full_directory, "content_item_" + str(it.index))
                 it.iternext()
-                
+
         @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
                 it.iternext()
-            
+
         @overload(AbstractBasisFunctionsMatrix, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
                 self._content[it.multi_index].load(full_directory, "content_item_" + str(it.index))
                 it.iternext()
-        
+
         @overload(None, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             pass
-            
+
         def _load_dicts(self, full_directory):
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_index")
             self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index", globals={"ComponentNameToBasisComponentIndexDict": ComponentNameToBasisComponentIndexDict})
@@ -270,41 +270,41 @@ def AffineExpansionStorage(backend, wrapping):
                 if self._component_name_to_basis_component_length is not None:
                     self._content[it.multi_index]._component_name_to_basis_component_length = self._component_name_to_basis_component_length
                 it.iternext()
-        
+
         @overload(backend.Matrix.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             empty_slice = slice(None)
             slices = slice_to_array(item, (empty_slice, empty_slice), self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             self._precomputed_slices[slices] = self
-        
+
         @overload(backend.Vector.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             empty_slice = slice(None)
             slices = slice_to_array(item, empty_slice, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             self._precomputed_slices[slices] = self
-            
+
         @overload(backend.Function.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             empty_slice = slice(None)
             slices = slice_to_array(item.vector, empty_slice, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
             self._precomputed_slices[slices] = self
-            
+
         @overload(Number, )
         def _prepare_trivial_precomputed_slice(self, item):
             pass
-            
+
         @overload(AbstractFunctionsList, )
         def _prepare_trivial_precomputed_slice(self, item):
             pass
-            
+
         @overload(AbstractBasisFunctionsMatrix, )
         def _prepare_trivial_precomputed_slice(self, item):
             pass
-            
+
         @overload(None, )
         def _prepare_trivial_precomputed_slice(self, item):
             pass
-            
+
         @overload((slice, tuple_of(slice)), )
         def __getitem__(self, key):
             """
@@ -312,7 +312,7 @@ def AffineExpansionStorage(backend, wrapping):
             """
             it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             slices = slice_to_array(self._content[it.multi_index], key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
-            
+
             if slices not in self._precomputed_slices:
                 output = _AffineExpansionStorage.__new__(type(self), *self._content.shape)
                 output.__init__(*self._content.shape)
@@ -323,26 +323,26 @@ def AffineExpansionStorage(backend, wrapping):
                     it.iternext()
                 self._precomputed_slices[slices] = output
             return self._precomputed_slices[slices]
-        
+
         @overload((int, tuple_of(int)), )
         def __getitem__(self, key):
             """
             return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             """
             return self._content[key]
-            
+
         @overload(backend.Matrix.Type(), (slice, tuple_of(slice)))
         def _do_slicing(self, item, key):
             return item[key]
-        
+
         @overload(backend.Vector.Type(), (slice, tuple_of(slice)))
         def _do_slicing(self, item, key):
             return item[key]
-            
+
         @overload(backend.Function.Type(), (slice, tuple_of(slice)))
         def _do_slicing(self, item, key):
             return backend.Function(item.vector()[key])
-            
+
         def __setitem__(self, key, item):
             assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
             # Check that __getitem__ is not random acces but called for increasing key and store current key
@@ -380,14 +380,14 @@ def AffineExpansionStorage(backend, wrapping):
             if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
                 self._precomputed_slices.clear()
                 self._prepare_trivial_precomputed_slice(item)
-             
+
         @overload(int)
         def _assert_setitem_order(self, current_key):
             if self._previous_key is None:
                 assert current_key == 0
             else:
                 assert current_key == (self._previous_key + 1) % (self._largest_key + 1)
-                
+
         @overload(int, int)
         def _assert_setitem_order(self, current_key_0, current_key_1):
             if self._previous_key is None:
@@ -401,32 +401,32 @@ def AffineExpansionStorage(backend, wrapping):
                     expected_key_0 = self._previous_key[0]
                 assert current_key_0 == expected_key_0
                 assert current_key_1 == expected_key_1
-                
+
         @overload(tuple_of(int))
         def _assert_setitem_order(self, current_key):
             self._assert_setitem_order(*current_key)
-            
+
         @overload(int)
         def _update_previous_key(self, current_key):
             self._previous_key = current_key
-            
+
         @overload(int, int)
         def _update_previous_key(self, current_key_0, current_key_1):
             self._previous_key = (current_key_0, current_key_1)
-                
+
         @overload(tuple_of(int))
         def _update_previous_key(self, current_key):
             self._update_previous_key(*current_key)
-            
+
         def __iter__(self):
             return AffineExpansionStorageContent_Iterator(self._content, flags=["refs_ok"], op_flags=["readonly"])
-            
+
         def __len__(self):
             assert self.order() == 1
             return self._content.size
-        
+
         def order(self):
             assert self._content is not None
             return len(self._content.shape)
-            
+
     return _AffineExpansionStorage

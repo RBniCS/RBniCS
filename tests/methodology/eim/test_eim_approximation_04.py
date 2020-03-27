@@ -34,12 +34,12 @@ def test_eim_approximation_04(expression_type, basis_generation):
     * EIM: not applicable, as there is no difference with respect to test 03.
     * DEIM: the integral in form definitions is now restricted to a subdomain.
     """
-    
+
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             ParametrizedProblem.__init__(self, "")
             self.V = V
-            
+
         def name(self):
             return "MockProblem_04_" + expression_type + "_" + basis_generation
 

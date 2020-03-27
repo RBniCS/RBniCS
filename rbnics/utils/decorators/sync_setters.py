@@ -20,7 +20,7 @@ from rbnics.utils.test import PatchInstanceMethod
 
 def sync_setters__internal(other_object__name__or__instance, method__name, private_attribute__name, method__decorator=None):
     def sync_setters_decorator(__init__):
-        
+
         def __synced__init__(self, *args, **kwargs):
             # Call the parent initialization
             __init__(self, *args, **kwargs)
@@ -109,7 +109,7 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                 # Make sure that the value of my attribute is in sync with the value that is currently
                 # stored in other_object, because it was set before overriding was carried out
                 getattr(self, method__name)(getattr(other_object, private_attribute__name))
-        
+
         return __synced__init__
     return sync_setters_decorator
 
@@ -125,7 +125,7 @@ def sync_setters(other_object, method__name, private_attribute__name, method__de
         return sync_setters__internal(other_object, method__name, private_attribute__name, method__decorator)
     else:
         raise ValueError("Invalid method in sync_setters.")
-        
+
 def set_mu_range__decorator(set_mu_range__method):
     def set_mu_range__decorated(self_, mu_range):
         # set_mu_range by defaults calls set_mu. Since set_mu
@@ -142,7 +142,7 @@ def set_mu_range__decorator(set_mu_range__method):
         _synced_setters__disabled_methods.remove("set_mu")
         self_.set_mu(tuple([r[0] for r in mu_range]))
     return set_mu_range__decorated
-    
+
 _original_setters = dict()
 _synced_setters = dict()
 _synced_setters__decorators = dict()
