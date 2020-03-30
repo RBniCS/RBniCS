@@ -17,7 +17,7 @@ build:
   script:
     - docker build --pull -t $TESTING_IMAGE -f docker/Dockerfile .
     - docker push $TESTING_IMAGE
-    
+
 flake8:
   image:
     name: $TESTING_IMAGE
@@ -28,16 +28,14 @@ flake8:
     - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
     - python3 -c "import dolfin; import rbnics"
   script:
-    - find . -type f -name "__init__.py" -exec bash -c 'mv "$0" "`echo \"$0\" | sed s/__init__/___init___/`"' {} \;
-    - sed -i "s|__init__.py|___init___.py|g" setup.cfg
-    - pytest --flake8 -m flake8 -vv --html=pytest_flake8.html --self-contained-html
-    - find . -type f -name "___init___.py" -exec bash -c 'mv "$0" "`echo \"$0\" | sed s/___init___/__init__/`"' {} \;
-    - sed -i "s|___init___.py|__init__.py|g" setup.cfg
+    - pytest --flake8 -m flake8 -vv rbnics --html=pytest_flake8_core.html --self-contained-html
+    - pytest --flake8 -m flake8 -vv tests --html=pytest_flake8_tests.html --self-contained-html
+    - pytest --flake8 -m flake8 -vv tutorials --html=pytest_flake8_tests.html --self-contained-html
   artifacts:
     paths:
-      - pytest_flake8.html
+      - pytest_flake8_*.html
     when: on_failure
-    
+
 tests_unit_serial:
   image:
     name: $TESTING_IMAGE
@@ -53,7 +51,7 @@ tests_unit_serial:
     paths:
       - pytest_tests_serial.html
     when: on_failure
-    
+
 release:
   image: docker:latest
   services:
