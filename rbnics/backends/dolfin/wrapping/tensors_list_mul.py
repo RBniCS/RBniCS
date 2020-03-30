@@ -4,7 +4,8 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from rbnics.backends.abstract import TensorsList as AbstractTensorsList # used in place of concrete TensorsList to avoid unsolvable circular dependency
+# AbstractTensorsList is used in place of concrete TensorsList to avoid unsolvable circular dependency
+from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.backends.online import OnlineFunction
 from rbnics.utils.decorators import overload
 
@@ -15,14 +16,16 @@ def basic_tensors_list_mul_online_function(backend, wrapping):
         return output
 
     @overload
-    def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(), output: backend.Matrix.Type()):
+    def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(),
+                  output: backend.Matrix.Type()):
         output.zero()
         for (i, matrix_i) in enumerate(tensors_list._list):
             online_vector_i = online_function.vector()[i]
             output += matrix_i*online_vector_i
 
     @overload
-    def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(), output: backend.Vector.Type()):
+    def _multiply(tensors_list: AbstractTensorsList, online_function: OnlineFunction.Type(),
+                  output: backend.Vector.Type()):
         output.zero()
         for (i, vector_i) in enumerate(tensors_list._list):
             online_vector_i = online_function.vector()[i]

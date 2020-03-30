@@ -6,7 +6,8 @@
 
 from dolfin.function.expression import BaseExpression
 from rbnics.utils.decorators import get_problem_from_solution
-from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_time_dependent
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import (
+    is_pull_back_expression, is_pull_back_expression_time_dependent)
 
 def basic_is_time_dependent(backend, wrapping):
     def _basic_is_time_dependent(expression_or_form, iterator):
@@ -38,5 +39,6 @@ from rbnics.backends.dolfin.wrapping.solution_identify_component import solution
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type, solution_identify_component, solution_iterator)
+wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type,
+                         solution_identify_component, solution_iterator)
 is_time_dependent = basic_is_time_dependent(backend, wrapping)

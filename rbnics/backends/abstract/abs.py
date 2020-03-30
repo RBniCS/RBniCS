@@ -6,7 +6,8 @@
 
 from rbnics.utils.decorators import abstract_backend
 
-# abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max
+# abs function to compute maximum absolute value of an expression, matrix or vector (for EIM).
+# To be used in combination with max
 @abstract_backend
 def abs(arg):
     pass

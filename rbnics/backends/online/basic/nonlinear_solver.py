@@ -32,7 +32,8 @@ def _NonlinearProblem(backend, wrapping):
 
         @overload
         def _init_bcs(self, bcs: DictOfThetaType):
-            self.bcs = DirichletBC(bcs, self.residual_vector._component_name_to_basis_component_index, self.solution.vector().N)
+            self.bcs = DirichletBC(bcs, self.residual_vector._component_name_to_basis_component_index,
+                                   self.solution.vector().N)
 
         def residual_eval(self, solution):
             output = self.residual_eval_callback(solution)

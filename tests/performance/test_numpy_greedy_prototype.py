@@ -64,9 +64,15 @@ class Data(object):
             u.append(RandomNumpyVector(self.N))
             v.append(RandomNumpyVector(self.N))
         # Return
-        return (theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
+        return (theta_a, theta_f,
+                aa_product, af_product, ff_product,
+                aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
 
-    def evaluate_builtin(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v):
+    def evaluate_builtin(self,
+                         theta_a, theta_f,
+                         aa_product, af_product, ff_product,
+                         aa_product_legacy, af_product_legacy, ff_product_legacy,
+                         u, v):
         result_builtin = list()
         for t in range(self.Ntrain):
             result_builtin.append(
@@ -76,7 +82,11 @@ class Data(object):
             )
         return result_builtin
 
-    def evaluate_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v):
+    def evaluate_backend(self,
+                         theta_a, theta_f,
+                         aa_product, af_product, ff_product,
+                         aa_product_legacy, af_product_legacy, ff_product_legacy,
+                         u, v):
         result_backend = []
         for t in range(self.Ntrain):
             result_backend.append(
@@ -86,11 +96,22 @@ class Data(object):
             )
         return result_backend
 
-    def assert_backend(self, theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v, result_backend):
+    def assert_backend(self,
+                       theta_a, theta_f,
+                       aa_product, af_product, ff_product,
+                       aa_product_legacy, af_product_legacy, ff_product_legacy,
+                       u, v,
+                       result_backend):
         assert len(result_backend) == self.Ntrain
-        result_builtin = self.evaluate_builtin(theta_a, theta_f, aa_product, af_product, ff_product, aa_product_legacy, af_product_legacy, ff_product_legacy, u, v)
+        result_builtin = self.evaluate_builtin(
+            theta_a, theta_f,
+            aa_product, af_product, ff_product,
+            aa_product_legacy, af_product_legacy, ff_product_legacy,
+            u, v)
         assert len(result_builtin) == self.Ntrain
-        relative_error = builtins.sum([abs(result_builtin_t - result_backend_t)/abs(result_builtin_t) for (result_builtin_t, result_backend_t) in zip(result_builtin, result_backend)])/self.Ntrain
+        relative_error = builtins.sum([
+            abs(result_builtin_t - result_backend_t) / abs(result_builtin_t)
+            for (result_builtin_t, result_backend_t) in zip(result_builtin, result_backend)]) / self.Ntrain
         assert isclose(relative_error, 0., atol=1e-10)
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])

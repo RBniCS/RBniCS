@@ -7,11 +7,15 @@
 import os
 from numbers import Number
 from numpy import empty as AffineExpansionStorageContent_Base, nditer as AffineExpansionStorageContent_Iterator
-from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage, BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, FunctionsList as AbstractFunctionsList
+from rbnics.backends.abstract import (AffineExpansionStorage as AbstractAffineExpansionStorage,
+                                      BasisFunctionsMatrix as AbstractBasisFunctionsMatrix,
+                                      FunctionsList as AbstractFunctionsList)
 from rbnics.backends.online.basic.wrapping import slice_to_array
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload, tuple_of
-from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict, TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO, TextIO as ScalarContentIO
+from rbnics.utils.io import (ComponentNameToBasisComponentIndexDict, Folders, OnlineSizeDict,
+                             TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO,
+                             TextIO as ScalarContentIO)
 
 def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
@@ -55,7 +59,8 @@ def AffineExpansionStorage(backend, wrapping):
             if self._content.size == 0:
                 return
             # Initialize iterator
-            it = AffineExpansionStorageContent_Iterator(self._content, flags=["c_index", "multi_index", "refs_ok"], op_flags=["readonly"])
+            it = AffineExpansionStorageContent_Iterator(
+                self._content, flags=["c_index", "multi_index", "refs_ok"], op_flags=["readonly"])
             # Save content item type and shape
             self._save_content_item_type_shape(self._content[it.multi_index], it, full_directory)
             # Save content
@@ -119,7 +124,8 @@ def AffineExpansionStorage(backend, wrapping):
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _save_content(self, item, it, full_directory):
             while not it.finished:
-                ScalarContentIO.save_file(self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
+                ScalarContentIO.save_file(
+                    self._content[it.multi_index], full_directory, "content_item_" + str(it.index))
                 it.iternext()
 
         @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
@@ -139,20 +145,27 @@ def AffineExpansionStorage(backend, wrapping):
             pass
 
         def _save_dicts(self, full_directory):
-            DictIO.save_file(self._component_name_to_basis_component_index, full_directory, "component_name_to_basis_component_index")
-            DictIO.save_file(self._component_name_to_basis_component_length, full_directory, "component_name_to_basis_component_length")
+            DictIO.save_file(self._component_name_to_basis_component_index, full_directory,
+                             "component_name_to_basis_component_index")
+            DictIO.save_file(self._component_name_to_basis_component_length, full_directory,
+                             "component_name_to_basis_component_length")
 
         def load(self, directory, filename):
             if self._content is not None: # avoid loading multiple times
                 if self._content.size > 0:
-                    it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+                    it = AffineExpansionStorageContent_Iterator(
+                        self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
                     while not it.finished:
-                        if self._content[it.multi_index] is not None: # ... but only if there is at least one element different from None
+                        if self._content[it.multi_index] is not None:
+                            # ... but only if there is at least one element different from None
                             if isinstance(self._content[it.multi_index], AbstractFunctionsList):
-                                if len(self._content[it.multi_index]) > 0: # ... unless it is an empty FunctionsList
+                                if len(self._content[it.multi_index]) > 0:
+                                    # ... unless it is an empty FunctionsList
                                     return False
                             elif isinstance(self._content[it.multi_index], AbstractBasisFunctionsMatrix):
-                                if sum(self._content[it.multi_index]._component_name_to_basis_component_length.values()) > 0: # ... unless it is an empty BasisFunctionsMatrix
+                                if sum(self._content[
+                                        it.multi_index]._component_name_to_basis_component_length.values()) > 0:
+                                    # ... unless it is an empty BasisFunctionsMatrix
                                     return False
                             else:
                                 return False
@@ -180,27 +193,34 @@ def AffineExpansionStorage(backend, wrapping):
             assert ContentItemTypeIO.exists_file(full_directory, "content_item_type")
             content_item_type = ContentItemTypeIO.load_file(full_directory, "content_item_type")
             assert ContentItemShapeIO.exists_file(full_directory, "content_item_shape")
-            assert content_item_type in ("matrix", "vector", "function", "scalar", "functions_list", "basis_functions_matrix", "empty")
+            assert content_item_type in (
+                "matrix", "vector", "function", "scalar", "functions_list", "basis_functions_matrix", "empty")
             if content_item_type == "matrix":
-                (M, N) = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
+                (M, N) = ContentItemShapeIO.load_file(
+                    full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Matrix(M, N)
             elif content_item_type == "vector":
-                N = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
+                N = ContentItemShapeIO.load_file(
+                    full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Vector(N)
             elif content_item_type == "function":
-                N = ContentItemShapeIO.load_file(full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
+                N = ContentItemShapeIO.load_file(
+                    full_directory, "content_item_shape", globals={"OnlineSizeDict": OnlineSizeDict})
                 return backend.Function(N)
             elif content_item_type == "scalar":
                 return 0.
-            elif content_item_type == "functions_list": # self._content has already been populated with empty items
+            elif content_item_type == "functions_list":
+                # self._content has already been populated with empty items
                 assert isinstance(self._content[self._smallest_key], AbstractFunctionsList)
                 return self._content[self._smallest_key]
-            elif content_item_type == "basis_functions_matrix": # self._content has already been populated with empty items
+            elif content_item_type == "basis_functions_matrix":
+                # self._content has already been populated with empty items
                 assert isinstance(self._content[self._smallest_key], AbstractBasisFunctionsMatrix)
                 return self._content[self._smallest_key]
             elif content_item_type == "empty":
                 return None
-            else: # impossible to arrive here anyway thanks to the assert
+            else:
+                # impossible to arrive here anyway thanks to the assert
                 raise ValueError("Invalid content item type.")
 
         @overload(backend.Matrix.Type(), AffineExpansionStorageContent_Iterator, Folders.Folder)
@@ -227,7 +247,8 @@ def AffineExpansionStorage(backend, wrapping):
         @overload(Number, AffineExpansionStorageContent_Iterator, Folders.Folder)
         def _load_content(self, item, it, full_directory):
             while not it.finished:
-                self._content[it.multi_index] = ScalarContentIO.load_file(full_directory, "content_item_" + str(it.index))
+                self._content[it.multi_index] = ScalarContentIO.load_file(
+                    full_directory, "content_item_" + str(it.index))
                 it.iternext()
 
         @overload(AbstractFunctionsList, AffineExpansionStorageContent_Iterator, Folders.Folder)
@@ -248,33 +269,43 @@ def AffineExpansionStorage(backend, wrapping):
 
         def _load_dicts(self, full_directory):
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_index")
-            self._component_name_to_basis_component_index = DictIO.load_file(full_directory, "component_name_to_basis_component_index", globals={"ComponentNameToBasisComponentIndexDict": ComponentNameToBasisComponentIndexDict})
+            self._component_name_to_basis_component_index = DictIO.load_file(
+                full_directory, "component_name_to_basis_component_index",
+                globals={"ComponentNameToBasisComponentIndexDict": ComponentNameToBasisComponentIndexDict})
             assert DictIO.exists_file(full_directory, "component_name_to_basis_component_length")
-            self._component_name_to_basis_component_length = DictIO.load_file(full_directory, "component_name_to_basis_component_length", globals={"OnlineSizeDict": OnlineSizeDict})
-            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
+            self._component_name_to_basis_component_length = DictIO.load_file(
+                full_directory, "component_name_to_basis_component_length",
+                globals={"OnlineSizeDict": OnlineSizeDict})
+            it = AffineExpansionStorageContent_Iterator(
+                self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
             while not it.finished:
                 if self._component_name_to_basis_component_index is not None:
-                    self._content[it.multi_index]._component_name_to_basis_component_index = self._component_name_to_basis_component_index
+                    self._content[it.multi_index]._component_name_to_basis_component_index = (
+                        self._component_name_to_basis_component_index)
                 if self._component_name_to_basis_component_length is not None:
-                    self._content[it.multi_index]._component_name_to_basis_component_length = self._component_name_to_basis_component_length
+                    self._content[it.multi_index]._component_name_to_basis_component_length = (
+                        self._component_name_to_basis_component_length)
                 it.iternext()
 
         @overload(backend.Matrix.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             empty_slice = slice(None)
-            slices = slice_to_array(item, (empty_slice, empty_slice), self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            slices = slice_to_array(item, (empty_slice, empty_slice), self._component_name_to_basis_component_length,
+                                    self._component_name_to_basis_component_index)
             self._precomputed_slices[slices] = self
 
         @overload(backend.Vector.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             empty_slice = slice(None)
-            slices = slice_to_array(item, empty_slice, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            slices = slice_to_array(item, empty_slice, self._component_name_to_basis_component_length,
+                                    self._component_name_to_basis_component_index)
             self._precomputed_slices[slices] = self
 
         @overload(backend.Function.Type(), )
         def _prepare_trivial_precomputed_slice(self, item):
             empty_slice = slice(None)
-            slices = slice_to_array(item.vector, empty_slice, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            slices = slice_to_array(item.vector, empty_slice, self._component_name_to_basis_component_length,
+                                    self._component_name_to_basis_component_index)
             self._precomputed_slices[slices] = self
 
         @overload(Number, )
@@ -296,10 +327,13 @@ def AffineExpansionStorage(backend, wrapping):
         @overload((slice, tuple_of(slice)), )
         def __getitem__(self, key):
             """
-            return the subtensors of size "key" for every element in content. (e.g. submatrices [1:5,1:5] of the affine expansion of A)
+            return the subtensors of size "key" for every element in content.
+            (e.g. submatrices [1:5,1:5] of the affine expansion of A)
             """
-            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
-            slices = slice_to_array(self._content[it.multi_index], key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index)
+            it = AffineExpansionStorageContent_Iterator(self._content, flags=["multi_index", "refs_ok"],
+                                                        op_flags=["readonly"])
+            slices = slice_to_array(self._content[it.multi_index], key, self._component_name_to_basis_component_length,
+                                    self._component_name_to_basis_component_index)
 
             if slices not in self._precomputed_slices:
                 output = _AffineExpansionStorage.__new__(type(self), *self._content.shape)
@@ -315,7 +349,8 @@ def AffineExpansionStorage(backend, wrapping):
         @overload((int, tuple_of(int)), )
         def __getitem__(self, key):
             """
-            return the element at position "key" in the storage (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
+            return the element at position "key" in the storage
+            (e.g. q-th matrix in the affine expansion of A, q = 1 ... Qa)
             """
             return self._content[key]
 
@@ -339,7 +374,8 @@ def AffineExpansionStorage(backend, wrapping):
             # Store item
             self._content[key] = item
             # Reset attributes related to basis functions matrix if the size has changed
-            if key == self._smallest_key: # this assumes that __getitem__ is not random acces but called for increasing key
+            if key == self._smallest_key:
+                # this assumes that __getitem__ is not random acces but called for increasing key
                 self._component_name_to_basis_component_index = None
                 self._component_name_to_basis_component_length = None
             # Also store attributes related to basis functions matrix for __getitem__ slicing
@@ -354,18 +390,22 @@ def AffineExpansionStorage(backend, wrapping):
             if isinstance(item, backend.Function.Type()):
                 item = item.vector()
             if isinstance(item, (backend.Matrix.Type(), backend.Vector.Type(), AbstractBasisFunctionsMatrix)):
-                assert (self._component_name_to_basis_component_index is None) == (self._component_name_to_basis_component_length is None)
+                assert (self._component_name_to_basis_component_index is None) == (
+                        self._component_name_to_basis_component_length is None)
                 if self._component_name_to_basis_component_index is None:
                     self._component_name_to_basis_component_index = item._component_name_to_basis_component_index
                     self._component_name_to_basis_component_length = item._component_name_to_basis_component_length
                 else:
-                    assert self._component_name_to_basis_component_index == item._component_name_to_basis_component_index
-                    assert self._component_name_to_basis_component_length == item._component_name_to_basis_component_length
+                    assert self._component_name_to_basis_component_index == (
+                        item._component_name_to_basis_component_index)
+                    assert self._component_name_to_basis_component_length == (
+                        item._component_name_to_basis_component_length)
             else:
                 assert self._component_name_to_basis_component_index is None
                 assert self._component_name_to_basis_component_length is None
             # Reset and prepare precomputed slices
-            if key == self._largest_key: # this assumes that __getitem__ is not random acces but called for increasing key
+            if key == self._largest_key:
+                # this assumes that __getitem__ is not random acces but called for increasing key
                 self._precomputed_slices.clear()
                 self._prepare_trivial_precomputed_slice(item)
 

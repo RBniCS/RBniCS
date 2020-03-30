@@ -122,7 +122,8 @@ class Config(object):
         assert isinstance(value, str)
         if "," in value:
             assert isinstance(self.defaults[section][option], set)
-            value = value.strip(",") # strip trailing comma which has been possibly added to differentiate between str and set
+            # strip trailing comma which has been possibly added to differentiate between str and set
+            value = value.strip(",")
             return set([v.strip() for v in value.split(",")]).difference(("", ))
         else:
             if value.lower() in ("yes", "true", "on"):

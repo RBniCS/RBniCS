@@ -13,7 +13,8 @@ from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
 from dolfin import Constant, Function
 from dolfin.function.expression import BaseExpression
-from rbnics.backends.dolfin.wrapping.is_problem_solution import _solution_split_to_component, _solution_split_to_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution import (
+    _solution_split_to_component, _solution_split_to_solution)
 from rbnics.utils.decorators import overload
 
 def solution_identify_component(node):
@@ -26,7 +27,8 @@ def _solution_identify_component(node):
     return (node, _solution_split_to_component[node], _solution_split_to_solution[node])
 
 @overload
-def _remove_mute_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def _remove_mute_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity,
+                                IndexBase, MultiIndex, Operator)):
     return node
 
 @overload

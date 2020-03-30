@@ -14,11 +14,12 @@ pre_step_height = 3.
 after_step_height = 5.
 
 # Create mesh
-domain = \
-    Rectangle(Point(0., 0.), Point(pre_step_length + after_step_length, after_step_height)) - \
-    Rectangle(Point(0., 0.), Point(pre_step_length, after_step_height - pre_step_height))
-top_subdomain = Rectangle(Point(0., after_step_height - pre_step_height), Point(pre_step_length + after_step_length, after_step_height))
-bottom_subdomain = Rectangle(Point(pre_step_length, 0.), Point(pre_step_length + after_step_length, after_step_height - pre_step_height))
+domain = (Rectangle(Point(0., 0.), Point(pre_step_length + after_step_length, after_step_height))
+          - Rectangle(Point(0., 0.), Point(pre_step_length, after_step_height - pre_step_height)))
+top_subdomain = Rectangle(Point(0., after_step_height - pre_step_height),
+                          Point(pre_step_length + after_step_length, after_step_height))
+bottom_subdomain = Rectangle(Point(pre_step_length, 0.),
+                             Point(pre_step_length + after_step_length, after_step_height - pre_step_height))
 domain.set_subdomain(1, top_subdomain)
 domain.set_subdomain(2, bottom_subdomain)
 mesh = generate_mesh(domain, 50)

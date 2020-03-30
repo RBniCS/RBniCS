@@ -28,7 +28,8 @@ def _get_local_dof_to_component_map(V, component=None, dof_component_map=None, r
             #include <dolfin/fem/DofMap.h>
             #include <dolfin/mesh/Mesh.h>
 
-            std::vector<std::size_t> collapse_dofmap(std::shared_ptr<dolfin::DofMap> dofmap, std::shared_ptr<dolfin::Mesh> mesh)
+            std::vector<std::size_t> collapse_dofmap(std::shared_ptr<dolfin::DofMap> dofmap,
+                                                     std::shared_ptr<dolfin::Mesh> mesh)
             {
                 std::unordered_map<std::size_t, std::size_t> collapsed_map;
                 dofmap->collapse(collapsed_map, *mesh);

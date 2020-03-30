@@ -14,15 +14,18 @@ class OnlineSizeDict(OrderedDict):
         super(OnlineSizeDict, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def generate_from_N_and_kwargs(components_, default, N, **kwargs): # need to add underscore to components_ becuase "components" is also a possible kwargs key
+    def generate_from_N_and_kwargs(components_, default, N, **kwargs):
+        # need to add underscore to components_ becuase "components" is also a possible kwargs key
         if len(components_) > 1:
             if N is None:
                 all_components_in_kwargs = components_[0] in kwargs
                 for component in components_:
                     if all_components_in_kwargs:
-                        assert component in kwargs, "You need to specify the online size of all components in kwargs"
+                        assert component in kwargs, (
+                            "You need to specify the online size of all components in kwargs")
                     else:
-                        assert component not in kwargs, "You need to specify the online size of all components in kwargs"
+                        assert component not in kwargs, (
+                            "You need to specify the online size of all components in kwargs")
                 if all_components_in_kwargs:
                     N = OnlineSizeDict()
                     for component in components_:
@@ -40,7 +43,8 @@ class OnlineSizeDict(OrderedDict):
                         N[component] = N_int
                         assert component not in kwargs, "You cannot provide both an int and kwargs for components"
                 elif isinstance(N, OnlineSizeDict):
-                    assert list(N.keys()) == list(default.keys()) # check that components are the same, and are ordered correctly
+                    # check that components are the same, and are ordered correctly
+                    assert list(N.keys()) == list(default.keys())
                 else:
                     raise TypeError("Invalid N")
         else:
@@ -84,14 +88,16 @@ class OnlineSizeDict(OrderedDict):
     def __contains__(self, k):
         return super(OnlineSizeDict, self).__contains__(k)
 
-    # Override N += N_bc so that it is possible to increment online size due to boundary conditions (several components)
+    # Override N += N_bc so that it is possible to increment online size due to boundary conditions
+    # (several components)
     @overload(lambda cls: cls)
     def __iadd__(self, other):
         for key in self:
             self[key] += other[key]
         return self
 
-    # Override N += N_bc so that it is possible to increment online size due to boundary conditions (single component)
+    # Override N += N_bc so that it is possible to increment online size due to boundary conditions
+    # (single component)
     @overload(int)
     def __iadd__(self, other):
         assert len(self) == 1

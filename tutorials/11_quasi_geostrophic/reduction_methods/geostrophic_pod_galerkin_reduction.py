@@ -9,7 +9,8 @@ from rbnics.utils.decorators import ReductionMethodFor
 from problems import GeostrophicProblem
 from .geostrophic_reduction_method import GeostrophicReductionMethod
 
-GeostrophicPODGalerkinReduction_Base = LinearPODGalerkinReduction(GeostrophicReductionMethod(DifferentialProblemReductionMethod))
+GeostrophicPODGalerkinReduction_Base = LinearPODGalerkinReduction(
+    GeostrophicReductionMethod(DifferentialProblemReductionMethod))
 
 @ReductionMethodFor(GeostrophicProblem, "PODGalerkin")
 class GeostrophicPODGalerkinReduction(GeostrophicPODGalerkinReduction_Base):

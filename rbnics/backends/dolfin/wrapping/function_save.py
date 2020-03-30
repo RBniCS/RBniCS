@@ -178,7 +178,8 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
                 SolutionFile = SolutionFileXML
         if suffix is not None:
             if suffix == 0:
-                # Remove existing files if any, as new functions should not be appended, but rather overwrite existing functions
+                # Remove existing files if any, as new functions should not be appended,
+                # but rather overwrite existing functions
                 SolutionFile.remove_files(directory, filename)
                 # Remove from storage and re-create
                 try:
@@ -189,7 +190,8 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
             file_ = _all_solution_files[(directory, filename)]
             file_.write(fun, function_name, suffix)
         else:
-            # Remove existing files if any, as new functions should not be appended, but rather overwrite existing functions
+            # Remove existing files if any, as new functions should not be appended,
+            # but rather overwrite existing functions
             SolutionFile.remove_files(directory, filename)
             # Write function to file
             file_ = SolutionFile(directory, filename)

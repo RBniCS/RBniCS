@@ -22,7 +22,8 @@ from rbnics.problems.parabolic import ParabolicCoerciveProblem, ParabolicProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
 from rbnics.problems.stokes_unsteady import StokesUnsteadyProblem
-from rbnics.sampling.distributions import DrawFrom, EquispacedDistribution, LogEquispacedDistribution, LogUniformDistribution, UniformDistribution
+from rbnics.sampling.distributions import (DrawFrom, EquispacedDistribution, LogEquispacedDistribution,
+                                           LogUniformDistribution, UniformDistribution)
 from rbnics.scm.problems import ExactStabilityFactor, SCM
 from rbnics.shape_parametrization.problems import AffineShapeParametrization, ShapeParametrization
 from rbnics.utils.decorators import CustomizeReducedProblemFor, CustomizeReductionMethodFor, exact_problem
@@ -76,7 +77,8 @@ import sys
 import importlib
 def import_remaining_modules():
     rbnics_directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    already_imported = ["backends", "eim", "problems", "__pycache__", "reduction_methods", "sampling", "scm", "shape_parametrization", "utils"]
+    already_imported = ["backends", "eim", "problems", "__pycache__", "reduction_methods", "sampling", "scm",
+                        "shape_parametrization", "utils"]
     for root, dirs, files in os.walk(os.path.join(rbnics_directory)):
         for dir_ in dirs:
             if dir_ not in already_imported and not dir_.startswith("."):
@@ -84,7 +86,8 @@ def import_remaining_modules():
                 already_imported.append(dir_)
                 for class_or_function_name in sys.modules[__name__ + "." + dir_].__all__:
                     assert not hasattr(sys.modules[__name__], class_or_function_name)
-                    setattr(sys.modules[__name__], class_or_function_name, getattr(sys.modules[__name__ + "." + dir_], class_or_function_name))
+                    setattr(sys.modules[__name__], class_or_function_name, getattr(sys.modules[__name__ + "." + dir_],
+                            class_or_function_name))
                     sys.modules[__name__].__all__.append(class_or_function_name)
         break # prevent recursive exploration
 import_remaining_modules()

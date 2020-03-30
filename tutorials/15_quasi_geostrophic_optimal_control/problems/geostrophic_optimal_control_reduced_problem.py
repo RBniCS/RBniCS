@@ -9,7 +9,8 @@ from rbnics.problems.base import LinearReducedProblem
 
 def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
-    GeostrophicOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
+    GeostrophicOptimalControlReducedProblem_Base = LinearReducedProblem(
+        ParametrizedReducedDifferentialProblem_DerivedClass)
 
     class GeostrophicOptimalControlReducedProblem_Class(GeostrophicOptimalControlReducedProblem_Base):
 
@@ -20,12 +21,9 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                 assembled_operator = dict()
                 for term in ("a", "a*", "c", "c*", "m", "n"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
-                return (
-                      assembled_operator["m"]                                                      + assembled_operator["a*"]
-                                                                         + assembled_operator["n"] - assembled_operator["c*"]
-                    + assembled_operator["a"] - assembled_operator["c"]
-
-                )
+                return (assembled_operator["m"] + assembled_operator["a*"]
+                        + assembled_operator["n"] - assembled_operator["c*"]
+                        + assembled_operator["a"] - assembled_operator["c"])
 
             def vector_eval(self):
                 problem = self.problem
@@ -33,12 +31,8 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                 assembled_operator = dict()
                 for term in ("f", "g"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
-                return (
-                      assembled_operator["g"]
-
-
-                    + assembled_operator["f"]
-                )
+                return (assembled_operator["g"]
+                        + assembled_operator["f"])
 
         # Perform an online evaluation of the cost functional
         def _compute_output(self, N):
@@ -53,12 +47,10 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                     assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
                 else:
                     raise ValueError("Invalid value for order of term " + term)
-            self._output = (
-                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
-                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
-                transpose(assembled_operator["g"])*self._solution +
-                0.5*assembled_operator["h"]
-            )
+            self._output = (0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution)
+                            + 0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution)
+                            - transpose(assembled_operator["g"])*self._solution
+                            + 0.5*assembled_operator["h"])
 
         def _online_size_from_kwargs(self, N, **kwargs):
             if N is None:

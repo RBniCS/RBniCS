@@ -16,7 +16,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
     @PreserveClassName
     class PODGalerkinReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         """
-        Abstract class. The folders used to store the snapshots and for the post processing data, the data stracture for the POD algorithm are initialized.
+        Abstract class. The folders used to store the snapshots and for the post processing data,
+        the data stracture for the POD algorithm are initialized.
 
         :param truth_problem: the class of the truth problem to be solved.
         :return: PODGalerkinReduction_Class where all the offline data are stored.
@@ -27,7 +28,9 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
 
             # Declare a POD object
-            self.POD = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
+            # ProperOrthogonalDecomposition (for problems with one component)
+            # or dict of ProperOrthogonalDecomposition (for problem with several components)
+            self.POD = None
             # I/O
             self.folder["snapshots"] = os.path.join(self.folder_prefix, "snapshots")
             self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
@@ -51,9 +54,11 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     all_components_in_kwargs = self.truth_problem.components[0] in kwargs
                     for component in self.truth_problem.components:
                         if all_components_in_kwargs:
-                            assert component in kwargs, "You need to specify the tolerance of all components in kwargs"
+                            assert component in kwargs, (
+                                "You need to specify the tolerance of all components in kwargs")
                         else:
-                            assert component not in kwargs, "You need to specify the tolerance of all components in kwargs"
+                            assert component not in kwargs, (
+                                "You need to specify the tolerance of all components in kwargs")
                     assert all_components_in_kwargs
                     tol = dict()
                     for component in self.truth_problem.components:
@@ -65,7 +70,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     tol = dict()
                     for component in self.truth_problem.components:
                         tol[component] = tol_number
-                        assert component not in kwargs, "You cannot provide both a number and kwargs for components"
+                        assert component not in kwargs, (
+                            "You cannot provide both a number and kwargs for components")
             else:
                 if tol is None:
                     assert len(self.truth_problem.components) == 1
@@ -85,11 +91,13 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             if len(self.truth_problem.components) > 1:
                 self.POD = dict()
                 for component in self.truth_problem.components:
-                    assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product[component]) == 1
+                    # the affine expansion storage contains only the inner product matrix
                     inner_product = self.truth_problem.inner_product[component][0]
                     self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
             else:
-                assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                assert len(self.truth_problem.inner_product) == 1
+                # the affine expansion storage contains only the inner product matrix
                 inner_product = self.truth_problem.inner_product[0]
                 self.POD = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
 
@@ -227,8 +235,10 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             error_analysis_table = ErrorAnalysisTable(self.testing_set)
             error_analysis_table.set_Nmax(N_generator_max())
             for component in components:
-                error_analysis_table.add_column("error_" + component, group_name="solution_" + component, operations=("mean", "max"))
-                error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component, operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "error_" + component, group_name="solution_" + component, operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_error_" + component, group_name="solution_" + component, operations=("mean", "max"))
             error_analysis_table.add_column("error_output", group_name="output", operations=("mean", "max"))
             error_analysis_table.add_column("relative_error_output", group_name="output", operations=("mean", "max"))
 
@@ -249,7 +259,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     if len(components) > 1:
                         for component in components:
                             error_analysis_table["error_" + component, n_int, mu_index] = error[component]
-                            error_analysis_table["relative_error_" + component, n_int, mu_index] = relative_error[component]
+                            error_analysis_table[
+                                "relative_error_" + component, n_int, mu_index] = relative_error[component]
                     else:
                         component = components[0]
                         error_analysis_table["error_" + component, n_int, mu_index] = error
@@ -267,7 +278,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
 
             # Export error analysis table
-            error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
+            error_analysis_table.save(
+                self.folder["error_analysis"], "error_analysis" if filename is None else filename)
 
         def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
             """
@@ -315,8 +327,10 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
 
             speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
             speedup_analysis_table.set_Nmax(N_generator_max())
-            speedup_analysis_table.add_column("speedup_solve", group_name="speedup_solve", operations=("min", "mean", "max"))
-            speedup_analysis_table.add_column("speedup_output", group_name="speedup_output", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_solve", group_name="speedup_solve", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_output", group_name="speedup_output", operations=("min", "mean", "max"))
 
             truth_timer = Timer("parallel")
             reduced_timer = Timer("serial")
@@ -344,11 +358,15 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     elapsed_reduced_output = reduced_timer.stop()
 
                     if solution is not NotImplemented:
-                        speedup_analysis_table["speedup_solve", n_int, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                        speedup_analysis_table[
+                            "speedup_solve", n_int, mu_index] = elapsed_truth_solve / elapsed_reduced_solve
                     else:
                         speedup_analysis_table["speedup_solve", n_int, mu_index] = NotImplemented
                     if output is not NotImplemented:
-                        speedup_analysis_table["speedup_output", n_int, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+                        speedup_analysis_table[
+                            "speedup_output", n_int, mu_index] = (
+                                elapsed_truth_solve + elapsed_truth_output) / (
+                                    elapsed_reduced_solve + elapsed_reduced_output)
                     else:
                         speedup_analysis_table["speedup_output", n_int, mu_index] = NotImplemented
 
@@ -361,7 +379,8 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
 
             # Export speedup analysis table
-            speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
+            speedup_analysis_table.save(
+                self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
 
     # return value (a class) for the decorator
     return PODGalerkinReduction_Class

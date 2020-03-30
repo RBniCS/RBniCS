@@ -27,13 +27,16 @@ def set_online_backend(online_backend):
     importlib.import_module(__name__ + "." + online_backend)
     importlib.import_module(__name__ + "." + online_backend + ".wrapping")
 
-    # Copy all classes and functions from (current) online backend to this module with "Online" and "online_" prefixes, respectively
+    # Copy all classes and functions from (current) online backend to this module with "Online" and "online_" prefixes,
+    # respectively
     for class_or_function_name in sys.modules[__name__ + "." + online_backend].__all__:
         class_or_function = getattr(sys.modules[__name__ + "." + online_backend], class_or_function_name)
         assert inspect.isclass(class_or_function) or inspect.isfunction(class_or_function)
-        if class_or_function_name[0].isupper(): # less restrictive than inspect.isclass(class_or_function), because for instance OnlineMatrix is implemented as function rather than a class
+        # The next if statement is less restrictive than inspect.isclass(class_or_function),
+        # because for instance OnlineMatrix is implemented as function rather than a class
+        if class_or_function_name[0].isupper():
             prefix = "Online"
-        else: # less restrictive than inspect.isfunction(class_or_function)
+        else:
             prefix = "online_"
         setattr(sys.modules[__name__], prefix + class_or_function_name, class_or_function)
         sys.modules[__name__].__all__.append(prefix + class_or_function_name)

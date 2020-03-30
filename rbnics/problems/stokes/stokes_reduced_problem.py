@@ -67,7 +67,8 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             kwargs = self._latest_solve_kwargs
             self._supremizer = OnlineFunction(N_us)
             try:
-                assign(self._supremizer, self._supremizer_cache[self.mu, N_us, kwargs]) # **kwargs is not supported by __getitem__
+                assign(self._supremizer, self._supremizer_cache[self.mu, N_us, kwargs])
+                # **kwargs is not supported by __getitem__
             except KeyError:
                 self._solve_supremizer(solution)
                 self._supremizer_cache[self.mu, N_us, kwargs] = copy(self._supremizer)
@@ -76,9 +77,11 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         def _solve_supremizer(self, solution):
             N_us = self._supremizer.N
             N_usp = solution.N
-            assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+            assert len(self.inner_product["s"]) == 1
+            # the affine expansion storage contains only the inner product matrix
             assembled_operator_lhs = self.inner_product["s"][0][:N_us, :N_us]
-            assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"][:N_us, :N_usp]))
+            assembled_operator_bt = sum(product(
+                self.compute_theta("bt_restricted"), self.operator["bt_restricted"][:N_us, :N_usp]))
             assembled_operator_rhs = assembled_operator_bt*solution
             if self.dirichlet_bc["u"] and not self.dirichlet_bc_are_homogeneous["u"]:
                 assembled_dirichlet_bc = dict()
@@ -122,7 +125,8 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 supremizer = self._supremizer
             N_us = supremizer.N
             basis_functions_us = self.basis_functions[["u", "s"]]
-            self.truth_problem.export_supremizer(folder, filename, basis_functions_us[:N_us]*supremizer, component, suffix)
+            self.truth_problem.export_supremizer(
+                folder, filename, basis_functions_us[:N_us]*supremizer, component, suffix)
 
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):
@@ -131,22 +135,36 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     basis_functions_us = self.basis_functions[["u", "s"]]
                     assert self.Q["bt_restricted"] == self.truth_problem.Q["bt_restricted"]
                     for q in range(self.Q["bt_restricted"]):
-                        self.operator["bt_restricted"][q] = transpose(basis_functions_us)*self.truth_problem.operator["bt_restricted"][q]*self.basis_functions
+                        self.operator["bt_restricted"][q] = (
+                            transpose(basis_functions_us)
+                            * self.truth_problem.operator["bt_restricted"][q]
+                            * self.basis_functions)
                     self.operator["bt_restricted"].save(self.folder["reduced_operators"], "operator_bt_restricted")
                     return self.operator["bt_restricted"]
                 elif term == "inner_product_s":
                     basis_functions_us = self.basis_functions[["u", "s"]]
-                    assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.inner_product["s"][0] = transpose(basis_functions_us)*self.truth_problem.inner_product["s"][0]*basis_functions_us
+                    assert len(self.inner_product["s"]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product["s"]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    self.inner_product["s"][0] = (
+                        transpose(basis_functions_us)
+                        * self.truth_problem.inner_product["s"][0]
+                        * basis_functions_us)
                     self.inner_product["s"].save(self.folder["reduced_operators"], "inner_product_s")
                     return self.inner_product["s"]
                 elif term == "projection_inner_product_s":
                     basis_functions_us = self.basis_functions[["u", "s"]]
-                    assert len(self.projection_inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.projection_inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.projection_inner_product["s"][0] = transpose(basis_functions_us)*self.truth_problem.projection_inner_product["s"][0]*basis_functions_us
-                    self.projection_inner_product["s"].save(self.folder["reduced_operators"], "projection_inner_product_s")
+                    assert len(self.projection_inner_product["s"]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.projection_inner_product["s"]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    self.projection_inner_product["s"][0] = (
+                        transpose(basis_functions_us)
+                        * self.truth_problem.projection_inner_product["s"][0]
+                        * basis_functions_us)
+                    self.projection_inner_product["s"].save(
+                        self.folder["reduced_operators"], "projection_inner_product_s")
                     return self.projection_inner_product["s"]
                 else:
                     return StokesReducedProblem_Base.assemble_operator(self, term, current_stage)

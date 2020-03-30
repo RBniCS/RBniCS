@@ -53,12 +53,11 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             (delta_psi, delta_q) = split(delta_psiq)
             (psi, q) = split(psiq)
             # Variational forms
-            F = (
-                inner(q, phi)*dx + inner(grad(psi), grad(phi))*dx +
-                Constant(-(delta_I/L)**2)*inner(psi, q.dx(1)*p.dx(0) - q.dx(0)*p.dx(1))*dx +
-                + inner(psi.dx(0), p)*dx + Constant((delta_M/L)**3)*inner(grad(q), grad(p))*dx + Constant(C)*inner(q, p)*dx +
-                - inner(self.f, p)*dx
-            )
+            F = (inner(q, phi)*dx + inner(grad(psi), grad(phi))*dx
+                 + Constant(-(delta_I/L)**2)*inner(psi, q.dx(1)*p.dx(0) - q.dx(0)*p.dx(1))*dx
+                 + inner(psi.dx(0), p)*dx + Constant((delta_M/L)**3)*inner(grad(q), grad(p))*dx
+                 + Constant(C)*inner(q, p)*dx
+                 - inner(self.f, p)*dx)
             J = derivative(F, psiq, delta_psiq)
             # Boundary conditions
             bc = [DirichletBC(W, Constant((0., 0.)), boundaries, idx) for idx in [1, 2, 3, 4]]

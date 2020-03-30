@@ -22,7 +22,8 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
 
             # Storage for SCM reduction method
-            self.SCM_reduction = SCMApproximationReductionMethod(self.truth_problem.SCM_approximation, os.path.join(self.truth_problem.name(), "scm"))
+            self.SCM_reduction = SCMApproximationReductionMethod(
+                self.truth_problem.SCM_approximation, os.path.join(self.truth_problem.name(), "scm"))
 
         # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
@@ -42,11 +43,13 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
 
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(
+                self, ntrain, enable_import, sampling, **kwargs)
             # Initialize training set of SCM reduction
             assert "SCM" in kwargs
             ntrain_SCM = kwargs["SCM"]
-            import_successful_SCM = self.SCM_reduction.initialize_training_set(ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
+            import_successful_SCM = self.SCM_reduction.initialize_training_set(
+                ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
             # If an exception is raised we will fall back to exact evaluation,
             # and thus we cannot use a distributed training set
             self.training_set.serialize_maximum_computations()
@@ -56,11 +59,13 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
 
         # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(
+                self, ntest, enable_import, sampling, **kwargs)
             # Initialize testing set of SCM reduction
             assert "SCM" in kwargs
             ntest_SCM = kwargs["SCM"]
-            import_successful_SCM = self.SCM_reduction.initialize_testing_set(ntest_SCM, enable_import, sampling) # kwargs are not needed
+            import_successful_SCM = self.SCM_reduction.initialize_testing_set(ntest_SCM, enable_import, sampling)
+            # kwargs are not needed
             # Return
             return import_successful and import_successful_SCM
 
@@ -78,12 +83,12 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def error_analysis(self, N_generator=None, filename=None, **kwargs):
             # Perform first the SCM error analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
-                                                # an exact stability factor,
-                                                # so he probably is not interested in the error analysis of SCM
-                    and
-                "SCM" not in kwargs             # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
-                                                # functions, thus he has already carried out the error analysis of SCM
+                "with_respect_to" not in kwargs
+                # otherwise we assume the user was interested in computing the error w.r.t.
+                # an exact stability factor, so he probably is not interested in the error analysis of SCM
+                and "SCM" not in kwargs
+                # otherwise we assume the user was interested in computing the error for a fixed number of SCM basis
+                # functions, thus he has already carried out the error analysis of SCM
             ):
                 SCM_N_generator = kwargs.pop("SCM_N_generator", None)
                 self.SCM_reduction.error_analysis(SCM_N_generator, filename)
@@ -107,12 +112,12 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
             # Perform first the SCM speedup analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
-                                                # an exact stability factor,
-                                                # so he probably is not interested in the speedup analysis of SCM
-                    and
-                "SCM" not in kwargs             # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis
-                                                # functions, thus he has already carried out the speedup analysis of SCM
+                "with_respect_to" not in kwargs
+                # otherwise we assume the user was interested in computing the speedup w.r.t.
+                # an exact stability factor, so he probably is not interested in the speedup analysis of SCM
+                and "SCM" not in kwargs
+                # otherwise we assume the user was interested in computing the speedup for a fixed number of SCM basis
+                # functions, thus he has already carried out the speedup analysis of SCM
             ):
                 SCM_N_generator = kwargs.pop("SCM_N_generator", None)
                 self.SCM_reduction.speedup_analysis(SCM_N_generator, filename)
@@ -132,7 +137,8 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             self._undo_replace_stability_factor_lower_bound_computation(**kwargs)
 
         def _replace_stability_factor_lower_bound_computation(self, **kwargs):
-            self._replace_stability_factor_lower_bound_computation__get_stability_factor_lower_bound__original = self.reduced_problem.get_stability_factor_lower_bound
+            self._replace_stability_factor_lower_bound_computation__get_stability_factor_lower_bound__original = (
+                self.reduced_problem.get_stability_factor_lower_bound)
             if "SCM" not in kwargs:
                 if "with_respect_to" in kwargs:
                     assert inspect.isfunction(kwargs["with_respect_to"])

@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from numbers import Number
-from rbnics.backends import AffineExpansionStorage, assign, copy, Function, product, sum, TimeDependentProblemWrapper, TimeSeries, TimeStepping
+from rbnics.backends import (AffineExpansionStorage, assign, copy, Function, product, sum,
+                             TimeDependentProblemWrapper, TimeSeries, TimeStepping)
 from rbnics.backends.abstract import TimeSeries as AbstractTimeSeries
 from rbnics.utils.cache import Cache, TimeSeriesCache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, StoreMapFromSolutionDotToProblem
@@ -30,8 +31,12 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._time_stepping_parameters = dict()
             self._time_stepping_parameters["initial_time"] = self.t0
             # Matrices/vectors resulting from the truth discretization
-            self.initial_condition = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
-            self.initial_condition_is_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
+            # initial_condition: AffineExpansionStorage (for problems with one component) or dict of
+            # AffineExpansionStorage (for problem with several components)
+            self.initial_condition = None
+            # initial_condition_is_homogeneous: bool (for problems with one component) or dict of
+            # bools (for problem with several components)
+            self.initial_condition_is_homogeneous = None
             # Time derivative of the solution, at the current time
             self._solution_dot = Function(self.V)
             # Solution and output over time
@@ -139,12 +144,14 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             if isinstance(solution_over_time, AbstractTimeSeries):
                 assert suffix is None
                 for (k, solution) in enumerate(solution_over_time):
-                    ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=k)
+                    ParametrizedDifferentialProblem_DerivedClass.export_solution(
+                        self, folder, filename, solution, component=component, suffix=k)
             else:
                 # Used only for cache export
                 solution = solution_over_time
                 assert suffix is not None
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component=component, suffix=suffix)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(
+                    self, folder, filename, solution, component=component, suffix=suffix)
 
         # Import solution from file
         def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
@@ -159,13 +166,15 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 assert suffix is None
                 solution_over_time.clear()
                 for (k, _) in enumerate(self._solution_over_time.expected_times()):
-                    ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component, suffix=k)
+                    ParametrizedDifferentialProblem_DerivedClass.import_solution(
+                        self, folder, filename, solution, component, suffix=k)
                     solution_over_time.append(copy(solution))
             else:
                 # Used only for cache import
                 solution = solution_over_time
                 assert suffix is not None
-                ParametrizedDifferentialProblem_DerivedClass.import_solution(self, folder, filename, solution, component=component, suffix=suffix)
+                ParametrizedDifferentialProblem_DerivedClass.import_solution(
+                    self, folder, filename, solution, component=component, suffix=suffix)
 
         def export_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
             if folder is None:
@@ -176,7 +185,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 output_over_time = self._output_over_time
             assert suffix is None
             for (k, output) in enumerate(output_over_time):
-                ParametrizedDifferentialProblem_DerivedClass.export_output(self, folder, filename, [output], suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.export_output(
+                    self, folder, filename, [output], suffix=k)
 
         def import_output(self, folder=None, filename=None, output_over_time=None, suffix=None):
             if folder is None:
@@ -189,7 +199,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             assert suffix is None
             output_over_time.clear()
             for (k, _) in enumerate(self._output_over_time.expected_times()):
-                ParametrizedDifferentialProblem_DerivedClass.import_output(self, folder, filename, output, suffix=k)
+                ParametrizedDifferentialProblem_DerivedClass.import_output(
+                    self, folder, filename, output, suffix=k)
                 assert len(output) == 1
                 output_over_time.append(output[0])
 
@@ -217,7 +228,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 initial_condition_is_homogeneous = dict()
                 for component in self.components:
                     try:
-                        operator_ic = AffineExpansionStorage(self.assemble_operator(initial_condition_string.format(c=component)))
+                        operator_ic = AffineExpansionStorage(
+                            self.assemble_operator(initial_condition_string.format(c=component)))
                     except ValueError: # there were no initial condition: assume homogeneous one
                         initial_condition[component] = None
                         initial_condition_is_homogeneous[component] = True
@@ -298,7 +310,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             key_error_raised = False
             self._solution_over_time.clear()
             try:
-                assign(self._solution_over_time, self._solution_over_time_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+                assign(self._solution_over_time, self._solution_over_time_cache[self.mu, kwargs])
+                # **kwargs is not supported by __getitem__
             except KeyError:
                 key_error_raised = True
             self._solution_dot_over_time.clear()
@@ -310,8 +323,10 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 # Solutions might still have been loaded from file, only not up to the final time
                 assert (
                     len(self._solution_over_time) == len(self._solution_dot_over_time)
-                        or
-                    len(self._solution_over_time) == len(self._solution_dot_over_time) + 1 # simulation was stopped after the solution was written out, but before corresponding solution_dot was.
+                    # simulation was stopped after the solution_dot was written out
+                    or len(self._solution_over_time) == len(self._solution_dot_over_time) + 1
+                    # simulation was stopped after the solution was written out, but before corresponding
+                    # solution_dot was.
                 )
                 if len(self._solution_over_time) == len(self._solution_dot_over_time) + 1:
                     del self._solution_over_time[-1]
@@ -355,7 +370,8 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     for component in problem.components:
                         if problem.initial_condition[component] is not None:
                             all_initial_conditions.extend(problem.initial_condition[component])
-                            all_initial_conditions_thetas.extend(problem.compute_theta("initial_condition_" + component))
+                            all_initial_conditions_thetas.extend(
+                                problem.compute_theta("initial_condition_" + component))
                     if len(all_initial_conditions) > 0:
                         all_initial_conditions = tuple(all_initial_conditions)
                         all_initial_conditions = AffineExpansionStorage(all_initial_conditions)
@@ -401,13 +417,14 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             """
             kwargs = self._latest_solve_kwargs
             try:
-                assign(self._output_over_time, self._output_over_time_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+                assign(self._output_over_time, self._output_over_time_cache[self.mu, kwargs])
+                # **kwargs is not supported by __getitem__
             except KeyError:
                 try:
                     self._compute_output()
                 except ValueError: # raised by compute_theta if output computation is optional
                     self._output_over_time.clear()
-                    self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
+                    self._output_over_time.extend([NotImplemented] * len(self._solution_over_time))
                     self._output = NotImplemented
                 self._output_over_time_cache[self.mu, kwargs] = self._output_over_time
             else:
@@ -417,7 +434,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
         # Perform a truth evaluation of the output
         def _compute_output(self):
             self._output_over_time.clear()
-            self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
+            self._output_over_time.extend([NotImplemented] * len(self._solution_over_time))
             self._output = NotImplemented
 
     # return value (a class) for the decorator

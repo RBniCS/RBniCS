@@ -9,7 +9,8 @@ import inspect
 from rbnics.backends import ParametrizedTensorFactory
 from rbnics.eim.backends import OfflineOnlineBackend
 from rbnics.eim.problems.eim_approximation import EIMApproximation as DEIMApproximation
-from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation as TimeDependentDEIMApproximation
+from rbnics.eim.problems.time_dependent_eim_approximation import (
+    TimeDependentEIMApproximation as TimeDependentDEIMApproximation)
 from rbnics.eim.utils.decorators import DefineSymbolicParameters
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
@@ -54,10 +55,13 @@ def DEIMDecoratedProblem(
 
             @overload(str)
             def _store_DEIM_stages(self, stage):
-                assert stages != "offline", "This choice does not make any sense because it requires a DEIM offline stage which then is not used online"
+                assert stages != "offline", (
+                    "This choice does not make any sense because it requires a DEIM offline stage"
+                    + " which then is not used online")
                 assert stages == "online"
                 self._apply_DEIM_at_stages = (stages, )
-                assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") below @DEIM(\"online\") decorator"
+                assert hasattr(self, "_apply_exact_evaluation_at_stages"), (
+                    "Please apply @ExactParametrizedFunctions(\"offline\") below @DEIM(\"online\") decorator")
                 assert self._apply_exact_evaluation_at_stages == ("offline", )
 
             @overload(tuple_of(str))
@@ -68,7 +72,9 @@ def DEIMDecoratedProblem(
                     assert stages[1] in ("offline", "online")
                     assert stages[0] != stages[1]
                 self._apply_DEIM_at_stages = stages
-                assert not hasattr(self, "_apply_exact_evaluation_at_stages"), "This choice does not make any sense because there is at least a stage for which both DEIM and ExactParametrizedFunctions are required"
+                assert not hasattr(self, "_apply_exact_evaluation_at_stages"), (
+                    "This choice does not make any sense because there is at least a stage for which"
+                    + " both DEIM and ExactParametrizedFunctions are required")
 
             def _init_DEIM_approximations(self):
                 # Preprocess each term in the affine expansions.
@@ -103,7 +109,9 @@ def DEIMDecoratedProblem(
                                         DEIMApproximationType = TimeDependentDEIMApproximation
                                     else:
                                         DEIMApproximationType = DEIMApproximation
-                                    self.DEIM_approximations[term][q] = DEIMApproximationType(self, factory_form_q, os.path.join(self.name(), "deim", factory_form_q.name()), basis_generation)
+                                    self.DEIM_approximations[term][q] = DEIMApproximationType(
+                                        self, factory_form_q, os.path.join(self.name(), "deim", factory_form_q.name()),
+                                        basis_generation)
                                 else:
                                     self.non_DEIM_forms[term][q] = form_q
                     # Restore float parameters
@@ -111,7 +119,8 @@ def DEIMDecoratedProblem(
 
             def init(self):
                 # Call parent's method (enforcing an empty parent call to _init_operators)
-                self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None) # may be shared between DEIM and exact evaluation
+                self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None)
+                # self.disable_init_operators may be shared between DEIM and exact evaluation
                 self.disable_init_operators.patch()
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 self.disable_init_operators.unpatch()
@@ -120,7 +129,8 @@ def DEIMDecoratedProblem(
                 self._init_operators_DEIM()
 
             def _init_operators_DEIM(self):
-                # Initialize offline/online switch storage only once (may be shared between DEIM and exact evaluation)
+                # Initialize offline/online switch storage only once
+                # (may be shared between DEIM and exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
                 OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
                 OfflineOnlineExpansionStorageSize = self.offline_online_backend.OfflineOnlineExpansionStorageSize
@@ -144,8 +154,10 @@ def DEIMDecoratedProblem(
                 for stage_DEIM in self._apply_DEIM_at_stages:
                     OfflineOnlineSwitch.set_current_stage(stage_DEIM)
                     # Replace assemble_operator and compute_theta with DEIM computations
-                    self.assemble_operator.attach(self._assemble_operator_DEIM, lambda term: term in self.DEIM_approximations)
-                    self.compute_theta.attach(self._compute_theta_DEIM, lambda term: term in self.DEIM_approximations)
+                    self.assemble_operator.attach(self._assemble_operator_DEIM,
+                                                  lambda term: term in self.DEIM_approximations)
+                    self.compute_theta.attach(self._compute_theta_DEIM,
+                                              lambda term: term in self.DEIM_approximations)
                     # Setup offline/online operators storage with DEIM operators
                     self.operator.set_is_affine(True)
                     self._init_operators()
@@ -197,7 +209,8 @@ def DEIMDecoratedProblem(
                     N_DEIM = None
                     if self._N_DEIM is not None:
                         N_DEIM = self._N_DEIM[term][q]
-                    deim_thetas_q = [v*original_thetas[q] for v in deim_approximation.compute_interpolated_theta(N_DEIM)]
+                    deim_thetas_q = [v*original_thetas[q]
+                                     for v in deim_approximation.compute_interpolated_theta(N_DEIM)]
                     deim_thetas.extend(deim_thetas_q)
                 # Append forms which did not require DEIM, if applicable
                 for q in self.non_DEIM_forms[term]:

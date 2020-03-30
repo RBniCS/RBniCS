@@ -29,7 +29,8 @@ def basic_tensor_save(backend, wrapping):
             with open(full_filename_generator_mpi_size, "w") as generator_mpi_size_file:
                 generator_mpi_size_file.write(str(mpi_comm.size))
         parallel_io(save_generator_mpi_size, mpi_comm)
-        # Write out generator mapping from processor dependent indices to processor independent (global_cell_index, cell_dof) tuple
+        # Write out generator mapping from processor dependent indices
+        # to processor independent (global_cell_index, cell_dof) tuple
         _permutation_save(tensor, directory, form, form_name + "_" + str(mpi_comm.size), mpi_comm)
         # Write out content
         _tensor_save(tensor, directory, filename, mpi_comm)

@@ -11,7 +11,8 @@ from ufl.core.multiindex import IndexBase
 from ufl.core.operator import Operator
 from ufl.tensors import as_tensor, ComponentTensor
 from dolfin import Function
-from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
+from rbnics.backends.dolfin.wrapping.parametrized_constant import (
+    is_parametrized_constant, parametrized_constant_to_float)
 from rbnics.utils.decorators import overload, tuple_of
 
 # Function from Function: do nothing

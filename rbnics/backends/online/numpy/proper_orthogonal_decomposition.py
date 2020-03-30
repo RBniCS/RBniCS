@@ -19,7 +19,9 @@ backend = ModuleWrapper(transpose)
 wrapping = ModuleWrapper(get_mpi_comm)
 online_backend = ModuleWrapper(OnlineEigenSolver=EigenSolver)
 online_wrapping = ModuleWrapper()
-ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(backend, wrapping, online_backend, online_wrapping, AbstractProperOrthogonalDecomposition, SnapshotsMatrix, FunctionsList)
+ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(
+    backend, wrapping, online_backend, online_wrapping, AbstractProperOrthogonalDecomposition, SnapshotsMatrix,
+    FunctionsList)
 
 @BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecomposition_Base):

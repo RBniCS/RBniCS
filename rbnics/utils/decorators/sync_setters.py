@@ -6,7 +6,8 @@
 
 from rbnics.utils.test import PatchInstanceMethod
 
-def sync_setters__internal(other_object__name__or__instance, method__name, private_attribute__name, method__decorator=None):
+def sync_setters__internal(other_object__name__or__instance, method__name, private_attribute__name,
+                           method__decorator=None):
     def sync_setters_decorator(__init__):
 
         def __synced__init__(self, *args, **kwargs):
@@ -102,7 +103,8 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
     return sync_setters_decorator
 
 def sync_setters(other_object, method__name, private_attribute__name, method__decorator=None):
-    assert method__name in ("set_final_time", "set_initial_time", "set_mu", "set_mu_range", "set_time", "set_time_step_size") # other uses have not been considered yet
+    assert method__name in (
+        "set_final_time", "set_initial_time", "set_mu", "set_mu_range", "set_time", "set_time_step_size")
     if method__name in ("set_final_time", "set_initial_time", "set_mu", "set_time", "set_time_step_size"):
         return sync_setters__internal(other_object, method__name, private_attribute__name, method__decorator)
     elif method__name == "set_mu_range":

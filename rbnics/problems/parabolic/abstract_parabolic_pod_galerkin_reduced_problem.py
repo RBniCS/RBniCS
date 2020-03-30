@@ -7,7 +7,8 @@
 from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 
 def AbstractParabolicPODGalerkinReducedProblem(AbstractParabolicReducedProblem_DerivedClass):
-    AbstractParabolicPODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkinReducedProblem(AbstractParabolicReducedProblem_DerivedClass)
+    AbstractParabolicPODGalerkinReducedProblem_Base = LinearTimeDependentPODGalerkinReducedProblem(
+        AbstractParabolicReducedProblem_DerivedClass)
 
     class AbstractParabolicPODGalerkinReducedProblem_Class(AbstractParabolicPODGalerkinReducedProblem_Base):
         pass

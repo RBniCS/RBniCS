@@ -33,9 +33,12 @@ def BasicReducedVertices(backend, wrapping):
 
             # Storage for reduced mesh
             if copy_from is None:
-                self._reduced_mesh = backend.ReducedMesh((V, ), auxiliary_problems_and_components=auxiliary_problems_and_components)
+                self._reduced_mesh = backend.ReducedMesh(
+                    (V, ), auxiliary_problems_and_components=auxiliary_problems_and_components)
             else:
-                self._reduced_mesh = backend.ReducedMesh((V, ), auxiliary_problems_and_components=auxiliary_problems_and_components, copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
+                self._reduced_mesh = backend.ReducedMesh(
+                    (V, ), auxiliary_problems_and_components=auxiliary_problems_and_components,
+                    copy_from=copy_from._reduced_mesh, key_as_slice=key_as_slice, key_as_int=key_as_int)
 
         def append(self, vertex_and_component_and_dof):
             assert isinstance(vertex_and_component_and_dof, tuple)
@@ -62,8 +65,12 @@ def BasicReducedVertices(backend, wrapping):
             assert isinstance(key, slice)
             assert key.start is None
             assert key.step is None
-            output = _BasicReducedVertices.__new__(type(self), self._V, self._auxiliary_problems_and_components, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
-            output.__init__(self._V, self._auxiliary_problems_and_components, copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
+            output = _BasicReducedVertices.__new__(
+                type(self), self._V, self._auxiliary_problems_and_components,
+                copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
+            output.__init__(
+                self._V, self._auxiliary_problems_and_components,
+                copy_from=self, key_as_slice=key, key_as_int=key.stop - 1)
             return output
 
         def get_reduced_mesh(self, index=None):

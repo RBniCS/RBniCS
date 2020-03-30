@@ -16,7 +16,8 @@ from dolfin.function.expression import BaseExpression
 from rbnics.utils.decorators import overload
 
 @overload
-def is_problem_solution_type(node: (Argument, BaseExpression, Constant, ConstantValue, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def is_problem_solution_type(node: (Argument, BaseExpression, Constant, ConstantValue, GeometricQuantity,
+                                    IndexBase, MultiIndex, Operator)):
     return False
 
 @overload

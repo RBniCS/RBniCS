@@ -10,7 +10,8 @@ from rbnics.backends import product, sum, transpose
 
 def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
-    EllipticOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
+    EllipticOptimalControlReducedProblem_Base = LinearReducedProblem(
+        ParametrizedReducedDifferentialProblem_DerivedClass)
 
     # Base class containing the interface of a projection based ROM
     # for saddle point problems.

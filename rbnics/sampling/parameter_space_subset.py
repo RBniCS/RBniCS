@@ -51,7 +51,8 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
             def postprocessor(value):
                 return value
         if self.distributed_max:
-            local_list_indices = list(range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size)) # start from index rank and take steps of length equal to size
+            local_list_indices = list(range(self.mpi_comm.rank, len(self._list), self.mpi_comm.size))
+            # start from index rank and take steps of length equal to size
         else:
             local_list_indices = list(range(len(self._list)))
         values = array(len(local_list_indices))
@@ -62,7 +63,8 @@ class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
         if self.distributed_max:
             local_i_max = argmax(values_with_postprocessing)
             local_value_max = values[local_i_max]
-            (global_value_max, global_i_max) = parallel_max(local_value_max, local_list_indices[local_i_max], postprocessor, self.mpi_comm)
+            (global_value_max, global_i_max) = parallel_max(
+                local_value_max, local_list_indices[local_i_max], postprocessor, self.mpi_comm)
             assert isinstance(global_i_max, tuple)
             assert len(global_i_max) == 1
             global_i_max = global_i_max[0]

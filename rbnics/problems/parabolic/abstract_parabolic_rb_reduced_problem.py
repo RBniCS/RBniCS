@@ -10,7 +10,8 @@ from rbnics.problems.base import LinearTimeDependentRBReducedProblem
 from rbnics.backends import assign, product, sum, TimeSeries, transpose
 
 def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedClass):
-    AbstractParabolicRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(AbstractParabolicReducedProblem_DerivedClass)
+    AbstractParabolicRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(
+        AbstractParabolicReducedProblem_DerivedClass)
 
     class AbstractParabolicRBReducedProblem_Class(AbstractParabolicRBReducedProblem_Base):
 
@@ -67,17 +68,23 @@ def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedCla
                     assign(self._solution_dot, self._solution_dot_over_time[k])
                     # Compute the numerator of the error bound at the current time, first
                     # by computing residual of elliptic part
-                    elliptic_residual_norm_squared = AbstractParabolicRBReducedProblem_Base.get_residual_norm_squared(self)
+                    elliptic_residual_norm_squared = AbstractParabolicRBReducedProblem_Base.get_residual_norm_squared(
+                        self)
                     # ... and then adding terms related to time derivative
                     N = self._solution.N
                     theta_m = self.compute_theta("m")
                     theta_a = self.compute_theta("a")
                     theta_f = self.compute_theta("f")
                     residual_norm_squared_over_time.append(
-                          elliptic_residual_norm_squared
-                        + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "f"][:N], theta_f)))
-                        + 2.0*(transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "a"][:N, :N], theta_a))*self._solution)
-                        + transpose(self._solution_dot)*sum(product(theta_m, self.error_estimation_operator["m", "m"][:N, :N], theta_m))*self._solution_dot
+                        elliptic_residual_norm_squared
+                        + 2.0 * (transpose(self._solution_dot)
+                                 * sum(product(theta_m, self.error_estimation_operator["m", "f"][:N], theta_f)))
+                        + 2.0 * (transpose(self._solution_dot)
+                                 * sum(product(theta_m, self.error_estimation_operator["m", "a"][:N, :N], theta_a))
+                                 * self._solution)
+                        + (transpose(self._solution_dot)
+                           * sum(product(theta_m, self.error_estimation_operator["m", "m"][:N, :N], theta_m))
+                           * self._solution_dot)
                     )
                 else:
                     # Error estimator on initial condition does not use the residual

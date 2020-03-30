@@ -51,8 +51,10 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
         #     delattr(Problem, "ProblemExactDecorators")
         # ... and append the new problem decorator
         if Algorithm in DecoratedProblem.ProblemDecorators:
-            assert kwargs in DecoratedProblem.ProblemDecoratorsKwargs, "You have decorated twice the problem with same decorator but different kwargs"
-            assert ExactAlgorithm in DecoratedProblem.ProblemExactDecorators, "You have decorated twice the problem with same decorator but different exact decorator"
+            assert kwargs in DecoratedProblem.ProblemDecoratorsKwargs, (
+                "You have decorated twice the problem with same decorator but different kwargs")
+            assert ExactAlgorithm in DecoratedProblem.ProblemExactDecorators, (
+                "You have decorated twice the problem with same decorator but different exact decorator")
         else:
             DecoratedProblem.ProblemDecorators.append(Algorithm)
             DecoratedProblem.ProblemDecoratorsKwargs.append(kwargs)

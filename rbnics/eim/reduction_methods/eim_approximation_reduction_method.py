@@ -8,7 +8,8 @@ import os
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.backends import abs, evaluate, max
 from rbnics.utils.decorators import snapshot_links_to_cache
-from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
+from rbnics.utils.io import (ErrorAnalysisTable, Folders, GreedySelectedParametersList, GreedyErrorEstimatorsList,
+                             SpeedupAnalysisTable, TextBox, TextLine, Timer)
 from rbnics.utils.test import PatchInstanceMethod
 
 # Empirical interpolation method for the interpolation of parametrized functions
@@ -36,15 +37,18 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.tol = 1e-15
 
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-        import_successful = ReductionMethod.initialize_training_set(self, self.EIM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
+        import_successful = ReductionMethod.initialize_training_set(
+            self, self.EIM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
         # Since exact evaluation is required, we cannot use a distributed training set
         self.training_set.serialize_maximum_computations()
         # Also initialize the map from parameter values to snapshots container index
-        self._training_set_parameters_to_snapshots_container_index = dict((mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
+        self._training_set_parameters_to_snapshots_container_index = dict(
+            (mu, mu_index) for (mu_index, mu) in enumerate(self.training_set))
         return import_successful
 
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-        return ReductionMethod.initialize_testing_set(self, self.EIM_approximation.mu_range, ntest, enable_import, sampling, **kwargs)
+        return ReductionMethod.initialize_testing_set(
+            self, self.EIM_approximation.mu_range, ntest, enable_import, sampling, **kwargs)
 
     # Perform the offline phase of EIM
     def offline(self):
@@ -61,10 +65,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
         required_folders.update(self.folder)
         required_folders.update(self.EIM_approximation.folder)
         optional_folders = Folders()
-        optional_folders["cache"] = required_folders.pop("cache") # this does not affect the availability of offline data
-        optional_folders["testing_set"] = required_folders.pop("testing_set") # this is required only in the error/speedup analysis
-        optional_folders["error_analysis"] = required_folders.pop("error_analysis") # this is required only in the error analysis
-        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis") # this is required only in the speedup analysis
+        optional_folders["cache"] = required_folders.pop("cache")
+        # removing cache does not affect the availability of offline data
+        optional_folders["testing_set"] = required_folders.pop("testing_set")
+        # testing set is required only in the error/speedup analysis
+        optional_folders["error_analysis"] = required_folders.pop("error_analysis")
+        # error analysis folder is required only in the error analysis
+        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis")
+        # speedup analysis folder is required only in the speedup analysis
         at_least_one_required_folder_created = required_folders.create()
         at_least_one_optional_folder_created = optional_folders.create()  # noqa: F841
         if not at_least_one_required_folder_created:
@@ -79,7 +87,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         description = self.EIM_approximation.parametrized_expression.description()
 
         # Evaluate the parametrized expression for all parameters in the training set
-        print(TextBox(interpolation_method_name + " preprocessing phase begins for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " preprocessing phase begins for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
         for (mu_index, mu) in enumerate(self.training_set):
@@ -102,10 +111,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
             N_POD = self.compute_basis_POD()
             print("")
 
-        print(TextBox(interpolation_method_name + " preprocessing phase ends for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " preprocessing phase ends for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
-        print(TextBox(interpolation_method_name + " offline phase begins for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " offline phase begins for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
         if self.EIM_approximation.basis_generation == "Greedy":
@@ -162,7 +173,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
 
                 print("")
 
-        print(TextBox(interpolation_method_name + " offline phase ends for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " offline phase ends for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
     # Finalize data structures required after the offline phase
@@ -202,12 +214,16 @@ class EIMApproximationReductionMethod(ReductionMethod):
 
     def update_interpolation_locations(self, maximum_location):
         self.EIM_approximation.interpolation_locations.append(maximum_location)
-        self.EIM_approximation.interpolation_locations.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_locations")
+        self.EIM_approximation.interpolation_locations.save(
+            self.EIM_approximation.folder["reduced_operators"], "interpolation_locations")
 
     # Assemble the interpolation matrix
     def update_interpolation_matrix(self):
-        self.EIM_approximation.interpolation_matrix[0] = evaluate(self.EIM_approximation.basis_functions[:self.EIM_approximation.N], self.EIM_approximation.interpolation_locations)
-        self.EIM_approximation.interpolation_matrix.save(self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
+        self.EIM_approximation.interpolation_matrix[0] = evaluate(
+            self.EIM_approximation.basis_functions[:self.EIM_approximation.N],
+            self.EIM_approximation.interpolation_locations)
+        self.EIM_approximation.interpolation_matrix.save(
+            self.EIM_approximation.folder["reduced_operators"], "interpolation_matrix")
 
     # Load the precomputed snapshot
     def load_snapshot(self):
@@ -225,12 +241,14 @@ class EIMApproximationReductionMethod(ReductionMethod):
         if self.EIM_approximation.N > 0: # skip during initialization
             self.EIM_approximation.solve()
             self.EIM_approximation.snapshot = self.load_snapshot()
-            error = self.EIM_approximation.snapshot - self.EIM_approximation.basis_functions*self.EIM_approximation._interpolation_coefficients
+            error = (self.EIM_approximation.snapshot
+                     - self.EIM_approximation.basis_functions * self.EIM_approximation._interpolation_coefficients)
             error_on_interpolation_locations = evaluate(error, self.EIM_approximation.interpolation_locations)
             (maximum_error, _) = max(abs(error))
-            (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations)) # for consistency check, should be zero
+            (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations))
             print("interpolation error for current mu =", abs(maximum_error))
-            print("interpolation error on interpolation locations for current mu =", abs(maximum_error_on_interpolation_locations))
+            print("interpolation error on interpolation locations for current mu =",
+                  abs(maximum_error_on_interpolation_locations)) # for consistency check, should be zero
 
         # Carry out the actual greedy search
         def solve_and_computer_error(mu):
@@ -291,7 +309,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
 
-        print(TextBox(interpolation_method_name + " error analysis begins for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " error analysis begins for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
         error_analysis_table = ErrorAnalysisTable(self.testing_set)
@@ -319,7 +338,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print(error_analysis_table)
 
         print("")
-        print(TextBox(interpolation_method_name + " error analysis ends for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " error analysis ends for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
         # Export error analysis table
@@ -342,10 +362,12 @@ class EIMApproximationReductionMethod(ReductionMethod):
         # ... and also disable the capability of importing/exporting truth solutions
         def disable_import_solution_method(self_, folder=None, filename=None, solution=None):
             raise OSError
-        self.disable_import_solution = PatchInstanceMethod(self.EIM_approximation, "import_solution", disable_import_solution_method)
+        self.disable_import_solution = PatchInstanceMethod(
+            self.EIM_approximation, "import_solution", disable_import_solution_method)
         def disable_export_solution_method(self_, folder=None, filename=None, solution=None):
             pass
-        self.disable_export_solution = PatchInstanceMethod(self.EIM_approximation, "export_solution", disable_export_solution_method)
+        self.disable_export_solution = PatchInstanceMethod(
+            self.EIM_approximation, "export_solution", disable_export_solution_method)
         self.disable_import_solution.patch()
         self.disable_export_solution.patch()
 
@@ -363,7 +385,8 @@ class EIMApproximationReductionMethod(ReductionMethod):
         interpolation_method_name = self.EIM_approximation.parametrized_expression.interpolation_method_name()
         description = self.EIM_approximation.parametrized_expression.description()
 
-        print(TextBox(interpolation_method_name + " speedup analysis begins for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " speedup analysis begins for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
         speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
@@ -394,11 +417,13 @@ class EIMApproximationReductionMethod(ReductionMethod):
         print(speedup_analysis_table)
 
         print("")
-        print(TextBox(interpolation_method_name + " speedup analysis ends for" + "\n" + "\n".join(description), fill="="))
+        print(TextBox(interpolation_method_name + " speedup analysis ends for" + "\n"
+                      + "\n".join(description), fill="="))
         print("")
 
         # Export speedup analysis table
-        speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
+        speedup_analysis_table.save(self.folder["speedup_analysis"],
+                                    "speedup_analysis" if filename is None else filename)
 
     # Finalize data structures required after the speedup analysis phase
     def _finalize_speedup_analysis(self, **kwargs):

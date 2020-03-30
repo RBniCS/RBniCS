@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from dolfin import FunctionSpace
-from rbnics.backends.abstract import HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition
+from rbnics.backends.abstract import (
+    HighOrderProperOrthogonalDecomposition as AbstractHighOrderProperOrthogonalDecomposition)
 from rbnics.backends.basic import ProperOrthogonalDecompositionBase as BasicHighOrderProperOrthogonalDecomposition
 from rbnics.backends.dolfin.tensor_snapshots_list import TensorSnapshotsList
 from rbnics.backends.dolfin.tensor_basis_list import TensorBasisList
@@ -14,14 +15,17 @@ from rbnics.backends.online import OnlineEigenSolver
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 def transpose(arg):
-    from rbnics.backends.dolfin.transpose import transpose as backend_transpose # cannot import at global scope due to cyclic dependence
+    # cannot import transpose at global scope due to cyclic dependence
+    from rbnics.backends.dolfin.transpose import transpose as backend_transpose
     return backend_transpose(arg)
 
 backend = ModuleWrapper(transpose)
 wrapping = ModuleWrapper(get_mpi_comm)
 online_backend = ModuleWrapper(OnlineEigenSolver=OnlineEigenSolver)
 online_wrapping = ModuleWrapper()
-HighOrderProperOrthogonalDecomposition_Base = BasicHighOrderProperOrthogonalDecomposition(backend, wrapping, online_backend, online_wrapping, AbstractHighOrderProperOrthogonalDecomposition, TensorSnapshotsList, TensorBasisList)
+HighOrderProperOrthogonalDecomposition_Base = BasicHighOrderProperOrthogonalDecomposition(
+    backend, wrapping, online_backend, online_wrapping, AbstractHighOrderProperOrthogonalDecomposition,
+    TensorSnapshotsList, TensorBasisList)
 
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecomposition_Base):

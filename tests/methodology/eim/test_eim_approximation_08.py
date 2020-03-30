@@ -6,7 +6,8 @@
 
 import os
 import pytest
-from dolfin import div, dx, FiniteElement, FunctionSpace, MixedElement, Point, RectangleMesh, split, TestFunction, TrialFunction, VectorElement
+from dolfin import (div, dx, FiniteElement, FunctionSpace, MixedElement, Point, RectangleMesh, split, TestFunction,
+                    TrialFunction, VectorElement)
 from rbnics import EquispacedDistribution, ParametrizedExpression
 from rbnics.backends import ParametrizedTensorFactory
 from rbnics.eim.problems.eim_approximation import EIMApproximation
@@ -37,7 +38,9 @@ def test_eim_approximation_08(expression_type, basis_generation):
             self.V = V
             # Parametrized function to be interpolated
             mock_problem = MockProblem(V)
-            f1 = ParametrizedExpression(mock_problem, "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", mu=(-1., -1.), element=V.sub(1).ufl_element())
+            f1 = ParametrizedExpression(
+                mock_problem, "1/sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)", mu=(-1., -1.),
+                element=V.sub(1).ufl_element())
             #
             folder_prefix = os.path.join("test_eim_approximation_08_tempdir", expression_type, basis_generation)
             assert expression_type in ("Vector", "Matrix")
@@ -45,14 +48,16 @@ def test_eim_approximation_08(expression_type, basis_generation):
                 q = TestFunction(V.sub(1).collapse())
                 form = f1*q*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 up = TrialFunction(V)
                 q = TestFunction(V.sub(1).collapse())
                 (u, p) = split(up)
                 form = f1*q*div(u)*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 

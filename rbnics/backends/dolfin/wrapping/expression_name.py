@@ -40,22 +40,37 @@ def basic_expression_name(backend, wrapping):
                     str_repr += repr(n._cppcode)
                 elif isinstance(n, CompiledExpression):
                     assert hasattr(n, "f_no_upcast"), "Only the case of pulled back expressions is currently handled"
-                    assert hasattr(n, "shape_parametrization_expression_on_subdomain_no_upcast"), "Only the case of pulled back expressions is currently handled"
-                    coefficients_replacement[repr(n)] = "PullBackExpression(" + str(n.shape_parametrization_expression_on_subdomain_no_upcast._cppcode) + ", " + str(n.f_no_upcast._cppcode) + ")"
-                    str_repr += "PullBackExpression(" + repr(n.shape_parametrization_expression_on_subdomain_no_upcast._cppcode) + ", " + repr(n.f_no_upcast._cppcode) + ")"
+                    assert hasattr(n, "shape_parametrization_expression_on_subdomain_no_upcast"), (
+                        "Only the case of pulled back expressions is currently handled")
+                    coefficients_replacement[repr(n)] = (
+                        "PullBackExpression("
+                        + str(n.shape_parametrization_expression_on_subdomain_no_upcast._cppcode)
+                        + ", " + str(n.f_no_upcast._cppcode) + ")")
+                    str_repr += (
+                        "PullBackExpression("
+                        + repr(n.shape_parametrization_expression_on_subdomain_no_upcast._cppcode)
+                        + ", " + repr(n.f_no_upcast._cppcode) + ")")
                 visited.add(n)
             elif wrapping.is_problem_solution_type(n):
                 if wrapping.is_problem_solution(n):
                     (preprocessed_n, component, truth_solution) = wrapping.solution_identify_component(n)
                     problem = get_problem_from_solution(truth_solution)
-                    coefficients_replacement[repr(preprocessed_n)] = "solution of " + str(problem.name()) + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")"
+                    coefficients_replacement[repr(preprocessed_n)] = (
+                        "solution of " + str(problem.name())
+                        + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__"))
+                        + ", component: " + str(component) + ")")
                 elif wrapping.is_problem_solution_dot(n):
                     (preprocessed_n, component, truth_solution_dot) = wrapping.solution_dot_identify_component(n)
                     problem = get_problem_from_solution_dot(truth_solution_dot)
-                    coefficients_replacement[repr(preprocessed_n)] = "solution_dot of " + str(problem.name()) + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")"
+                    coefficients_replacement[repr(preprocessed_n)] = (
+                        "solution_dot of " + str(problem.name())
+                        + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__"))
+                        + ", component: " + str(component) + ")")
                 else:
-                    (preprocessed_n, component, problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
-                    coefficients_replacement[repr(preprocessed_n)] = "non parametrized function associated to auxiliary problem " + str(problem.name())
+                    (preprocessed_n, component,
+                     problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(n)
+                    coefficients_replacement[repr(preprocessed_n)] = (
+                        "non parametrized function associated to auxiliary problem " + str(problem.name()))
                 if len(component) == 1 and component[0] is not None:
                     coefficients_replacement[repr(preprocessed_n)] += ", component " + str(component[0])
                 elif len(component) > 1:
@@ -82,7 +97,8 @@ def basic_expression_name(backend, wrapping):
     return _basic_expression_name
 
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
-from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import get_auxiliary_problem_for_non_parametrized_function
+from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
+    get_auxiliary_problem_for_non_parametrized_function)
 from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
 from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
 from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
@@ -91,5 +107,8 @@ from rbnics.backends.dolfin.wrapping.solution_identify_component import solution
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(expression_iterator, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, solution_dot_identify_component, solution_identify_component, solution_iterator, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function)
+wrapping = ModuleWrapper(
+    expression_iterator, is_problem_solution, is_problem_solution_dot, is_problem_solution_type,
+    solution_dot_identify_component, solution_identify_component, solution_iterator,
+    get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function)
 expression_name = basic_expression_name(backend, wrapping)

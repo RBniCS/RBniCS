@@ -8,7 +8,8 @@ from logging import DEBUG, getLogger
 from ufl.geometry import GeometricQuantity
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 from rbnics.utils.cache import Cache
-from rbnics.utils.decorators import exact_problem, get_problem_from_solution, get_problem_from_solution_dot, get_reduced_problem_from_problem, is_training_finished, is_training_started
+from rbnics.utils.decorators import (exact_problem, get_problem_from_solution, get_problem_from_solution_dot,
+                                     get_reduced_problem_from_problem, is_training_finished, is_training_started)
 from rbnics.utils.io import OnlineSizeDict
 
 logger = getLogger("rbnics/backends/dolfin/expression_on_reduced_mesh.py")
@@ -32,25 +33,21 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
             truth_problems = list()
             truth_problem_to_components = { # outer dict index over time derivative
                 0: dict(),
-                1: dict()
-            }
+                1: dict()}
             truth_problem_to_exact_truth_problem = dict()
             truth_problem_to_reduced_mesh_solution = dict()
             truth_problem_to_reduced_mesh_solution_dot = dict()
             truth_problem_to_reduced_mesh_interpolator = { # outer dict index over time derivative
                 0: dict(),
-                1: dict()
-            }
+                1: dict()}
             reduced_problem_to_components = { # outer dict index over time derivative
                 0: dict(),
-                1: dict()
-            }
+                1: dict()}
             reduced_problem_to_reduced_mesh_solution = dict()
             reduced_problem_to_reduced_mesh_solution_dot = dict()
             reduced_problem_to_reduced_basis_functions = { # outer dict index over time derivative
                 0: dict(),
-                1: dict()
-            }
+                1: dict()}
 
             # Look for terminals on truth mesh
             logger.log(DEBUG, "Traversing terminals of expression " + expression_name)
@@ -65,13 +62,18 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                         if node_is_problem_solution:
                             (preprocessed_node, component, truth_solution) = wrapping.solution_identify_component(node)
                             truth_problem = get_problem_from_solution(truth_solution)
-                            logger.log(DEBUG, "\tFound problem solution of truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ", component: " + str(component) + ")")
+                            logger.log(DEBUG, "\tFound problem solution of truth problem " + truth_problem.name()
+                                       + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__"))
+                                       + ", component: " + str(component) + ")")
                             # Time derivative key for components and interpolator dicts
                             time_derivative = 0
                         elif node_is_problem_solution_dot:
-                            (preprocessed_node, component, truth_solution_dot) = wrapping.solution_dot_identify_component(node)
+                            (preprocessed_node, component,
+                             truth_solution_dot) = wrapping.solution_dot_identify_component(node)
                             truth_problem = get_problem_from_solution_dot(truth_solution_dot)
-                            logger.log(DEBUG, "\tFound problem solution dot of truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ", component: " + str(component) + ")")
+                            logger.log(DEBUG, "\tFound problem solution dot of truth problem " + truth_problem.name()
+                                       + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__"))
+                                       + ", component: " + str(component) + ")")
                             # Time derivative key for components and interpolator dicts
                             time_derivative = 1
                         # Store truth problem
@@ -85,28 +87,36 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                             # Get the function space corresponding to preprocessed_node on the reduced mesh
                             auxiliary_reduced_V = at.get_auxiliary_reduced_function_space(truth_problem, component)
                             # Define and store the replacement
-                            assert preprocessed_node not in replacements # as it is related to a new truth solution component
+                            assert preprocessed_node not in replacements
                             replacements[preprocessed_node] = backend.Function(auxiliary_reduced_V)
                             if time_derivative == 0:
                                 if truth_problem not in truth_problem_to_reduced_mesh_solution:
                                     truth_problem_to_reduced_mesh_solution[truth_problem] = list()
-                                truth_problem_to_reduced_mesh_solution[truth_problem].append(replacements[preprocessed_node])
+                                truth_problem_to_reduced_mesh_solution[truth_problem].append(
+                                    replacements[preprocessed_node])
                             elif time_derivative == 1:
                                 if truth_problem not in truth_problem_to_reduced_mesh_solution_dot:
                                     truth_problem_to_reduced_mesh_solution_dot[truth_problem] = list()
-                                truth_problem_to_reduced_mesh_solution_dot[truth_problem].append(replacements[preprocessed_node])
+                                truth_problem_to_reduced_mesh_solution_dot[truth_problem].append(
+                                    replacements[preprocessed_node])
                             # Get interpolator on reduced mesh
                             if truth_problem not in truth_problem_to_reduced_mesh_interpolator[time_derivative]:
                                 truth_problem_to_reduced_mesh_interpolator[time_derivative][truth_problem] = list()
-                            truth_problem_to_reduced_mesh_interpolator[time_derivative][truth_problem].append(at.get_auxiliary_function_interpolator(truth_problem, component))
+                            truth_problem_to_reduced_mesh_interpolator[time_derivative][truth_problem].append(
+                                at.get_auxiliary_function_interpolator(truth_problem, component))
                     else:
-                        (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
-                        logger.log(DEBUG, "\tFound non parametrized function " + str(preprocessed_node) + " associated to auxiliary problem " + str(auxiliary_problem.name()) + ", component: " + str(component))
+                        (preprocessed_node, component,
+                         auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
+                        logger.log(DEBUG, "\tFound non parametrized function " + str(preprocessed_node)
+                                   + " associated to auxiliary problem " + str(auxiliary_problem.name())
+                                   + ", component: " + str(component))
                         if preprocessed_node not in replacements:
                             # Get interpolator on reduced mesh
-                            auxiliary_truth_problem_to_reduced_mesh_interpolator = at.get_auxiliary_function_interpolator(auxiliary_problem, component)
+                            auxiliary_truth_problem_to_reduced_mesh_interpolator = (
+                                at.get_auxiliary_function_interpolator(auxiliary_problem, component))
                             # Define and store the replacement
-                            replacements[preprocessed_node] = auxiliary_truth_problem_to_reduced_mesh_interpolator(preprocessed_node)
+                            replacements[preprocessed_node] = auxiliary_truth_problem_to_reduced_mesh_interpolator(
+                                preprocessed_node)
                     # Make sure to skip any parent solution related to this one
                     visited.add(node)
                     visited.add(preprocessed_node)
@@ -126,27 +136,42 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
             expression_cache[(expression_name, reduced_mesh)] = replaced_expression
             truth_problems_cache[(expression_name, reduced_mesh)] = truth_problems
             truth_problem_to_components_cache[(expression_name, reduced_mesh)] = truth_problem_to_components
-            truth_problem_to_exact_truth_problem_cache[(expression_name, reduced_mesh)] = truth_problem_to_exact_truth_problem
-            truth_problem_to_reduced_mesh_solution_cache[(expression_name, reduced_mesh)] = truth_problem_to_reduced_mesh_solution
-            truth_problem_to_reduced_mesh_solution_dot_cache[(expression_name, reduced_mesh)] = truth_problem_to_reduced_mesh_solution_dot
-            truth_problem_to_reduced_mesh_interpolator_cache[(expression_name, reduced_mesh)] = truth_problem_to_reduced_mesh_interpolator
-            reduced_problem_to_components_cache[(expression_name, reduced_mesh)] = reduced_problem_to_components
-            reduced_problem_to_reduced_mesh_solution_cache[(expression_name, reduced_mesh)] = reduced_problem_to_reduced_mesh_solution
-            reduced_problem_to_reduced_mesh_solution_dot_cache[(expression_name, reduced_mesh)] = reduced_problem_to_reduced_mesh_solution_dot
-            reduced_problem_to_reduced_basis_functions_cache[(expression_name, reduced_mesh)] = reduced_problem_to_reduced_basis_functions
+            truth_problem_to_exact_truth_problem_cache[
+                (expression_name, reduced_mesh)] = truth_problem_to_exact_truth_problem
+            truth_problem_to_reduced_mesh_solution_cache[
+                (expression_name, reduced_mesh)] = truth_problem_to_reduced_mesh_solution
+            truth_problem_to_reduced_mesh_solution_dot_cache[
+                (expression_name, reduced_mesh)] = truth_problem_to_reduced_mesh_solution_dot
+            truth_problem_to_reduced_mesh_interpolator_cache[
+                (expression_name, reduced_mesh)] = truth_problem_to_reduced_mesh_interpolator
+            reduced_problem_to_components_cache[
+                (expression_name, reduced_mesh)] = reduced_problem_to_components
+            reduced_problem_to_reduced_mesh_solution_cache[
+                (expression_name, reduced_mesh)] = reduced_problem_to_reduced_mesh_solution
+            reduced_problem_to_reduced_mesh_solution_dot_cache[
+                (expression_name, reduced_mesh)] = reduced_problem_to_reduced_mesh_solution_dot
+            reduced_problem_to_reduced_basis_functions_cache[
+                (expression_name, reduced_mesh)] = reduced_problem_to_reduced_basis_functions
 
         # Extract from cache
         replaced_expression = expression_cache[(expression_name, reduced_mesh)]
         truth_problems = truth_problems_cache[(expression_name, reduced_mesh)]
         truth_problem_to_components = truth_problem_to_components_cache[(expression_name, reduced_mesh)]
-        truth_problem_to_exact_truth_problem = truth_problem_to_exact_truth_problem_cache[(expression_name, reduced_mesh)]
-        truth_problem_to_reduced_mesh_solution = truth_problem_to_reduced_mesh_solution_cache[(expression_name, reduced_mesh)]
-        truth_problem_to_reduced_mesh_solution_dot = truth_problem_to_reduced_mesh_solution_dot_cache[(expression_name, reduced_mesh)]
-        truth_problem_to_reduced_mesh_interpolator = truth_problem_to_reduced_mesh_interpolator_cache[(expression_name, reduced_mesh)]
+        truth_problem_to_exact_truth_problem = truth_problem_to_exact_truth_problem_cache[
+            (expression_name, reduced_mesh)]
+        truth_problem_to_reduced_mesh_solution = truth_problem_to_reduced_mesh_solution_cache[
+            (expression_name, reduced_mesh)]
+        truth_problem_to_reduced_mesh_solution_dot = truth_problem_to_reduced_mesh_solution_dot_cache[
+            (expression_name, reduced_mesh)]
+        truth_problem_to_reduced_mesh_interpolator = truth_problem_to_reduced_mesh_interpolator_cache[
+            (expression_name, reduced_mesh)]
         reduced_problem_to_components = reduced_problem_to_components_cache[(expression_name, reduced_mesh)]
-        reduced_problem_to_reduced_mesh_solution = reduced_problem_to_reduced_mesh_solution_cache[(expression_name, reduced_mesh)]
-        reduced_problem_to_reduced_mesh_solution_dot = reduced_problem_to_reduced_mesh_solution_dot_cache[(expression_name, reduced_mesh)]
-        reduced_problem_to_reduced_basis_functions = reduced_problem_to_reduced_basis_functions_cache[(expression_name, reduced_mesh)]
+        reduced_problem_to_reduced_mesh_solution = reduced_problem_to_reduced_mesh_solution_cache[
+            (expression_name, reduced_mesh)]
+        reduced_problem_to_reduced_mesh_solution_dot = reduced_problem_to_reduced_mesh_solution_dot_cache[
+            (expression_name, reduced_mesh)]
+        reduced_problem_to_reduced_basis_functions = reduced_problem_to_reduced_basis_functions_cache[
+            (expression_name, reduced_mesh)]
 
         # Get list of truth and reduced problems that need to be solved, possibly updating cache
         required_truth_problems = list()
@@ -161,52 +186,66 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 reduced_problem_is_solving = False
             if not truth_problem_is_solving:
                 if is_training_finished(truth_problem):
-                    logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is not currently solving, and its offline stage has finished: truth problem will be replaced by reduced problem")
+                    logger.log(DEBUG, "Truth problem " + truth_problem.name()
+                               + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__"))
+                               + ") is not currently solving, and its offline stage has finished:"
+                               + " truth problem will be replaced by reduced problem")
                     # Store the replacement for solution
                     if (
                         reduced_problem not in reduced_problem_to_reduced_mesh_solution
                             and
                         truth_problem in truth_problem_to_reduced_mesh_solution
                     ):
-                        reduced_problem_to_reduced_mesh_solution[reduced_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
+                        reduced_problem_to_reduced_mesh_solution[
+                            reduced_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
                         # Store the component
                         assert reduced_problem not in reduced_problem_to_components[0]
                         assert truth_problem in truth_problem_to_components[0]
-                        reduced_problem_to_components[0][reduced_problem] = truth_problem_to_components[0][truth_problem]
+                        reduced_problem_to_components[
+                            0][reduced_problem] = truth_problem_to_components[0][truth_problem]
                         # Get reduced problem basis functions on reduced mesh
                         assert reduced_problem not in reduced_problem_to_reduced_basis_functions[0]
-                        reduced_problem_to_reduced_basis_functions[0][reduced_problem] = [at.get_auxiliary_basis_functions_matrix(truth_problem, component) for component in reduced_problem_to_components[0][reduced_problem]]
+                        reduced_problem_to_reduced_basis_functions[0][reduced_problem] = [
+                            at.get_auxiliary_basis_functions_matrix(truth_problem, component)
+                            for component in reduced_problem_to_components[0][reduced_problem]]
                     # Store the replacement for solution_dot
-                    if (
-                        reduced_problem not in reduced_problem_to_reduced_mesh_solution_dot
-                            and
-                        truth_problem in truth_problem_to_reduced_mesh_solution_dot
-                    ):
-                        reduced_problem_to_reduced_mesh_solution_dot[reduced_problem] = truth_problem_to_reduced_mesh_solution_dot[truth_problem]
+                    if (reduced_problem not in reduced_problem_to_reduced_mesh_solution_dot
+                            and truth_problem in truth_problem_to_reduced_mesh_solution_dot):
+                        reduced_problem_to_reduced_mesh_solution_dot[
+                            reduced_problem] = truth_problem_to_reduced_mesh_solution_dot[truth_problem]
                         # Store the component
                         assert reduced_problem not in reduced_problem_to_components[1]
                         assert truth_problem in truth_problem_to_components[1]
-                        reduced_problem_to_components[1][reduced_problem] = truth_problem_to_components[1][truth_problem]
+                        reduced_problem_to_components[
+                            1][reduced_problem] = truth_problem_to_components[1][truth_problem]
                         # Get reduced problem basis functions on reduced mesh
                         assert reduced_problem not in reduced_problem_to_reduced_basis_functions[1]
-                        reduced_problem_to_reduced_basis_functions[1][reduced_problem] = [at.get_auxiliary_basis_functions_matrix(truth_problem, component) for component in reduced_problem_to_components[1][reduced_problem]]
+                        reduced_problem_to_reduced_basis_functions[1][reduced_problem] = [
+                            at.get_auxiliary_basis_functions_matrix(truth_problem, component)
+                            for component in reduced_problem_to_components[1][reduced_problem]]
                     # Append to list of required reduced problems
                     required_reduced_problems.append((reduced_problem, reduced_problem_is_solving))
                 else:
-                    if (
-                        hasattr(truth_problem, "_apply_exact_evaluation_at_stages")
-                            and
-                        not hasattr(truth_problem, "_apply_EIM_at_stages")
-                            and
-                        not hasattr(truth_problem, "_apply_DEIM_at_stages")
-                    ):
-                        logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is not currently solving, its offline stage has not finished, and only @ExactParametrizedFunctions has been used: truth solve of this truth problem instance will be called")
+                    if (hasattr(truth_problem, "_apply_exact_evaluation_at_stages")
+                            and not hasattr(truth_problem, "_apply_EIM_at_stages")
+                            and not hasattr(truth_problem, "_apply_DEIM_at_stages")):
+                        logger.log(DEBUG, "Truth problem " + truth_problem.name()
+                                   + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__"))
+                                   + ") is not currently solving, its offline stage has not finished,"
+                                   + " and only @ExactParametrizedFunctions has been used:"
+                                   + " truth solve of this truth problem instance will be called")
                         # Init truth problem (if required), as it may not have been initialized
                         truth_problem.init()
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((truth_problem, False, reduced_problem_is_solving))
                     else:
-                        logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is not currently solving, its offline stage has not finished, and either @ExactParametrizedFunctions has not been used or it has been used in combination with @DEIM or @EIM: truth solve on an auxiliary instance (with exact problem decorator) will be called, to prevent early initialization of DEIM/EIM data structures")
+                        logger.log(DEBUG, "Truth problem " + truth_problem.name()
+                                   + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__"))
+                                   + ") is not currently solving, its offline stage has not finished,"
+                                   + " and either @ExactParametrizedFunctions has not been used"
+                                   + " or it has been used in combination with @DEIM or @EIM:"
+                                   + " truth solve on an auxiliary instance (with exact problem decorator)"
+                                   + " will be called, to prevent early initialization of DEIM/EIM data structures")
                         # Store the corresponding exact truth problem
                         if truth_problem not in truth_problem_to_exact_truth_problem:
                             exact_truth_problem = exact_problem(truth_problem)
@@ -221,34 +260,39 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                                 and
                             truth_problem in truth_problem_to_reduced_mesh_solution
                         ):
-                            truth_problem_to_reduced_mesh_solution[exact_truth_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
+                            truth_problem_to_reduced_mesh_solution[
+                                exact_truth_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
                             # Store the component
                             assert exact_truth_problem not in truth_problem_to_components[0]
                             assert truth_problem in truth_problem_to_components[0]
-                            truth_problem_to_components[0][exact_truth_problem] = truth_problem_to_components[0][truth_problem]
+                            truth_problem_to_components[
+                                0][exact_truth_problem] = truth_problem_to_components[0][truth_problem]
                             # Get interpolator on reduced mesh
                             assert exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator[0]
                             assert truth_problem in truth_problem_to_reduced_mesh_interpolator[0]
-                            truth_problem_to_reduced_mesh_interpolator[0][exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[0][truth_problem]
+                            truth_problem_to_reduced_mesh_interpolator[
+                                0][exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[0][truth_problem]
                         # Store the replacement for solution_dot
-                        if (
-                            exact_truth_problem not in truth_problem_to_reduced_mesh_solution_dot
-                                and
-                            truth_problem in truth_problem_to_reduced_mesh_solution_dot
-                        ):
-                            truth_problem_to_reduced_mesh_solution_dot[exact_truth_problem] = truth_problem_to_reduced_mesh_solution_dot[truth_problem]
+                        if (exact_truth_problem not in truth_problem_to_reduced_mesh_solution_dot
+                                and truth_problem in truth_problem_to_reduced_mesh_solution_dot):
+                            truth_problem_to_reduced_mesh_solution_dot[
+                                exact_truth_problem] = truth_problem_to_reduced_mesh_solution_dot[truth_problem]
                             # Store the component
                             assert exact_truth_problem not in truth_problem_to_components[1]
                             assert truth_problem in truth_problem_to_components[1]
-                            truth_problem_to_components[1][exact_truth_problem] = truth_problem_to_components[1][truth_problem]
+                            truth_problem_to_components[
+                                1][exact_truth_problem] = truth_problem_to_components[1][truth_problem]
                             # Get interpolator on reduced mesh
                             assert exact_truth_problem not in truth_problem_to_reduced_mesh_interpolator[1]
                             assert truth_problem in truth_problem_to_reduced_mesh_interpolator[1]
-                            truth_problem_to_reduced_mesh_interpolator[1][exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[1][truth_problem]
+                            truth_problem_to_reduced_mesh_interpolator[
+                                1][exact_truth_problem] = truth_problem_to_reduced_mesh_interpolator[1][truth_problem]
                         # Append to list of required truth problems which are not currently solving
                         required_truth_problems.append((exact_truth_problem, False, reduced_problem_is_solving))
             else:
-                logger.log(DEBUG, "Truth problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ") is currently solving: current truth solution will be loaded")
+                logger.log(DEBUG, "Truth problem " + truth_problem.name()
+                           + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__"))
+                           + ") is currently solving: current truth solution will be loaded")
                 assert not reduced_problem_is_solving
                 # Append to list of required truth problems which are currently solving
                 required_truth_problems.append((truth_problem, True, False))
@@ -259,22 +303,29 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                 # Solve (if necessary)
                 truth_problem.set_mu(mu)
                 if not truth_problem_is_solving:
-                    logger.log(DEBUG, "Requiring truth problem solve for problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ")")
+                    logger.log(DEBUG, "Requiring truth problem solve for problem " + truth_problem.name()
+                               + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ")")
                     truth_problem.solve()
                 else:
-                    logger.log(DEBUG, "Loading current truth problem solution for problem " + truth_problem.name() + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ")")
+                    logger.log(DEBUG, "Loading current truth problem solution for problem " + truth_problem.name()
+                               + " (exact problem decorator: " + str(hasattr(truth_problem, "__is_exact__")) + ")")
             else:
                 reduced_problem = get_reduced_problem_from_problem(truth_problem)
-                logger.log(DEBUG, "Replacing current truth problem solution with reduced solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "Replacing current truth problem solution with reduced solution for problem "
+                           + reduced_problem.truth_problem.name())
             # Assign to reduced_mesh_solution
             if truth_problem in truth_problem_to_reduced_mesh_solution:
-                for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution[truth_problem], truth_problem_to_reduced_mesh_interpolator[0][truth_problem]):
+                for (reduced_mesh_solution, reduced_mesh_interpolator) in zip(
+                        truth_problem_to_reduced_mesh_solution[truth_problem],
+                        truth_problem_to_reduced_mesh_interpolator[0][truth_problem]):
                     solution_to = reduced_mesh_solution
                     if t is None:
                         if not reduced_problem_is_solving:
                             solution_from = reduced_mesh_interpolator(truth_problem._solution)
                         else:
-                            solution_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution)
+                            solution_from = reduced_mesh_interpolator(
+                                reduced_problem.basis_functions[:reduced_problem._solution.N]
+                                * reduced_problem._solution)
                     else:
                         if not reduced_problem_is_solving:
                             if not truth_problem_is_solving:
@@ -282,11 +333,15 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                             else:
                                 solution_from = reduced_mesh_interpolator(truth_problem._solution)
                         else:
-                            solution_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution.N]*reduced_problem._solution)
+                            solution_from = reduced_mesh_interpolator(
+                                reduced_problem.basis_functions[:reduced_problem._solution.N]
+                                * reduced_problem._solution)
                     backend.assign(solution_to, solution_from)
             # Assign to reduced_mesh_solution_dot
             if truth_problem in truth_problem_to_reduced_mesh_solution_dot:
-                for (reduced_mesh_solution_dot, reduced_mesh_interpolator) in zip(truth_problem_to_reduced_mesh_solution_dot[truth_problem], truth_problem_to_reduced_mesh_interpolator[1][truth_problem]):
+                for (reduced_mesh_solution_dot, reduced_mesh_interpolator) in zip(
+                        truth_problem_to_reduced_mesh_solution_dot[truth_problem],
+                        truth_problem_to_reduced_mesh_interpolator[1][truth_problem]):
                     solution_dot_to = reduced_mesh_solution_dot
                     assert t is not None
                     if not reduced_problem_is_solving:
@@ -295,7 +350,9 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                         else:
                             solution_dot_from = reduced_mesh_interpolator(truth_problem._solution_dot)
                     else:
-                        solution_dot_from = reduced_mesh_interpolator(reduced_problem.basis_functions[:reduced_problem._solution_dot.N]*reduced_problem._solution_dot)
+                        solution_dot_from = reduced_mesh_interpolator(
+                            reduced_problem.basis_functions[:reduced_problem._solution_dot.N]
+                            * reduced_problem._solution_dot)
                     backend.assign(solution_dot_to, solution_dot_from)
 
         # Solve reduced problems associated to nonlinear terms
@@ -303,13 +360,17 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
             # Solve (if necessary)
             reduced_problem.set_mu(mu)
             if not is_solving:
-                logger.log(DEBUG, "In expression_on_reduced_mesh, requiring reduced problem solve for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In expression_on_reduced_mesh, requiring reduced problem solve for problem "
+                           + reduced_problem.truth_problem.name())
                 reduced_problem.solve()
             else:
-                logger.log(DEBUG, "In expression_on_reduced_mesh, loading current reduced problem solution for problem " + reduced_problem.truth_problem.name())
+                logger.log(DEBUG, "In expression_on_reduced_mesh, loading current reduced problem solution"
+                           + " for problem " + reduced_problem.truth_problem.name())
             # Assign to reduced_mesh_solution
             if reduced_problem in reduced_problem_to_reduced_mesh_solution:
-                for (reduced_mesh_solution, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution[reduced_problem], reduced_problem_to_reduced_basis_functions[0][reduced_problem]):
+                for (reduced_mesh_solution, reduced_basis_functions) in zip(
+                        reduced_problem_to_reduced_mesh_solution[reduced_problem],
+                        reduced_problem_to_reduced_basis_functions[0][reduced_problem]):
                     solution_to = reduced_mesh_solution
                     solution_from_N = OnlineSizeDict()
                     for c, v in reduced_problem._solution.N.items():
@@ -324,7 +385,9 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                     backend.assign(solution_to, solution_from)
             # Assign to reduced_mesh_solution_dot
             if reduced_problem in reduced_problem_to_reduced_mesh_solution_dot:
-                for (reduced_mesh_solution_dot, reduced_basis_functions) in zip(reduced_problem_to_reduced_mesh_solution_dot[reduced_problem], reduced_problem_to_reduced_basis_functions[1][reduced_problem]):
+                for (reduced_mesh_solution_dot, reduced_basis_functions) in zip(
+                        reduced_problem_to_reduced_mesh_solution_dot[reduced_problem],
+                        reduced_problem_to_reduced_basis_functions[1][reduced_problem]):
                     solution_dot_to = reduced_mesh_solution_dot
                     solution_dot_from_N = OnlineSizeDict()
                     for c, v in reduced_problem._solution_dot.N.items():

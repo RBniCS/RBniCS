@@ -15,7 +15,8 @@ StokesPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesReductionMeth
 @ReductionMethodFor(StokesProblem, "PODGalerkin")
 class StokesPODGalerkinReduction(StokesPODGalerkinReduction_Base):
 
-    # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
+    # Initialize data structures required for the offline phase: overridden version because supremizer POD
+    # is different from a standard component
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code

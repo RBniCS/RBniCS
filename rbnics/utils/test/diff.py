@@ -32,7 +32,8 @@ def _diff_csv(reference_file, current_file):
     return _diff_content(reference_lines, current_lines, "")
 
 @overload
-def _diff_content(reference_items: (list_of(object), tuple_of(object)), current_items: (list_of(object), tuple_of(object)), tab: str):
+def _diff_content(reference_items: (list_of(object), tuple_of(object)),
+                  current_items: (list_of(object), tuple_of(object)), tab: str):
     if len(reference_items) != len(current_items):
         return [
             tab + "@@ different lengths @@" + "\n" +

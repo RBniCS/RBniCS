@@ -11,7 +11,8 @@ from numbers import Number
 from rbnics.problems.base.parametrized_problem import ParametrizedProblem
 from rbnics.backends import AffineExpansionStorage, assign, copy, export, Function, import_, product, sum
 from rbnics.utils.cache import Cache
-from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem
+from rbnics.utils.decorators import (StoreMapFromProblemNameToProblem, StoreMapFromProblemToTrainingStatus,
+                                     StoreMapFromSolutionToProblem)
 from rbnics.utils.test import PatchInstanceMethod
 
 @StoreMapFromProblemNameToProblem
@@ -20,7 +21,8 @@ from rbnics.utils.test import PatchInstanceMethod
 class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Abstract class describing a parametrized differential problem.
-    Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q, inner products and boundary conditions, truth solution.
+    Inizialization of the solution space V, forms terms and their order, number of terms in the affine expansion Q,
+    inner products and boundary conditions, truth solution.
 
     :param V: functional solution space.
     """
@@ -40,13 +42,22 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self.Q = dict() # from string to integer
         # Matrices/vectors resulting from the truth discretization
         self.OperatorExpansionStorage = AffineExpansionStorage
-        self.operator = dict() # from string to OperatorExpansionStorage
-        self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        # operator: string to OperatorExpansionStorage
+        self.operator = dict()
+        # inner_product: AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage
+        # (for problem with several components), even though it will contain only one matrix
+        self.inner_product = None
         self._combined_inner_product = None
-        self.projection_inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        # projection_inner_product: AffineExpansionStorage (for problems with one component) or dict of
+        # AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        self.projection_inner_product = None
         self._combined_projection_inner_product = None
-        self.dirichlet_bc = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
-        self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
+        # dirichlet_bc: AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage
+        # (for problem with several components)
+        self.dirichlet_bc = None
+        # dirichlet_bc_are_homogeneous: bool (for problems with one component) or dict of bools (for problem
+        # with several components)
+        self.dirichlet_bc_are_homogeneous = None
         self._combined_and_homogenized_dirichlet_bc = None
         # Solution
         self._solution = Function(self.V)
@@ -139,7 +150,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         if self.inner_product is None: # init was not called already
             inner_product = dict()
             for component in self.components:
-                inner_product[component] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component)))
+                inner_product[component] = AffineExpansionStorage(
+                    self.assemble_operator(inner_product_string.format(c=component)))
             if n_components == 1:
                 self.inner_product = inner_product[self.components[0]]
             else:
@@ -151,9 +163,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             projection_inner_product = dict()
             for component in self.components:
                 try:
-                    projection_inner_product[component] = AffineExpansionStorage(self.assemble_operator("projection_" + inner_product_string.format(c=component)))
+                    projection_inner_product[component] = AffineExpansionStorage(
+                        self.assemble_operator("projection_" + inner_product_string.format(c=component)))
                 except ValueError: # no projection_inner_product specified, revert to inner_product
-                    projection_inner_product[component] = AffineExpansionStorage(self.assemble_operator(inner_product_string.format(c=component)))
+                    projection_inner_product[component] = AffineExpansionStorage(
+                        self.assemble_operator(inner_product_string.format(c=component)))
             if n_components == 1:
                 self.projection_inner_product = projection_inner_product[self.components[0]]
             else:
@@ -165,11 +179,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         if len(self.components) > 1:
             all_inner_products = list()
             for component in self.components:
-                assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                # the affine expansion storage contains only the inner product matrix
+                assert len(self.inner_product[component]) == 1
                 all_inner_products.append(self.inner_product[component][0])
             all_inner_products = tuple(all_inner_products)
         else:
-            assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            # the affine expansion storage contains only the inner product matrix
+            assert len(self.inner_product) == 1
             all_inner_products = (self.inner_product[0], )
         all_inner_products = AffineExpansionStorage(all_inner_products)
         all_inner_products_thetas = (1.,)*len(all_inner_products)
@@ -179,11 +195,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         if len(self.components) > 1:
             all_projection_inner_products = list()
             for component in self.components:
-                assert len(self.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                # the affine expansion storage contains only the inner product matrix
+                assert len(self.projection_inner_product[component]) == 1
                 all_projection_inner_products.append(self.projection_inner_product[component][0])
             all_projection_inner_products = tuple(all_projection_inner_products)
         else:
-            assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            # the affine expansion storage contains only the inner product matrix
+            assert len(self.projection_inner_product) == 1
             all_projection_inner_products = (self.projection_inner_product[0], )
         all_projection_inner_products = AffineExpansionStorage(all_projection_inner_products)
         all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
@@ -210,7 +228,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             dirichlet_bc_are_homogeneous = dict()
             for component in self.components:
                 try:
-                    operator_bc = AffineExpansionStorage(self.assemble_operator(dirichlet_bc_string.format(c=component)))
+                    operator_bc = AffineExpansionStorage(
+                        self.assemble_operator(dirichlet_bc_string.format(c=component)))
                 except ValueError: # there were no Dirichlet BCs
                     dirichlet_bc[component] = None
                     dirichlet_bc_are_homogeneous[component] = False
@@ -231,7 +250,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta
-                        PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component, operator_bc)).patch()
+                        PatchInstanceMethod(
+                            self, "compute_theta", generate_modified_compute_theta(component, operator_bc)).patch()
                         dirichlet_bc_are_homogeneous[component] = True
                     else:
                         dirichlet_bc_are_homogeneous[component] = False
@@ -444,16 +464,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         Return theta multiplicative terms of the affine expansion of the problem.
         Example of implementation for Poisson problem:
-           m1 = self.mu[0]
-           m2 = self.mu[1]
-           m3 = self.mu[2]
            if term == "a":
-               theta_a0 = m1
-               theta_a1 = m2
-               theta_a2 = m1*m2+m3/7.0
+               theta_a0 = self.mu[0]
+               theta_a1 = self.mu[1]
+               theta_a2 = self.mu[0] * self.mu[1] + self.mu[2] / 7.0
                return (theta_a0, theta_a1, theta_a2)
            elif term == "f":
-               theta_f0 = m1*m3
+               theta_f0 = self.mu[0] * self.mu[2]
                return (theta_f0,)
            elif term == "dirichlet_bc":
                theta_bc0 = 1.
@@ -469,16 +486,16 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         Return forms resulting from the discretization of the affine expansion of the problem operators.
         Example of implementation for Poisson problem:
            if term == "a":
-               a0 = inner(grad(u),grad(v))*dx
+               a0 = inner(grad(u), grad(v)) * dx
                return (a0,)
            elif term == "f":
-               f0 = v*ds(1)
+               f0 = v * ds(1)
                return (f0,)
            elif term == "dirichlet_bc":
                bc0 = [(V, Constant(0.0), boundaries, 3)]
                return (bc0,)
            elif term == "inner_product":
-               x0 = u*v*dx + inner(grad(u),grad(v))*dx
+               x0 = u * v * dx + inner(grad(u), grad(v)) * dx
                return (x0,)
            else:
                raise ValueError("Invalid term for assemble_operator().")
@@ -490,6 +507,8 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         Return a lower bound for the stability factor
         Example of implementation:
             return 1.0
-        Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason for which it is not marked as @abstractmethod
+        Note that this method is not needed in POD-Galerkin reduced order models, and this is the reason
+        for which it is not marked as @abstractmethod
         """
-        raise NotImplementedError("The method get_stability_factor_lower_bound() is problem-specific and needs to be overridden.")
+        raise NotImplementedError("The method get_stability_factor_lower_bound() is problem-specific"
+                                  + "and needs to be overridden.")

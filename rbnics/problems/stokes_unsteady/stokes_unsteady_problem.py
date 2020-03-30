@@ -46,25 +46,33 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             return cache_key
 
         def _supremizer_cache_file_from_kwargs(self, **kwargs):
-            return hashlib.sha1(str(AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_from_kwargs(self, **kwargs)).encode("utf-8")).hexdigest()
+            return hashlib.sha1(
+                str(AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_from_kwargs(self, **kwargs)).encode(
+                    "utf-8")).hexdigest()
 
         def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
-            AbstractCFDUnsteadyProblem_Base.export_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=self._supremizer_integer_index())
+            AbstractCFDUnsteadyProblem_Base.export_supremizer(
+                self, folder, filename, supremizer=supremizer, component=component,
+                suffix=self._supremizer_integer_index())
 
         def import_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):
             assert suffix is None
-            AbstractCFDUnsteadyProblem_Base.import_supremizer(self, folder, filename, supremizer=supremizer, component=component, suffix=self._supremizer_integer_index())
+            AbstractCFDUnsteadyProblem_Base.import_supremizer(
+                self, folder, filename, supremizer=supremizer, component=component,
+                suffix=self._supremizer_integer_index())
 
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"
-            AbstractCFDUnsteadyProblem_Base.export_solution(self, folder, filename, solution_over_time, component, suffix)
+            AbstractCFDUnsteadyProblem_Base.export_solution(
+                self, folder, filename, solution_over_time, component, suffix)
 
         def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:
                 component = ["u", "p"] # but not "s"
-            AbstractCFDUnsteadyProblem_Base.import_solution(self, folder, filename, solution_over_time, component, suffix)
+            AbstractCFDUnsteadyProblem_Base.import_solution(
+                self, folder, filename, solution_over_time, component, suffix)
 
     return AbstractCFDUnsteadyProblem_Class
 
@@ -78,18 +86,14 @@ class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
             assembled_operator = dict()
             for term in ("m", "a", "b", "bt", "f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (
-                  assembled_operator["m"]*solution_dot
-                + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
-                - assembled_operator["f"] - assembled_operator["g"]
-            )
+            return (assembled_operator["m"]*solution_dot
+                    + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]) * solution
+                    - assembled_operator["f"] - assembled_operator["g"])
 
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             problem = self.problem
             assembled_operator = dict()
             for term in ("m", "a", "b", "bt"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (
-                  assembled_operator["m"]*solution_dot_coefficient
-                + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
-            )
+            return (assembled_operator["m"] * solution_dot_coefficient
+                    + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])

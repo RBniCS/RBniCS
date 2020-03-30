@@ -6,7 +6,8 @@
 
 from .weighted_uncertainty_quantification import WeightedUncertaintyQuantification
 from .weighted_uncertainty_quantification_decorated_problem import WeightedUncertaintyQuantificationDecoratedProblem
-from .weighted_uncertainty_quantification_decorated_reduced_problem import WeightedUncertaintyQuantificationDecoratedReducedProblem
+from .weighted_uncertainty_quantification_decorated_reduced_problem import (
+    WeightedUncertaintyQuantificationDecoratedReducedProblem)
 
 __all__ = [
     "WeightedUncertaintyQuantification",

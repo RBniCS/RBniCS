@@ -20,7 +20,8 @@ def EllipticCoerciveCompliantReducedProblem(EllipticCoerciveReducedProblem_Deriv
         # Internal method for error computation
         def _compute_error(self, **kwargs):
             inner_product = dict()
-            inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
+            inner_product["u"] = sum(product(
+                self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
             assert "inner_product" not in kwargs
             kwargs["inner_product"] = inner_product
             return EllipticCoerciveCompliantReducedProblem_Base._compute_error(self, **kwargs)
@@ -28,7 +29,8 @@ def EllipticCoerciveCompliantReducedProblem(EllipticCoerciveReducedProblem_Deriv
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error, **kwargs):
             inner_product = dict()
-            inner_product["u"] = sum(product(self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
+            inner_product["u"] = sum(product(
+                self.truth_problem.compute_theta("a"), self.truth_problem.operator["a"])) # use the energy norm
             assert "inner_product" not in kwargs
             kwargs["inner_product"] = inner_product
             return EllipticCoerciveCompliantReducedProblem_Base._compute_relative_error(self, absolute_error, **kwargs)

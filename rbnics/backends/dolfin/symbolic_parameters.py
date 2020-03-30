@@ -12,7 +12,8 @@ from rbnics.utils.decorators import BackendFor, ParametersType
 @BackendFor("dolfin", inputs=(object, FunctionSpace, ParametersType))
 class SymbolicParameters(AbstractSymbolicParameters, tuple):
     def __new__(cls, problem, V, mu):
-        return tuple.__new__(cls, [ParametrizedConstant(problem, "mu[" + str(idx) + "]", mu=mu) for (idx, _) in enumerate(mu)])
+        return tuple.__new__(cls, [
+            ParametrizedConstant(problem, "mu[" + str(idx) + "]", mu=mu) for (idx, _) in enumerate(mu)])
 
     def __str__(self):
         if len(self) == 0:

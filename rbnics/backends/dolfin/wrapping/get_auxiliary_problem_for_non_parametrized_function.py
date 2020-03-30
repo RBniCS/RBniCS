@@ -46,11 +46,14 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
             assert all(isinstance(component, Indexed) for component in preprocessed_node.ufl_operands)
             assert all(len(component.ufl_operands) == 2 for component in preprocessed_node.ufl_operands)
             assert all(isinstance(component.ufl_operands[0], Function) for component in preprocessed_node.ufl_operands)
-            assert all(isinstance(component.ufl_operands[1], MultiIndex) for component in preprocessed_node.ufl_operands)
-            assert all(component.ufl_operands[0] == preprocessed_node.ufl_operands[-1].ufl_operands[0] for component in preprocessed_node.ufl_operands)
+            assert all(isinstance(component.ufl_operands[1], MultiIndex)
+                       for component in preprocessed_node.ufl_operands)
+            assert all(component.ufl_operands[0] == preprocessed_node.ufl_operands[-1].ufl_operands[0]
+                       for component in preprocessed_node.ufl_operands)
             function_split_to_component = dict()
             function_split_to_function = dict()
-            _split_function(preprocessed_node.ufl_operands[-1].ufl_operands[0], function_split_to_component, function_split_to_function)
+            _split_function(preprocessed_node.ufl_operands[-1].ufl_operands[0], function_split_to_component,
+                            function_split_to_function)
             assert preprocessed_node in function_split_to_component
             assert preprocessed_node in function_split_to_function
             component = function_split_to_component[preprocessed_node]
@@ -70,13 +73,16 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
             class AuxiliaryProblemForNonParametrizedFunction_Local(AuxiliaryProblemForNonParametrizedFunction):
                 def name(self):
                     return auxiliary_problem_for_non_parametrized_function_name
-            AuxiliaryProblemForNonParametrizedFunction_Local.__name__ = auxiliary_problem_for_non_parametrized_function_name
+            AuxiliaryProblemForNonParametrizedFunction_Local.__name__ = (
+                auxiliary_problem_for_non_parametrized_function_name)
             auxiliary_problem_for_non_parametrized_function = AuxiliaryProblemForNonParametrizedFunction_Local(V)
             _auxiliary_problem_for_non_parametrized_function_cache[V] = auxiliary_problem_for_non_parametrized_function
 
         return (preprocessed_node, component, auxiliary_problem_for_non_parametrized_function)
 
-    _auxiliary_problem_for_non_parametrized_function_cache = Cache() # over function spaces rather than nodes, as after preprocessing all nodes sharing the same function space can use the same auxiliary problem
+    _auxiliary_problem_for_non_parametrized_function_cache = Cache()
+    # cache over function spaces rather than nodes, as after preprocessing all nodes sharing the same function space
+    # can use the same auxiliary problem
 
     return _basic_get_auxiliary_problem_for_non_parametrized_function
 
@@ -84,4 +90,5 @@ from rbnics.backends.dolfin.wrapping.get_function_space import get_function_spac
 from rbnics.utils.decorators import ModuleWrapper
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(get_function_space)
-get_auxiliary_problem_for_non_parametrized_function = basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
+get_auxiliary_problem_for_non_parametrized_function = basic_get_auxiliary_problem_for_non_parametrized_function(
+    backend, wrapping)

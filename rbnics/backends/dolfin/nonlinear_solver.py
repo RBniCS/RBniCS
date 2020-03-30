@@ -24,7 +24,8 @@ PETScSNESSolver = BasicPETScSNESSolver(backend, wrapping_for_wrapping)
 @BackendFor("dolfin", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
-        self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
+        self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(),
+                                         problem_wrapper.jacobian_eval)
         self.solver = PETScSNESSolver(self.problem, self.problem.solution)
         self.solver.monitor = problem_wrapper.monitor
 

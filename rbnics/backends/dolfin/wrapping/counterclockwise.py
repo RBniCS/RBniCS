@@ -17,9 +17,10 @@ def counterclockwise(triangle_vertices):
     assert all([len(coordinates) == 2 for coordinates in triangle_vertices])
     triangle_vertices_float = [[float(coord) for coord in vertex] for vertex in triangle_vertices]
     cross_product = (
-        (triangle_vertices_float[1][X] - triangle_vertices_float[0][X])*(triangle_vertices_float[2][Y] - triangle_vertices_float[0][Y])
-            -
-        (triangle_vertices_float[1][Y] - triangle_vertices_float[0][Y])*(triangle_vertices_float[2][X] - triangle_vertices_float[0][X])
+        + (triangle_vertices_float[1][X] - triangle_vertices_float[0][X])
+        * (triangle_vertices_float[2][Y] - triangle_vertices_float[0][Y])
+        - (triangle_vertices_float[1][Y] - triangle_vertices_float[0][Y])
+        * (triangle_vertices_float[2][X] - triangle_vertices_float[0][X])
     )
     if cross_product > 0:
         return triangle_vertices

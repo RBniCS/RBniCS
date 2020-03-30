@@ -6,5 +6,6 @@
 
 from .online_stabilization_decorated_problem import OnlineStabilizationDecoratedProblem
 
-# For the sake of the user, since this is the only class that he/she needs to use, rename the decorated problem to an easier name
+# For the sake of the user, since this is the only class that he/she needs to use,
+# rename the decorated problem to an easier name
 OnlineStabilization = OnlineStabilizationDecoratedProblem

@@ -20,7 +20,8 @@ def ReducedProblemFor(Problem, ReductionMethod, replaces=None, replaces_if=None)
         assert inspect.isclass(ReducedProblem)
         ReducedProblemGenerator = _ReducedProblemGenerator(ReducedProblem)
         # Add to cache.
-        dispatch(*(Problem, ReductionMethod), name="ReducedProblem", module=_cache, replaces=replaces, replaces_if=replaces_if)(ReducedProblemGenerator)
+        dispatch(*(Problem, ReductionMethod), name="ReducedProblem", module=_cache, replaces=replaces,
+                 replaces_if=replaces_if)(ReducedProblemGenerator)
         # Return unchanged reduced problem
         return ReducedProblem
     return ReducedProblemFor_Decorator

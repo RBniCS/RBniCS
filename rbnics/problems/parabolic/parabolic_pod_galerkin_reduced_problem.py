@@ -7,11 +7,13 @@
 from rbnics.problems.elliptic import EllipticPODGalerkinReducedProblem
 from rbnics.problems.parabolic.parabolic_reduced_problem import ParabolicReducedProblem
 from rbnics.utils.decorators import ReducedProblemFor
-from rbnics.problems.parabolic.abstract_parabolic_pod_galerkin_reduced_problem import AbstractParabolicPODGalerkinReducedProblem
+from rbnics.problems.parabolic.abstract_parabolic_pod_galerkin_reduced_problem import (
+    AbstractParabolicPODGalerkinReducedProblem)
 from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
 from rbnics.reduction_methods.parabolic import ParabolicPODGalerkinReduction
 
-ParabolicPODGalerkinReducedProblem_Base = AbstractParabolicPODGalerkinReducedProblem(ParabolicReducedProblem(EllipticPODGalerkinReducedProblem))
+ParabolicPODGalerkinReducedProblem_Base = AbstractParabolicPODGalerkinReducedProblem(
+    ParabolicReducedProblem(EllipticPODGalerkinReducedProblem))
 
 # Base class containing the interface of a projection based ROM
 # for parabolic problems.

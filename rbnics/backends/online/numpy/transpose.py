@@ -13,16 +13,21 @@ from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.online.numpy.tensors_list import TensorsList
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.backends.online.numpy.wrapping import function_to_vector, matrix_mul_vector, vector_mul_vector, vectorized_matrix_inner_vectorized_matrix
+from rbnics.backends.online.numpy.wrapping import (function_to_vector, matrix_mul_vector, vector_mul_vector,
+                                                   vectorized_matrix_inner_vectorized_matrix)
 from rbnics.utils.decorators import backend_for, ModuleWrapper
 
-backend = ModuleWrapper(BasisFunctionsMatrix, Function, FunctionsList, Matrix, NonAffineExpansionStorage, TensorsList, Vector)
+backend = ModuleWrapper(BasisFunctionsMatrix, Function, FunctionsList, Matrix, NonAffineExpansionStorage,
+                        TensorsList, Vector)
 DelayedTransposeWithArithmetic = BasicDelayedTransposeWithArithmetic(backend)
-wrapping = ModuleWrapper(function_to_vector, matrix_mul_vector, vector_mul_vector, vectorized_matrix_inner_vectorized_matrix, DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
+wrapping = ModuleWrapper(function_to_vector, matrix_mul_vector, vector_mul_vector,
+                         vectorized_matrix_inner_vectorized_matrix,
+                         DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
 online_backend = ModuleWrapper(OnlineMatrix=Matrix, OnlineVector=Vector)
 online_wrapping = ModuleWrapper()
 transpose_base = basic_transpose(backend, wrapping, online_backend, online_wrapping)
 
-@backend_for("numpy", inputs=((BasisFunctionsMatrix, DelayedTransposeWithArithmetic, Function.Type(), FunctionsList, TensorsList, Vector.Type()), ))
+@backend_for("numpy", inputs=((BasisFunctionsMatrix, DelayedTransposeWithArithmetic, Function.Type(),
+                               FunctionsList, TensorsList, Vector.Type()), ))
 def transpose(arg):
     return transpose_base(arg)

@@ -8,7 +8,8 @@ from logging import DEBUG, getLogger
 from numpy import array, uintp, unique, where
 from scipy.spatial.ckdtree import cKDTree as KDTree
 from mpi4py.MPI import SUM
-from dolfin import Cell, cells, compile_cpp_code, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction, Vertex, vertices
+from dolfin import (Cell, cells, compile_cpp_code, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction,
+                    Vertex, vertices)
 from dolfin.cpp.mesh import MeshFunctionBool
 
 logger = getLogger("rbnics/backends/dolfin/wrapping/create_submesh.py")
@@ -51,10 +52,12 @@ def create_submesh(mesh, markers):
     # Extract cells from mesh with specified marker_id
     mesh_cell_indices = where(markers.array() == marker_id)[0]
     mesh_cells = mesh.cells()[mesh_cell_indices]
-    mesh_global_cell_indices = sorted([mesh.topology().global_indices(mesh.topology().dim())[cell_index] for cell_index in mesh_cell_indices])
+    mesh_global_cell_indices = sorted(
+        [mesh.topology().global_indices(mesh.topology().dim())[cell_index] for cell_index in mesh_cell_indices])
     # Get vertices of extracted cells
     mesh_vertex_indices = unique(mesh_cells.flatten())
-    mesh_global_vertex_indices = sorted([mesh.topology().global_indices(0)[vertex_index] for vertex_index in mesh_vertex_indices])
+    mesh_global_vertex_indices = sorted(
+        [mesh.topology().global_indices(0)[vertex_index] for vertex_index in mesh_vertex_indices])
     # Number vertices in a way which is independent from the number of processors. To do so ...
     # ... first of all collect all vertices from all processors
     allgathered_mesh_global_vertex_indices__non_empty_processors = list()
@@ -62,11 +65,15 @@ def create_submesh(mesh, markers):
     for r in range(mpi_comm.size):
         backup_first_marker_id_r = mpi_comm.bcast(backup_first_marker_id, root=r)
         if backup_first_marker_id_r is None:
-            allgathered_mesh_global_vertex_indices__non_empty_processors.extend(mpi_comm.bcast(mesh_global_vertex_indices, root=r))
+            allgathered_mesh_global_vertex_indices__non_empty_processors.extend(
+                mpi_comm.bcast(mesh_global_vertex_indices, root=r))
         else:
-            allgathered_mesh_global_vertex_indices__empty_processors.extend(mpi_comm.bcast(mesh_global_vertex_indices, root=r))
-    allgathered_mesh_global_vertex_indices__non_empty_processors = sorted(unique(allgathered_mesh_global_vertex_indices__non_empty_processors))
-    allgathered_mesh_global_vertex_indices__empty_processors = sorted(unique(allgathered_mesh_global_vertex_indices__empty_processors))
+            allgathered_mesh_global_vertex_indices__empty_processors.extend(
+                mpi_comm.bcast(mesh_global_vertex_indices, root=r))
+    allgathered_mesh_global_vertex_indices__non_empty_processors = sorted(
+        unique(allgathered_mesh_global_vertex_indices__non_empty_processors))
+    allgathered_mesh_global_vertex_indices__empty_processors = sorted(
+        unique(allgathered_mesh_global_vertex_indices__empty_processors))
     # ... then create a dict that will contain the map from mesh global vertex index to submesh global vertex index.
     # ... Here make sure to number first "real" vertices (those coming from non empty processors), since the other ones
     # ... are just a side effect of the current partitioning!
@@ -87,11 +94,15 @@ def create_submesh(mesh, markers):
     for r in range(mpi_comm.size):
         backup_first_marker_id_r = mpi_comm.bcast(backup_first_marker_id, root=r)
         if backup_first_marker_id_r is None:
-            allgathered_mesh_global_cell_indices__non_empty_processors.extend(mpi_comm.bcast(mesh_global_cell_indices, root=r))
+            allgathered_mesh_global_cell_indices__non_empty_processors.extend(
+                mpi_comm.bcast(mesh_global_cell_indices, root=r))
         else:
-            allgathered_mesh_global_cell_indices__empty_processors.extend(mpi_comm.bcast(mesh_global_cell_indices, root=r))
-    allgathered_mesh_global_cell_indices__non_empty_processors = sorted(unique(allgathered_mesh_global_cell_indices__non_empty_processors))
-    allgathered_mesh_global_cell_indices__empty_processors = sorted(unique(allgathered_mesh_global_cell_indices__empty_processors))
+            allgathered_mesh_global_cell_indices__empty_processors.extend(
+                mpi_comm.bcast(mesh_global_cell_indices, root=r))
+    allgathered_mesh_global_cell_indices__non_empty_processors = sorted(
+        unique(allgathered_mesh_global_cell_indices__non_empty_processors))
+    allgathered_mesh_global_cell_indices__empty_processors = sorted(
+        unique(allgathered_mesh_global_cell_indices__empty_processors))
     # ... then create a dict that will contain the map from mesh global cell index to submesh global cell index.
     # ... Here make sure to number first "real" vertices (those coming from non empty processors), since the other ones
     # ... are just a side effect of the current partitioning!
@@ -117,9 +128,9 @@ def create_submesh(mesh, markers):
     submesh_vertices = dict()
     for mesh_vertex_local_index, submesh_vertex_local_index in mesh_to_submesh_vertex_local_indices.items():
         submesh_vertices[submesh_vertex_local_index] = (
-            allgathered_mesh_to_submesh_vertex_global_indices[mesh.topology().global_indices(0)[mesh_vertex_local_index]],
-            mesh.coordinates()[mesh_vertex_local_index]
-        )
+            allgathered_mesh_to_submesh_vertex_global_indices[
+                mesh.topology().global_indices(0)[mesh_vertex_local_index]],
+            mesh.coordinates()[mesh_vertex_local_index])
     # Collect the global number of vertices and cells
     global_num_cells = mpi_comm.allreduce(len(submesh_cells), op=SUM)
     global_num_vertices = len(allgathered_mesh_to_submesh_vertex_global_indices)
@@ -139,8 +150,7 @@ def create_submesh(mesh, markers):
         submesh.topology().set_global_index(
             submesh.topology().dim(),
             local_index,
-            allgathered_mesh_to_submesh_cell_global_indices[mesh_global_cell_indices[local_index]]
-        )
+            allgathered_mesh_to_submesh_cell_global_indices[mesh_global_cell_indices[local_index]])
 
     # == 3. Store (local) mesh to/from submesh map for cells, facets and vertices == #
     # Cells
@@ -180,12 +190,14 @@ def create_submesh(mesh, markers):
         submesh_facets_to_submesh_vertices[submesh_facet.index()] = submesh_facet_vertices
     mesh_to_submesh_facets_local_indices = dict()
     for (mesh_facet_index, mesh_vertices) in mesh_facets_to_mesh_vertices.items():
-        submesh_vertices = tuple(sorted([submesh.mesh_to_submesh_vertex_local_indices[mesh_vertex] for mesh_vertex in mesh_vertices]))
+        submesh_vertices = tuple(sorted(
+            [submesh.mesh_to_submesh_vertex_local_indices[mesh_vertex] for mesh_vertex in mesh_vertices]))
         submesh_facet_index = submesh_vertices_to_submesh_facets[submesh_vertices]
         mesh_to_submesh_facets_local_indices[mesh_facet_index] = submesh_facet_index
     submesh_to_mesh_facets_local_indices = dict()
     for (submesh_facet_index, submesh_vertices) in submesh_facets_to_submesh_vertices.items():
-        mesh_vertices = tuple(sorted([submesh.submesh_to_mesh_vertex_local_indices[submesh_vertex] for submesh_vertex in submesh_vertices]))
+        mesh_vertices = tuple(sorted(
+            [submesh.submesh_to_mesh_vertex_local_indices[submesh_vertex] for submesh_vertex in submesh_vertices]))
         mesh_facet_index = mesh_vertices_to_mesh_facets[mesh_vertices]
         submesh_to_mesh_facets_local_indices[submesh_facet_index] = mesh_facet_index
     submesh.mesh_to_submesh_facet_local_indices = mesh_to_submesh_facets_local_indices
@@ -224,14 +236,19 @@ def create_submesh(mesh, markers):
         mesh_facets_global_indices_in_submesh.append(mesh_facets_local_to_global_indices[mesh_facet_local_index])
     allgathered__mesh_facets_global_indices_in_submesh = list()
     for r in range(mpi_comm.size):
-        allgathered__mesh_facets_global_indices_in_submesh.extend(mpi_comm.bcast(mesh_facets_global_indices_in_submesh, root=r))
-    allgathered__mesh_facets_global_indices_in_submesh = sorted(set(allgathered__mesh_facets_global_indices_in_submesh))
+        allgathered__mesh_facets_global_indices_in_submesh.extend(
+            mpi_comm.bcast(mesh_facets_global_indices_in_submesh, root=r))
+    allgathered__mesh_facets_global_indices_in_submesh = sorted(
+        set(allgathered__mesh_facets_global_indices_in_submesh))
     mesh_to_submesh_facets_global_indices = dict()
-    for (submesh_facet_global_index, mesh_facet_global_index) in enumerate(allgathered__mesh_facets_global_indices_in_submesh):
+    for (submesh_facet_global_index, mesh_facet_global_index) in enumerate(
+            allgathered__mesh_facets_global_indices_in_submesh):
         mesh_to_submesh_facets_global_indices[mesh_facet_global_index] = submesh_facet_global_index
     submesh_facets_local_to_global_indices = dict()
     for (submesh_facet_local_index, mesh_facet_local_index) in submesh_to_mesh_facets_local_indices.items():
-        submesh_facets_local_to_global_indices[submesh_facet_local_index] = mesh_to_submesh_facets_global_indices[mesh_facets_local_to_global_indices[mesh_facet_local_index]]
+        submesh_facets_local_to_global_indices[
+            submesh_facet_local_index] = mesh_to_submesh_facets_global_indices[
+                mesh_facets_local_to_global_indices[mesh_facet_local_index]]
 
     # == 4. Assign shared vertices == #
     shared_entities_dimensions = {
@@ -262,7 +279,8 @@ def create_submesh(mesh, markers):
         # Get shared entities from mesh. A subset of these will end being shared entities also the submesh
         # (thanks to the fact that we do not redistribute cells from one processor to another)
         if mpi_comm.size > 1: # some entities may not be initialized in serial, since they are not needed
-            assert mesh.topology().have_shared_entities(dim), "Mesh shared entities have not been initialized for dimension " + str(dim)
+            assert mesh.topology().have_shared_entities(dim), (
+                "Mesh shared entities have not been initialized for dimension " + str(dim))
         if mesh.topology().have_shared_entities(dim): # always true in parallel (when really needed)
             # However, it may happen that an entity which has been selected is not shared anymore because only one of
             # the sharing processes has it in the submesh. For instance, consider the case
@@ -271,7 +289,8 @@ def create_submesh(mesh, markers):
             # For this reason, we create a new dict from global entity index to processors sharing them. Thus ...
             # ... first of all get global indices corresponding to local entities
             if entity_type in ["vertex", "cell"]:
-                assert submesh.topology().have_global_indices(dim), "Submesh global indices have not been initialized for dimension " + str(dim)
+                assert submesh.topology().have_global_indices(dim), (
+                    "Submesh global indices have not been initialized for dimension " + str(dim))
             submesh_local_entities_global_index = list()
             submesh_local_entities_global_to_local_index = dict()
             for entity in iterator(submesh):
@@ -282,7 +301,8 @@ def create_submesh(mesh, markers):
             # ... then gather all global indices from all processors
             gathered__submesh_local_entities_global_index = list() # over processor id
             for r in range(mpi_comm.size):
-                gathered__submesh_local_entities_global_index.append(mpi_comm.bcast(submesh_local_entities_global_index, root=r))
+                gathered__submesh_local_entities_global_index.append(
+                    mpi_comm.bcast(submesh_local_entities_global_index, root=r))
             # ... then create dict from global index to processors sharing it
             submesh_shared_entities__global = dict()
             for r in range(mpi_comm.size):
@@ -302,7 +322,8 @@ def create_submesh(mesh, markers):
                     other_processors_list = list(processors)
                     other_processors_list.remove(mpi_comm.rank)
                     other_processors = array(other_processors_list, dtype=uintp)
-                    submesh_shared_entities[submesh_local_entities_global_to_local_index[global_entity_index]] = other_processors
+                    submesh_shared_entities[
+                        submesh_local_entities_global_to_local_index[global_entity_index]] = other_processors
 
             # Need an extension module to populate shared_entities because in python each call to shared_entities
             # returns a temporary.
@@ -314,7 +335,8 @@ def create_submesh(mesh, markers):
 
                 using OtherProcesses = Eigen::Ref<const Eigen::Matrix<std::size_t, Eigen::Dynamic, 1>>;
 
-                void set_shared_entities(std::shared_ptr<dolfin::Mesh> submesh, std::size_t idx, const OtherProcesses other_processes, std::size_t dim)
+                void set_shared_entities(std::shared_ptr<dolfin::Mesh> submesh, std::size_t idx,
+                                         const OtherProcesses other_processes, std::size_t dim)
                 {
                     std::set<unsigned int> set_other_processes;
                     for (std::size_t i(0); i < other_processes.size(); i++)
@@ -331,11 +353,15 @@ def create_submesh(mesh, markers):
             for (submesh_entity_local_index, other_processors) in submesh_shared_entities.items():
                 set_shared_entities(submesh, submesh_entity_local_index, other_processors, dim)
 
-            logger.log(DEBUG, "Local indices of shared entities for dimension " + str(dim) + ": " + str(list(submesh.topology().shared_entities(0).keys())))
-            logger.log(DEBUG, "Global indices of shared entities for dimension " + str(dim) + ": " + str([class_(submesh, local_index).global_index() for local_index in submesh.topology().shared_entities(dim).keys()]))
+            logger.log(DEBUG, "Local indices of shared entities for dimension " + str(dim)
+                       + ": " + str(list(submesh.topology().shared_entities(0).keys())))
+            logger.log(DEBUG, "Global indices of shared entities for dimension " + str(dim)
+                       + ": " + str([class_(submesh, local_index).global_index()
+                                     for local_index in submesh.topology().shared_entities(dim).keys()]))
 
     # == 5. Also initialize submesh facets global indices, now that shared facets have been computed == #
-    initialize_global_indices(submesh, submesh.topology().dim() - 1) # note that DOLFIN might change the numbering when compared to the one at 3bis
+    initialize_global_indices(submesh, submesh.topology().dim() - 1)
+    # note that DOLFIN might change the numbering when compared to the one at 3bis
 
     # == 6. Restore backup_first_marker_id and return == #
     if backup_first_marker_id is not None:
@@ -343,7 +369,8 @@ def create_submesh(mesh, markers):
     return submesh
 
 def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
-    assert meshfunctions_on_mesh is None or (isinstance(meshfunctions_on_mesh, list) and len(meshfunctions_on_mesh) > 0)
+    assert meshfunctions_on_mesh is None or (
+        isinstance(meshfunctions_on_mesh, list) and len(meshfunctions_on_mesh) > 0)
     if meshfunctions_on_mesh is None:
         return None
     meshfunctions_on_submesh = list()
@@ -354,10 +381,12 @@ def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
         assert submesh_subdomain.dim() in (submesh.topology().dim(), submesh.topology().dim() - 1)
         if submesh_subdomain.dim() == submesh.topology().dim():
             for submesh_cell in cells(submesh):
-                submesh_subdomain.array()[submesh_cell.index()] = mesh_subdomain.array()[submesh.submesh_to_mesh_cell_local_indices[submesh_cell.index()]]
+                submesh_subdomain.array()[submesh_cell.index()] = mesh_subdomain.array()[
+                    submesh.submesh_to_mesh_cell_local_indices[submesh_cell.index()]]
         elif submesh_subdomain.dim() == submesh.topology().dim() - 1:
             for submesh_facet in facets(submesh):
-                submesh_subdomain.array()[submesh_facet.index()] = mesh_subdomain.array()[submesh.submesh_to_mesh_facet_local_indices[submesh_facet.index()]]
+                submesh_subdomain.array()[submesh_facet.index()] = mesh_subdomain.array()[
+                    submesh.submesh_to_mesh_facet_local_indices[submesh_facet.index()]]
         else: # impossible to arrive here anyway, thanks to the assert
             raise TypeError("Invalid arguments in convert_meshfunctions_to_submesh.")
         meshfunctions_on_submesh.append(submesh_subdomain)
@@ -375,7 +404,8 @@ def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, CustomFunct
 # b) the maps from/to dofs are with respect to global dof indices
 # Part of this code is taken from cbcpost/utils/restriction_map.py, with the following copyright information:
 # Copyright (C) 2010-2014 Simula Research Laboratory
-def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, functionspace_on_submesh, submesh, global_indices=True):
+def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, functionspace_on_submesh,
+                                                submesh, global_indices=True):
     mesh_dofs_to_submesh_dofs = dict()
     submesh_dofs_to_mesh_dofs = dict()
 
@@ -383,7 +413,8 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
     if functionspace_on_mesh.num_sub_spaces() > 0:
         assert functionspace_on_mesh.num_sub_spaces() == functionspace_on_submesh.num_sub_spaces()
         for i in range(functionspace_on_mesh.num_sub_spaces()):
-            (mesh_dofs_to_submesh_dofs_i, submesh_dofs_to_mesh_dofs_i) = map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh.sub(i), mesh, functionspace_on_submesh.sub(i), submesh, global_indices)
+            (mesh_dofs_to_submesh_dofs_i, submesh_dofs_to_mesh_dofs_i) = map_functionspaces_between_mesh_and_submesh(
+                functionspace_on_mesh.sub(i), mesh, functionspace_on_submesh.sub(i), submesh, global_indices)
             for (mesh_dof, submesh_dof) in mesh_dofs_to_submesh_dofs_i.items():
                 assert mesh_dof not in mesh_dofs_to_submesh_dofs
                 assert submesh_dof not in submesh_dofs_to_mesh_dofs
@@ -392,8 +423,10 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
         # Return
         return (mesh_dofs_to_submesh_dofs, submesh_dofs_to_mesh_dofs)
     else:
-        assert functionspace_on_mesh.ufl_element().family() in ("Lagrange", "Discontinuous Lagrange"), "The current implementation has been tested only for Lagrange or Discontinuous Lagrange function spaces"
-        assert functionspace_on_submesh.ufl_element().family() in ("Lagrange", "Discontinuous Lagrange"), "The current implementation has been tested only for Lagrange or Discontinuous Lagrange function spaces"
+        assert functionspace_on_mesh.ufl_element().family() in ("Lagrange", "Discontinuous Lagrange"), (
+            "The current implementation has been tested only for Lagrange or Discontinuous Lagrange function spaces")
+        assert functionspace_on_submesh.ufl_element().family() in ("Lagrange", "Discontinuous Lagrange"), (
+            "The current implementation has been tested only for Lagrange or Discontinuous Lagrange function spaces")
         mesh_element = functionspace_on_mesh.element()
         mesh_dofmap = functionspace_on_mesh.dofmap()
         submesh_element = functionspace_on_submesh.element()
@@ -402,12 +435,14 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
             submesh_dof_coordinates = submesh_element.tabulate_dof_coordinates(submesh_cell)
             submesh_cell_dofs = submesh_dofmap.cell_dofs(submesh_cell.index())
             if global_indices:
-                submesh_cell_dofs = [functionspace_on_submesh.dofmap().local_to_global_index(local_dof) for local_dof in submesh_cell_dofs]
+                submesh_cell_dofs = [functionspace_on_submesh.dofmap().local_to_global_index(local_dof)
+                                     for local_dof in submesh_cell_dofs]
             mesh_cell = Cell(mesh, submesh.submesh_to_mesh_cell_local_indices[submesh_cell.index()])
             mesh_dof_coordinates = mesh_element.tabulate_dof_coordinates(mesh_cell)
             mesh_cell_dofs = mesh_dofmap.cell_dofs(mesh_cell.index())
             if global_indices:
-                mesh_cell_dofs = [functionspace_on_mesh.dofmap().local_to_global_index(local_dof) for local_dof in mesh_cell_dofs]
+                mesh_cell_dofs = [functionspace_on_mesh.dofmap().local_to_global_index(local_dof)
+                                  for local_dof in mesh_cell_dofs]
             assert len(submesh_dof_coordinates) == len(mesh_dof_coordinates)
             assert len(submesh_cell_dofs) == len(mesh_cell_dofs)
             # Build a KDTree to compute distances from coordinates in mesh

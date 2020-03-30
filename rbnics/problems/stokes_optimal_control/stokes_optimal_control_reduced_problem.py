@@ -20,13 +20,11 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 assembled_operator = dict()
                 for term in ("a", "a*", "b", "b*", "bt", "bt*", "c", "c*", "m", "n"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
-                return (
-                      assembled_operator["m"]                                                      + assembled_operator["a*"] + assembled_operator["bt*"]
-                                                                                                   + assembled_operator["b*"]
-                                                                         + assembled_operator["n"] - assembled_operator["c*"]
-                    + assembled_operator["a"] + assembled_operator["bt"] - assembled_operator["c"]
-                    + assembled_operator["b"]
-                )
+                return (assembled_operator["m"] + assembled_operator["a*"] + assembled_operator["bt*"]
+                        + assembled_operator["b*"]
+                        + assembled_operator["n"] - assembled_operator["c*"]
+                        + assembled_operator["a"] + assembled_operator["bt"] - assembled_operator["c"]
+                        + assembled_operator["b"])
 
             def vector_eval(self):
                 problem = self.problem
@@ -34,13 +32,9 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                 assembled_operator = dict()
                 for term in ("f", "g", "l"):
                     assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
-                return (
-                      assembled_operator["g"]
-
-
-                    + assembled_operator["f"]
-                    + assembled_operator["l"]
-                )
+                return (assembled_operator["g"]
+                        + assembled_operator["f"]
+                        + assembled_operator["l"])
 
             # Custom combination of boundary conditions *not* to add BCs of supremizers
             def bc_eval(self):
@@ -67,19 +61,18 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
                     assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
                 else:
                     raise ValueError("Invalid value for order of term " + term)
-            self._output = (
-                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
-                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
-                transpose(assembled_operator["g"])*self._solution +
-                0.5*assembled_operator["h"]
-            )
+            self._output = (0.5 * (transpose(self._solution) * assembled_operator["m"] * self._solution)
+                            + 0.5 * (transpose(self._solution) * assembled_operator["n"] * self._solution)
+                            - transpose(assembled_operator["g"]) * self._solution
+                            + 0.5 * assembled_operator["h"])
 
         # If a value of N was provided, make sure to double it when dealing with y and p, due to
         # the aggregated component approach
         def _online_size_from_kwargs(self, N, **kwargs):
             if N is None:
                 # then either,
-                # * the user has passed kwargs, so we trust that he/she has doubled velocities, supremizers and pressures for us
+                # * the user has passed kwargs, so we trust that he/she has doubled velocities,
+                #   supremizers and pressures for us
                 # * or self.N was copied, which already stores the correct count of basis functions
                 return StokesOptimalControlReducedProblem_Base._online_size_from_kwargs(self, N, **kwargs)
             else:
@@ -148,7 +141,8 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
             components_bak = self.components
             self.components = ["v", "p", "u", "w", "q"]
             # Call Parent
-            combined_projection_inner_products = StokesOptimalControlReducedProblem_Base._combine_all_projection_inner_products(self)
+            combined_projection_inner_products = (
+                StokesOptimalControlReducedProblem_Base._combine_all_projection_inner_products(self))
             # Restore and return
             self.components = components_bak
             return combined_projection_inner_products

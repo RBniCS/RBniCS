@@ -25,7 +25,8 @@ def GramSchmidt(backend, wrapping):
             new_basis_function = self._extend_or_restrict_if_needed(new_basis_function, component)
 
             for b in basis_functions:
-                new_basis_function = wrapping.gram_schmidt_projection_step(new_basis_function, inner_product, b, transpose)
+                new_basis_function = wrapping.gram_schmidt_projection_step(new_basis_function, inner_product, b,
+                                                                           transpose)
             norm_new_basis_function = sqrt(transpose(new_basis_function)*inner_product*new_basis_function)
             if norm_new_basis_function != 0.:
                 new_basis_function /= norm_new_basis_function
@@ -34,12 +35,14 @@ def GramSchmidt(backend, wrapping):
 
         @overload(backend.Function.Type(), (None, str))
         def _extend_or_restrict_if_needed(self, function, component):
-            return wrapping.function_extend_or_restrict(function, component, self.space, component, weight=None, copy=True)
+            return wrapping.function_extend_or_restrict(function, component, self.space, component, weight=None,
+                                                        copy=True)
 
         @overload(backend.Function.Type(), dict_of(str, str))
         def _extend_or_restrict_if_needed(self, function, component):
             assert len(component) == 1
             for (component_from, component_to) in component.items():
                 break
-            return wrapping.function_extend_or_restrict(function, component_from, self.space, component_to, weight=None, copy=True)
+            return wrapping.function_extend_or_restrict(function, component_from, self.space, component_to,
+                                                        weight=None, copy=True)
     return _GramSchmidt

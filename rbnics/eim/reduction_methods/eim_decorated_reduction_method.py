@@ -9,8 +9,11 @@ from rbnics.eim.problems import EIM
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
-from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import TimeDependentEIMApproximationReductionMethod
-from rbnics.utils.decorators import is_training_finished, PreserveClassName, ReductionMethodDecoratorFor, set_map_from_problem_to_training_status_off, set_map_from_problem_to_training_status_on
+from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_method import (
+    TimeDependentEIMApproximationReductionMethod)
+from rbnics.utils.decorators import (is_training_finished, PreserveClassName, ReductionMethodDecoratorFor,
+                                     set_map_from_problem_to_training_status_off,
+                                     set_map_from_problem_to_training_status_on)
 
 @ReductionMethodDecoratorFor(EIM)
 def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -53,21 +56,25 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
 
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(
+                self, ntrain, enable_import, sampling, **kwargs)
             # Since exact evaluation is required, we cannot use a distributed training set
             self.training_set.serialize_maximum_computations()
             # Initialize training set of EIM reductions
             def setter(EIM_reduction, ntrain_EIM):
-                return EIM_reduction.initialize_training_set(ntrain_EIM, enable_import, sampling) # kwargs are not needed
+                # kwargs are not needed
+                return EIM_reduction.initialize_training_set(ntrain_EIM, enable_import, sampling)
             import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_EIM
 
         # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
+            import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(
+                self, ntest, enable_import, sampling, **kwargs)
             # Initialize testing set of EIM reductions
             def setter(EIM_reduction, ntest_EIM):
-                return EIM_reduction.initialize_testing_set(ntest_EIM, enable_import, sampling) # kwargs are not needed
+                # kwargs are not needed
+                return EIM_reduction.initialize_testing_set(ntest_EIM, enable_import, sampling)
             import_successful_EIM = self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
             return import_successful and import_successful_EIM
 
@@ -101,8 +108,10 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         # Perform the offline phase of the reduced order model
         def offline(self):
             if "offline" not in self.truth_problem._apply_EIM_at_stages:
-                assert hasattr(self.truth_problem, "_apply_exact_evaluation_at_stages"), "Please use @ExactParametrizedFunctions(\"offline\")"
-                assert "offline" in self.truth_problem._apply_exact_evaluation_at_stages, "Please use @ExactParametrizedFunctions(\"offline\")"
+                assert hasattr(self.truth_problem, "_apply_exact_evaluation_at_stages"), (
+                    "Please use @ExactParametrizedFunctions(\"offline\")")
+                assert "offline" in self.truth_problem._apply_exact_evaluation_at_stages, (
+                    "Please use @ExactParametrizedFunctions(\"offline\")")
             lifting_mu = self.truth_problem.mu
             for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                 EIM_reduction_coeff.offline()
@@ -114,15 +123,17 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def error_analysis(self, N_generator=None, filename=None, **kwargs):
             # Perform first the EIM error analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the error w.r.t.
-                                                # an exact parametrized functions,
-                                                # so he probably is not interested in the error analysis of EIM
-                    and
-                (
-                    "EIM" not in kwargs         # otherwise we assume the user was interested in computing the error for a fixed number of EIM basis
-                                                # functions, thus he has already carried out the error analysis of EIM
-                        or
-                    ("EIM" in kwargs and kwargs["EIM"] is not None) # shorthand to disable EIM error analysis
+                "with_respect_to" not in kwargs
+                # otherwise we assume the user was interested in computing the error w.r.t.
+                # an exact parametrized functions, so he probably is not interested in the error analysis of EIM
+                and (
+                     "EIM" not in kwargs
+                     # otherwise we assume the user was interested in computing the error for a fixed number
+                     # of EIM basis functions, thus he has already carried out the error analysis of EIM
+                     or (
+                         "EIM" in kwargs and kwargs["EIM"] is not None
+                         # shorthand to disable EIM error analysis
+                     )
                 )
             ):
                 EIM_N_generator = kwargs.pop("EIM_N_generator", None)
@@ -141,15 +152,17 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
             # Perform first the EIM speedup analysis, ...
             if (
-                "with_respect_to" not in kwargs # otherwise we assume the user was interested in computing the speedup w.r.t.
-                                                # an exact parametrized functions,
-                                                # so he probably is not interested in the speedup analysis of EIM
-                    and
-                (
-                    "EIM" not in kwargs         # otherwise we assume the user was interested in computing the speedup for a fixed number of EIM basis
-                                                # functions, thus he has already carried out the speedup analysis of EIM
-                        or
-                    ("EIM" in kwargs and kwargs["EIM"] is not None) # shorthand to disable EIM error analysis
+                "with_respect_to" not in kwargs
+                # otherwise we assume the user was interested in computing the speedup w.r.t.
+                # an exact parametrized functions, so he probably is not interested in the speedup analysis of EIM
+                and (
+                     "EIM" not in kwargs
+                     # otherwise we assume the user was interested in computing the speedup for a fixed number
+                     # of EIM basis functions, thus he has already carried out the speedup analysis of EIM
+                     or (
+                         "EIM" in kwargs and kwargs["EIM"] is not None
+                         # shorthand to disable EIM error analysis
+                     )
                 )
             ):
                 EIM_N_generator = kwargs.pop("EIM_N_generator", None)

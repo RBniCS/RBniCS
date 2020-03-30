@@ -25,7 +25,10 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
 
         # Skip useless Riesz products
         self.riesz_terms = ["a", "b", "bt", "f", "g"]
-        self.error_estimation_terms = [("f", "f"), ("g", "g"), ("a", "f"), ("bt", "f"), ("b", "g"), ("a", "a"), ("a", "bt"), ("bt", "bt"), ("b", "b")]
+        self.error_estimation_terms = [
+            ("f", "f"), ("g", "g"),
+            ("a", "f"), ("bt", "f"), ("b", "g"),
+            ("a", "a"), ("a", "bt"), ("bt", "bt"), ("b", "b")]
 
     # Return an error bound for the current solution
     def estimate_error(self):
@@ -58,11 +61,22 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         return (
               sum(product(theta_f, self.error_estimation_operator["f", "f"], theta_f))
             + sum(product(theta_g, self.error_estimation_operator["g", "g"], theta_g))
-            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
-            + 2.0*(transpose(self._solution)*sum(product(theta_bt, self.error_estimation_operator["bt", "f"][:N], theta_f)))
-            + 2.0*(transpose(self._solution)*sum(product(theta_b, self.error_estimation_operator["b", "g"][:N], theta_g)))
-            + transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))*self._solution
-            + 2.0*(transpose(self._solution)*sum(product(theta_a, self.error_estimation_operator["a", "bt"][:N, :N], theta_bt))*self._solution)
-            + transpose(self._solution)*sum(product(theta_bt, self.error_estimation_operator["bt", "bt"][:N, :N], theta_bt))*self._solution
-            + transpose(self._solution)*sum(product(theta_b, self.error_estimation_operator["b", "b"][:N, :N], theta_b))*self._solution
+            + 2.0 * (transpose(self._solution)
+                     * sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))
+            + 2.0 * (transpose(self._solution)
+                     * sum(product(theta_bt, self.error_estimation_operator["bt", "f"][:N], theta_f)))
+            + 2.0 * (transpose(self._solution)
+                     * sum(product(theta_b, self.error_estimation_operator["b", "g"][:N], theta_g)))
+            + (transpose(self._solution)
+               * sum(product(theta_a, self.error_estimation_operator["a", "a"][:N, :N], theta_a))
+               * self._solution)
+            + 2.0 * (transpose(self._solution)
+                     * sum(product(theta_a, self.error_estimation_operator["a", "bt"][:N, :N], theta_bt))
+                     * self._solution)
+            + (transpose(self._solution)
+               * sum(product(theta_bt, self.error_estimation_operator["bt", "bt"][:N, :N], theta_bt))
+               * self._solution)
+            + (transpose(self._solution)
+               * sum(product(theta_b, self.error_estimation_operator["b", "b"][:N, :N], theta_b))
+               * self._solution)
         )

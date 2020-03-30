@@ -9,9 +9,15 @@ from numbers import Number
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 from rbnics.backends.basic.wrapping.delayed_product import DelayedProduct
 from rbnics.backends.basic.wrapping.delayed_sum import DelayedSum
-from rbnics.eim.utils.decorators import get_component_and_index_from_basis_function, get_reduced_problem_from_riesz_solve_homogeneous_dirichlet_bc, get_reduced_problem_from_riesz_solve_inner_product, get_reduced_problem_from_riesz_solve_storage, get_term_and_index_from_parametrized_operator, get_problem_from_parametrized_operator
+from rbnics.eim.utils.decorators import (get_component_and_index_from_basis_function,
+                                         get_reduced_problem_from_riesz_solve_homogeneous_dirichlet_bc,
+                                         get_reduced_problem_from_riesz_solve_inner_product,
+                                         get_reduced_problem_from_riesz_solve_storage,
+                                         get_term_and_index_from_parametrized_operator,
+                                         get_problem_from_parametrized_operator)
 from rbnics.utils.decorators import get_problem_from_problem_name, get_reduced_problem_from_problem
-from rbnics.utils.io import Folders, TextIO as BCsIO, TextIO as LHSIO, TextIO as ParametersIO, TextIO as RHSIO, TextIO as SolutionIO
+from rbnics.utils.io import (Folders, TextIO as BCsIO, TextIO as LHSIO, TextIO as ParametersIO,
+                             TextIO as RHSIO, TextIO as SolutionIO)
 
 class DelayedLinearSolver(object):
     def __init__(self, lhs=None, solution=None, rhs=None, bcs=None):
@@ -61,10 +67,12 @@ class DelayedLinearSolver(object):
         full_directory.create()
         # Save problem corresponding to self._lhs
         assert self._lhs is not None
-        LHSIO.save_file(get_reduced_problem_from_riesz_solve_inner_product(self._lhs).truth_problem.name(), full_directory, "lhs_problem_name")
+        LHSIO.save_file(get_reduced_problem_from_riesz_solve_inner_product(self._lhs).truth_problem.name(),
+                        full_directory, "lhs_problem_name")
         # Save problem corresponding to self._solution
         assert self._solution is not None
-        SolutionIO.save_file(get_reduced_problem_from_riesz_solve_storage(self._solution).truth_problem.name(), full_directory, "solution_problem_name")
+        SolutionIO.save_file(get_reduced_problem_from_riesz_solve_storage(self._solution).truth_problem.name(),
+                             full_directory, "solution_problem_name")
         # Save problem and operator corresponding to self._rhs
         assert self._rhs is not None
         assert isinstance(self._rhs, (AbstractParametrizedTensorFactory, DelayedProduct))
@@ -92,7 +100,8 @@ class DelayedLinearSolver(object):
         else:
             raise TypeError("Invalid rhs")
         # Save problem corresponding to self._bcs
-        BCsIO.save_file(get_reduced_problem_from_riesz_solve_homogeneous_dirichlet_bc(self._bcs).truth_problem.name(), full_directory, "bcs_problem_name")
+        BCsIO.save_file(get_reduced_problem_from_riesz_solve_homogeneous_dirichlet_bc(self._bcs).truth_problem.name(),
+                        full_directory, "bcs_problem_name")
         # Save parameters
         ParametersIO.save_file(self._parameters, full_directory, "parameters")
 

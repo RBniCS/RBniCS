@@ -24,7 +24,8 @@ def Vector(backend, wrapping, VectorBaseType):
             # Auxiliary attributes related to basis functions matrix
             if isinstance(N, dict):
                 if len(N) > 1:
-                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
+                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important
+                    # in the definition of attributes
                     assert isinstance(N, OnlineSizeDict)
                 else:
                     self.N = N = OnlineSizeDict(N)
@@ -44,7 +45,10 @@ def Vector(backend, wrapping, VectorBaseType):
                 isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
             ):
                 if isinstance(key, slice): # vector[:5]
-                    output_content = self.content[wrapping.Slicer(slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))]
+                    output_content = self.content[
+                        wrapping.Slicer(slice_to_array(
+                            self, key, self._component_name_to_basis_component_length,
+                            self._component_name_to_basis_component_index))]
                     output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                 elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
                     output_content = self.content[wrapping.Slicer(key)]
@@ -68,7 +72,9 @@ def Vector(backend, wrapping, VectorBaseType):
                             component_name_to_basis_component_length[component_name] = len(key)
                             output._component_name_to_basis_component_length = component_name_to_basis_component_length
                         else:
-                            raise NotImplementedError("Vector.__getitem__ with list or tuple input arguments has not been implemented yet for the case of multiple components")
+                            raise NotImplementedError(
+                                "Vector.__getitem__ with list or tuple input arguments has not been implemented yet"
+                                + " for the case of multiple components")
                 return output
             elif isinstance(key, int): # vector[5]
                 output = self.content[key]
@@ -84,7 +90,9 @@ def Vector(backend, wrapping, VectorBaseType):
                 isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
             ):
                 if isinstance(key, slice): # vector[:5]
-                    converted_key = wrapping.Slicer(slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+                    converted_key = wrapping.Slicer(
+                        slice_to_array(self, key, self._component_name_to_basis_component_length,
+                                       self._component_name_to_basis_component_index))
                 elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
                     converted_key = wrapping.Slicer(key)
                 if isinstance(value, type(self)):

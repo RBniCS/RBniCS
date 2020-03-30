@@ -31,10 +31,12 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         self.truth_problem = truth_problem
 
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-        return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
+        return ReductionMethod.initialize_training_set(
+            self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
 
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-        return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
+        return ReductionMethod.initialize_testing_set(
+            self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
 
     # Initialize data structures required for the offline phase
     def _init_offline(self):
@@ -51,10 +53,14 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         required_folders.update(self.truth_problem.folder)
         required_folders.update(self.reduced_problem.folder)
         optional_folders = Folders()
-        optional_folders["cache"] = required_folders.pop("cache") # this does not affect the availability of offline data
-        optional_folders["testing_set"] = required_folders.pop("testing_set") # this is required only in the error/speedup analysis
-        optional_folders["error_analysis"] = required_folders.pop("error_analysis") # this is required only in the error analysis
-        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis") # this is required only in the speedup analysis
+        optional_folders["cache"] = required_folders.pop("cache")
+        # cache folder does not affect the availability of offline data
+        optional_folders["testing_set"] = required_folders.pop("testing_set")
+        # testing set is required only in the error/speedup analysis
+        optional_folders["error_analysis"] = required_folders.pop("error_analysis")
+        # error analysis folder is required only in the error analysis
+        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis")
+        # speedup analysis folder is required only in the speedup analysis
         at_least_one_required_folder_created = required_folders.create()
         at_least_one_optional_folder_created = optional_folders.create()  # noqa: F841
         if not at_least_one_required_folder_created:
@@ -65,7 +71,8 @@ class DifferentialProblemReductionMethod(ReductionMethod):
 
     def postprocess_snapshot(self, snapshot, snapshot_index):
         """
-        Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing non-homogeneous Dirichlet boundary conditions.
+        Postprocess a snapshot before adding it to the basis/snapshot matrix, for instance removing
+        non-homogeneous Dirichlet boundary conditions.
 
         :param snapshot: truth offline solution.
         :param snapshot_index: truth offline solution index.
@@ -75,7 +82,8 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
             def has_non_homogeneous_dirichlet_bc(component):
-                return self.reduced_problem.dirichlet_bc[component] and not self.reduced_problem.dirichlet_bc_are_homogeneous[component]
+                return (self.reduced_problem.dirichlet_bc[component]
+                        and not self.reduced_problem.dirichlet_bc_are_homogeneous[component])
             def assert_lengths(component, theta_bc):
                 assert self.reduced_problem.N_bc[component] == len(theta_bc)
         else:
@@ -175,13 +183,17 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             self.reduced_problem._solution_cache.clear()
 
             # Disable the capability of importing/exporting truth solutions
-            def disable_import_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
+            def disable_import_solution_method(
+                    self_, folder=None, filename=None, solution=None, component=None, suffix=None):
                 raise OSError
-            self.disable_import_solution = PatchInstanceMethod(other_truth_problem, "import_solution", disable_import_solution_method)
+            self.disable_import_solution = PatchInstanceMethod(
+                other_truth_problem, "import_solution", disable_import_solution_method)
             self.disable_import_solution.patch()
-            def disable_export_solution_method(self_, folder=None, filename=None, solution=None, component=None, suffix=None):
+            def disable_export_solution_method(
+                    self_, folder=None, filename=None, solution=None, component=None, suffix=None):
                 pass
-            self.disable_export_solution = PatchInstanceMethod(other_truth_problem, "export_solution", disable_export_solution_method)
+            self.disable_export_solution = PatchInstanceMethod(
+                other_truth_problem, "export_solution", disable_export_solution_method)
             self.disable_export_solution.patch()
 
     def _undo_patch_truth_solve(self, force, **kwargs):
@@ -228,11 +240,13 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             # Disable the capability of importing/exporting truth outputs
             def disable_import_output_method(self_, folder=None, filename=None, output=None, suffix=None):
                 raise OSError
-            self.disable_import_output = PatchInstanceMethod(other_truth_problem, "import_output", disable_import_output_method)
+            self.disable_import_output = PatchInstanceMethod(
+                other_truth_problem, "import_output", disable_import_output_method)
             self.disable_import_output.patch()
             def disable_export_output_method(self_, folder=None, filename=None, output=None, suffix=None):
                 pass
-            self.disable_export_output = PatchInstanceMethod(other_truth_problem, "export_output", disable_export_output_method)
+            self.disable_export_output = PatchInstanceMethod(
+                other_truth_problem, "export_output", disable_export_output_method)
             self.disable_export_output.patch()
 
     def _undo_patch_truth_compute_output(self, force, **kwargs):

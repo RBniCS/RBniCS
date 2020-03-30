@@ -70,7 +70,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                         self._precomputed_slices.clear()
                         # Prepare trivial precomputed slice
                         self._prepare_trivial_precomputed_slice()
-                    functions_list.enrich_patch = PatchInstanceMethod(functions_list, "enrich", patched_functions_list_enrich)
+                    functions_list.enrich_patch = PatchInstanceMethod(functions_list, "enrich",
+                                                                      patched_functions_list_enrich)
                     functions_list.enrich_patch.patch()
                 for component_name in components_name:
                     patch_functions_list_enrich(component_name, self._components[component_name])
@@ -80,19 +81,22 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             # Append to storage
             self._enrich(functions, component, weights, copy)
 
-        @overload(object, None, (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
+        # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
+        @overload(object, None, (None, list_of(Number)), bool)
         def _enrich(self, functions, component, weights, copy):
             assert len(self._components) == 1
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             self._components[component_0].enrich(functions, None, weights, copy)
 
-        @overload(object, str, (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
+        # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
+        @overload(object, str, (None, list_of(Number)), bool)
         def _enrich(self, functions, component, weights, copy):
             assert component in self._components
             self._components[component].enrich(functions, component, weights, copy)
 
-        @overload(object, dict_of(str, str), (None, list_of(Number)), bool) # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
+        # the first argument is object in order to handle FunctionsList's AdditionalFunctionType
+        @overload(object, dict_of(str, str), (None, list_of(Number)), bool)
         def _enrich(self, functions, component, weights, copy):
             assert len(component) == 1
             for (_, component_to) in component.items():
@@ -226,7 +230,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
 
         @overload(str)
         def __getitem__(self, key):
-            # return all basis functions for each component, then the user may use __getitem__ of FunctionsList to extract a single basis function
+            # return all basis functions for each component, then the user may use __getitem__ of FunctionsList
+            # to extract a single basis function
             return self._components[key]
 
         @overload(list_of(str))
@@ -238,9 +243,13 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert key.step is None
             return self._precompute_slice(key.start, key.stop)
 
-        @overload(int, object) # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
+        # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
+        @overload(int, object)
         def __setitem__(self, key, item):
-            assert len(self._components) == 1, "Cannot set components, only single functions. Did you mean to call __getitem__ to extract a component and __setitem__ of a single function on that component?"
+            assert len(self._components) == 1, (
+                "Cannot set components, only single functions. "
+                "Did you mean to call __getitem__ to extract a component and __setitem__ of a single function"
+                "on that component?")
             assert len(self._components_name) == 1
             self._components[self._components_name[0]][key] = item
 
@@ -260,7 +269,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 output.__init__(self.space)
                 output.init(self._components_name)
                 for component_name in self._components_name:
-                    output._components[component_name].enrich(self._components[component_name][N_start:N_stop], copy=False)
+                    output._components[component_name].enrich(self._components[component_name][N_start:N_stop],
+                                                              copy=False)
                 self._precomputed_slices[N_start, N_stop] = output
             return self._precomputed_slices[N_start, N_stop]
 
@@ -289,7 +299,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 output.__init__(self.space)
                 output.init(self._components_name)
                 for component_name in self._components_name:
-                    output._components[component_name].enrich(self._components[component_name][N_start[component_name]:N_stop[component_name]], copy=False)
+                    output._components[component_name].enrich(self._components[component_name][
+                        N_start[component_name]:N_stop[component_name]], copy=False)
                 self._precomputed_slices[N_start_key, N_stop_key] = output
             return self._precomputed_slices[N_start_key, N_stop_key]
 
@@ -301,7 +312,8 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 output.__init__(self.space, sub_components)
                 output.init(sub_components)
                 for component_name in sub_components:
-                    output._components[component_name].enrich(self._components[component_name], component=component_name, copy=True)
+                    output._components[component_name].enrich(self._components[component_name],
+                                                              component=component_name, copy=True)
                 self._precomputed_sub_components[sub_components_key] = output
             return self._precomputed_sub_components[sub_components_key]
 

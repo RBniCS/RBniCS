@@ -7,7 +7,8 @@
 from collections import OrderedDict
 from dolfin import assign, Function
 
-def function_extend_or_restrict(function, function_components, V, V_components, weight, copy, extended_or_restricted_function=None):
+def function_extend_or_restrict(function, function_components, V, V_components, weight, copy,
+                                extended_or_restricted_function=None):
     function_V = function.function_space()
     if function_components is not None:
         assert isinstance(function_components, (int, str, tuple))
@@ -39,10 +40,12 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # Then function_V == V: do not need to extend nor restrict input function
         # Example of use case: function is the solution of an elliptic problem, V is the truth space
         if not copy:
-            assert function_components is None, "It is not possible to extract function components without copying the vector"
+            assert function_components is None, (
+                "It is not possible to extract function components without copying the vector")
             assert V_components is None, "It is not possible to extract function components without copying the vector"
             assert weight is None, "It is not possible to weigh components without copying the vector"
-            assert extended_or_restricted_function is None, "It is not possible to provide an output function without copying the vector"
+            assert extended_or_restricted_function is None, (
+                "It is not possible to provide an output function without copying the vector")
             return function
         else:
             if extended_or_restricted_function is None:
@@ -66,7 +69,8 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             extended_function = extended_or_restricted_function
             assert extended_function.function_space() == V
         for (index_V_as_tuple, index_function_V_as_tuple) in V_to_function_V_mapping.items():
-            assign(_sub_from_tuple(extended_function, index_V_as_tuple), _sub_from_tuple(function, index_function_V_as_tuple))
+            assign(_sub_from_tuple(extended_function, index_V_as_tuple),
+                   _sub_from_tuple(function, index_function_V_as_tuple))
         if weight is not None:
             extended_function.vector()[:] *= weight
         return extended_function
@@ -82,7 +86,8 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             restricted_function = extended_or_restricted_function
             assert restricted_function.function_space() == V
         for (index_function_V_as_tuple, index_V_as_tuple) in function_V_to_V_mapping.items():
-            assign(_sub_from_tuple(restricted_function, index_V_as_tuple), _sub_from_tuple(function, index_function_V_as_tuple))
+            assign(_sub_from_tuple(restricted_function, index_V_as_tuple),
+                   _sub_from_tuple(function, index_function_V_as_tuple))
         if weight is not None:
             restricted_function.vector()[:] *= weight
         return restricted_function
@@ -104,11 +109,7 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     should_return_False = False
     for (index_V, element_V) in V_sub_elements.items():
         for (index_W, element_W) in W_sub_elements.items():
-            if (
-                element_W == element_V
-                    and
-                not W_sub_elements_used[index_W]
-            ):
+            if element_W == element_V and not W_sub_elements_used[index_W]:
                 assert index_W not in W_to_V_mapping
                 W_to_V_mapping[index_W] = index_V
                 W_sub_elements_used[index_W] = True
@@ -130,13 +131,9 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     for (index_W_used, element_W_was_used) in W_sub_elements_used.items():
         if element_W_was_used:
             for (index_W, element_W) in W_sub_elements.items():
-                if (
-                    len(index_W_used) == len(index_W)
-                        and
-                    element_W == W_sub_elements[index_W_used]
-                        and
-                    not W_sub_elements_used[index_W]
-                ):
+                if (len(index_W_used) == len(index_W)
+                        and element_W == W_sub_elements[index_W_used]
+                        and not W_sub_elements_used[index_W]):
                     raise RuntimeError("Ambiguity when querying _function_spaces_lt")
 
     return True
@@ -158,7 +155,8 @@ def _get_sub_elements(V, index_V):
         assert index not in sub_elements__sorted_by_index_length[index_length]
         sub_elements__sorted_by_index_length[index_length][index] = element
     output = OrderedDict()
-    for index_length in range(min(sub_elements__sorted_by_index_length.keys()), max(sub_elements__sorted_by_index_length.keys()) + 1):
+    for index_length in range(min(sub_elements__sorted_by_index_length.keys()),
+                              max(sub_elements__sorted_by_index_length.keys()) + 1):
         if index_length in sub_elements__sorted_by_index_length:
             output.update(sub_elements__sorted_by_index_length[index_length])
     return output

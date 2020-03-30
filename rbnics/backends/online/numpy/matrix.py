@@ -26,7 +26,8 @@ class _Matrix_Type(_Matrix_Type_Base):
             return _Matrix_Type_Base.__getitem__(self, key)
 
     def __mul__(self, other):
-        if isinstance(other, Vector.Type()): # copied from BasicMatrix because ndarray uses __matul__ instead of __mul__ for matrix-vector product
+        if isinstance(other, Vector.Type()):
+            # copied from BasicMatrix because ndarray uses __matul__ instead of __mul__ for matrix-vector product
             self._arithmetic_operations_assert_attributes(other, other_order=1)
             output_content = self.content.__matmul__(other.content)
             output_size = self.M
@@ -37,7 +38,8 @@ class _Matrix_Type(_Matrix_Type_Base):
             return _Matrix_Type_Base.__mul__(self, other)
 
     def __imul__(self, other):
-        if isinstance(other, Vector.Type()): # copied from BasicMatrix because ndarray uses __matul__ instead of __mul__ for matrix-vector product
+        if isinstance(other, Vector.Type()):
+            # copied from BasicMatrix because ndarray uses __matul__ instead of __mul__ for matrix-vector product
             self._arithmetic_operations_assert_attributes(other, other_order=1)
             self.content.__imatmul__(other.content)
             return self

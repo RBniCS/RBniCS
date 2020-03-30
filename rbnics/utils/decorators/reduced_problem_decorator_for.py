@@ -20,7 +20,8 @@ def ReducedProblemDecoratorFor(Algorithm, replaces=None, replaces_if=None, exact
         assert inspect.isfunction(ReducedProblemDecorator)
         ReducedProblemDecoratorGenerator = _ReducedProblemDecoratorGenerator(ReducedProblemDecorator)
         # Add to cache ((object, object) is a placeholder for (Problem, ReductionMethod) types)
-        dispatch(*(object, object), name=Algorithm.__name__, module=_cache, replaces=replaces, replaces_if=replaces_if)(ReducedProblemDecoratorGenerator)
+        dispatch(*(object, object), name=Algorithm.__name__, module=_cache, replaces=replaces,
+                 replaces_if=replaces_if)(ReducedProblemDecoratorGenerator)
         # Return unchanged reduced problem decorator
         return ReducedProblemDecorator
     return ReducedProblemDecoratorFor_Decorator

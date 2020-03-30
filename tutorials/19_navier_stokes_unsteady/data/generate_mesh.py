@@ -29,8 +29,7 @@ subdomains.set_all(0)
 # Create boundaries
 class Walls(SubDomain):
     def inside(self, x, on_boundary):
-        return on_boundary and \
-            (abs(x[1]) < DOLFIN_EPS or abs(x[1] - H) < DOLFIN_EPS)
+        return on_boundary and (abs(x[1]) < DOLFIN_EPS or abs(x[1] - H) < DOLFIN_EPS)
 
 class Outlet(SubDomain):
     def inside(self, x, on_boundary):

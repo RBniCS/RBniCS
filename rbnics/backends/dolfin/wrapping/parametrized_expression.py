@@ -7,7 +7,8 @@
 import types
 from numbers import Number
 from dolfin import Expression
-from rbnics.backends.dolfin.wrapping.parametrized_constant import is_parametrized_constant, parametrized_constant_to_float
+from rbnics.backends.dolfin.wrapping.parametrized_constant import (
+    is_parametrized_constant, parametrized_constant_to_float)
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.sync_setters import _original_setters
 from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod

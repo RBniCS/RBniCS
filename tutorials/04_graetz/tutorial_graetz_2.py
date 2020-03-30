@@ -32,9 +32,18 @@ class Graetz(EllipticCoerciveProblem):
         self.vel = Expression("x[1]*(1-x[1])", element=self.V.ufl_element())
         # Customize eigen solver parameters
         self._eigen_solver_parameters.update({
-            "bounding_box_minimum": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e-5, "linear_solver": "mumps"},
-            "bounding_box_maximum": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e5, "linear_solver": "mumps"},
-            "stability_factor": {"problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert", "spectral_shift": 1.e-5, "linear_solver": "mumps"}
+            "bounding_box_minimum": {
+                "problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert",
+                "spectral_shift": 1.e-5, "linear_solver": "mumps"
+            },
+            "bounding_box_maximum": {
+                "problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert",
+                "spectral_shift": 1.e5, "linear_solver": "mumps"
+            },
+            "stability_factor": {
+                "problem_type": "gen_hermitian", "spectral_transform": "shift-and-invert",
+                "spectral_shift": 1.e-5, "linear_solver": "mumps"
+            }
         })
 
     # Return custom problem name

@@ -4,7 +4,8 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import _solution_dot_split_to_component, _solution_dot_split_to_solution_dot
+from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import (
+    _solution_dot_split_to_component, _solution_dot_split_to_solution_dot)
 from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_mute_indices
 
 def solution_dot_identify_component(node):

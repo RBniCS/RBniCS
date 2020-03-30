@@ -27,13 +27,15 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
 
                 # Get shape paramatrization expression
                 if len(shape_parametrization_expression) == 0:
-                    shape_parametrization_expression__from_decorator = decorator_kwargs["shape_parametrization_expression"]
+                    shape_parametrization_expression__from_decorator = decorator_kwargs[
+                        "shape_parametrization_expression"]
                 else:
                     shape_parametrization_expression__from_decorator = shape_parametrization_expression
 
                 # Store mesh motion class
                 assert "subdomains" in kwargs
-                self.mesh_motion = MeshMotion(V, kwargs["subdomains"], shape_parametrization_expression__from_decorator)
+                self.mesh_motion = MeshMotion(V, kwargs["subdomains"],
+                                              shape_parametrization_expression__from_decorator)
 
                 # Store the shape parametrization expression
                 self.shape_parametrization_expression = shape_parametrization_expression__from_decorator
@@ -47,7 +49,8 @@ def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **de
             # Deform the mesh as a function of the geometrical parameters and then export solution to file
             def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
                 self.mesh_motion.move_mesh()
-                ParametrizedDifferentialProblem_DerivedClass.export_solution(self, folder, filename, solution, component, suffix)
+                ParametrizedDifferentialProblem_DerivedClass.export_solution(
+                    self, folder, filename, solution, component, suffix)
                 self.mesh_motion.reset_reference()
 
         # return value (a class) for the decorator

@@ -23,7 +23,6 @@ def load_backends(required_backends):
     backends_cache.__all__ = set()
 
     # Make sure to import all available backends, so that they are added to the backends cache
-    # TODO use reload TODO #
     importlib.import_module(__name__ + ".abstract")
     importlib.import_module(__name__ + ".common")
     for backend in required_backends:
@@ -37,8 +36,8 @@ def load_backends(required_backends):
         setattr(sys.modules[__name__], class_or_function_name, getattr(backends_cache, class_or_function_name))
         sys.modules[__name__].__all__.append(class_or_function_name)
 
-    # Next, extend modules with __overridden__ variables in backends wrapping. In order to account for multiple overrides,
-    # sort the list of available backends to account that
+    # Next, extend modules with __overridden__ variables in backends wrapping. In order to account for
+    # multiple overrides, sort the list of available backends to account that
     depends_on_backends = dict()
     at_least_one_dependent_backend = False
     for backend in required_backends:
@@ -59,9 +58,11 @@ def load_backends(required_backends):
             for (module_name, classes_or_functions) in wrapping_overridden.items():
                 assert isinstance(classes_or_functions, (list, dict))
                 if isinstance(classes_or_functions, list):
-                    classes_or_functions = dict((class_or_function, class_or_function) for class_or_function in classes_or_functions)
+                    classes_or_functions = dict((class_or_function, class_or_function)
+                                                for class_or_function in classes_or_functions)
                 for (class_or_function_name, class_or_function_impl) in classes_or_functions.items():
-                    setattr(sys.modules[module_name], class_or_function_name, getattr(sys.modules[__name__ + "." + backend + ".wrapping"], class_or_function_impl))
+                    setattr(sys.modules[module_name], class_or_function_name,
+                            getattr(sys.modules[__name__ + "." + backend + ".wrapping"], class_or_function_impl))
                     if hasattr(sys.modules[module_name], "__all__"):
                         if class_or_function_name not in sys.modules[module_name].__all__:
                             sys.modules[module_name].__all__.append(class_or_function_name)
@@ -77,7 +78,8 @@ def load_backends(required_backends):
     from rbnics.utils.decorators.dispatch import Dispatcher
     for dispatcher_name in sys.modules[__name__].__all__:
         dispatcher = getattr(sys.modules[__name__], dispatcher_name)
-        if isinstance(getattr(backends_cache, dispatcher_name), Dispatcher): # if there was at least a concrete implementation by @BackendFor or @backend_for
+        # if there was at least a concrete implementation by @BackendFor or @backend_for
+        if isinstance(getattr(backends_cache, dispatcher_name), Dispatcher):
             assert isinstance(dispatcher, Dispatcher)
 
 # Get the list of required backends

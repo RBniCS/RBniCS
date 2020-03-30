@@ -12,14 +12,16 @@ from rbnics.utils.test import PatchInstanceMethod
 def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
 
     @PreserveClassName
-    class StoreMapFromEachBasisFunctionToComponentAndIndex_Class(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
+    class StoreMapFromEachBasisFunctionToComponentAndIndex_Class(
+            ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
 
         def _init_basis_functions(self, current_stage="online"):
             # Initialize basis functions as in Parent class
             ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
 
-            # Patch BasisFunctionsMatrix._update_component_name_to_basis_component_length so that it also updates the map
-            # from each basis function to component and index after BasisFunctionsMatrix.enrich() has been called.
+            # Patch BasisFunctionsMatrix._update_component_name_to_basis_component_length so that it also updates
+            # the map from each basis function to component and index after BasisFunctionsMatrix.enrich()
+            # has been called.
             if not hasattr(self.basis_functions, "_update_component_name_to_basis_component_length_patched"):
                 @overload(AbstractBasisFunctionsMatrix, None)
                 def patched_update_component_name_to_basis_component_length(self_, component):
@@ -45,10 +47,12 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
                     self_._component_name_to_basis_component_length[component] = len(self_._components[component])
                     new_component_length = self_._component_name_to_basis_component_length[component]
                     for index in range(old_component_length, new_component_length):
-                        add_to_map_from_basis_function_to_component_and_index(self_._components[component][index], component, index)
+                        add_to_map_from_basis_function_to_component_and_index(
+                            self_._components[component][index], component, index)
 
                 # Apply patch
-                PatchInstanceMethod(self.basis_functions, "_update_component_name_to_basis_component_length", patched_update_component_name_to_basis_component_length).patch()
+                PatchInstanceMethod(self.basis_functions, "_update_component_name_to_basis_component_length",
+                                    patched_update_component_name_to_basis_component_length).patch()
                 self.basis_functions._update_component_name_to_basis_component_length_patched = True
 
     # return value (a class) for the decorator

@@ -6,5 +6,6 @@
 
 from rbnics.eim.problems.eim_decorated_problem import EIMDecoratedProblem
 
-# For the sake of the user, since this is the only class that he/she needs to use, rename the decorated problem to an easier name
+# For the sake of the user, since this is the only class that he/she needs to use,
+# rename the decorated problem to an easier name
 EIM = EIMDecoratedProblem

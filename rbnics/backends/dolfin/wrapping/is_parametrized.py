@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from dolfin.function.expression import BaseExpression
-from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import is_pull_back_expression, is_pull_back_expression_parametrized
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import (
+    is_pull_back_expression, is_pull_back_expression_parametrized)
 
 def basic_is_parametrized(backend, wrapping):
     def _basic_is_parametrized(expression_or_form, iterator):

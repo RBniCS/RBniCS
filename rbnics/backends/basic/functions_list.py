@@ -11,7 +11,8 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple_of
 from rbnics.utils.mpi import parallel_io
 
-def FunctionsList(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
+def FunctionsList(backend, wrapping, online_backend, online_wrapping,
+                  AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
     from rbnics.backends.common import TimeSeries # cannot import at global scope due to cyclic dependence
 
     if AdditionalIsFunction is None:
@@ -45,7 +46,8 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
         def _enrich(self, function, component, weight, copy):
             self._add_to_list(function, component, weight, copy)
 
-        @overload((lambda cls: cls, list_of(backend.Function.Type()), tuple_of(backend.Function.Type())), (None, str, dict_of(str, str)), (None, list_of(Number)), bool)
+        @overload((lambda cls: cls, list_of(backend.Function.Type()), tuple_of(backend.Function.Type())),
+                  (None, str, dict_of(str, str)), (None, list_of(Number)), bool)
         def _enrich(self, functions, component, weights, copy):
             if weights is not None:
                 assert len(weights) == len(functions)
@@ -79,14 +81,16 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping, Additional
 
         @overload(backend.Function.Type(), (None, str), (None, Number), bool)
         def _add_to_list(self, function, component, weight, copy):
-            self._list.append(wrapping.function_extend_or_restrict(function, component, self.space, component, weight, copy))
+            self._list.append(wrapping.function_extend_or_restrict(function, component, self.space, component,
+                                                                   weight, copy))
 
         @overload(backend.Function.Type(), dict_of(str, str), (None, Number), bool)
         def _add_to_list(self, function, component, weight, copy):
             assert len(component) == 1
             for (component_from, component_to) in component.items():
                 break
-            self._list.append(wrapping.function_extend_or_restrict(function, component_from, self.space, component_to, weight, copy))
+            self._list.append(wrapping.function_extend_or_restrict(function, component_from, self.space, component_to,
+                                                                   weight, copy))
 
         def clear(self):
             self._list = list()

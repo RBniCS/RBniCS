@@ -9,7 +9,8 @@ from rbnics.problems.stokes_unsteady.stokes_unsteady_reduced_problem import Abst
 from rbnics.backends import product, sum
 
 def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
-    NavierStokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(NonlinearTimeDependentReducedProblem(NavierStokesReducedProblem_DerivedClass))
+    NavierStokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(
+        NonlinearTimeDependentReducedProblem(NavierStokesReducedProblem_DerivedClass))
 
     class NavierStokesUnsteadyReducedProblem_Class(NavierStokesUnsteadyReducedProblem_Base):
 
@@ -21,9 +22,11 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                 for term in ("m", "a", "b", "bt", "c", "f", "g"):
                     assert problem.terms_order[term] in (1, 2)
                     if problem.terms_order[term] == 2:
-                        assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
+                        assembled_operator[term] = sum(product(
+                            problem.compute_theta(term), problem.operator[term][:N, :N]))
                     elif problem.terms_order[term] == 1:
-                        assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
+                        assembled_operator[term] = sum(product(
+                            problem.compute_theta(term), problem.operator[term][:N]))
                     else:
                         raise ValueError("Invalid value for order of term " + term)
                 return (
@@ -38,7 +41,8 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                 N = self.N
                 assembled_operator = dict()
                 for term in ("m", "a", "b", "bt", "dc"):
-                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
+                    assembled_operator[term] = sum(product(
+                        problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
                       assembled_operator["m"]*solution_dot_coefficient
                     + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]

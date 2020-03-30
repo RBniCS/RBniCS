@@ -7,7 +7,8 @@
 from ufl.core.operator import Operator
 from ufl.domain import extract_domains
 from ufl.corealg.traversal import traverse_unique_terminals
-from dolfin import assemble, dx, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction, VectorFunctionSpace
+from dolfin import (assemble, dx, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction,
+                    VectorFunctionSpace)
 from dolfin.function.expression import BaseExpression
 from rbnics.backends.basic import ParametrizedExpressionFactory as BasicParametrizedExpressionFactory
 from rbnics.backends.dolfin.function import Function
@@ -15,11 +16,20 @@ from rbnics.backends.dolfin.functions_list import FunctionsList
 from rbnics.backends.dolfin.proper_orthogonal_decomposition import ProperOrthogonalDecomposition
 from rbnics.backends.dolfin.reduced_vertices import ReducedVertices
 from rbnics.backends.dolfin.snapshots_matrix import SnapshotsMatrix
-from rbnics.backends.dolfin.wrapping import expression_description, expression_iterator, expression_name, get_auxiliary_problem_for_non_parametrized_function, is_parametrized, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_time_dependent, solution_dot_identify_component, solution_identify_component, solution_iterator
+from rbnics.backends.dolfin.wrapping import (expression_description, expression_iterator, expression_name,
+                                             get_auxiliary_problem_for_non_parametrized_function, is_parametrized,
+                                             is_problem_solution, is_problem_solution_dot, is_problem_solution_type,
+                                             is_time_dependent, solution_dot_identify_component,
+                                             solution_identify_component, solution_iterator)
 from rbnics.utils.decorators import BackendFor, ModuleWrapper, overload
 
 backend = ModuleWrapper(Function, FunctionsList, ProperOrthogonalDecomposition, ReducedVertices, SnapshotsMatrix)
-wrapping = ModuleWrapper(expression_iterator, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, solution_dot_identify_component, solution_identify_component, solution_iterator, expression_description=expression_description, expression_name=expression_name, get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function, is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
+wrapping = ModuleWrapper(
+    expression_iterator, is_problem_solution, is_problem_solution_dot, is_problem_solution_type,
+    solution_dot_identify_component, solution_identify_component, solution_iterator,
+    expression_description=expression_description, expression_name=expression_name,
+    get_auxiliary_problem_for_non_parametrized_function=get_auxiliary_problem_for_non_parametrized_function,
+    is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
 ParametrizedExpressionFactory_Base = BasicParametrizedExpressionFactory(backend, wrapping)
 
 @BackendFor("dolfin", inputs=((BaseExpression, Function.Type(), Operator), ))
@@ -62,8 +72,8 @@ def _generate_space(expression: Function.Type()):
 # Space generation for Operator
 @overload
 def _generate_space(expression: Operator):
-    # Extract mesh from expression
-    meshes = set([ufl_domain.ufl_cargo() for ufl_domain in extract_domains(expression)]) # from dolfin/fem/projection.py, _extract_function_space function
+    # Extract mesh from expression (from dolfin/fem/projection.py, _extract_function_space function)
+    meshes = set([ufl_domain.ufl_cargo() for ufl_domain in extract_domains(expression)])
     for t in traverse_unique_terminals(expression): # from ufl/domain.py, extract_domains
         if hasattr(t, "_mesh"):
             meshes.add(t._mesh)

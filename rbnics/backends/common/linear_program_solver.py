@@ -26,7 +26,8 @@ class LinearProgramSolver(AbstractLinearProgramSolver):
         # Store cost
         self.cost = cvxopt.matrix(cost)
         # Store inequality constraints matrix, also including a 2*Q x 2*Q submatrix for bound constraints
-        self.inequality_constraints_matrix = cvxopt.matrix(vstack((- inequality_constraints_matrix, - eye(self.Q), eye(self.Q))))
+        self.inequality_constraints_matrix = cvxopt.matrix(vstack((- inequality_constraints_matrix, - eye(self.Q),
+                                                                   eye(self.Q))))
         # Store inequality constraints vector, also including 2*Q rows for bound constraints
         assert len(bounds) == self.Q
         bounds_lower = zeros(self.Q)
@@ -35,10 +36,12 @@ class LinearProgramSolver(AbstractLinearProgramSolver):
             assert bounds_q[0] <= bounds_q[1]
             bounds_lower[q] = bounds_q[0]
             bounds_upper[q] = bounds_q[1]
-        self.inequality_constraints_vector = cvxopt.matrix(hstack((- inequality_constraints_vector, bounds_lower, bounds_upper)))
+        self.inequality_constraints_vector = cvxopt.matrix(hstack((- inequality_constraints_vector,
+                                                                   bounds_lower, bounds_upper)))
 
     def solve(self):
-        result = cvxopt.solvers.lp(self.cost, self.inequality_constraints_matrix, self.inequality_constraints_vector, solver="glpk", options={"glpk": {"msg_lev": "GLP_MSG_OFF"}})
+        result = cvxopt.solvers.lp(self.cost, self.inequality_constraints_matrix, self.inequality_constraints_vector,
+                                   solver="glpk", options={"glpk": {"msg_lev": "GLP_MSG_OFF"}})
         if result["status"] != "optimal":
             raise Error("Linear program solver reports convergence failure with reason", result["status"])
         else:

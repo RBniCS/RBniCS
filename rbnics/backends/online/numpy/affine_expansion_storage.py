@@ -13,7 +13,8 @@ from rbnics.backends.online.numpy.wrapping import function_load, function_save, 
 from rbnics.utils.decorators import BackendFor, ModuleWrapper, tuple_of
 
 backend = ModuleWrapper(Function, Matrix, Vector)
-wrapping = ModuleWrapper(function_load, function_save, tensor_load, tensor_save, function_copy=function_copy, tensor_copy=tensor_copy)
+wrapping = ModuleWrapper(function_load, function_save, tensor_load, tensor_save, function_copy=function_copy,
+                         tensor_copy=tensor_copy)
 AffineExpansionStorage_Base = BasicAffineExpansionStorage(backend, wrapping)
 
 @BackendFor("numpy", inputs=((int, tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (int, None)))

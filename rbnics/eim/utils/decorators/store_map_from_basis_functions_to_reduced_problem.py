@@ -11,7 +11,8 @@ from rbnics.utils.test import PatchInstanceMethod
 def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
 
     @PreserveClassName
-    class StoreMapFromBasisFunctionsToReducedProblem_Class(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
+    class StoreMapFromBasisFunctionsToReducedProblem_Class(
+            ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
 
         def _init_basis_functions(self, current_stage="online"):
             # Initialize basis functions as in Parent class
@@ -29,7 +30,8 @@ def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecorat
                     add_to_map_from_basis_functions_to_reduced_problem(output, self)
                     return output
                 # Apply patch
-                PatchInstanceMethod(self.basis_functions, "_precompute_sub_components", patched_precompute_sub_components).patch()
+                PatchInstanceMethod(self.basis_functions, "_precompute_sub_components",
+                                    patched_precompute_sub_components).patch()
                 self.basis_functions._precompute_sub_components_patched = True
 
     # return value (a class) for the decorator

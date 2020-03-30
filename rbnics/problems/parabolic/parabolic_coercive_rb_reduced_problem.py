@@ -11,7 +11,8 @@ from rbnics.problems.parabolic.abstract_parabolic_rb_reduced_problem import Abst
 from rbnics.problems.parabolic.parabolic_coercive_problem import ParabolicCoerciveProblem
 from rbnics.reduction_methods.parabolic import ParabolicRBReduction
 
-ParabolicCoerciveRBReducedProblem_Base = AbstractParabolicRBReducedProblem(ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
+ParabolicCoerciveRBReducedProblem_Base = AbstractParabolicRBReducedProblem(
+    ParabolicCoerciveReducedProblem(EllipticCoerciveRBReducedProblem))
 
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.

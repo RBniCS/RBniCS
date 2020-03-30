@@ -18,8 +18,8 @@ from rbnics.problems.base import ParametrizedProblem
 def test_eim_approximation_09(expression_type, basis_generation):
     """
     This test is an extension of test 01.
-    The aim of this script is to test the detection of parametrized expression defined using SymbolicParameters for mu and
-    SpatialCoordinates of x.
+    The aim of this script is to test the detection of parametrized expression defined using SymbolicParameters
+    for mu and SpatialCoordinates for x.
     * EIM: test the case when the expression to be interpolated is an Operator (rather than an Expression).
     * DEIM: test interpolation of form with integrand function of type Operator (rather than Expression).
     """
@@ -44,18 +44,21 @@ def test_eim_approximation_09(expression_type, basis_generation):
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedExpressionFactory(f), folder_prefix, basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(self.V)
                 form = f*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(self.V)
                 v = TestFunction(self.V)
                 form = f*u*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 
@@ -71,7 +74,8 @@ def test_eim_approximation_09(expression_type, basis_generation):
     mock_problem.set_mu_range(mu_range)
 
     # 4. Allocate an object of the ParametrizedFunctionApproximation class
-    parametrized_function_approximation = ParametrizedFunctionApproximation(mock_problem, expression_type, basis_generation)
+    parametrized_function_approximation = ParametrizedFunctionApproximation(
+        mock_problem, expression_type, basis_generation)
 
     # 5. Prepare reduction with EIM
     parametrized_function_reduction_method = EIMApproximationReductionMethod(parametrized_function_approximation)

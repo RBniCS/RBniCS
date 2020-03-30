@@ -28,7 +28,9 @@ class TimeStepping(AbstractTimeStepping):
         ic = problem_wrapper.ic_eval()
         if ic is not None:
             assign(solution, ic)
-        self.problem = _TimeDependentProblem(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
+        self.problem = _TimeDependentProblem(
+            problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval,
+            problem_wrapper.jacobian_eval, problem_wrapper.set_time)
         self._monitor_callback = problem_wrapper.monitor
         self.solver = self.problem.create_solver({"problem_type": "linear"})
         self.solver._monitor_callback = self._monitor_callback
@@ -68,11 +70,14 @@ class _TimeDependentProblem(object):
         assert problem_type in ("linear", "nonlinear")
 
         if integrator_type == "beuler":
-            solver = _ScipyImplicitEuler(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, self.set_time, problem_type)
+            solver = _ScipyImplicitEuler(
+                self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval,
+                self.set_time, problem_type)
             solver.set_parameters(parameters)
             return solver
         elif integrator_type == "ida":
-            solver = _AssimuloIDA(self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, self.set_time)
+            solver = _AssimuloIDA(
+                self.residual_eval, self.solution, self.solution_dot, self.bc_eval, self.jacobian_eval, self.set_time)
             solver.set_parameters(parameters)
             return solver
         else:
@@ -111,7 +116,8 @@ class _ScipyImplicitEuler(object):
                             self.set_time(t)
                         def _store_solution_and_solution_dot(self_, solution):
                             self.solution.vector()[:] = solution.vector()
-                            self.solution_dot.vector()[:] = (solution.vector() - self.solution_previous.vector())/self._time_step_size
+                            self.solution_dot.vector()[:] = (
+                                solution.vector() - self.solution_previous.vector())/self._time_step_size
                         def jacobian_eval(self_, solution):
                             self_._store_solution_and_solution_dot(solution)
                             return self.jacobian_eval(t, self.solution, self.solution_dot, 1./self._time_step_size)
@@ -185,16 +191,19 @@ class _ScipyImplicitEuler(object):
             raise ValueError("Time step size and maximum time steps cannot be both None")
         # Assert consistency of final time and time step size
         final_time_consistency = (all_t[-1] - all_t[0])/self._time_step_size
-        assert isclose(round(final_time_consistency), final_time_consistency), "Final time should be occuring after an integer number of time steps"
+        assert isclose(round(final_time_consistency), final_time_consistency), (
+            "Final time should be occuring after an integer number of time steps")
         # Prepare monitor computation if not provided by parameters
         if self._monitor_initial_time is None:
             self._monitor_initial_time = all_t[0]
         monitor_initial_time_consistency = (self._monitor_initial_time - self._initial_time)/self._time_step_size
-        assert isclose(round(monitor_initial_time_consistency), monitor_initial_time_consistency), "Monitor initial time should be occuring after an integer number of time steps"
+        assert isclose(round(monitor_initial_time_consistency), monitor_initial_time_consistency), (
+            "Monitor initial time should be occuring after an integer number of time steps")
         if self._monitor_time_step_size is None:
             self._monitor_time_step_size = self._time_step_size
         monitor_dt_consistency = self._monitor_time_step_size/self._time_step_size
-        assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), "Monitor time step size should be a multiple of the time step size"
+        assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), (
+            "Monitor time step size should be a multiple of the time step size")
         monitor_first_index = abs(all_t - self._monitor_initial_time).argmin()
         assert isclose(all_t[monitor_first_index], self._monitor_initial_time, atol=0.1*self._time_step_size)
         monitor_step = int(round(monitor_dt_consistency))
@@ -210,7 +219,8 @@ class _ScipyImplicitEuler(object):
                 if self._nonlinear_solver_parameters is not None:
                     solver.set_parameters(self._nonlinear_solver_parameters)
             solver.solve()
-            self.solution_dot.vector()[:] = (self.solution.vector() - self.solution_previous.vector())/self._time_step_size
+            self.solution_dot.vector()[:] = (
+                self.solution.vector() - self.solution_previous.vector())/self._time_step_size
             if t in monitor_t:
                 self._monitor(t, self.solution, self.solution_dot)
             self.solution_previous.vector()[:] = self.solution.vector()
@@ -250,7 +260,8 @@ if has_IDA:
             if isinstance(bcs_t, tuple):
                 self.current_bc = DirichletBC(bcs_t)
             elif isinstance(bcs_t, dict):
-                self.current_bc = DirichletBC(bcs_t, self.sample_residual._component_name_to_basis_component_index, self.solution.vector().N)
+                self.current_bc = DirichletBC(
+                    bcs_t, self.sample_residual._component_name_to_basis_component_index, self.solution.vector().N)
             else:
                 raise TypeError("Invalid bc in _LinearSolver.__init__().")
 
@@ -341,7 +352,8 @@ if has_IDA:
         def solve(self):
             # Setup IDA
             assert self._initial_time is not None
-            problem = Implicit_Problem(self._residual_vector_eval, self.solution.vector(), self.solution_dot.vector(), self._initial_time)
+            problem = Implicit_Problem(
+                self._residual_vector_eval, self.solution.vector(), self.solution_dot.vector(), self._initial_time)
             problem.jac = self._jacobian_matrix_eval
             problem.handle_result = self._monitor
             # Define an Assimulo IDA solver
@@ -365,15 +377,21 @@ if has_IDA:
             # Assert consistency of final time and time step size
             assert self._final_time is not None
             final_time_consistency = (self._final_time - self._initial_time)/self._time_step_size
-            assert isclose(round(final_time_consistency), final_time_consistency), "Final time should be occuring after an integer number of time steps"
+            assert isclose(round(final_time_consistency), final_time_consistency), (
+                "Final time should be occuring after an integer number of time steps")
             # Prepare monitor computation if not provided by parameters
             if self._monitor_initial_time is None:
                 self._monitor_initial_time = self._initial_time
-            assert isclose(round(self._monitor_initial_time/self._time_step_size), self._monitor_initial_time/self._time_step_size), "Monitor initial time should be a multiple of the time step size"
+            assert isclose(round(self._monitor_initial_time/self._time_step_size),
+                           self._monitor_initial_time/self._time_step_size), (
+                           "Monitor initial time should be a multiple of the time step size")
             if self._monitor_time_step_size is None:
                 self._monitor_time_step_size = self._time_step_size
-            assert isclose(round(self._monitor_time_step_size/self._time_step_size), self._monitor_time_step_size/self._time_step_size), "Monitor time step size should be a multiple of the time step size"
-            monitor_t = arange(self._monitor_initial_time, self._final_time + self._monitor_time_step_size/2., self._monitor_time_step_size)
+            assert isclose(round(self._monitor_time_step_size/self._time_step_size),
+                           self._monitor_time_step_size/self._time_step_size), (
+                           "Monitor time step size should be a multiple of the time step size")
+            monitor_t = arange(self._monitor_initial_time, self._final_time + self._monitor_time_step_size/2.,
+                               self._monitor_time_step_size)
             # Solve
             solver.simulate(self._final_time, ncp_list=monitor_t)
             # Solution and solution_dot at the final time are already up to date through

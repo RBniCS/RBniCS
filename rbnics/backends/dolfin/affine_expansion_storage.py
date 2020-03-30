@@ -13,7 +13,9 @@ from rbnics.backends.dolfin.function import Function
 from rbnics.utils.decorators import backend_for, list_of, overload, tuple_of
 
 # Generic backend
-@backend_for("dolfin", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()), tuple_of(Matrix.Type()), tuple_of(Vector.Type()), tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))
+@backend_for("dolfin", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()),
+                                tuple_of(Matrix.Type()), tuple_of(Vector.Type()),
+                                tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))
 def AffineExpansionStorage(args):
     return _AffineExpansionStorage(args)
 

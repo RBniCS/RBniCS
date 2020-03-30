@@ -7,7 +7,8 @@
 import pytest
 from math import sqrt
 from numpy import isclose
-from dolfin import assemble, dx, FiniteElement, Function, FunctionSpace, MixedElement, split, TestFunction, TrialFunction, UnitSquareMesh, VectorElement, VectorFunctionSpace
+from dolfin import (assemble, dx, FiniteElement, Function, FunctionSpace, MixedElement, split, TestFunction,
+                    TrialFunction, UnitSquareMesh, VectorElement, VectorFunctionSpace)
 from dolfin_utils.test import fixture as module_fixture
 from rbnics.backends.dolfin import transpose
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators

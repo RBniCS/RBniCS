@@ -12,7 +12,8 @@ def compute_theta_for_derivatives(compute_theta):
     from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
     from rbnics.problems.navier_stokes import NavierStokesProblem
 
-    module = types.ModuleType("compute_theta_for_derivatives", "Storage for implementation of compute_theta_for_derivatives")
+    module = types.ModuleType("compute_theta_for_derivatives",
+                              "Storage for implementation of compute_theta_for_derivatives")
 
     def compute_theta_for_derivatives_impl(self, term):
         return module._compute_theta_for_derivatives_impl(self, term)

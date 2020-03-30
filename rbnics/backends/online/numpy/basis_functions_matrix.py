@@ -10,11 +10,14 @@ from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.functions_list import FunctionsList
 from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
-from rbnics.backends.online.numpy.wrapping import basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector, function_to_vector, get_mpi_comm
+from rbnics.backends.online.numpy.wrapping import (basis_functions_matrix_mul_online_matrix,
+                                                   basis_functions_matrix_mul_online_vector,
+                                                   function_to_vector, get_mpi_comm)
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 backend = ModuleWrapper(Function, FunctionsList)
-wrapping = ModuleWrapper(basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector, function_to_vector, get_mpi_comm)
+wrapping = ModuleWrapper(basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector,
+                         function_to_vector, get_mpi_comm)
 online_backend = ModuleWrapper(OnlineFunction=Function, OnlineMatrix=Matrix, OnlineVector=Vector)
 online_wrapping = ModuleWrapper(function_to_vector)
 BasisFunctionsMatrix_Base = BasicBasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping)

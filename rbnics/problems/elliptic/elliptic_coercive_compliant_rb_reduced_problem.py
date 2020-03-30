@@ -12,7 +12,8 @@ from rbnics.problems.elliptic.elliptic_coercive_rb_reduced_problem import Ellipt
 from rbnics.reduction_methods.elliptic import EllipticRBReduction
 from rbnics.utils.decorators import ReducedProblemFor
 
-EllipticCoerciveCompliantRBReducedProblem_Base = EllipticCoerciveCompliantReducedProblem(EllipticCoerciveRBReducedProblem)
+EllipticCoerciveCompliantRBReducedProblem_Base = EllipticCoerciveCompliantReducedProblem(
+    EllipticCoerciveRBReducedProblem)
 
 @ReducedProblemFor(EllipticCoerciveCompliantProblem, EllipticRBReduction)
 class EllipticCoerciveCompliantRBReducedProblem(EllipticCoerciveCompliantRBReducedProblem_Base):

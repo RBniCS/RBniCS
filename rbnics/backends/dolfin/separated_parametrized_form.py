@@ -41,16 +41,19 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             # Internal usage
             self._NaN = float("NaN")
             # Strict mode when
-            # * checking candidates to be added to coefficients which contain both parametrized and non parametrized leaves.
+            # * checking candidates to be added to coefficients which contain both parametrized
+            #   and non parametrized leaves.
             # * checking for coefficients that are solution
             # If False (default)
-            # * coefficient splitting is prevented, because separating the non parametrized part would result in more
-            #   than one coefficient, and the candidate is accepted as the coefficient which contain both parametrized and non parametrized leaves.
+            # * coefficient splitting is prevented, because separating the non parametrized part
+            #   would result in more than one coefficient, and the candidate is accepted as
+            #   the coefficient which contain both parametrized and non parametrized leaves.
             # * solutions are considered as parametrized
             # If True
-            # * coefficient is split in order to assure that all coefficients only contains parametrized terms, at the expense of
-            #   a larger number of coefficients
-            # * solutions and geometric quantities (except normals) are prevented for being collected in coefficients
+            # * coefficient is split in order to assure that all coefficients only contains
+            #   parametrized terms, at the expense of a larger number of coefficients
+            # * solutions and geometric quantities (except normals) are prevented for being
+            #   collected in coefficients
             self._strict = strict
 
         def separate(self):
@@ -94,17 +97,19 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                             # Skip all expressions with at least one leaf which is an Argument
                             for t in traverse_terminals(n):
                                 if isinstance(t, Argument):
-                                    logger.log(DEBUG, "\t\t Node " + str(n) + " is skipped because it contains an Argument")
+                                    logger.log(DEBUG, "\t\t Node " + str(n)
+                                               + " is skipped because it contains an Argument")
                                     break
                             else: # not broken
-                                logger.log(DEBUG, "\t\t Node " + str(n) + " and its descendants are being analyzed for non-parametrized check")
+                                logger.log(DEBUG, "\t\t Node " + str(n)
+                                           + " and its descendants are being analyzed for non-parametrized check")
                                 # Make sure to skip all descendants of this node in the outer loop
                                 # Note that a map with key set to the expression is not enough to
                                 # mark the node as visited, since the same expression may appear
                                 # on different sides of the tree
                                 pre_traversal_n = [d for d in pre_traversal(n)]
                                 for (d_i, d) in enumerate(pre_traversal_n):
-                                    assert d == pre_traversal_e[n_i + d_i] # make sure that we are marking the right node
+                                    assert d == pre_traversal_e[n_i + d_i]
                                     tree_nodes_skip[n_i + d_i] = True
                                 # We might be able to strip any (non-parametrized) expression out
                                 all_candidates = list()
@@ -114,76 +119,137 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                         # Skip all expressions where at least one leaf is not parametrized
                                         for t in traverse_terminals(d):
                                             if isinstance(t, BaseExpression):
-                                                if wrapping.is_pull_back_expression(t) and not wrapping.is_pull_back_expression_parametrized(t):
-                                                    logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized pulled back expression")
+                                                if (wrapping.is_pull_back_expression(t)
+                                                        and not wrapping.is_pull_back_expression_parametrized(t)):
+                                                    logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                               + " causes the non-parametrized check to break because"
+                                                               + " it contains a non-parametrized pulled back"
+                                                               + " expression")
                                                     break
                                                 else:
                                                     parameters = t._parameters
                                                     if "mu_0" not in parameters:
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized expression")
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                                   + " causes the non-parametrized check to break"
+                                                                   + " because it contains a non-parametrized"
+                                                                   + " expression")
                                                         break
                                             elif isinstance(t, Constant):
-                                                logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a constant")
+                                                logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                           + " causes the non-parametrized check to break because"
+                                                           + " it contains a constant")
                                                 break
-                                            elif isinstance(t, GeometricQuantity) and not isinstance(t, FacetNormal) and self._strict:
-                                                logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a geometric quantity and strict mode is on")
+                                            elif (isinstance(t, GeometricQuantity)
+                                                    and not isinstance(t, FacetNormal) and self._strict):
+                                                logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                           + " causes the non-parametrized check to break because"
+                                                           + " it contains a geometric quantity and strict mode is on")
                                                 break
                                             elif wrapping.is_problem_solution_type(t):
-                                                if not wrapping.is_problem_solution(t) and not wrapping.is_problem_solution_dot(t):
-                                                    logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains a non-parametrized function")
+                                                if (not wrapping.is_problem_solution(t)
+                                                        and not wrapping.is_problem_solution_dot(t)):
+                                                    logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                               + " causes the non-parametrized check to break because"
+                                                               + " it contains a non-parametrized function")
                                                     break
                                                 elif self._strict: # solutions are not allowed, break
                                                     if wrapping.is_problem_solution(t):
-                                                        (_, component, solution) = wrapping.solution_identify_component(t)
+                                                        (_, component,
+                                                         solution) = wrapping.solution_identify_component(t)
                                                         problem = get_problem_from_solution(solution)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ") and strict mode is on")
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                                   + " causes the non-parametrized check to break"
+                                                                   + " because it contains the solution of "
+                                                                   + problem.name() + " (exact problem decorator: "
+                                                                   + str(hasattr(problem, "__is_exact__"))
+                                                                   + ", component: " + str(component) + ") and"
+                                                                   + " strict mode is on")
                                                         break
                                                     elif wrapping.is_problem_solution_dot(t):
-                                                        (_, component, solution_dot) = wrapping.solution_dot_identify_component(t)
+                                                        (_, component,
+                                                         solution_dot) = wrapping.solution_dot_identify_component(t)
                                                         problem = get_problem_from_solution_dot(solution_dot)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " causes the non-parametrized check to break because it contains the solution_dot of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ") and strict mode is on")
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                                   + " causes the non-parametrized check to break"
+                                                                   + " because it contains the solution_dot of "
+                                                                   + problem.name() + " (exact problem decorator: "
+                                                                   + str(hasattr(problem, "__is_exact__"))
+                                                                   + ", component: " + str(component) + ") and"
+                                                                   + " strict mode is on")
                                                     else:
                                                         raise RuntimeError("Unidentified solution found")
                                         else:
                                             at_least_one_expression_or_solution = False
                                             for t in traverse_terminals(d):
-                                                if isinstance(t, BaseExpression): # which is parametrized, because previous for loop was not broken
+                                                if isinstance(t, BaseExpression):
+                                                    # t is parametrized, because previous for loop was not broken
                                                     at_least_one_expression_or_solution = True
-                                                    logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the parametrized expression " + str(t))
+                                                    logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                               + " is a candidate after non-parametrized check"
+                                                               + " because it contains the parametrized expression "
+                                                               + str(t))
                                                     break
                                                 elif wrapping.is_problem_solution_type(t):
                                                     if wrapping.is_problem_solution(t):
                                                         at_least_one_expression_or_solution = True
-                                                        (_, component, solution) = wrapping.solution_identify_component(t)
+                                                        (_, component,
+                                                         solution) = wrapping.solution_identify_component(t)
                                                         problem = get_problem_from_solution(solution)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")")
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                                   + " is a candidate after non-parametrized check"
+                                                                   + " because it contains the solution of "
+                                                                   + problem.name() + " (exact problem decorator: "
+                                                                   + str(hasattr(problem, "__is_exact__"))
+                                                                   + ", component: " + str(component) + ")")
                                                         break
                                                     elif wrapping.is_problem_solution_dot(t):
                                                         at_least_one_expression_or_solution = True
-                                                        (_, component, solution_dot) = wrapping.solution_dot_identify_component(t)
+                                                        (_, component,
+                                                         solution_dot) = wrapping.solution_dot_identify_component(t)
                                                         problem = get_problem_from_solution_dot(solution_dot)
-                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " is a candidate after non-parametrized check because it contains the solution_dot of " + problem.name() + " (exact problem decorator: " + str(hasattr(problem, "__is_exact__")) + ", component: " + str(component) + ")")
+                                                        logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                                   + " is a candidate after non-parametrized check"
+                                                                   + " because it contains the solution_dot of "
+                                                                   + problem.name() + " (exact problem decorator: "
+                                                                   + str(hasattr(problem, "__is_exact__"))
+                                                                   + ", component: " + str(component) + ")")
                                                         break
                                             if at_least_one_expression_or_solution:
                                                 all_candidates.append(d)
                                                 pre_traversal_d = [q for q in pre_traversal(d)]
                                                 for (q_i, q) in enumerate(pre_traversal_d):
-                                                    assert q == pre_traversal_n[d_i + q_i] # make sure that we are marking the right node
+                                                    assert q == pre_traversal_n[d_i + q_i]
                                                     internal_tree_nodes_skip[d_i + q_i] = True
                                             else:
-                                                logger.log(DEBUG, "\t\t\t Descendant node " + str(d) + " has not passed the non-parametrized because it is not a parametrized expression or a solution")
+                                                logger.log(DEBUG, "\t\t\t Descendant node " + str(d)
+                                                           + " has not passed the non-parametrized because"
+                                                           + " it is not a parametrized expression or a solution")
                                 # Evaluate candidates
                                 if len(all_candidates) == 0: # the whole expression was actually non-parametrized
-                                    logger.log(DEBUG, "\t\t Node " + str(n) + " is skipped because it is a non-parametrized coefficient")
+                                    logger.log(DEBUG, "\t\t Node " + str(n) + " is skipped because"
+                                               + " it is a non-parametrized coefficient")
                                     continue
                                 elif len(all_candidates) == 1: # the whole expression was actually parametrized
-                                    logger.log(DEBUG, "\t\t Node " + str(n) + " will be accepted because it is a non-parametrized coefficient")
+                                    logger.log(DEBUG, "\t\t Node " + str(n) + " will be accepted because"
+                                               + " it is a non-parametrized coefficient")
                                     pass
-                                else: # part of the expression was not parametrized, and separating the non parametrized part may result in more than one coefficient
-                                    if self._strict: # non parametrized coefficients are not allowed, so split the expression
-                                        logger.log(DEBUG, "\t\t\t Node " + str(n) + " will be accepted because it is a non-parametrized coefficient with more than one candidate. It will be split because strict mode is on. Its split coefficients are " + ", ".join([str(c) for c in all_candidates]))
-                                    else: # non parametrized coefficients are allowed, so go on with the whole expression
-                                        logger.log(DEBUG, "\t\t\t Node " + str(n) + " will be accepted because it is a non-parametrized coefficient with more than one candidate. It will not be split because strict mode is off. Splitting it would have resulted in more than one coefficient, namely " + ", ".join([str(c) for c in all_candidates]))
+                                else:
+                                    # part of the expression was not parametrized, and separating
+                                    # the non parametrized part may result in more than one coefficient
+                                    if self._strict:
+                                        # non parametrized coefficients are not allowed, so split the expression
+                                        logger.log(DEBUG, "\t\t\t Node " + str(n) + " will be accepted because"
+                                                   + " it is a non-parametrized coefficient with more than"
+                                                   + " one candidate. It will be split because strict mode is on."
+                                                   + " Its split coefficients are "
+                                                   + ", ".join([str(c) for c in all_candidates]))
+                                    else:
+                                        # non parametrized coefficients are allowed, so go on with the whole expression
+                                        logger.log(DEBUG, "\t\t\t Node " + str(n) + " will be accepted because"
+                                                   + " it is a non-parametrized coefficient with more than"
+                                                   + " one candidate. It will not be split because strict mode is off."
+                                                   + " Splitting it would have resulted in more than one coefficient,"
+                                                   + " namely " + ", ".join([str(c) for c in all_candidates]))
                                         all_candidates = [n]
                                 # Add the coefficient(s)
                                 for candidate in all_candidates:
@@ -191,23 +257,41 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                         if isinstance(candidate, Indexed):
                                             assert len(candidate.ufl_operands) == 2
                                             assert isinstance(candidate.ufl_operands[1], MultiIndex)
-                                            if all([isinstance(index, FixedIndex) for index in candidate.ufl_operands[1].indices()]):
-                                                logger.log(DEBUG, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an Indexed expression with fixed indices, resulting in a candidate " + str(candidate) + " of type " + str(type(candidate)))
+                                            if all([isinstance(index, FixedIndex)
+                                                    for index in candidate.ufl_operands[1].indices()]):
+                                                logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
+                                                           + str(candidate) + " as an Indexed expression"
+                                                           + " with fixed indices, resulting in a candidate "
+                                                           + str(candidate) + " of type " + str(type(candidate)))
                                                 return candidate # no further preprocessing needed
                                             else:
-                                                logger.log(DEBUG, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an Indexed expression with at least one mute index, resulting in a candidate " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                                logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
+                                                           + str(candidate) + " as an Indexed expression"
+                                                           + " with at least one mute index, resulting in a candidate "
+                                                           + str(candidate.ufl_operands[0]) + " of type "
+                                                           + str(type(candidate.ufl_operands[0])))
                                                 return preprocess_candidate(candidate.ufl_operands[0])
                                         elif isinstance(candidate, IndexSum):
                                             assert len(candidate.ufl_operands) == 2
                                             assert isinstance(candidate.ufl_operands[1], MultiIndex)
-                                            assert all([isinstance(index, MuteIndex) for index in candidate.ufl_operands[1].indices()])
-                                            logger.log(DEBUG, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an IndexSum expression, resulting in a candidate " + str(candidate.ufl_operands[0]) + " of type " + str(type(candidate.ufl_operands[0])))
+                                            assert all([isinstance(index, MuteIndex)
+                                                        for index in candidate.ufl_operands[1].indices()])
+                                            logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
+                                                       + str(candidate) + " as an IndexSum expression,"
+                                                       + " resulting in a candidate " + str(candidate.ufl_operands[0])
+                                                       + " of type " + str(type(candidate.ufl_operands[0])))
                                             return preprocess_candidate(candidate.ufl_operands[0])
                                         elif isinstance(candidate, ListTensor):
-                                            candidates = set([preprocess_candidate(component) for component in candidate.ufl_operands])
+                                            candidates = set([preprocess_candidate(component)
+                                                              for component in candidate.ufl_operands])
                                             if len(candidates) == 1:
                                                 preprocessed_candidate = candidates.pop()
-                                                logger.log(DEBUG, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with a unique preprocessed component, resulting in a candidate " + str(preprocessed_candidate) + " of type " + str(type(preprocessed_candidate)))
+                                                logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
+                                                           + str(candidate) + " as an ListTensor expression"
+                                                           + " with a unique preprocessed component,"
+                                                           + " resulting in a candidate "
+                                                           + str(preprocessed_candidate)
+                                                           + " of type " + str(type(preprocessed_candidate)))
                                                 return preprocess_candidate(preprocessed_candidate)
                                             else:
                                                 at_least_one_mute_index = False
@@ -216,27 +300,44 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                     assert isinstance(component, (ComponentTensor, Indexed))
                                                     assert len(component.ufl_operands) == 2
                                                     assert isinstance(component.ufl_operands[1], MultiIndex)
-                                                    if not all([isinstance(index, FixedIndex) for index in component.ufl_operands[1].indices()]):
+                                                    if not all([isinstance(index, FixedIndex)
+                                                                for index in component.ufl_operands[1].indices()]):
                                                         at_least_one_mute_index = True
-                                                    candidates_from_components.append(preprocess_candidate(component.ufl_operands[0]))
+                                                    candidates_from_components.append(
+                                                        preprocess_candidate(component.ufl_operands[0]))
                                                 if at_least_one_mute_index:
                                                     candidates_from_components = set(candidates_from_components)
                                                     assert len(candidates_from_components) == 1
                                                     preprocessed_candidate = candidates_from_components.pop()
-                                                    logger.log(DEBUG, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with multiple preprocessed components with at least one mute index, resulting in a candidate " + str(preprocessed_candidate) + " of type " + str(type(preprocessed_candidate)))
+                                                    logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
+                                                               + str(candidate) + " as an ListTensor expression"
+                                                               + " with multiple preprocessed components"
+                                                               + " with at least one mute index, resulting in"
+                                                               + " a candidate " + str(preprocessed_candidate)
+                                                               + " of type " + str(type(preprocessed_candidate)))
                                                     return preprocess_candidate(preprocessed_candidate)
                                                 else:
-                                                    logger.log(DEBUG, "\t\t\t Preprocessed descendant node " + str(candidate) + " as an ListTensor expression with multiple preprocessed components with fixed indices, resulting in a candidate " + str(candidate) + " of type " + str(type(candidate)))
+                                                    logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
+                                                               + str(candidate) + " as an ListTensor expression"
+                                                               + " with multiple preprocessed components"
+                                                               + " with fixed indices,"
+                                                               + " resulting in a candidate " + str(candidate)
+                                                               + " of type " + str(type(candidate)))
                                                     return candidate # no further preprocessing needed
                                         else:
-                                            logger.log(DEBUG, "\t\t\t No preprocessing required for descendant node " + str(candidate) + " as a coefficient of type " + str(type(candidate)))
+                                            logger.log(DEBUG, "\t\t\t No preprocessing required for descendant node "
+                                                       + str(candidate) + " as a coefficient of type "
+                                                       + str(type(candidate)))
                                             return candidate
                                     preprocessed_candidate = preprocess_candidate(candidate)
                                     if preprocessed_candidate not in self._coefficients[-1]:
                                         self._coefficients[-1].append(preprocessed_candidate)
-                                    logger.log(DEBUG, "\t\t\t Accepting descendant node " + str(preprocessed_candidate) + " as a coefficient of type " + str(type(preprocessed_candidate)))
+                                    logger.log(DEBUG, "\t\t\t Accepting descendant node "
+                                               + str(preprocessed_candidate) + " as a coefficient of type "
+                                               + str(type(preprocessed_candidate)))
                         else:
-                            logger.log(DEBUG, "\t\t Node " + str(n) + " to be skipped because it is a descendant of a coefficient which has already been detected")
+                            logger.log(DEBUG, "\t\t Node " + str(n) + " to be skipped because"
+                                       + " it is a descendant of a coefficient which has already been detected")
                 if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract
                     logger.log(DEBUG, "\t There were no coefficients to extract")
                     self._coefficients.pop() # remove the (empty) element that was added to possibly store coefficients
@@ -257,10 +358,12 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                     metadata=integral.metadata()
                 )
                 if integral not in integral_to_coefficients:
-                    logger.log(DEBUG, "\t Adding form for integrand " + str(integral.integrand()) + " to unchanged forms")
+                    logger.log(DEBUG, "\t Adding form for integrand " + str(integral.integrand())
+                               + " to unchanged forms")
                     self._form_unchanged.append(integral.integrand()*measure)
                 else:
-                    logger.log(DEBUG, "\t Preparing form with placeholders for integrand " + str(integral.integrand()))
+                    logger.log(DEBUG, "\t Preparing form with placeholders for integrand "
+                               + str(integral.integrand()))
                     self._placeholders.append(list()) # of Constants
                     placeholders_dict = dict()
                     for c in integral_to_coefficients[integral]:
@@ -276,9 +379,13 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                 for integral in form.integrals():
                     for e in pre_traversal(integral.integrand()):
                         if isinstance(e, BaseExpression):
-                            assert not (wrapping.is_pull_back_expression(e) and wrapping.is_pull_back_expression_parametrized(e)), "Form " + str(integral) + " still contains a parametrized pull back expression"
+                            assert not (wrapping.is_pull_back_expression(e)
+                                        and wrapping.is_pull_back_expression_parametrized(e)), (
+                                            "Form " + str(integral) + " still contains a parametrized pull back"
+                                            + " expression")
                             parameters = e._parameters
-                            assert "mu_0" not in parameters, "Form " + str(integral) + " still contains a parametrized expression"
+                            assert "mu_0" not in parameters, (
+                                "Form " + str(integral) + " still contains a parametrized expression")
 
             logger.log(DEBUG, "4. Prepare coefficients hash codes")
             for addend in self._coefficients:
@@ -307,7 +414,8 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
 
         def replace_placeholders(self, i, new_coefficients):
             assert len(new_coefficients) == len(self._placeholders[i])
-            replacements = dict((placeholder, new_coefficient) for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))
+            replacements = dict((placeholder, new_coefficient)
+                                for (placeholder, new_coefficient) in zip(self._placeholders[i], new_coefficients))
             return replace(self._form_with_placeholders[i], replacements)
 
         def placeholders_names(self, i):
@@ -315,9 +423,15 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
 
     return _BasicSeparatedParametrizedForm
 
-from rbnics.backends.dolfin.wrapping import expression_name, is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_dot_identify_component, solution_identify_component
+from rbnics.backends.dolfin.wrapping import (expression_name, is_problem_solution, is_problem_solution_dot,
+                                             is_problem_solution_type, is_pull_back_expression,
+                                             is_pull_back_expression_parametrized,
+                                             solution_dot_identify_component, solution_identify_component)
 backend = ModuleWrapper()
-wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type, is_pull_back_expression, is_pull_back_expression_parametrized, solution_dot_identify_component, solution_identify_component, expression_name=expression_name)
+wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type,
+                         is_pull_back_expression, is_pull_back_expression_parametrized,
+                         solution_dot_identify_component, solution_identify_component,
+                         expression_name=expression_name)
 SeparatedParametrizedForm_Base = BasicSeparatedParametrizedForm(backend, wrapping)
 
 @BackendFor("dolfin", inputs=(Form, ))

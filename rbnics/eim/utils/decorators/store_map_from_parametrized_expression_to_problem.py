@@ -14,7 +14,8 @@ def StoreMapFromParametrizedExpressionToProblem(EIMApproximation_DerivedClass):
 
         def __init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation):
             # Call the parent initialization
-            EIMApproximation_DerivedClass.__init__(self, truth_problem, parametrized_expression, folder_prefix, basis_generation)
+            EIMApproximation_DerivedClass.__init__(
+                self, truth_problem, parametrized_expression, folder_prefix, basis_generation)
 
             # Populate problem name to problem map
             add_to_map_from_parametrized_expression_to_problem(parametrized_expression, truth_problem)

@@ -6,7 +6,8 @@
 
 import inspect
 from rbnics.eim.backends import OfflineOnlineBackend
-from rbnics.eim.utils.decorators import DefineSymbolicParameters, StoreMapFromParametrizedOperatorsToProblem, StoreMapFromParametrizedOperatorsToTermAndIndex
+from rbnics.eim.utils.decorators import (DefineSymbolicParameters, StoreMapFromParametrizedOperatorsToProblem,
+                                         StoreMapFromParametrizedOperatorsToTermAndIndex)
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -31,7 +32,8 @@ def ExactParametrizedFunctionsDecoratedProblem(
 
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
 
-    @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline, stages=stages)
+    @ProblemDecoratorFor(ExactParametrizedFunctions, ExactAlgorithm=ExactParametrizedFunctions_OfflineAndOnline,
+                         stages=stages)
     def ExactParametrizedFunctionsDecoratedProblem_Decorator(ParametrizedDifferentialProblem_DerivedClass):
 
         @DefineSymbolicParameters
@@ -53,7 +55,9 @@ def ExactParametrizedFunctionsDecoratedProblem(
 
             @overload(str)
             def _store_exact_evaluation_stages(self, stage):
-                assert stages != "online", "This choice does not make any sense because it requires an EIM/DEIM offline stage which then is not used online"
+                assert stages != "online", (
+                    "This choice does not make any sense because it requires an EIM/DEIM offline stage"
+                    + " which then is not used online")
                 assert stages == "offline"
                 self._apply_exact_evaluation_at_stages = (stages, )
 
@@ -67,7 +71,8 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 self._apply_exact_evaluation_at_stages = stages
 
             def init(self):
-                has_disable_init_operators = hasattr(self, "disable_init_operators") # may be shared between EIM/DEIM and exact evaluation
+                # self.disable_init_operators may be shared between EIM/DEIM and exact evaluation
+                has_disable_init_operators = hasattr(self, "disable_init_operators")
                 # Call parent's method (enforcing an empty parent call to _init_operators)
                 if not has_disable_init_operators:
                     self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None)
@@ -80,7 +85,8 @@ def ExactParametrizedFunctionsDecoratedProblem(
                 self._init_operators_exact()
 
             def _init_operators_exact(self):
-                # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and exact evaluation)
+                # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and
+                # exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
                 OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
                 OfflineOnlineExpansionStorageSize = self.offline_online_backend.OfflineOnlineExpansionStorageSize

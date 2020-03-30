@@ -6,15 +6,19 @@
 
 import os
 import pytest
-from dolfin import assemble, cos, dx, exp, Function, FunctionSpace, IntervalMesh, pi, project, SpatialCoordinate, TestFunction, TrialFunction
+from dolfin import (assemble, cos, dx, exp, Function, FunctionSpace, IntervalMesh, pi, project, SpatialCoordinate,
+                    TestFunction, TrialFunction)
 from rbnics import EquispacedDistribution
-from rbnics.backends import BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory, ParametrizedTensorFactory, SymbolicParameters, transpose
+from rbnics.backends import (BasisFunctionsMatrix, GramSchmidt, ParametrizedExpressionFactory,
+                             ParametrizedTensorFactory, SymbolicParameters, transpose)
 from rbnics.backends.online import OnlineFunction
 from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.reduction_methods.base import ReductionMethod
-from rbnics.utils.decorators import StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem, StoreMapFromProblemToReductionMethod, StoreMapFromProblemToTrainingStatus, StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus
+from rbnics.utils.decorators import (StoreMapFromProblemNameToProblem, StoreMapFromProblemToReducedProblem,
+                                     StoreMapFromProblemToReductionMethod, StoreMapFromProblemToTrainingStatus,
+                                     StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus)
 
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
@@ -32,7 +36,8 @@ def test_eim_approximation_11(expression_type, basis_generation):
     class MockProblem(ParametrizedProblem):
         def __init__(self, V, **kwargs):
             # Call parent
-            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
+            ParametrizedProblem.__init__(self, os.path.join(
+                "test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a ParametrizedDifferentialProblem
             self.V = V
             self._solution = Function(V)
@@ -64,7 +69,8 @@ def test_eim_approximation_11(expression_type, basis_generation):
     class MockReductionMethod(ReductionMethod):
         def __init__(self, truth_problem, **kwargs):
             # Call parent
-            ReductionMethod.__init__(self, os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
+            ReductionMethod.__init__(self, os.path.join(
+                "test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a DifferentialProblemReductionMethod
             self.truth_problem = truth_problem
             self.reduced_problem = None
@@ -74,10 +80,12 @@ def test_eim_approximation_11(expression_type, basis_generation):
             self.GS = GramSchmidt(self.truth_problem.inner_product)
 
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-            return ReductionMethod.initialize_training_set(self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
+            return ReductionMethod.initialize_training_set(
+                self, self.truth_problem.mu_range, ntrain, enable_import, sampling, **kwargs)
 
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-            return ReductionMethod.initialize_testing_set(self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
+            return ReductionMethod.initialize_testing_set(
+                self, self.truth_problem.mu_range, ntest, enable_import, sampling, **kwargs)
 
         def offline(self):
             self.reduced_problem = MockReducedProblem(self.truth_problem)
@@ -109,7 +117,8 @@ def test_eim_approximation_11(expression_type, basis_generation):
         @sync_setters("truth_problem", "set_mu_range", "mu_range")
         def __init__(self, truth_problem, **kwargs):
             # Call parent
-            ParametrizedProblem.__init__(self, os.path.join("test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
+            ParametrizedProblem.__init__(self, os.path.join(
+                "test_eim_approximation_11_tempdir", expression_type, basis_generation, "mock_problem"))
             # Minimal subset of a ParametrizedReducedDifferentialProblem
             self.truth_problem = truth_problem
             self.basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
@@ -135,18 +144,22 @@ def test_eim_approximation_11(expression_type, basis_generation):
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor
-                EIMApproximation.__init__(self, truth_problem, ParametrizedExpressionFactory(truth_problem._solution), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, truth_problem, ParametrizedExpressionFactory(truth_problem._solution), folder_prefix,
+                    basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(self.V)
                 form = truth_problem._solution*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(self.V)
                 v = TestFunction(self.V)
                 form = truth_problem._solution*u*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 
@@ -168,7 +181,8 @@ def test_eim_approximation_11(expression_type, basis_generation):
     reduction_method.offline()
 
     # 5. Allocate an object of the ParametrizedFunctionApproximation class
-    parametrized_function_approximation = ParametrizedFunctionApproximation(problem, expression_type, basis_generation, lambda u: exp(u))
+    parametrized_function_approximation = ParametrizedFunctionApproximation(
+        problem, expression_type, basis_generation, lambda u: exp(u))
     parametrized_function_approximation.set_mu_range(mu_range)
 
     # 6. Prepare reduction with EIM

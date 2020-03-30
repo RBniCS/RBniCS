@@ -19,9 +19,9 @@ class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
             a((y_psi, y_q), (z_psi, z_q)) = c(u, z_psi) + <f, z_q>    for all (z_psi, z_q) in YxY
 
     This class will solve the following optimality conditions:
-            m(y_psi, z_q)                         + a*((p_psi, p_q), (z_psi, z_q))         = <g, z_q>     for all (z_psi, z_q) in YxY
-                                            n(u, v) - c*(v, ppsi)                          = 0            for all v in U
-            a((y_psi, y_q), (q_psi, q_q))- c(u, q_psi)                                     = + <f, q_q>   for all (q_psi, q_q) in YxY
+            m(y_psi, z_q) + a*((p_psi, p_q), (z_psi, z_q)) = <g, z_q>     for all (z_psi, z_q) in YxY
+            n(u, v) - c*(v, ppsi)                          = 0            for all v in U
+            a((y_psi, y_q), (q_psi, q_q))- c(u, q_psi)     = <f, q_q>     for all (q_psi, q_q) in YxY
 
     and compute the cost functional
             J(y_psi, u) = 1/2 m(y_psi, y_psi) + 1/2 n(u, u) - <g, y_psi> + 1/2 h
@@ -57,31 +57,23 @@ class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
             assembled_operator = dict()
             for term in ("a", "a*", "c", "c*", "m", "n"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (
-                  assembled_operator["m"]                                                      + assembled_operator["a*"]
-                                                                     + assembled_operator["n"] - assembled_operator["c*"]
-                + assembled_operator["a"] - assembled_operator["c"]
-            )
+            return (assembled_operator["m"] + assembled_operator["a*"]
+                    + assembled_operator["n"] - assembled_operator["c*"]
+                    + assembled_operator["a"] - assembled_operator["c"])
 
         def vector_eval(self):
             problem = self.problem
             assembled_operator = dict()
             for term in ("f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (
-                  assembled_operator["g"]
-
-
-                + assembled_operator["f"]
-            )
+            return (assembled_operator["g"]
+                    + assembled_operator["f"])
 
     def _compute_output(self):
         assembled_operator = dict()
         for term in ("m", "n", "g", "h"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
-        self._output = (
-            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
-            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
-            transpose(assembled_operator["g"])*self._solution +
-            0.5*assembled_operator["h"]
-        )
+        self._output = (0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution)
+                        + 0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution)
+                        - transpose(assembled_operator["g"])*self._solution
+                        + 0.5*assembled_operator["h"])

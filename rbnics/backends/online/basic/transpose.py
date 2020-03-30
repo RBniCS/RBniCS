@@ -7,9 +7,15 @@
 from rbnics.backends.basic import transpose as basic_transpose
 from rbnics.utils.decorators import overload
 
-def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None, AdditionalIsVector=None, ConvertAdditionalVectorTypes=None, AdditionalIsMatrix=None, ConvertAdditionalMatrixTypes=None):
+def transpose(backend, wrapping, online_backend, online_wrapping,
+              AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None,
+              AdditionalIsVector=None, ConvertAdditionalVectorTypes=None,
+              AdditionalIsMatrix=None, ConvertAdditionalMatrixTypes=None):
 
-    basic_transpose_instance = basic_transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes)
+    basic_transpose_instance = basic_transpose(backend, wrapping, online_backend, online_wrapping,
+                                               AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                                               AdditionalIsVector, ConvertAdditionalVectorTypes,
+                                               AdditionalIsMatrix, ConvertAdditionalMatrixTypes)
 
     # Define a functor first, for symmetry with basic implementation
     class _Transpose_Functor(object):

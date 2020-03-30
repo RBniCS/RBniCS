@@ -9,7 +9,8 @@ from math import sqrt
 from logging import DEBUG, getLogger
 from rbnics.backends import GramSchmidt
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, snapshot_links_to_cache
-from rbnics.utils.io import ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList, OnlineSizeDict, SpeedupAnalysisTable, TextBox, TextLine, Timer
+from rbnics.utils.io import (ErrorAnalysisTable, GreedySelectedParametersList, GreedyErrorEstimatorsList,
+                             OnlineSizeDict, SpeedupAnalysisTable, TextBox, TextLine, Timer)
 
 logger = getLogger("rbnics/reduction_methods/base/rb_reduction.py")
 
@@ -19,7 +20,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
     @PreserveClassName
     class RBReduction_Class(DifferentialProblemReductionMethod_DerivedClass):
         """
-        The folders used to store the snapshots and for the post processing data, the parameters for the greedy algorithm and the error estimator evaluations are initialized.
+        The folders used to store the snapshots and for the post processing data, the parameters
+        for the greedy algorithm and the error estimator evaluations are initialized.
 
         :param truth_problem: class of the truth problem to be solved.
         :return: reduced RB class.
@@ -31,7 +33,9 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
 
             # Declare a GS object
-            self.GS = None # GramSchmidt (for problems with one component) or dict of GramSchmidt (for problem with several components)
+            # GramSchmidt (for problems with one component) or dict of GramSchmidt (for problem
+            # with several components)
+            self.GS = None
             # I/O
             self.folder["snapshots"] = os.path.join(self.folder_prefix, "snapshots")
             self.folder["post_processing"] = os.path.join(self.folder_prefix, "post_processing")
@@ -123,19 +127,24 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             """
             if len(self.truth_problem.components) > 1:
                 for component in self.truth_problem.components:
-                    new_basis_function = self.GS[component].apply(snapshot, self.reduced_problem.basis_functions[component][self.reduced_problem.N_bc[component]:], component=component)
+                    new_basis_function = self.GS[component].apply(
+                        snapshot, self.reduced_problem.basis_functions[component][
+                            self.reduced_problem.N_bc[component]:], component=component)
                     self.reduced_problem.basis_functions.enrich(new_basis_function, component=component)
                     self.reduced_problem.N[component] += 1
                 self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
             else:
-                new_basis_function = self.GS.apply(snapshot, self.reduced_problem.basis_functions[self.reduced_problem.N_bc:])
+                new_basis_function = self.GS.apply(snapshot, self.reduced_problem.basis_functions[
+                    self.reduced_problem.N_bc:])
                 self.reduced_problem.basis_functions.enrich(new_basis_function)
                 self.reduced_problem.N += 1
                 self.reduced_problem.basis_functions.save(self.reduced_problem.folder["basis"], "basis")
 
         def greedy(self):
             """
-            It chooses the next parameter in the offline stage in a greedy fashion: wrapper with post processing of the result (in particular, set greedily selected parameter and save to file)
+            It chooses the next parameter in the offline stage in a greedy fashion:
+            wrapper with post processing of the result (in particular, set greedily selected parameter
+            and save to file)
 
             :return: max error estimator and the comparison with the first one calculated.
             """
@@ -176,7 +185,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
 
         def error_analysis(self, N_generator=None, filename=None, **kwargs):
             """
-            It computes the error of the reduced order approximation with respect to the full order one over the testing set.
+            It computes the error of the reduced order approximation with respect to the full order one
+            over the testing set.
 
             :param N_generator: generator of dimension of reduced problem.
             """
@@ -227,28 +237,76 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             if len(components) > 1:
                 all_components_string = "".join(components)
                 for component in components:
-                    error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
-                    error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component + "_relative_error", operations=("mean", "max"))
-                error_analysis_table.add_column("error_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("mean", "max"))
-                error_analysis_table.add_column("error_estimator_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("mean", "max"))
-                error_analysis_table.add_column("effectivity_" + all_components_string, group_name="solution_" + all_components_string + "_error", operations=("min", "mean", "max"))
-                error_analysis_table.add_column("relative_error_" + all_components_string, group_name="solution_" + all_components_string + "_relative_error", operations=("mean", "max"))
-                error_analysis_table.add_column("relative_error_estimator_" + all_components_string, group_name="solution_" + all_components_string + "_relative_error", operations=("mean", "max"))
-                error_analysis_table.add_column("relative_effectivity_" + all_components_string, group_name="solution_" + all_components_string + "_relative_error", operations=("min", "mean", "max"))
+                    error_analysis_table.add_column(
+                        "error_" + component,
+                        group_name="solution_" + component + "_error",
+                        operations=("mean", "max"))
+                    error_analysis_table.add_column(
+                        "relative_error_" + component,
+                        group_name="solution_" + component + "_relative_error",
+                        operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "error_" + all_components_string,
+                    group_name="solution_" + all_components_string + "_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "error_estimator_" + all_components_string,
+                    group_name="solution_" + all_components_string + "_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "effectivity_" + all_components_string,
+                    group_name="solution_" + all_components_string + "_error",
+                    operations=("min", "mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_error_" + all_components_string,
+                    group_name="solution_" + all_components_string + "_relative_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_error_estimator_" + all_components_string,
+                    group_name="solution_" + all_components_string + "_relative_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_effectivity_" + all_components_string,
+                    group_name="solution_" + all_components_string + "_relative_error",
+                    operations=("min", "mean", "max"))
             else:
                 component = components[0]
-                error_analysis_table.add_column("error_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
-                error_analysis_table.add_column("error_estimator_" + component, group_name="solution_" + component + "_error", operations=("mean", "max"))
-                error_analysis_table.add_column("effectivity_" + component, group_name="solution_" + component + "_error", operations=("min", "mean", "max"))
-                error_analysis_table.add_column("relative_error_" + component, group_name="solution_" + component + "_relative_error", operations=("mean", "max"))
-                error_analysis_table.add_column("relative_error_estimator_" + component, group_name="solution_" + component + "_relative_error", operations=("mean", "max"))
-                error_analysis_table.add_column("relative_effectivity_" + component, group_name="solution_" + component + "_relative_error", operations=("min", "mean", "max"))
-            error_analysis_table.add_column("error_output", group_name="output_error", operations=("mean", "max"))
-            error_analysis_table.add_column("error_estimator_output", group_name="output_error", operations=("mean", "max"))
-            error_analysis_table.add_column("effectivity_output", group_name="output_error", operations=("min", "mean", "max"))
-            error_analysis_table.add_column("relative_error_output", group_name="output_relative_error", operations=("mean", "max"))
-            error_analysis_table.add_column("relative_error_estimator_output", group_name="output_relative_error", operations=("mean", "max"))
-            error_analysis_table.add_column("relative_effectivity_output", group_name="output_relative_error", operations=("min", "mean", "max"))
+                error_analysis_table.add_column(
+                    "error_" + component,
+                    group_name="solution_" + component + "_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "error_estimator_" + component,
+                    group_name="solution_" + component + "_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "effectivity_" + component,
+                    group_name="solution_" + component + "_error",
+                    operations=("min", "mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_error_" + component,
+                    group_name="solution_" + component + "_relative_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_error_estimator_" + component,
+                    group_name="solution_" + component + "_relative_error",
+                    operations=("mean", "max"))
+                error_analysis_table.add_column(
+                    "relative_effectivity_" + component,
+                    group_name="solution_" + component + "_relative_error",
+                    operations=("min", "mean", "max"))
+            error_analysis_table.add_column(
+                "error_output", group_name="output_error", operations=("mean", "max"))
+            error_analysis_table.add_column(
+                "error_estimator_output", group_name="output_error", operations=("mean", "max"))
+            error_analysis_table.add_column(
+                "effectivity_output", group_name="output_error", operations=("min", "mean", "max"))
+            error_analysis_table.add_column(
+                "relative_error_output", group_name="output_relative_error", operations=("mean", "max"))
+            error_analysis_table.add_column(
+                "relative_error_estimator_output", group_name="output_relative_error", operations=("mean", "max"))
+            error_analysis_table.add_column(
+                "relative_effectivity_output", group_name="output_relative_error", operations=("min", "mean", "max"))
 
             for (mu_index, mu) in enumerate(self.testing_set):
                 print(TextLine(str(mu_index), fill="#"))
@@ -259,11 +317,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     self.reduced_problem.solve(n_arg, **kwargs)
                     error = self.reduced_problem.compute_error(**kwargs)
                     if len(components) > 1:
-                        error[all_components_string] = sqrt(sum([error[component]**2 for component in components]))
+                        error[all_components_string] = sqrt(
+                            sum([error[component]**2 for component in components]))
                     error_estimator = self.reduced_problem.estimate_error()
                     relative_error = self.reduced_problem.compute_relative_error(**kwargs)
                     if len(components) > 1:
-                        relative_error[all_components_string] = sqrt(sum([relative_error[component]**2 for component in components]))
+                        relative_error[all_components_string] = sqrt(
+                            sum([relative_error[component]**2 for component in components]))
                     relative_error_estimator = self.reduced_problem.estimate_relative_error()
 
                     self.reduced_problem.compute_output()
@@ -274,29 +334,59 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
 
                     if len(components) > 1:
                         for component in components:
-                            error_analysis_table["error_" + component, n_int, mu_index] = error[component]
-                            error_analysis_table["relative_error_" + component, n_int, mu_index] = relative_error[component]
-                        error_analysis_table["error_" + all_components_string, n_int, mu_index] = error[all_components_string]
-                        error_analysis_table["error_estimator_" + all_components_string, n_int, mu_index] = error_estimator
-                        error_analysis_table["effectivity_" + all_components_string, n_int, mu_index] = error_analysis_table["error_estimator_" + all_components_string, n_int, mu_index]/error_analysis_table["error_" + all_components_string, n_int, mu_index]
-                        error_analysis_table["relative_error_" + all_components_string, n_int, mu_index] = relative_error[all_components_string]
-                        error_analysis_table["relative_error_estimator_" + all_components_string, n_int, mu_index] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + all_components_string, n_int, mu_index] = error_analysis_table["relative_error_estimator_" + all_components_string, n_int, mu_index]/error_analysis_table["relative_error_" + all_components_string, n_int, mu_index]
+                            error_analysis_table[
+                                "error_" + component, n_int, mu_index] = error[component]
+                            error_analysis_table[
+                                "relative_error_" + component, n_int, mu_index] = relative_error[component]
+                        error_analysis_table[
+                            "error_" + all_components_string, n_int, mu_index] = error[all_components_string]
+                        error_analysis_table[
+                            "error_estimator_" + all_components_string, n_int, mu_index] = error_estimator
+                        error_analysis_table[
+                            "effectivity_" + all_components_string, n_int, mu_index] = error_analysis_table[
+                                "error_estimator_" + all_components_string, n_int, mu_index] / error_analysis_table[
+                                    "error_" + all_components_string, n_int, mu_index]
+                        error_analysis_table[
+                            "relative_error_" + all_components_string, n_int, mu_index] = relative_error[
+                                all_components_string]
+                        error_analysis_table[
+                            "relative_error_estimator_" + all_components_string, n_int,
+                            mu_index] = relative_error_estimator
+                        error_analysis_table[
+                            "relative_effectivity_" + all_components_string, n_int,
+                            mu_index] = error_analysis_table[
+                                "relative_error_estimator_" + all_components_string, n_int,
+                                mu_index] / error_analysis_table[
+                                    "relative_error_" + all_components_string, n_int, mu_index]
                     else:
                         component = components[0]
                         error_analysis_table["error_" + component, n_int, mu_index] = error
                         error_analysis_table["error_estimator_" + component, n_int, mu_index] = error_estimator
-                        error_analysis_table["effectivity_" + component, n_int, mu_index] = error_analysis_table["error_estimator_" + component, n_int, mu_index]/error_analysis_table["error_" + component, n_int, mu_index]
+                        error_analysis_table[
+                            "effectivity_" + component, n_int, mu_index] = error_analysis_table[
+                                "error_estimator_" + component, n_int, mu_index] / error_analysis_table[
+                                    "error_" + component, n_int, mu_index]
                         error_analysis_table["relative_error_" + component, n_int, mu_index] = relative_error
-                        error_analysis_table["relative_error_estimator_" + component, n_int, mu_index] = relative_error_estimator
-                        error_analysis_table["relative_effectivity_" + component, n_int, mu_index] = error_analysis_table["relative_error_estimator_" + component, n_int, mu_index]/error_analysis_table["relative_error_" + component, n_int, mu_index]
+                        error_analysis_table[
+                            "relative_error_estimator_" + component, n_int, mu_index] = relative_error_estimator
+                        error_analysis_table[
+                            "relative_effectivity_" + component, n_int, mu_index] = error_analysis_table[
+                                "relative_error_estimator_" + component, n_int, mu_index] / error_analysis_table[
+                                    "relative_error_" + component, n_int, mu_index]
 
                     error_analysis_table["error_output", n_int, mu_index] = error_output
                     error_analysis_table["error_estimator_output", n_int, mu_index] = error_output_estimator
-                    error_analysis_table["effectivity_output", n_int, mu_index] = error_analysis_table["error_estimator_output", n_int, mu_index]/error_analysis_table["error_output", n_int, mu_index]
+                    error_analysis_table[
+                        "effectivity_output", n_int, mu_index] = error_analysis_table[
+                            "error_estimator_output", n_int, mu_index] / error_analysis_table[
+                                "error_output", n_int, mu_index]
                     error_analysis_table["relative_error_output", n_int, mu_index] = relative_error_output
-                    error_analysis_table["relative_error_estimator_output", n_int, mu_index] = relative_error_output_estimator
-                    error_analysis_table["relative_effectivity_output", n_int, mu_index] = error_analysis_table["relative_error_estimator_output", n_int, mu_index]/error_analysis_table["relative_error_output", n_int, mu_index]
+                    error_analysis_table[
+                        "relative_error_estimator_output", n_int, mu_index] = relative_error_output_estimator
+                    error_analysis_table[
+                        "relative_effectivity_output", n_int, mu_index] = error_analysis_table[
+                            "relative_error_estimator_output", n_int, mu_index] / error_analysis_table[
+                                "relative_error_output", n_int, mu_index]
 
             # Print
             print("")
@@ -307,11 +397,13 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
 
             # Export error analysis table
-            error_analysis_table.save(self.folder["error_analysis"], "error_analysis" if filename is None else filename)
+            error_analysis_table.save(
+                self.folder["error_analysis"], "error_analysis" if filename is None else filename)
 
         def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
             """
-            It computes the speedup of the reduced order approximation with respect to the full order one over the testing set.
+            It computes the speedup of the reduced order approximation with respect to the full order one
+            over the testing set.
 
             :param N_generator: generator of dimension of the reduced problem.
             """
@@ -354,12 +446,30 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
 
             speedup_analysis_table = SpeedupAnalysisTable(self.testing_set)
             speedup_analysis_table.set_Nmax(N_generator_max())
-            speedup_analysis_table.add_column("speedup_solve", group_name="speedup_solve", operations=("min", "mean", "max"))
-            speedup_analysis_table.add_column("speedup_solve_and_estimate_error", group_name="speedup_solve_and_estimate_error", operations=("min", "mean", "max"))
-            speedup_analysis_table.add_column("speedup_solve_and_estimate_relative_error", group_name="speedup_solve_and_estimate_relative_error", operations=("min", "mean", "max"))
-            speedup_analysis_table.add_column("speedup_output", group_name="speedup_output", operations=("min", "mean", "max"))
-            speedup_analysis_table.add_column("speedup_output_and_estimate_error_output", group_name="speedup_output_and_estimate_error_output", operations=("min", "mean", "max"))
-            speedup_analysis_table.add_column("speedup_output_and_estimate_relative_error_output", group_name="speedup_output_and_estimate_relative_error_output", operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_solve",
+                group_name="speedup_solve",
+                operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_solve_and_estimate_error",
+                group_name="speedup_solve_and_estimate_error",
+                operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_solve_and_estimate_relative_error",
+                group_name="speedup_solve_and_estimate_relative_error",
+                operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_output",
+                group_name="speedup_output",
+                operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_output_and_estimate_error_output",
+                group_name="speedup_output_and_estimate_error_output",
+                operations=("min", "mean", "max"))
+            speedup_analysis_table.add_column(
+                "speedup_output_and_estimate_relative_error_output",
+                group_name="speedup_output_and_estimate_relative_error_output",
+                operations=("min", "mean", "max"))
 
             truth_timer = Timer("parallel")
             reduced_timer = Timer("serial")
@@ -419,31 +529,54 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     elapsed_relative_error_estimator_output = reduced_timer.stop()
 
                     if solution is not NotImplemented:
-                        speedup_analysis_table["speedup_solve", n_int, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                        speedup_analysis_table[
+                            "speedup_solve", n_int, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
                     else:
-                        speedup_analysis_table["speedup_solve", n_int, mu_index] = NotImplemented
+                        speedup_analysis_table[
+                            "speedup_solve", n_int, mu_index] = NotImplemented
                     if error_estimator is not NotImplemented:
-                        speedup_analysis_table["speedup_solve_and_estimate_error", n_int, mu_index] = (elapsed_truth_solve + elapsed_error)/(elapsed_reduced_solve + elapsed_error_estimator)
+                        speedup_analysis_table[
+                            "speedup_solve_and_estimate_error", n_int, mu_index] = (
+                                elapsed_truth_solve + elapsed_error) / (
+                                    elapsed_reduced_solve + elapsed_error_estimator)
                     else:
-                        speedup_analysis_table["speedup_solve_and_estimate_error", n_int, mu_index] = NotImplemented
+                        speedup_analysis_table[
+                            "speedup_solve_and_estimate_error", n_int, mu_index] = NotImplemented
                     if relative_error_estimator is not NotImplemented:
-                        speedup_analysis_table["speedup_solve_and_estimate_relative_error", n_int, mu_index] = (elapsed_truth_solve + elapsed_relative_error)/(elapsed_reduced_solve + elapsed_relative_error_estimator)
+                        speedup_analysis_table[
+                            "speedup_solve_and_estimate_relative_error", n_int, mu_index] = (
+                                elapsed_truth_solve + elapsed_relative_error) / (
+                                    elapsed_reduced_solve + elapsed_relative_error_estimator)
                     else:
-                        speedup_analysis_table["speedup_solve_and_estimate_relative_error", n_int, mu_index] = NotImplemented
+                        speedup_analysis_table[
+                            "speedup_solve_and_estimate_relative_error", n_int, mu_index] = NotImplemented
                     if output is not NotImplemented:
-                        speedup_analysis_table["speedup_output", n_int, mu_index] = (elapsed_truth_solve + elapsed_truth_output)/(elapsed_reduced_solve + elapsed_reduced_output)
+                        speedup_analysis_table[
+                            "speedup_output", n_int, mu_index] = (
+                                elapsed_truth_solve + elapsed_truth_output) / (
+                                    elapsed_reduced_solve + elapsed_reduced_output)
                     else:
-                        speedup_analysis_table["speedup_output", n_int, mu_index] = NotImplemented
+                        speedup_analysis_table[
+                            "speedup_output", n_int, mu_index] = NotImplemented
                     if error_estimator_output is not NotImplemented:
                         assert output is not NotImplemented
-                        speedup_analysis_table["speedup_output_and_estimate_error_output", n_int, mu_index] = (elapsed_truth_solve + elapsed_truth_output + elapsed_error_output)/(elapsed_reduced_solve + elapsed_reduced_output + elapsed_error_estimator_output)
+                        speedup_analysis_table[
+                            "speedup_output_and_estimate_error_output", n_int, mu_index] = (
+                                elapsed_truth_solve + elapsed_truth_output + elapsed_error_output) / (
+                                    elapsed_reduced_solve + elapsed_reduced_output + elapsed_error_estimator_output)
                     else:
-                        speedup_analysis_table["speedup_output_and_estimate_error_output", n_int, mu_index] = NotImplemented
+                        speedup_analysis_table[
+                            "speedup_output_and_estimate_error_output", n_int, mu_index] = NotImplemented
                     if relative_error_estimator_output is not NotImplemented:
                         assert output is not NotImplemented
-                        speedup_analysis_table["speedup_output_and_estimate_relative_error_output", n_int, mu_index] = (elapsed_truth_solve + elapsed_truth_output + elapsed_relative_error_output)/(elapsed_reduced_solve + elapsed_reduced_output + elapsed_relative_error_estimator_output)
+                        speedup_analysis_table[
+                            "speedup_output_and_estimate_relative_error_output", n_int, mu_index] = (
+                                elapsed_truth_solve + elapsed_truth_output + elapsed_relative_error_output) / (
+                                    elapsed_reduced_solve + elapsed_reduced_output
+                                    + elapsed_relative_error_estimator_output)
                     else:
-                        speedup_analysis_table["speedup_output_and_estimate_relative_error_output", n_int, mu_index] = NotImplemented
+                        speedup_analysis_table[
+                            "speedup_output_and_estimate_relative_error_output", n_int, mu_index] = NotImplemented
 
             # Print
             print("")
@@ -454,7 +587,8 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             print("")
 
             # Export speedup analysis table
-            speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
+            speedup_analysis_table.save(
+                self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
 
     # return value (a class) for the decorator
     return RBReduction_Class

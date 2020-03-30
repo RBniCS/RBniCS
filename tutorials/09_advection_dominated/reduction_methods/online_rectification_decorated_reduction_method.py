@@ -18,13 +18,15 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
             # Change default online solve arguments during offline stage to not use rectification
             # (which will be prepared in a postprocessing stage)
             self.reduced_problem._online_solve_default_kwargs["online_rectification"] = False
-            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(
+                **self.reduced_problem._online_solve_default_kwargs)
 
             # Call standard offline phase
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
 
             # Start rectification postprocessing
-            print(TextBox(self.truth_problem.name() + " " + self.label + " offline rectification postprocessing phase begins", fill="="))
+            print(TextBox(self.truth_problem.name() + " " + self.label
+                          + " offline rectification postprocessing phase begins", fill="="))
             print("")
 
             # Compute projection of truth and reduced snapshots
@@ -42,12 +44,14 @@ def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_
                         error = self.reduced_problem.compute_error(**online_solve_kwargs)
                         print("\t\tmu = " + str(mu_i) + ", absolute error = " + str(error))
 
-            print(TextBox(self.truth_problem.name() + " " + self.label + " offline rectification postprocessing phase ends", fill="="))
+            print(TextBox(self.truth_problem.name() + " " + self.label
+                          + " offline rectification postprocessing phase ends", fill="="))
             print("")
 
             # Restore default online solve arguments for online stage
             self.reduced_problem._online_solve_default_kwargs["online_rectification"] = True
-            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(
+                **self.reduced_problem._online_solve_default_kwargs)
 
         def update_basis_matrix(self, snapshot):
             # Store

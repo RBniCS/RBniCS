@@ -40,7 +40,9 @@ class AmbiguousSignatureError(NotImplementedError):
             error_message += "\t" + str_signature(available_signature) + "\n"
         error_message += "Ambiguous signatures are:\n"
         for ambiguous_signature_pair in ambiguous_signatures:
-            error_message += "\t" + str_signature(ambiguous_signature_pair[0]) + " and " + str_signature(ambiguous_signature_pair[1]) + "\n"
+            error_message += (
+                "\t" + str_signature(ambiguous_signature_pair[0]) + " and "
+                + str_signature(ambiguous_signature_pair[1]) + "\n")
         NotImplementedError.__init__(self, error_message)
 
 def ambiguity_error(dispatcher, ambiguities):
@@ -66,7 +68,8 @@ class InvalidSignatureError(TypeError):
 
 # == Customize Dispatcher == #
 class Dispatcher(OriginalDispatcher):
-    __slots__ = "__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature" # extended with new private members
+    # extend slots with new private members
+    __slots__ = "__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature"
 
     def __init__(self, name, doc=None):
         OriginalDispatcher.__init__(self, name, doc)
@@ -94,8 +97,10 @@ class Dispatcher(OriginalDispatcher):
                 assert len_types == len(provided_signature)
                 previously_provided_signature = self.signature_to_provided_signature[types]
                 assert len_types == len(previously_provided_signature)
-                old_one_matches = sum(supercedes((previously_provided_signature[i], ), (types[i], )) for i in range(len_types))
-                new_one_matches = sum(supercedes((provided_signature[i], ), (types[i], )) for i in range(len_types))
+                old_one_matches = sum(
+                    supercedes((previously_provided_signature[i], ), (types[i], )) for i in range(len_types))
+                new_one_matches = sum(
+                    supercedes((provided_signature[i], ), (types[i], )) for i in range(len_types))
                 if old_one_matches > new_one_matches:
                     pass
                 elif new_one_matches > old_one_matches:
@@ -120,7 +125,8 @@ class Dispatcher(OriginalDispatcher):
                         return replaces(*args, **kwargs)
                 self.funcs[types] = conditional_func
                 self.signature_to_provided_signature[types] = provided_signature
-    add.__doc__ = OriginalDispatcher.add.__doc__ + \
+    add.__doc__ = (
+        OriginalDispatcher.add.__doc__ +
         """
 
         This is a customization of the Dispatcher.add method provided by the multipledispatch
@@ -128,7 +134,7 @@ class Dispatcher(OriginalDispatcher):
             * replacement of existing signatures is not done silently as in the original library.
               It is only possible to replace a previously added function/method with the same signature
               by means of replaces and replaces_if input arguments.
-        """
+        """)
 
     def reorder(self, on_ambiguity=ambiguity_error):
         return OriginalDispatcher.reorder(self, on_ambiguity)
@@ -152,8 +158,7 @@ class Dispatcher(OriginalDispatcher):
                 raise UnavailableSignatureError(self.name, self.funcs.keys(), types)
             self._cache[types] = func
         return func
-    _get_func.__doc__ = \
-        """
+    _get_func.__doc__ = """
         This is a customization required by Dispatcher.__call__ method so that:
             * get_types() function is used to get input types. This handles the case of
               array_of, dict_of, iterable_of, list_of, set_of, tuple_of
@@ -166,8 +171,7 @@ class Dispatcher(OriginalDispatcher):
             if supercedes(types, signature):
                 result = self.funcs[signature]
                 yield result
-    dispatch_iter.__doc__ = \
-        """
+    dispatch_iter.__doc__ = """
         This is a customization of the Dispatcher.dispatch_iter method provided by the multipledispatch
         package so that the custom implementation of supercedes() is used
         """
@@ -222,20 +226,24 @@ class MethodDispatcher_Wrapper(object):
         return _
 
     def __get__(self, instance, owner):
-        # Create a new dispatcher based on the current class. This is required to not share dispatcher among inherited classes
+        # Create a new dispatcher based on the current class. This is required to not share dispatcher
+        # among inherited classes
         assert owner is not None
         try:
             dispatcher = self.dispatchers[owner]
         except KeyError:
             dispatcher = MethodDispatcher(self, owner, self.name)
             self.dispatchers[owner] = dispatcher
-        # Assign self.obj (it may be None if method is called as Class.method(instance, ...) rather than instance.method(...))
+        # Assign self.obj (it may be None if method is called as Class.method(instance, ...) rather than
+        # instance.method(...))
         dispatcher.obj = instance
         # Return
         return dispatcher
 
 class MethodDispatcher(Dispatcher):
-    __slots__ = "__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature", "origin", "obj" # extended with new private members
+    # extend slots with new private members
+    __slots__ = ("__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature",
+                 "origin", "obj")
 
     def __init__(self, origin, cls, name, doc=None):
         Dispatcher.__init__(self, name, doc)
@@ -258,19 +266,22 @@ class MethodDispatcher(Dispatcher):
                             if parent_standard_key_i == standard_key_j:
                                 add_to_standard_funcs = False
                         for lambda_key_j in lambda_funcs.keys():
-                            signature_lambda_key_j = tuple([typ(cls) if islambda(typ) else typ for typ in lambda_key_j])
+                            signature_lambda_key_j = tuple([
+                                typ(cls) if islambda(typ) else typ for typ in lambda_key_j])
                             if parent_standard_key_i[0] == signature_lambda_key_j:
                                 add_to_standard_funcs = False
                         if add_to_standard_funcs:
                             standard_funcs[parent_standard_key_i] = parent_standard_func_i
                     for (parent_lambda_key_i, parent_lambda_func_i) in parent_func.lambda_funcs.items():
                         add_to_lambda_funcs = True
-                        signature_parent_lambda_key_i = tuple([typ(cls) if islambda(typ) else typ for typ in parent_lambda_key_i])
+                        signature_parent_lambda_key_i = tuple([
+                            typ(cls) if islambda(typ) else typ for typ in parent_lambda_key_i])
                         for standard_key_j in standard_funcs.keys():
                             if signature_parent_lambda_key_i == standard_key_j[0]:
                                 add_to_lambda_funcs = False
                         for lambda_key_j in lambda_funcs.keys():
-                            signature_lambda_key_j = tuple([typ(cls) if islambda(typ) else typ for typ in lambda_key_j])
+                            signature_lambda_key_j = tuple([
+                                typ(cls) if islambda(typ) else typ for typ in lambda_key_j])
                             if signature_parent_lambda_key_i == signature_lambda_key_j:
                                 add_to_lambda_funcs = False
                         if add_to_lambda_funcs:
@@ -289,7 +300,8 @@ class MethodDispatcher(Dispatcher):
                     if add_to_standard_funcs:
                         standard_funcs[parent_standard_key] = parent_func
                 else:
-                    pass # This happens with slot wrapper, method wrapper and method descriptor types for builtin objects
+                    # This happens with slot wrapper, method wrapper and method descriptor types for builtin objects
+                    pass
         # Add all standard functions
         for (key, func) in standard_funcs.items():
             self._add(key[0], key[1], func)
@@ -337,14 +349,22 @@ def dispatch(*types, **kwargs):
         if len(types) == 0:
             assert is_method or not is_class # is method or function
             signature = inspect.signature(func_or_class)
-            annotations = tuple(param_value.annotation for (param_name, param_value) in signature.parameters.items() if param_value.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
+            annotations = tuple(param_value.annotation
+                                for (param_name, param_value) in signature.parameters.items()
+                                if param_value.kind in (
+                                    inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
             if is_method:
                 annotations = annotations[1:] # throw self away
             assert all(ann is not inspect.Parameter.empty for ann in annotations)
             types = annotations
         if is_method or not is_class: # is method or function
             signature = inspect.signature(func_or_class)
-            assert len(types) == len(tuple(param_name for (param_name, param_value) in signature.parameters.items() if param_value.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))) - (1 if is_method else 0) # throw self away
+            assert len(types) == (
+                len(tuple(param_name for (param_name, param_value) in signature.parameters.items()
+                          if param_value.kind in (
+                            inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)))
+                - (1 if is_method else 0) # throw self away
+            )
 
         if is_method:
             assert module_kwarg is None
@@ -363,9 +383,11 @@ def dispatch(*types, **kwargs):
                 module = module_kwarg
             else:
                 if module_kwarg is None:
-                    pass # we would like to store the dispatched function in its module, rather than the original one
+                    # we would like to store the dispatched function in its module, rather than the original one
+                    pass
                 else:
-                    module = module_kwarg # we would like to store the original function in its module and the dispatched in module_kwarg
+                    # we would like to store the original function in its module and the dispatched in module_kwarg
+                    module = module_kwarg
             if not hasattr(module, name):
                 setattr(module, name, Dispatcher(name))
             dispatcher = getattr(module, name)
@@ -376,7 +398,8 @@ def dispatch(*types, **kwargs):
             else:
                 return func_or_class
     return _
-dispatch.__doc__ = original_dispatch.__doc__ + \
+dispatch.__doc__ = (
+    original_dispatch.__doc__ +
     """
 
     This is a customized version of the @dispatch decorator provided by the
@@ -425,7 +448,7 @@ dispatch.__doc__ = original_dispatch.__doc__ + \
                      for symmetry with the class case
                   #> we would like to provide as module kwarg the rbnics.backends
                      module
-    """
+    """)
 
 # == Define an @overload to be used for method dispatch, in order to have a more expressive name == #
 # == that hides the details of the implementation                                                == #
@@ -486,7 +509,8 @@ def _remove_repeated_types(types):
     if isinstance(types, tuple):
         all_types = set()
         for t in types:
-            assert inspect.isclass(t) or isinstance(t, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of))
+            assert (inspect.isclass(t)
+                    or isinstance(t, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of)))
             all_types.add(t)
         if len(all_types) == 0 or len(all_types) > 1:
             return (tuple(all_types), frozenset(all_types))
@@ -538,30 +562,27 @@ def validate_types(inputs, allow_lambda):
     for input_ in inputs:
         type_input_ = type(input_)
         if (
-            type_input_ in (list, tuple) # more strict than isinstance(input_, (list, tuple)): custom types inherited from array or list or tuple should be preserved
-                or
-            (type_input_ in (array, ) and input_.dtype == object)
+            type_input_ in (list, tuple)
+            # more strict than isinstance(input_, (list, tuple)): custom types inherited from array or list or tuple
+            # should be preserved
+            or (type_input_ in (array, ) and input_.dtype == object)
         ):
             validate_types(input_, allow_lambda)
         else:
-            assert not (input_ is array and input_.dtype == object), "Please use array_of defined in this module to specify the type of each element"
-            assert input_ is not dict, "Please use dict_of defined in this module to specify the type of keys and values"
-            assert input_ is not list, "Please use list_of defined in this module to specify the type of each element"
-            assert input_ is not set, "Please use set_of defined in this module to specify the type of each element"
-            assert input_ is not tuple, "Please use tuple_of defined in this module to specify the type of each element"
-            assert (
-                inspect.isclass(input_)
-                    or
-                isinstance(input_, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of))
-                    or
-                input_ is None
-                    or
-                (
-                    islambda(input_)
-                        and
-                    allow_lambda
-                )
-            )
+            assert not (input_ is array and input_.dtype == object), (
+                "Please use array_of defined in this module to specify the type of each element")
+            assert input_ is not dict, (
+                "Please use dict_of defined in this module to specify the type of keys and values")
+            assert input_ is not list, (
+                "Please use list_of defined in this module to specify the type of each element")
+            assert input_ is not set, (
+                "Please use set_of defined in this module to specify the type of each element")
+            assert input_ is not tuple, (
+                "Please use tuple_of defined in this module to specify the type of each element")
+            assert (inspect.isclass(input_)
+                    or isinstance(input_, (_array_of, _dict_of, _iterable_of, _list_of, _set_of, _tuple_of))
+                    or input_ is None
+                    or (islambda(input_) and allow_lambda))
 
 # == Get types for provided inputs == #
 def get_types(inputs):
@@ -575,9 +596,10 @@ def get_types(inputs):
 def get_type(input_):
     type_input_ = type(input_)
     if (
-        type_input_ in (list, set, tuple) # more strict than isinstance(input_, (list, set, tuple)): custom types inherited from array or list or tuple should be preserved
-            or
-        (type_input_ in (array, ) and input_.dtype == object)
+        type_input_ in (list, set, tuple)
+        # more strict than isinstance(input_, (list, set, tuple)): custom types inherited from array or list or tuple
+        # should be preserved
+        or (type_input_ in (array, ) and input_.dtype == object)
     ):
         subtypes = get_types(input_)
         subtypes = tuple(set(subtypes)) # remove repeated types
@@ -666,7 +688,8 @@ def supercedes(A, B):
                     return False
             elif isinstance(a, _dict_of):
                 if isinstance(b, _dict_of):
-                    if not supercedes((a.types_from, ), (b.types_from, )) or not supercedes((a.types_to, ), (b.types_to, )):
+                    if (not supercedes((a.types_from, ), (b.types_from, ))
+                            or not supercedes((a.types_to, ), (b.types_to, ))):
                         return False
                 elif b is object:
                     return True
@@ -717,9 +740,10 @@ def consistent(A, B):
             elif isinstance(a, _dict_of):
                 if isinstance(b, _dict_of):
                     if (
-                        (not supercedes((a.types_from, ), (b.types_from, )) or not supercedes((a.types_to, ), (b.types_to, )))
-                            and
-                        (not supercedes((b.types_from, ), (a.types_from, )) or not supercedes((b.types_to, ), (a.types_to, )))
+                        (not supercedes((a.types_from, ), (b.types_from, ))
+                         or not supercedes((a.types_to, ), (b.types_to, )))
+                        and (not supercedes((b.types_from, ), (a.types_from, ))
+                             or not supercedes((b.types_to, ), (a.types_to, )))
                     ):
                         return False
                 else:
@@ -729,11 +753,8 @@ def consistent(A, B):
                     return False
                 elif a is None and b is None:
                     continue
-                elif (
-                    (a is None and b is not None)
-                        or
-                    (b is None and a is not None)
-                ):
+                elif ((a is None and b is not None)
+                      or (b is None and a is not None)):
                     return False
                 elif not issubclass(a, b) and not issubclass(b, a):
                     return False

@@ -47,7 +47,10 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
             # Provide a default value for Riesz terms and Riesz product terms
             self.riesz_terms = [term for term in self.terms]
-            self.error_estimation_terms = [(term1, term2) for term1 in self.terms for term2 in self.terms if self.terms_order[term1] >= self.terms_order[term2]]
+            self.error_estimation_terms = [
+                (term1, term2)
+                for term1 in self.terms
+                for term2 in self.terms if self.terms_order[term1] >= self.terms_order[term2]]
 
         def init(self, current_stage="online"):
             """
@@ -63,7 +66,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # Initialize inner product for Riesz solve
             if self._riesz_solve_inner_product is None: # init was not called already
                 self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
-            # Setup homogeneous Dirichlet BCs for Riesz solve, if any (no check if init was already called because this variable can actually be None)
+            # Setup homogeneous Dirichlet BCs for Riesz solve, if any (no check if init was already called
+            # because this variable can actually be None)
             self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
             # Initialize Riesz representation
             for term in self.riesz_terms:
@@ -89,13 +93,15 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # but setting to zero rows & columns associated to boundary conditions
             if self._error_estimation_inner_product is None: # init was not called already
                 if self._riesz_solve_homogeneous_dirichlet_bc is not None:
-                    self._error_estimation_inner_product = self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc
+                    self._error_estimation_inner_product = (
+                        self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc)
                 else:
                     self._error_estimation_inner_product = self._riesz_solve_inner_product
             # Initialize error estimation operators
             for term in self.error_estimation_terms:
                 if term not in self.error_estimation_operator: # init was not called already
-                    self.error_estimation_operator[term] = self.ErrorEstimationOperatorExpansionStorage(self.Q[term[0]], self.Q[term[1]])
+                    self.error_estimation_operator[term] = self.ErrorEstimationOperatorExpansionStorage(
+                        self.Q[term[0]], self.Q[term[1]])
             assert current_stage in ("online", "offline")
             if current_stage == "online":
                 for term in self.error_estimation_terms:
@@ -117,7 +123,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             """
             It returns a relative error bound for the current solution.
             """
-            raise NotImplementedError("The method estimate_relative_error() is problem-specific and needs to be overridden.")
+            raise NotImplementedError("The method estimate_relative_error() is problem-specific"
+                                      + " and needs to be overridden.")
 
         def estimate_error_output(self):
             """
@@ -157,7 +164,8 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
             # Update the (term1, term2) Riesz representors product with the new basis function
             for term in self.error_estimation_terms:
-                if (self.terms_order[term[0]], self.terms_order[term[1]]) != (1, 1): # this part does not depend on N, and was computed in the previous loop
+                # the (1, 1) part does not depend on N, and was computed in the previous loop
+                if (self.terms_order[term[0]], self.terms_order[term[1]]) != (1, 1):
                     self.assemble_error_estimation_operators(term, current_stage)
 
         def compute_riesz_representation(self, term, current_stage="offline"):
@@ -179,15 +187,15 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 for q in range(self.Q[term]):
                     if len(self.components) > 1:
                         for component in self.components:
-                            for n in range(len(self.riesz[term][q][component]), self.N[component] + self.N_bc[component]):
+                            for n in range(len(self.riesz[term][q][component]),
+                                           self.N[component] + self.N_bc[component]):
                                 self.riesz[term][q][component].enrich(
-                                    solver.solve(-1., self.truth_problem.operator[term][q], self.basis_functions[component][n])
-                                )
+                                    solver.solve(-1., self.truth_problem.operator[term][q],
+                                                 self.basis_functions[component][n]))
                     else:
                         for n in range(len(self.riesz[term][q]), self.N + self.N_bc):
                             self.riesz[term][q].enrich(
-                                solver.solve(-1., self.truth_problem.operator[term][q], self.basis_functions[n])
-                            )
+                                solver.solve(-1., self.truth_problem.operator[term][q], self.basis_functions[n]))
                 self.riesz[term].save(self.folder["error_estimation"], "riesz_" + term)
             else:
                 raise ValueError("Invalid value for order of term " + term)
@@ -199,14 +207,15 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             @overload
             def solve(self, rhs: object):
                 problem = self.problem
-                solver = LinearSolver(problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs, problem._riesz_solve_homogeneous_dirichlet_bc)
+                solver = LinearSolver(problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs,
+                                      problem._riesz_solve_homogeneous_dirichlet_bc)
                 solver.set_parameters(problem._linear_solver_parameters)
                 solver.solve()
                 return problem._riesz_solve_storage
 
             @overload
             def solve(self, coef: Number, matrix: object, basis_function: object):
-                return self.solve(coef*matrix*basis_function)
+                return self.solve(coef * matrix * basis_function)
 
         def assemble_error_estimation_operators(self, term, current_stage="online"):
             """
@@ -216,30 +225,40 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             assert isinstance(term, tuple)
             assert len(term) == 2
             if current_stage == "online": # load from file
-                self.error_estimation_operator[term].load(self.folder["error_estimation"], "error_estimation_operator_" + term[0] + "_" + term[1])
+                self.error_estimation_operator[term].load(
+                    self.folder["error_estimation"], "error_estimation_operator_" + term[0] + "_" + term[1])
                 return self.error_estimation_operator[term]
             elif current_stage == "offline":
                 assert self.terms_order[term[0]] in (1, 2)
                 assert self.terms_order[term[1]] in (1, 2)
-                assert self.terms_order[term[0]] >= self.terms_order[term[1]], "Please swap the order of " + str(term) + " in self.error_estimation_terms" # otherwise for (term1, term2) of orders (1, 2) we would have a row vector, rather than a column one
+                assert self.terms_order[term[0]] >= self.terms_order[term[1]], (
+                    "Please swap the order of " + str(term) + " in self.error_estimation_terms")
+                # otherwise for (term1, term2) of orders (1, 2) we would have a row vector, rather than a column one
                 if self.terms_order[term[0]] == 2 and self.terms_order[term[1]] == 2:
                     for q0 in range(self.Q[term[0]]):
                         for q1 in range(self.Q[term[1]]):
-                            self.error_estimation_operator[term][q0, q1] = transpose(self.riesz[term[0]][q0])*self._error_estimation_inner_product*self.riesz[term[1]][q1]
+                            self.error_estimation_operator[term][q0, q1] = (
+                                transpose(self.riesz[term[0]][q0]) * self._error_estimation_inner_product
+                                * self.riesz[term[1]][q1])
                 elif self.terms_order[term[0]] == 2 and self.terms_order[term[1]] == 1:
                     for q0 in range(self.Q[term[0]]):
                         for q1 in range(self.Q[term[1]]):
                             assert len(self.riesz[term[1]][q1]) == 1
-                            self.error_estimation_operator[term][q0, q1] = transpose(self.riesz[term[0]][q0])*self._error_estimation_inner_product*self.riesz[term[1]][q1][0]
+                            self.error_estimation_operator[term][q0, q1] = (
+                                transpose(self.riesz[term[0]][q0]) * self._error_estimation_inner_product
+                                * self.riesz[term[1]][q1][0])
                 elif self.terms_order[term[0]] == 1 and self.terms_order[term[1]] == 1:
                     for q0 in range(self.Q[term[0]]):
                         assert len(self.riesz[term[0]][q0]) == 1
                         for q1 in range(self.Q[term[1]]):
                             assert len(self.riesz[term[1]][q1]) == 1
-                            self.error_estimation_operator[term][q0, q1] = transpose(self.riesz[term[0]][q0][0])*self._error_estimation_inner_product*self.riesz[term[1]][q1][0]
+                            self.error_estimation_operator[term][q0, q1] = (
+                                transpose(self.riesz[term[0]][q0][0]) * self._error_estimation_inner_product
+                                * self.riesz[term[1]][q1][0])
                 else:
                     raise ValueError("Invalid term order for assemble_error_estimation_operators().")
-                self.error_estimation_operator[term].save(self.folder["error_estimation"], "error_estimation_operator_" + term[0] + "_" + term[1])
+                self.error_estimation_operator[term].save(
+                    self.folder["error_estimation"], "error_estimation_operator_" + term[0] + "_" + term[1])
                 return self.error_estimation_operator[term]
             else:
                 raise ValueError("Invalid stage in assemble_error_estimation_operators().")

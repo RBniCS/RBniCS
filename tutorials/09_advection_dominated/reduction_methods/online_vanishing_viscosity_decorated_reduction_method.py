@@ -22,13 +22,15 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             # instead of vanishing viscosity one (which will be prepared in a postprocessing stage)
             self.reduced_problem._online_solve_default_kwargs["online_stabilization"] = True
             self.reduced_problem._online_solve_default_kwargs["online_vanishing_viscosity"] = False
-            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(
+                **self.reduced_problem._online_solve_default_kwargs)
 
             # Call standard offline phase
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
 
             # Start vanishing viscosity postprocessing
-            print(TextBox(self.truth_problem.name() + " " + self.label + " offline vanishing viscosity postprocessing phase begins", fill="="))
+            print(TextBox(self.truth_problem.name() + " " + self.label
+                          + " offline vanishing viscosity postprocessing phase begins", fill="="))
             print("")
 
             # Prepare storage for copy of lifting basis functions matrix
@@ -62,9 +64,12 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
                 truth_operator_m = self.truth_problem.operator["m"]
                 assert len(truth_operator_k) == 1
                 assert len(truth_operator_m) == 1
-                reduced_operator_k = transpose(unrotated_basis_functions[:n])*truth_operator_k[0]*unrotated_basis_functions[:n]
-                reduced_operator_m = transpose(unrotated_basis_functions[:n])*truth_operator_m[0]*unrotated_basis_functions[:n]
-                rotation_eigensolver = OnlineEigenSolver(unrotated_basis_functions[:n], reduced_operator_k, reduced_operator_m)
+                reduced_operator_k = (
+                    transpose(unrotated_basis_functions[:n]) * truth_operator_k[0] * unrotated_basis_functions[:n])
+                reduced_operator_m = (
+                    transpose(unrotated_basis_functions[:n]) * truth_operator_m[0] * unrotated_basis_functions[:n])
+                rotation_eigensolver = OnlineEigenSolver(
+                    unrotated_basis_functions[:n], reduced_operator_k, reduced_operator_m)
                 parameters = {
                     "problem_type": "hermitian",
                     "spectrum": "smallest real"
@@ -97,13 +102,15 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             self.reduced_problem._solution_cache.clear()
             self.reduced_problem._output_cache.clear()
 
-            print(TextBox(self.truth_problem.name() + " " + self.label + " offline vanishing viscosity postprocessing phase ends", fill="="))
+            print(TextBox(self.truth_problem.name() + " " + self.label
+                          + " offline vanishing viscosity postprocessing phase ends", fill="="))
             print("")
 
             # Restore default online solve arguments for online stage
             self.reduced_problem._online_solve_default_kwargs["online_stabilization"] = False
             self.reduced_problem._online_solve_default_kwargs["online_vanishing_viscosity"] = True
-            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(**self.reduced_problem._online_solve_default_kwargs)
+            self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(
+                **self.reduced_problem._online_solve_default_kwargs)
 
         def update_basis_matrix(self, snapshot): # same as Parent, except a different filename is used when saving
             assert len(self.truth_problem.components) == 1

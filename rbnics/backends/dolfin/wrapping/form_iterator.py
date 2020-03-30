@@ -12,7 +12,8 @@ def form_iterator(form, iterator_type="nodes"):
     if iterator_type == "nodes":
         for integral in form.integrals():
             for expression in iter_expressions(integral):
-                for node in pre_traversal(expression): # pre_traversal algorithms guarantees that subsolutions are processed before solutions
+                # Note: pre_traversal algorithms guarantees that subsolutions are processed before solutions
+                for node in pre_traversal(expression):
                     yield node
     elif iterator_type == "integrals":
         for integral in form.integrals():

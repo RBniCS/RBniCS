@@ -27,7 +27,9 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             # at the end of the offline stage, or carry out only one compression at the
             # end of the offline stage
             self.nested_POD = False # by default only one compression
-            self.POD_time_trajectory = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
+            # POD_time_trajectory: ProperOrthogonalDecomposition (for problems with one component)
+            # or dict of ProperOrthogonalDecomposition (for problem with several components)
+            self.POD_time_trajectory = None
             # Nested POD size
             self.N1 = 0
             # POD-Greedy tolerances. Since we use a POD for each component, it makes sense to possibly have
@@ -58,7 +60,8 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     for component in self.truth_problem.components:
-                        assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary"
+                        assert component in tol, (
+                            "You need to specify the tolerance of all components in tolerance dictionary")
                 else:
                     tol_number = tol
                     tol = dict()
@@ -84,13 +87,17 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 if len(self.truth_problem.components) > 1:
                     self.POD_time_trajectory = dict()
                     for component in self.truth_problem.components:
-                        assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                        assert len(self.truth_problem.inner_product[component]) == 1
+                        # the affine expansion storage contains only the inner product matrix
                         inner_product = self.truth_problem.inner_product[component][0]
-                        self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+                        self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(
+                            self.truth_problem.V, inner_product)
                 else:
-                    assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product) == 1
+                    # the affine expansion storage contains only the inner product matrix
                     inner_product = self.truth_problem.inner_product[0]
-                    self.POD_time_trajectory = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+                    self.POD_time_trajectory = ProperOrthogonalDecomposition(
+                        self.truth_problem.V, inner_product)
 
             # Return
             return output
@@ -100,8 +107,10 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             if self.nested_POD:
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:
-                        (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)
-                        self.POD[component].store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
+                        (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(
+                            snapshot_over_time, component=component)
+                        self.POD[component].store_snapshot(
+                            basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
                 else:
                     (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time)
                     self.POD.store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1])
@@ -124,8 +133,10 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
                 POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
             else:
-                POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
-                POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
+                POD_time_trajectory.save_eigenvalues_file(
+                    self.folder["post_processing"], "eigs_" + component)
+                POD_time_trajectory.save_retained_energy_file(
+                    self.folder["post_processing"], "retained_energy_" + component)
             return (eigs1, basis_functions1)
 
         # Compute the error of the reduced order approximation with respect to the full order one
@@ -144,7 +155,8 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                         return sqrt(time_quadrature.integrate())
                     return solution_preprocess_setitem__function
                 for column_prefix in ("error_", "relative_error_"):
-                    ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem(component))
+                    ErrorAnalysisTable.preprocess_setitem(
+                        column_prefix + component, solution_preprocess_setitem(component))
 
             def output_preprocess_setitem(list_over_time):
                 time_quadrature = TimeQuadrature((0., self.truth_problem.T), list_over_time)

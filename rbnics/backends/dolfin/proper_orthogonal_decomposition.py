@@ -16,14 +16,17 @@ from rbnics.backends.online import OnlineEigenSolver
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 
 def transpose(arg):
-    from rbnics.backends.dolfin.transpose import transpose as backend_transpose # cannot import at global scope due to cyclic dependence
+    # cannot import transpose at global scope due to cyclic dependence
+    from rbnics.backends.dolfin.transpose import transpose as backend_transpose
     return backend_transpose(arg)
 
 backend = ModuleWrapper(transpose)
 wrapping = ModuleWrapper(get_mpi_comm)
 online_backend = ModuleWrapper(OnlineEigenSolver=OnlineEigenSolver)
 online_wrapping = ModuleWrapper()
-ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(backend, wrapping, online_backend, online_wrapping, AbstractProperOrthogonalDecomposition, SnapshotsMatrix, FunctionsList)
+ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(
+    backend, wrapping, online_backend, online_wrapping, AbstractProperOrthogonalDecomposition,
+    SnapshotsMatrix, FunctionsList)
 
 @BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type()), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecomposition_Base):

@@ -7,7 +7,8 @@
 import os
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 from rbnics.scm.problems.scm_approximation import SCMApproximation
-from rbnics.scm.problems.decorated_problem_with_stability_factor_evaluation import DecoratedProblemWithStabilityFactorEvaluation
+from rbnics.scm.problems.decorated_problem_with_stability_factor_evaluation import (
+    DecoratedProblemWithStabilityFactorEvaluation)
 
 def SCMDecoratedProblem(
     **decorator_kwargs
@@ -40,7 +41,8 @@ def SCMDecoratedProblem(
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Additional terms required by stability factor computations
                 self.terms.extend(["stability_factor_left_hand_matrix", "stability_factor_right_hand_matrix"])
-                self.terms_order.update({"stability_factor_left_hand_matrix": 2, "stability_factor_right_hand_matrix": 2})
+                self.terms_order.update({"stability_factor_left_hand_matrix": 2,
+                                         "stability_factor_right_hand_matrix": 2})
                 # Storage for SCM reduced problems
                 self.SCM_approximation = SCMApproximation(self, os.path.join(self.name(), "scm"))
                 # Stability factor eigen problem

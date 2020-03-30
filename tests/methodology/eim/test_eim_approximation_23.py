@@ -17,9 +17,9 @@ from rbnics.problems.base import ParametrizedProblem
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_23(expression_type, basis_generation):
     """
-    This test is an extension of test 23, which splits the parameter independent part of the expression into an auxiliary
-    (non-parametrized) function. In contrast to tests 11-22, the auxiliary function is not the solution of a problem:
-    a corresponding auxiliary problem is created automatically.
+    This test is an extension of test 23, which splits the parameter independent part of the expression into
+    an auxiliary (non-parametrized) function. In contrast to tests 11-22, the auxiliary function is not the
+    solution of a problem: a corresponding auxiliary problem is created automatically.
     """
 
     class MockProblem(ParametrizedProblem):
@@ -36,24 +36,28 @@ def test_eim_approximation_23(expression_type, basis_generation):
             # Parametrized function to be interpolated
             mock_problem = MockProblem(V)
             f = project(Expression("(1-x[0])", element=V.ufl_element()), V)
-            g = ParametrizedExpression(mock_problem, "cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))", mu=(1., ), element=V.ufl_element())
+            g = ParametrizedExpression(mock_problem, "cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))", mu=(1., ),
+                                       element=V.ufl_element())
             #
             folder_prefix = os.path.join("test_eim_approximation_23_tempdir", expression_type, basis_generation)
             assert expression_type in ("Function", "Vector", "Matrix")
             if expression_type == "Function":
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedExpressionFactory(f*g), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedExpressionFactory(f*g), folder_prefix, basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(V)
                 form = f*g*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(V)
                 v = TestFunction(V)
                 form = f*g*u*v*dx
                 # Call Parent constructor
-                EIMApproximation.__init__(self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
+                EIMApproximation.__init__(
+                    self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             else: # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 

@@ -6,7 +6,8 @@
 
 from petsc4py import PETSc
 from ufl import Form
-from dolfin import __version__ as dolfin_version, as_backend_type, assemble, compile_cpp_code, DirichletBC, Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver
+from dolfin import (__version__ as dolfin_version, as_backend_type, assemble, compile_cpp_code, DirichletBC,
+                    Function, FunctionSpace, PETScMatrix, PETScVector, SLEPcEigenSolver)
 from rbnics.backends.dolfin.evaluate import evaluate
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
@@ -14,7 +15,10 @@ from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletB
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
-@BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type(), ParametrizedTensorFactory), (Form, Matrix.Type(), ParametrizedTensorFactory, None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
+@BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type(), ParametrizedTensorFactory),
+                              (Form, Matrix.Type(), ParametrizedTensorFactory, None),
+                              (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+                               dict_of(str, ProductOutputDirichletBC), None)))
 class EigenSolver(AbstractEigenSolver):
     def __init__(self, V, A, B=None, bcs=None):
         self.V = V
@@ -127,7 +131,8 @@ class EigenSolver(AbstractEigenSolver):
 
             void throw_error(PetscErrorCode ierr, std::string reason)
             {
-                throw std::runtime_error("Error in set_linear_solver: reason " + reason + ", error code " + std::to_string(ierr));
+                throw std::runtime_error("Error in set_linear_solver: reason " + reason
+                                         + ",error code " + std::to_string(ierr));
             }
 
             PYBIND11_MODULE(SIGNATURE, m)
@@ -180,12 +185,16 @@ class EigenSolver(AbstractEigenSolver):
                 #include <dolfin/la/PETScVector.h>
                 #include <dolfin/la/SLEPcEigenSolver.h>
 
-                void get_eigen_pair(std::shared_ptr<dolfin::SLEPcEigenSolver> eigen_solver, std::shared_ptr<dolfin::PETScVector> condensed_real_vector, std::shared_ptr<dolfin::PETScVector> condensed_imag_vector, std::size_t i)
+                void get_eigen_pair(std::shared_ptr<dolfin::SLEPcEigenSolver> eigen_solver,
+                                    std::shared_ptr<dolfin::PETScVector> condensed_real_vector,
+                                    std::shared_ptr<dolfin::PETScVector> condensed_imag_vector,
+                                    std::size_t i)
                 {
                     const PetscInt ii = static_cast<PetscInt>(i);
                     double real_value;
                     double imag_value;
-                    EPSGetEigenpair(eigen_solver->eps(), ii, &real_value, &imag_value, condensed_real_vector->vec(), condensed_imag_vector->vec());
+                    EPSGetEigenpair(eigen_solver->eps(), ii, &real_value, &imag_value, condensed_real_vector->vec(),
+                                    condensed_imag_vector->vec());
                 }
 
                 PYBIND11_MODULE(SIGNATURE, m)

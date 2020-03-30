@@ -10,7 +10,8 @@ from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.problems.base import LinearPODGalerkinReducedProblem, ParametrizedReducedDifferentialProblem
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 
-StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(StokesReducedProblem(ParametrizedReducedDifferentialProblem))
+StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
+    StokesReducedProblem(ParametrizedReducedDifferentialProblem))
 
 @ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
 class StokesPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem_Base):

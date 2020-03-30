@@ -8,19 +8,24 @@ from numbers import Number
 from ufl import Form
 from ufl.core.operator import Operator
 from dolfin import Constant, Expression
-from rbnics.backends.dolfin.affine_expansion_storage import AffineExpansionStorage_Base, AffineExpansionStorage_DirichletBC, AffineExpansionStorage_Form, AffineExpansionStorage_Function
+from rbnics.backends.dolfin.affine_expansion_storage import (AffineExpansionStorage_Base,
+                                                             AffineExpansionStorage_DirichletBC,
+                                                             AffineExpansionStorage_Form,
+                                                             AffineExpansionStorage_Function)
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTensorFactory
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_copy, tensor_copy
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC, ProductOutputDirichletBC
-from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
+from rbnics.eim.utils.decorators import (add_to_map_from_parametrized_operator_to_problem,
+                                         get_problem_from_parametrized_operator)
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import backend_for, ComputeThetaType, overload, tuple_of
 
-# Need to customize ThetaType in order to also include dolfin's ParametrizedConstant (of type Expression), which is a side effect of DEIM decorator:
-# this is the reason why in the following theta coefficients are preprocessed by float().
+# Need to customize ThetaType in order to also include dolfin's ParametrizedConstant (of type Expression),
+# which is a side effect of DEIM decorator: this is the reason why in the following theta coefficients
+# are preprocessed by float().
 ThetaType = ComputeThetaType((Expression, Operator))
 
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
@@ -101,7 +106,8 @@ def _product(thetas: ThetaType, operators: tuple_of(ParametrizedTensorFactory)):
         add_to_map_from_parametrized_operator_to_problem(output, problems[0])
         output = ProductOutput(output)
         _product_parametrized_tensor_factories_output_cache[operators_as_forms] = output
-        _product_parametrized_tensor_factories_constants_cache[operators_as_forms] = _product_forms_constants_cache[operators_as_forms]
+        _product_parametrized_tensor_factories_constants_cache[operators_as_forms] = _product_forms_constants_cache[
+            operators_as_forms]
         return output
     else:
         constants = _product_parametrized_tensor_factories_constants_cache[operators_as_forms]

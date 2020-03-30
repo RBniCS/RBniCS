@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from numbers import Number
-from rbnics.backends.abstract import BasisFunctionsMatrix as AbstractBasisFunctionsMatrix, ParametrizedTensorFactory as AbstractParametrizedTensorFactory
+from rbnics.backends.abstract import (BasisFunctionsMatrix as AbstractBasisFunctionsMatrix,
+                                      ParametrizedTensorFactory as AbstractParametrizedTensorFactory)
 from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload
 

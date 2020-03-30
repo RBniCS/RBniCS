@@ -17,7 +17,8 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
             if original_term is None: # term was not a original term
                 return assemble_operator(self, term)
             else:
-                assert term.endswith("_restricted") or term.startswith("inner_product_") or term.startswith("dirichlet_bc_")
+                assert (term.endswith("_restricted") or term.startswith("inner_product_")
+                        or term.startswith("dirichlet_bc_"))
                 if term.endswith("_restricted") or term.startswith("inner_product_"):
                     test_int = _to_int(self.V, test)
                     trial_int = _to_int(self.V, trial)

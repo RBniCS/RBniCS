@@ -20,7 +20,8 @@ def ReductionMethodDecoratorFor(Algorithm, replaces=None, replaces_if=None, exac
         assert inspect.isfunction(ReductionMethodDecorator)
         ReductionMethodDecoratorGenerator = _ReductionMethodDecoratorGenerator(ReductionMethodDecorator)
         # Add to cache (object is a placeholder for Problem type)
-        dispatch(object, name=Algorithm.__name__, module=_cache, replaces=replaces, replaces_if=replaces_if)(ReductionMethodDecoratorGenerator)
+        dispatch(object, name=Algorithm.__name__, module=_cache, replaces=replaces,
+                 replaces_if=replaces_if)(ReductionMethodDecoratorGenerator)
         # Return unchanged reduction method decorator
         return ReductionMethodDecorator
     return ReductionMethodDecoratorFor_Decorator

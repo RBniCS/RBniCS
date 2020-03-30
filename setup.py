@@ -32,7 +32,8 @@ def AdditionalBackendsOptions(SetuptoolsClass):
                     self.additional_backends_directory = tempfile.mkdtemp()
                     for additional_backend in self.additional_backends:
                         additional_backend = additional_backend.replace("online/", "")
-                        subprocess.check_call(["git", "clone", "git@gitlab.com:RBniCS-backends/" + additional_backend + ".git"], cwd=self.additional_backends_directory)
+                        subprocess.check_call(["git", "clone", "git@gitlab.com:RBniCS-backends/" + additional_backend
+                                               + ".git"], cwd=self.additional_backends_directory)
                     self.additional_backends_directory_cloned = True
             SetuptoolsClass.finalize_options(self)
     return AdditionalBackendsOptions_Class
@@ -56,7 +57,8 @@ class egg_info(setuptools_egg_info):
         if self.additional_backends is not None:
             self.additional_backends_symlinks = list()
             for additional_backend in self.additional_backends:
-                src = os.path.join(self.additional_backends_directory, additional_backend, additional_backend).replace("online/", "")
+                src = os.path.join(
+                    self.additional_backends_directory, additional_backend, additional_backend).replace("online/", "")
                 dst = os.path.join("rbnics", "backends", additional_backend)
                 if not os.path.islink(dst):
                     os.symlink(src, dst)

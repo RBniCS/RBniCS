@@ -25,8 +25,10 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         # Matrices/vectors resulting from the truth discretization
         self.expansion_index = expansion_index
         self.operator = {
-            "stability_factor_left_hand_matrix": None, # AffineExpansionStorage
-            "stability_factor_right_hand_matrix": None # AffineExpansionStorage, even though it will contain only one matrix
+            "stability_factor_left_hand_matrix": None,
+            # AffineExpansionStorage
+            "stability_factor_right_hand_matrix": None
+            # AffineExpansionStorage, even though it will contain only one matrix
         }
         self.dirichlet_bc = None # AffineExpansionStorage
         self.spectrum = spectrum
@@ -72,19 +74,26 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
 
     def init(self):
         # Store the left and right hand side operators
-        if self.operator["stability_factor_left_hand_matrix"] is None: # init was not called already
+        if self.operator["stability_factor_left_hand_matrix"] is None:
+            # init was not called already
             if self.expansion_index is None:
-                self.operator["stability_factor_left_hand_matrix"] = self.truth_problem.operator["stability_factor_left_hand_matrix"]
+                self.operator["stability_factor_left_hand_matrix"] = self.truth_problem.operator[
+                    "stability_factor_left_hand_matrix"]
             else:
-                self.operator["stability_factor_left_hand_matrix"] = AffineExpansionStorage((self.truth_problem.operator["stability_factor_left_hand_matrix"][self.expansion_index], ))
+                self.operator["stability_factor_left_hand_matrix"] = AffineExpansionStorage(
+                    (self.truth_problem.operator["stability_factor_left_hand_matrix"][self.expansion_index], ))
         if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
-            self.operator["stability_factor_right_hand_matrix"] = self.truth_problem.operator["stability_factor_right_hand_matrix"]
+            self.operator["stability_factor_right_hand_matrix"] = self.truth_problem.operator[
+                "stability_factor_right_hand_matrix"]
             assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
 
         # Store Dirichlet boundary conditions
         if self.dirichlet_bc is None: # init was not called already (or raised a trivial error)
             try:
-                self.dirichlet_bc = AffineExpansionStorage(self.truth_problem.assemble_operator("stability_factor_dirichlet_bc")) # need to call assemble_operator because this special bc is not stored among the ones in self.truth_problem.dirichlet_bc
+                self.dirichlet_bc = AffineExpansionStorage(self.truth_problem.assemble_operator(
+                    "stability_factor_dirichlet_bc"))
+                # need to call assemble_operator because this special bc is not stored among the ones
+                # in self.truth_problem.dirichlet_bc
             except ValueError: # there were no Dirichlet BCs
                 self.dirichlet_bc = None
 
@@ -105,7 +114,9 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
     def _solve(self):
         assert self.operator["stability_factor_left_hand_matrix"] is not None
         if self.expansion_index is None:
-            A = sum(product(self.truth_problem.compute_theta("stability_factor_left_hand_matrix"), self.operator["stability_factor_left_hand_matrix"]))
+            A = sum(product(
+                self.truth_problem.compute_theta("stability_factor_left_hand_matrix"),
+                self.operator["stability_factor_left_hand_matrix"]))
         else:
             assert len(self.operator["stability_factor_left_hand_matrix"]) == 1
             A = self.operator["stability_factor_left_hand_matrix"][0]

@@ -47,7 +47,8 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericMatrix, operator, custom_operator)
 
-for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__imul__", "__truediv__", "__itruediv__"):
+for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__",
+                 "__mul__", "__imul__", "__truediv__", "__itruediv__"):
     preserve_generator_attribute(operator)
 
 # Define the __and__ operator to be used in combination with __invert__ operator
@@ -57,7 +58,8 @@ def custom__and__(self, other):
         output = self.copy()
         mat = to_petsc4py(output)
         for bc in other.bc_list:
-            constrained_dofs = [bc.function_space().dofmap().local_to_global_index(local_dof_index) for local_dof_index in bc.get_boundary_values().keys()]
+            constrained_dofs = [bc.function_space().dofmap().local_to_global_index(local_dof_index)
+                                for local_dof_index in bc.get_boundary_values().keys()]
             mat.zeroRowsColumns(constrained_dofs, 0.)
         return output
     else:

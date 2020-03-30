@@ -23,7 +23,8 @@ _NonlinearProblem_Base = _BasicNonlinearProblem(backend, wrapping)
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
-        self.problem = _NonlinearProblem(problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
+        self.problem = _NonlinearProblem(
+            problem_wrapper.residual_eval, solution, problem_wrapper.bc_eval(), problem_wrapper.jacobian_eval)
         self.monitor = problem_wrapper.monitor
         # Additional storage which will be setup by set_parameters
         self._absolute_tolerance = None
@@ -47,7 +48,9 @@ class NonlinearSolver(AbstractNonlinearSolver):
             elif key == "report":
                 if COMM_WORLD.rank == 0:
                     self._report = value
-                else: # scipy's nonlin_solve outputs residuals to sys.stdout, which is not filtered in parallel by the customization in rbnics.utils.mpi.print
+                else:
+                    # scipy's nonlin_solve outputs residuals to sys.stdout, which is not filtered in parallel
+                    # by the customization in rbnics.utils.mpi.print
                     self._report = False
             elif key == "solution_tolerance":
                 self._solution_tolerance = value
@@ -61,10 +64,10 @@ class NonlinearSolver(AbstractNonlinearSolver):
         try:
             solution_vector, info = nonlin_solve(
                 residual, initial_guess_vector, jacobian=jacobian, verbose=self._report,
-                f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance, x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
+                f_tol=self._absolute_tolerance, f_rtol=self._relative_tolerance,
+                x_rtol=self._solution_tolerance, maxiter=self._maximum_iterations,
                 line_search=self._line_search, callback=self._monitor,
-                full_output=True, raise_exception=False
-            )
+                full_output=True, raise_exception=False)
             if self._report:
                 if info["success"]:
                     print("scipy solver converged in " + str(info["nit"]) + " iterations.")

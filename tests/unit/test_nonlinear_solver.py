@@ -8,7 +8,8 @@ from numpy import dot, isclose
 from numpy.linalg import norm as monitor_norm
 import matplotlib
 import matplotlib.pyplot as plt
-from dolfin import assemble, assign, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad, inner, IntervalMesh, pi, plot, project, TestFunction, TrialFunction
+from dolfin import (assemble, assign, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad, inner,
+                    IntervalMesh, pi, plot, project, TestFunction, TrialFunction)
 from rbnics.backends.abstract import NonlinearProblemWrapper
 
 """
@@ -39,7 +40,9 @@ def _test_nonlinear_solver_sparse(callback_type):
     du = TrialFunction(V)
     v = TestFunction(V)
     u = Function(V)
-    g = Expression("4*sin(2*x[0])*(pow(x[0]+sin(2*x[0]), 2)+1)-2*(x[0]+sin(2*x[0]))*pow(2*cos(2*x[0])+1, 2)", element=V.ufl_element())
+    g = Expression(
+        "4*sin(2*x[0])*(pow(x[0]+sin(2*x[0]), 2)+1)-2*(x[0]+sin(2*x[0]))*pow(2*cos(2*x[0])+1, 2)",
+        element=V.ufl_element())
     r = inner((1+u**2)*grad(u), grad(v))*dx - g*v*dx
     j = derivative(r, u, du)
     x = inner(du, v)*dx
@@ -142,8 +145,10 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
         def jacobian_eval(self, solution):
             self._solution_from_dense_to_sparse(solution)
             jacobian_array = assemble(j).array()
-            jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
-            jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = jacobian_array[
+                [min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
+            jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = jacobian_array[
+                :, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             jacobian = Matrix(*jacobian_array.shape)
             jacobian[:, :] = jacobian_array
             return jacobian
@@ -166,11 +171,13 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
 
         def _solution_from_dense_to_sparse(self, solution):
             solution_array = solution.vector()
-            solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+            solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[
+                [0, 1, min_dof_0_2pi, max_dof_0_2pi]]
             u.vector().zero()
             u.vector().add_local(solution_array.__array__())
             u.vector().apply("")
-            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[
+                [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
 
     # Solve the nonlinear problem
     problem_wrapper = ProblemWrapper()
@@ -196,7 +203,8 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
 
 # ~~~ Test function ~~~ #
 def test_nonlinear_solver():
-    (error_sparse_tensor_callbacks, V, u, r, j, X, sparse_initial_guess, exact_solution) = _test_nonlinear_solver_sparse("tensor callbacks")
+    (error_sparse_tensor_callbacks, V, u, r, j, X, sparse_initial_guess,
+        exact_solution) = _test_nonlinear_solver_sparse("tensor callbacks")
     (error_sparse_form_callbacks, _, _, _, _, _, _, _) = _test_nonlinear_solver_sparse("form callbacks")
     assert isclose(error_sparse_tensor_callbacks, error_sparse_form_callbacks)
     if V.mesh().mpi_comm().size == 1: # dense solver is not partitioned

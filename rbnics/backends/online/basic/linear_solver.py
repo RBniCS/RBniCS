@@ -10,7 +10,10 @@ from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
 
 def LinearSolver(backend, wrapping):
     class LinearSolver_Class(AbstractLinearSolver):
-        @overload((backend.Matrix.Type(), wrapping.DelayedTransposeWithArithmetic), backend.Function.Type(), (backend.Vector.Type(), wrapping.DelayedTransposeWithArithmetic), ThetaType + DictOfThetaType + (None,))
+        @overload((backend.Matrix.Type(), wrapping.DelayedTransposeWithArithmetic),
+                  backend.Function.Type(),
+                  (backend.Vector.Type(), wrapping.DelayedTransposeWithArithmetic),
+                  ThetaType + DictOfThetaType + (None,))
         def __init__(self, lhs, solution, rhs, bcs=None):
             self.solution = solution
             self._init_lhs(lhs)
@@ -56,8 +59,10 @@ def LinearSolver(backend, wrapping):
         @overload
         def _apply_bcs(self, bcs: DictOfThetaType):
             # Auxiliary dicts should have been stored in lhs and rhs, and should be consistent
-            assert self.rhs._component_name_to_basis_component_index == self.lhs._component_name_to_basis_component_index[0]
-            assert self.rhs._component_name_to_basis_component_length == self.lhs._component_name_to_basis_component_length[0]
+            assert (self.rhs._component_name_to_basis_component_index
+                    == self.lhs._component_name_to_basis_component_index[0])
+            assert (self.rhs._component_name_to_basis_component_length
+                    == self.lhs._component_name_to_basis_component_length[0])
             # Provide auxiliary dicts to DirichletBC constructor, and apply
             bcs = DirichletBC(bcs, self.rhs._component_name_to_basis_component_index, self.rhs.N)
             bcs.apply_to_vector(self.rhs)

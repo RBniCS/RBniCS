@@ -12,7 +12,8 @@ def compute_theta_for_supremizers(compute_theta):
     from rbnics.problems.stokes import StokesProblem
     from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
 
-    module = types.ModuleType("compute_theta_for_supremizers", "Storage for implementation of compute_theta_for_supremizers")
+    module = types.ModuleType("compute_theta_for_supremizers",
+                              "Storage for implementation of compute_theta_for_supremizers")
 
     def compute_theta_for_supremizers_impl(self, term):
         return module._compute_theta_for_supremizers_impl(self, term)

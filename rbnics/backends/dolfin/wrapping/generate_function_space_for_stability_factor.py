@@ -12,7 +12,8 @@ def generate_function_space_for_stability_factor(__init__):
     from rbnics.problems.elliptic import EllipticCoerciveProblem
     from rbnics.problems.stokes import StokesProblem
 
-    module = types.ModuleType("generate_function_space_for_stability_factor", "Storage for implementation of generate_function_space_for_stability_factor")
+    module = types.ModuleType("generate_function_space_for_stability_factor",
+                              "Storage for implementation of generate_function_space_for_stability_factor")
 
     def generate_function_space_for_stability_factor_impl(self, V, **kwargs):
         __init__(self, V, **kwargs)

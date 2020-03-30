@@ -45,7 +45,8 @@ def _split_function(solution, solution_split_to_component, solution_split_to_sol
             solution_split_to_solution[sub_solution] = solution
 
 @overload
-def _remove_all_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity, IndexBase, MultiIndex, Operator)):
+def _remove_all_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity,
+                               IndexBase, MultiIndex, Operator)):
     return node
 
 @overload

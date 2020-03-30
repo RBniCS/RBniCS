@@ -10,7 +10,8 @@ from rbnics.utils.decorators import PreserveClassName
 def StoreMapFromParametrizedOperatorsToTermAndIndex(ExactParametrizedFunctionsDecoratedProblem_DerivedClass):
 
     @PreserveClassName
-    class StoreMapFromParametrizedOperatorsToTermAndIndex_Class(ExactParametrizedFunctionsDecoratedProblem_DerivedClass):
+    class StoreMapFromParametrizedOperatorsToTermAndIndex_Class(
+            ExactParametrizedFunctionsDecoratedProblem_DerivedClass):
 
         def _init_operators(self):
             # Initialize operators as in Parent class

@@ -29,12 +29,14 @@ def Matrix(backend, wrapping, MatrixBaseType):
             # Auxiliary attributes related to basis functions matrix
             if isinstance(M, dict):
                 if len(M) > 1:
-                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
+                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important
+                    # in the definition of attributes
                     assert isinstance(M, OnlineSizeDict)
                 else:
                     self.M = M = OnlineSizeDict(M)
                 if len(N) > 1:
-                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important in the definition of attributes
+                    # ordering (stored by OnlineSizeDict, which inherits from OrderedDict) is important
+                    # in the definition of attributes
                     assert isinstance(N, OnlineSizeDict)
                 else:
                     self.N = N = OnlineSizeDict(N)
@@ -73,7 +75,9 @@ def Matrix(backend, wrapping, MatrixBaseType):
             ):
                 assert key_is_tuple_of_slices is not key_is_tuple_of_tuples_or_lists
                 if key_is_tuple_of_slices: # matrix[:5, :5]
-                    output_content = self.content[wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))]
+                    output_content = self.content[
+                        wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length,
+                                                        self._component_name_to_basis_component_index))]
                     output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
                 elif key_is_tuple_of_tuples_or_lists: # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
                     output_content = self.content[wrapping.Slicer(*key)]
@@ -103,8 +107,11 @@ def Matrix(backend, wrapping, MatrixBaseType):
                                 component_name_to_basis_component_length_i[component_name] = len(key[i])
                                 component_name_to_basis_component_length[i] = component_name_to_basis_component_length_i
                             else:
-                                raise NotImplementedError("Matrix.__getitem__ with list or tuple input arguments has not been implemented yet for the case of multiple components")
-                        output._component_name_to_basis_component_length = tuple(component_name_to_basis_component_length)
+                                raise NotImplementedError(
+                                    "Matrix.__getitem__ with list or tuple input arguments"
+                                    + " has not been implemented yet for the case of multiple components")
+                        output._component_name_to_basis_component_length = tuple(
+                            component_name_to_basis_component_length)
                 return output
             elif key_is_tuple_of_int: # matrix[5, 5]
                 output = self.content[key]
@@ -121,18 +128,24 @@ def Matrix(backend, wrapping, MatrixBaseType):
             key_is_tuple_of_int_and_slice = isinstance(key[0], int) and isinstance(key[1], slice)
             key_is_tuple_of_int = all([isinstance(key_i, int) for key_i in key])
             if key_is_tuple_of_slices: # matrix[:5, :5]
-                converted_key = wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length, self._component_name_to_basis_component_index))
+                converted_key = wrapping.Slicer(
+                    *slice_to_array(self, key, self._component_name_to_basis_component_length,
+                                    self._component_name_to_basis_component_index))
                 if isinstance(value, type(self)):
                     value = value.content
                 self.content[converted_key] = value
             elif key_is_tuple_of_slice_and_int: # matrix[:5, 5]
-                converted_key_0 = wrapping.Slicer(slice_to_array(self, key[0], self._component_name_to_basis_component_length[0], self._component_name_to_basis_component_index[0]))
+                converted_key_0 = wrapping.Slicer(
+                    slice_to_array(self, key[0], self._component_name_to_basis_component_length[0],
+                                   self._component_name_to_basis_component_index[0]))
                 converted_key = (converted_key_0, key[1])
                 if isinstance(value, backend.Vector.Type()):
                     value = value.content
                 self.content[converted_key] = value
             elif key_is_tuple_of_int_and_slice: # matrix[5, :5]
-                converted_key_1 = wrapping.Slicer(slice_to_array(self, key[1], self._component_name_to_basis_component_length[1], self._component_name_to_basis_component_index[1]))
+                converted_key_1 = wrapping.Slicer(
+                    slice_to_array(self, key[1], self._component_name_to_basis_component_length[1],
+                                   self._component_name_to_basis_component_index[1]))
                 converted_key = (key[0], converted_key_1)
                 if isinstance(value, backend.Vector.Type()):
                     value = value.content
@@ -272,12 +285,16 @@ def Matrix(backend, wrapping, MatrixBaseType):
             if other_order == 2:
                 assert self.M == other.M
                 assert self.N == other.N
-                assert self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
-                assert self._component_name_to_basis_component_length == other._component_name_to_basis_component_length
+                assert (self._component_name_to_basis_component_index
+                        == other._component_name_to_basis_component_index)
+                assert (self._component_name_to_basis_component_length
+                        == other._component_name_to_basis_component_length)
             elif other_order == 1:
                 assert self.N == other.N
-                assert self._component_name_to_basis_component_index[1] == other._component_name_to_basis_component_index
-                assert self._component_name_to_basis_component_length[1] == other._component_name_to_basis_component_length
+                assert (self._component_name_to_basis_component_index[1]
+                        == other._component_name_to_basis_component_index)
+                assert (self._component_name_to_basis_component_length[1]
+                        == other._component_name_to_basis_component_length)
 
         def _arithmetic_operations_preserve_attributes(self, output, other_order=2):
             assert other_order in (0, 1, 2)

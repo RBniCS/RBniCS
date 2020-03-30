@@ -6,7 +6,8 @@
 
 import os
 import dolfin # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa: F401
-from rbnics.utils.test import add_gold_options, disable_matplotlib, enable_matplotlib, PatchInstanceMethod, process_gold_options, run_and_compare_to_gold
+from rbnics.utils.test import (add_gold_options, disable_matplotlib, enable_matplotlib, PatchInstanceMethod,
+                               process_gold_options, run_and_compare_to_gold)
 
 def pytest_addoption(parser):
     add_gold_options(parser, "RBniCS")
@@ -24,7 +25,9 @@ def patch_test_item(test_item):
     Handle the execution of the test.
     """
 
-    subdirectory = os.path.join(test_item.originalname + "_tempdir", test_item.callspec.getparam("expression_type"), test_item.callspec.getparam("basis_generation"))
+    subdirectory = os.path.join(
+        test_item.originalname + "_tempdir", test_item.callspec.getparam("expression_type"),
+        test_item.callspec.getparam("basis_generation"))
     original_runtest = test_item.runtest
 
     @run_and_compare_to_gold(subdirectory)

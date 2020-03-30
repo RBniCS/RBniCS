@@ -6,7 +6,8 @@
 
 from rbnics.utils.decorators import ReductionMethodDecoratorFor
 from rbnics.shape_parametrization.problems import AffineShapeParametrization
-from rbnics.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import ShapeParametrizationDecoratedReductionMethod
+from rbnics.shape_parametrization.reduction_methods.shape_parametrization_decorated_reduction_method import (
+    ShapeParametrizationDecoratedReductionMethod)
 
 @ReductionMethodDecoratorFor(AffineShapeParametrization)
 def AffineShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):

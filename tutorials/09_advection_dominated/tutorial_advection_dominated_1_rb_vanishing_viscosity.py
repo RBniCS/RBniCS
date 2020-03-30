@@ -138,8 +138,10 @@ reduced_advection_dominated_problem.set_mu(online_mu)
 for online_vanishing_viscosity in (True, False):
     for online_rectification in (True, False):
         def filename(prefix):
-            return "online_" + prefix + "_" + bool_to_string(online_vanishing_viscosity) + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification"
-        reduced_advection_dominated_problem.solve(online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification)
+            return ("online_" + prefix + "_" + bool_to_string(online_vanishing_viscosity)
+                    + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification")
+        reduced_advection_dominated_problem.solve(
+            online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification)
         reduced_advection_dominated_problem.export_solution(filename=filename("solution"))
         reduced_advection_dominated_problem.export_error(filename=filename("error"))
 
@@ -147,11 +149,17 @@ for online_vanishing_viscosity in (True, False):
 reduced_basis_method.initialize_testing_set(100)
 for online_vanishing_viscosity in (True, False):
     for online_rectification in (True, False):
-        filename = "error_analysis_" + bool_to_string(online_vanishing_viscosity) + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification"
-        reduced_basis_method.error_analysis(online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification, filename=filename)
+        filename = ("error_analysis_" + bool_to_string(online_vanishing_viscosity)
+                    + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification")
+        reduced_basis_method.error_analysis(
+            online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification,
+            filename=filename)
 
 # 8. Perform a speedup analysis
 for online_vanishing_viscosity in (True, False):
     for online_rectification in (True, False):
-        filename = "speedup_analysis_" + bool_to_string(online_vanishing_viscosity) + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification"
-        reduced_basis_method.speedup_analysis(online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification, filename=filename)
+        filename = ("speedup_analysis_" + bool_to_string(online_vanishing_viscosity)
+                    + "_vanishing_viscosity_and_" + bool_to_string(online_rectification) + "_rectification")
+        reduced_basis_method.speedup_analysis(
+            online_vanishing_viscosity=online_vanishing_viscosity, online_rectification=online_rectification,
+            filename=filename)

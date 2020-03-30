@@ -13,7 +13,9 @@ import urllib.request
 from multipledispatch.conflict import ambiguous, ambiguities, ordering  # noqa: F401
 from multipledispatch.utils import raises
 from rbnics.utils.decorators import dict_of, dispatch, iterable_of, list_of, overload, tuple_of
-from rbnics.utils.decorators.dispatch import AmbiguousSignatureError, consistent, Dispatcher, InvalidSignatureError, MethodDispatcher_Wrapper as MethodDispatcher, supercedes, UnavailableSignatureError
+from rbnics.utils.decorators.dispatch import (AmbiguousSignatureError, consistent, Dispatcher, InvalidSignatureError,
+                                              MethodDispatcher_Wrapper as MethodDispatcher, supercedes,
+                                              UnavailableSignatureError)
 
 # Fixture to clean up current module after test execution
 @pytest.fixture
@@ -33,19 +35,34 @@ def apply_clean_main_module_to_tests():
 # Prepare tests blacklist from upstream tests
 tests_blacklist = {
     "test_conflict.py": [
-        "test_super_signature", "test_type_mro", # we are not interested in the super signature warning
-        "test_supercedes_variadic", "test_consistent_variadic", # variadic arguments are not supported by our custom version
+        "test_super_signature", "test_type_mro",
+        # we are not interested in the super signature warning
+        "test_supercedes_variadic", "test_consistent_variadic",
+        # variadic arguments are not supported by our custom version
     ],
     "test_core.py": [
-        "test_competing_ambiguous", # patched version raises an error rather than a warning and this would stop the execution
-        "test_namespaces", # we have replaced namespaces with modules so it makes no sense to test this
-        "test_multipledispatch", # has issues with recent pytest versions
+        "test_competing_ambiguous",
+        # patched version raises an error rather than a warning and this would stop the execution
+        "test_namespaces",
+        # we have replaced namespaces with modules so it makes no sense to test this
+        "test_multipledispatch",
+        # has issues with recent pytest versions
     ],
     "test_dispatcher.py": [
-        "test_register_instance_method", "test_register_stacking", "test_dispatch_method", # created a custom version of that replaces unallowed list with list_of(int) and tuple_of(int)
-        "test_source", # disabled because of incompatibility with exec (failure with OSError)
-        "test_not_implemented", "test_not_implemented_error", # handling of MDNotImplementedError has been disabled by us
-        "test_vararg_not_last_element_of_signature", "test_vararg_has_multiple_elements", "test_vararg_dispatch_simple", "test_vararg_dispatch_ambiguity", "test_vararg_dispatch_ambiguity_in_variadic", "test_vararg_dispatch_multiple_types_explicit_args", "test_vararg_dispatch_multiple_implementations", "test_vararg_dispatch_unions", "test_vararg_no_args", "test_vararg_no_args_failure", "test_vararg_no_args_failure_2", "test_vararg_ordering", # variadic arguments are not supported by our custom version
+        "test_register_instance_method", "test_register_stacking", "test_dispatch_method",
+        # created a custom version of that replaces unallowed list with list_of(int) and tuple_of(int)
+        "test_source",
+        # disabled because of incompatibility with exec (failure with OSError)
+        "test_not_implemented", "test_not_implemented_error",
+        # handling of MDNotImplementedError has been disabled by us
+        "test_vararg_not_last_element_of_signature", "test_vararg_has_multiple_elements",
+        "test_vararg_dispatch_simple", "test_vararg_dispatch_ambiguity",
+        "test_vararg_dispatch_ambiguity_in_variadic",
+        "test_vararg_dispatch_multiple_types_explicit_args",
+        "test_vararg_dispatch_multiple_implementations",
+        "test_vararg_dispatch_unions", "test_vararg_no_args",
+        "test_vararg_no_args_failure", "test_vararg_no_args_failure_2", "test_vararg_ordering",
+        # variadic arguments are not supported by our custom version
     ]
 }
 
@@ -62,7 +79,8 @@ test_renames = {
 
 # Get upstream tests from github
 def download_multipledispatch_tests(file_name, start_from_line):
-    response = urllib.request.urlopen("https://raw.githubusercontent.com/mrocklin/multipledispatch/master/multipledispatch/tests/" + file_name)
+    response = urllib.request.urlopen(
+        "https://raw.githubusercontent.com/mrocklin/multipledispatch/master/multipledispatch/tests/" + file_name)
     lines = response.read().decode("utf-8").split("\n")[start_from_line:]
     # Get all classes which have been defined
     classes = ""
@@ -183,7 +201,8 @@ def test_source_copy():
     assert "x + y" in f._source(1, 1)
     assert "x - y" in f._source(1.0, 1.0)
 
-# Add back subset of upstream test_dispatcher_3only.py, which is not tested fully because of our different implementation of dispatching through annotations
+# Add back subset of upstream test_dispatcher_3only.py, which is not tested fully because of
+# our different implementation of dispatching through annotations
 def test_function_annotation_dispatch():
     @dispatch()
     def inc2(x: int):
@@ -547,7 +566,8 @@ def test_disable_list():
             def __init__(self, arg):
                 self.arg = arg[0]
     except InvalidSignatureError:
-        pass # this has failed has expected, because list is not supposed to be used, and list_of should be used instead
+        # this has failed has expected, because list is not supposed to be used, and list_of should be used instead
+        pass
     else:
         raise RuntimeError("@dispatch(list) should have failed")
 

@@ -6,7 +6,8 @@
 
 import pytest
 from numpy import isclose
-from dolfin import assign, Constant, FiniteElement, MixedElement, project, UnitSquareMesh, VectorElement, VectorFunctionSpace
+from dolfin import (assign, Constant, FiniteElement, MixedElement, project, UnitSquareMesh, VectorElement,
+                    VectorFunctionSpace)
 from dolfin_utils.test import fixture as module_fixture
 from rbnics.backends.dolfin import Function
 from rbnics.backends.dolfin.wrapping import function_extend_or_restrict, FunctionSpace
@@ -486,7 +487,7 @@ def test_mixed_function_restriction_solve_ambiguity_with_components_second_sub_e
     assert p.vector().size() == W.dim()
     assert isclose(p.vector().get_local(), 4.).all()
 
-# ~~~ Mixed case: restriction to sub element, ambiguous restriction due to failing automatic detection of components ~~~ #
+# ~~~ Mixed case: restriction to sub element, ambiguous restriction due to failing automatic components detection ~~~ #
 def MixedSpacesRestrictionToSubElementAmbiguous(mesh):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2)   # Note that we need to use 2nd order FE otherwise
     element_00 = FiniteElement("Lagrange", mesh.ufl_cell(), 2)  # the automatic detection would restrict the

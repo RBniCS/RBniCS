@@ -123,7 +123,8 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
 
         def _init_error_estimation_operators(self, current_stage="online"):
             if current_stage in ("online", "offline_vanishing_viscosity_postprocessing"):
-                # Disable error estimation, which would not take into account the additional vanishing viscosity operator
+                # Disable error estimation, which would not take into account the additional vanishing viscosity
+                # operator
                 self._disable_error_estimation = True
             elif current_stage == "offline":
                 # Call Parent
@@ -134,10 +135,12 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
 
         def build_reduced_operators(self, current_stage="offline"):
             if current_stage == "offline_vanishing_viscosity_postprocessing":
-                EllipticCoerciveReducedProblem_DerivedClass.build_reduced_operators(self, "offline_vanishing_viscosity_postprocessing")
+                EllipticCoerciveReducedProblem_DerivedClass.build_reduced_operators(
+                    self, "offline_vanishing_viscosity_postprocessing")
                 # Compute vanishing viscosity reduced operator
                 print("build vanishing viscosity reduced operator")
-                self.operator["vanishing_viscosity"] = self.assemble_operator("vanishing_viscosity", "offline_vanishing_viscosity_postprocessing")
+                self.operator["vanishing_viscosity"] = self.assemble_operator(
+                    "vanishing_viscosity", "offline_vanishing_viscosity_postprocessing")
             else:
                 # Call Parent, which may eventually raise an error
                 EllipticCoerciveReducedProblem_DerivedClass.build_reduced_operators(self, current_stage)
@@ -146,11 +149,14 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
             if term == "vanishing_viscosity":
                 assert current_stage in ("online", "offline_vanishing_viscosity_postprocessing")
                 if current_stage == "online": # load from file
-                    self.operator["vanishing_viscosity"].load(self.folder["reduced_operators"], "operator_vanishing_viscosity")
+                    self.operator["vanishing_viscosity"].load(
+                        self.folder["reduced_operators"], "operator_vanishing_viscosity")
                     return self.operator["vanishing_viscosity"]
                 elif current_stage == "offline_vanishing_viscosity_postprocessing":
                     assert len(self.vanishing_viscosity_eigenvalues) == self.N
-                    assert all([len(vanishing_viscosity_eigenvalues_n) == n + 1 for (n, vanishing_viscosity_eigenvalues_n) in enumerate(self.vanishing_viscosity_eigenvalues)])
+                    assert all([len(vanishing_viscosity_eigenvalues_n) == n + 1
+                                for (n, vanishing_viscosity_eigenvalues_n) in enumerate(
+                                    self.vanishing_viscosity_eigenvalues)])
                     print("build reduced vanishing viscosity operator")
                     for n in range(1, self.N + 1):
                         vanishing_viscosity_expansion = OnlineAffineExpansionStorage(1)
@@ -176,7 +182,8 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         vanishing_viscosity_expansion[0] = vanishing_viscosity_operator
                         self.operator["vanishing_viscosity"][:n, :n] = vanishing_viscosity_expansion
                     # Save to file
-                    self.operator["vanishing_viscosity"].save(self.folder["reduced_operators"], "operator_vanishing_viscosity")
+                    self.operator["vanishing_viscosity"].save(
+                        self.folder["reduced_operators"], "operator_vanishing_viscosity")
                     return self.operator["vanishing_viscosity"]
                 else:
                     raise ValueError("Invalid stage in assemble_operator().")
@@ -189,36 +196,48 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                             assert self.terms_order[term] in (1, 2)
                             if self.terms_order[term] == 2:
                                 for q in range(self.Q[term]):
-                                    term_expansion[q] = transpose(self.basis_functions[:n])*self.truth_problem.operator[term][q]*self.basis_functions[:n]
+                                    term_expansion[q] = (
+                                        transpose(self.basis_functions[:n]) * self.truth_problem.operator[term][q]
+                                        * self.basis_functions[:n])
                                 self.operator[term][:n, :n] = term_expansion
                             elif self.terms_order[term] == 1:
                                 for q in range(self.Q[term]):
-                                    term_expansion[q] = transpose(self.basis_functions[:n])*self.truth_problem.operator[term][q]
+                                    term_expansion[q] = (
+                                        transpose(self.basis_functions[:n]) * self.truth_problem.operator[term][q])
                                 self.operator[term][:n] = term_expansion
                             else:
                                 raise ValueError("Invalid value for order of term " + term)
                         self.operator[term].save(self.folder["reduced_operators"], "operator_" + term)
                         return self.operator[term]
                     elif term.startswith("inner_product"):
-                        assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                        assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                        assert len(self.inner_product) == 1
+                        # the affine expansion storage contains only the inner product matrix
+                        assert len(self.truth_problem.inner_product) == 1
+                        # the affine expansion storage contains only the inner product matrix
                         for n in range(1, self.N + 1):
                             inner_product_expansion = OnlineAffineExpansionStorage(1)
-                            inner_product_expansion[0] = transpose(self.basis_functions[:n])*self.truth_problem.inner_product[0]*self.basis_functions[:n]
+                            inner_product_expansion[0] = (
+                                transpose(self.basis_functions[:n]) * self.truth_problem.inner_product[0]
+                                * self.basis_functions[:n])
                             self.inner_product[:n, :n] = inner_product_expansion
                         self.inner_product.save(self.folder["reduced_operators"], term)
                         return self.inner_product
                     elif term.startswith("projection_inner_product"):
-                        assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                        assert len(self.truth_problem.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                        assert len(self.projection_inner_product) == 1
+                        # the affine expansion storage contains only the inner product matrix
+                        assert len(self.truth_problem.projection_inner_product) == 1
+                        # the affine expansion storage contains only the inner product matrix
                         for n in range(1, self.N + 1):
                             projection_inner_product_expansion = OnlineAffineExpansionStorage(1)
-                            projection_inner_product_expansion[0] = transpose(self.basis_functions[:n])*self.truth_problem.projection_inner_product[0]*self.basis_functions[:n]
+                            projection_inner_product_expansion[0] = (
+                                transpose(self.basis_functions[:n]) * self.truth_problem.projection_inner_product[0]
+                                * self.basis_functions[:n])
                             self.projection_inner_product[:n, :n] = projection_inner_product_expansion
                         self.projection_inner_product.save(self.folder["reduced_operators"], term)
                         return self.projection_inner_product
                     elif term.startswith("dirichlet_bc"):
-                        raise ValueError("There should be no need to assemble Dirichlet BCs when querying the offline vanishing viscosity postprocessing stage.")
+                        raise ValueError("There should be no need to assemble Dirichlet BCs when querying"
+                                         + " the offline vanishing viscosity postprocessing stage.")
                     else:
                         raise ValueError("Invalid term for assemble_operator().")
                 else:

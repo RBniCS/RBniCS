@@ -9,7 +9,8 @@ from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, Li
 from problems import GeostrophicOptimalControlProblem
 from .geostrophic_optimal_control_reduction_method import GeostrophicOptimalControlReductionMethod
 
-GeostrophicOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(GeostrophicOptimalControlReductionMethod(DifferentialProblemReductionMethod))
+GeostrophicOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
+    GeostrophicOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
 @ReductionMethodFor(GeostrophicOptimalControlProblem, "PODGalerkin")
 class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPODGalerkinReduction_Base):
@@ -22,7 +23,8 @@ class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPOD
         for component in self.truth_problem.components:
             print("# POD for component", component)
             POD = self.POD[component]
-            assert self.tol[component] == 0. # TODO first negelect tolerances, then compute the max of N for each aggregated pair
+            assert self.tol[component] == 0.
+            # TODO first negelect tolerances, then compute the max of N for each aggregated pair
             (_, _, basis_functions[component], N[component]) = POD.apply(self.Nmax, self.tol[component])
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
@@ -35,9 +37,11 @@ class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPOD
         # Aggregate POD modes related to state and adjoint
         for pair in (("ypsi", "ppsi"), ("yq", "pq")):
             for component_to in pair:
-                for i in range(self.Nmax): # TODO should have been N[component_from], but cannot switch the next line
+                # TODO should have been N[component_from], but cannot switch the next line
+                for i in range(self.Nmax):
                     for component_from in pair:
-                        self.reduced_problem.basis_functions.enrich(basis_functions[component_from][i], component={component_from: component_to})
+                        self.reduced_problem.basis_functions.enrich(
+                            basis_functions[component_from][i], component={component_from: component_to})
                     self.reduced_problem.N[component_to] += 2
 
         # Save

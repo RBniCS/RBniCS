@@ -61,16 +61,19 @@ def BasicPETScSNESSolver(backend, wrapping):
             self.snes.setFromOptions()
 
         def solve(self):
-            solution_copy = wrapping.function_copy(self.solution) # create copy to avoid possible internal storage overwriting by linesearch
+            # create copy to avoid possible internal storage overwriting by linesearch
+            solution_copy = wrapping.function_copy(self.solution)
             petsc_solution_copy = wrapping.to_petsc4py(solution_copy)
             self.snes.solve(None, petsc_solution_copy)
             if self._report:
                 reason = self.snes.getConvergedReason()
                 its = self.snes.getIterationNumber()
                 if reason > 0:
-                    print("PETSc SNES solver converged in " + str(its) + " iterations with convergence reason " + str(reason) + ".")
+                    print("PETSc SNES solver converged in " + str(its) + " iterations with convergence reason "
+                          + str(reason) + ".")
                 else:
-                    print("PETSc SNES solver diverged in " + str(its) + " iterations with divergence reason " + str(reason) + ".")
+                    print("PETSc SNES solver diverged in " + str(its) + " iterations with divergence reason "
+                          + str(reason) + ".")
             self.problem.update_solution(petsc_solution_copy)
             if self.monitor is not None:
                 self.monitor(self.solution)

@@ -21,9 +21,11 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                 for term in ("a", "b", "bt", "c", "f", "g"):
                     assert problem.terms_order[term] in (1, 2)
                     if problem.terms_order[term] == 2:
-                        assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
+                        assembled_operator[term] = sum(product(
+                            problem.compute_theta(term), problem.operator[term][:N, :N]))
                     elif problem.terms_order[term] == 1:
-                        assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N]))
+                        assembled_operator[term] = sum(product(
+                            problem.compute_theta(term), problem.operator[term][:N]))
                     else:
                         raise ValueError("Invalid value for order of term " + term)
                 return (
@@ -38,7 +40,8 @@ def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
                 assembled_operator = dict()
                 for term in ("a", "b", "bt", "dc"):
                     assert problem.terms_order[term] == 2
-                    assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term][:N, :N]))
+                    assembled_operator[term] = sum(product(
+                        problem.compute_theta(term), problem.operator[term][:N, :N]))
                 return (
                       assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
                     + assembled_operator["dc"]

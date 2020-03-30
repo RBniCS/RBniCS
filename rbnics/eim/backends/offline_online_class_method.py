@@ -30,6 +30,8 @@ def OfflineOnlineClassMethod(problem_name):
                 self._replacement_condition[_OfflineOnlineClassMethod_Base._current_stage] = replacement_condition
             else:
                 assert replaced_class_method == self._content[_OfflineOnlineClassMethod_Base._current_stage]
-                # assert replacement_condition == self._replacement_condition[_OfflineOnlineClassMethod_Base._current_stage] # disabled because cannot easily compare lambda functions
+                # assert replacement_condition == self._replacement_condition[
+                #    _OfflineOnlineClassMethod_Base._current_stage]
+                # assert above has been disabled because we cannot easily compare lambda functions
 
     return _OfflineOnlineClassMethod

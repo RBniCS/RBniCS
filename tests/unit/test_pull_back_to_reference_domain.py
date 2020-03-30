@@ -11,10 +11,15 @@ import functools
 from abc import ABCMeta, abstractmethod
 from contextlib import contextmanager
 from logging import DEBUG
-from dolfin import assign, CellDiameter, Constant, cos, div, exp, Expression, FiniteElement, Function, FunctionSpace, grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan, TestFunction, TrialFunction, VectorElement
+from dolfin import (assign, CellDiameter, Constant, cos, div, exp, Expression, FiniteElement, Function, FunctionSpace,
+                    grad, inner, Measure, Mesh, MeshFunction, MixedElement, pi, project, sin, split, sqrt, tan,
+                    TestFunction, TrialFunction, VectorElement)
 from rbnics import ShapeParametrization
-from rbnics.backends.dolfin.wrapping import assemble_operator_for_derivative, compute_theta_for_derivative, ParametrizedExpression, PullBackFormsToReferenceDomain, PushForwardToDeformedDomain
-from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import forms_are_close, logger as pull_back_to_reference_domain_logger
+from rbnics.backends.dolfin.wrapping import (assemble_operator_for_derivative, compute_theta_for_derivative,
+                                             ParametrizedExpression, PullBackFormsToReferenceDomain,
+                                             PushForwardToDeformedDomain)
+from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import (
+    forms_are_close, logger as pull_back_to_reference_domain_logger)
 from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
 from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.decorators import StoreMapFromSolutionToProblem
@@ -25,7 +30,8 @@ enable_pull_back_to_reference_domain_logging = enable_logging({pull_back_to_refe
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_pull_back_to_reference_domain")
 
 def theta_times_operator(problem, term):
-    return sum([Constant(theta)*operator for (theta, operator) in zip(problem.compute_theta(term), problem.assemble_operator(term))])
+    return sum([Constant(theta)*operator for (theta, operator) in zip(
+        problem.compute_theta(term), problem.assemble_operator(term))])
 
 def keep_shape_parametrization_affine(shape_parametrization_expression):
     return shape_parametrization_expression
@@ -38,7 +44,8 @@ def make_shape_parametrization_non_affine(shape_parametrization_expression):
             non_affine_shape_parametrization_expression_on_subdomain.append(
                 expression_coord + " + 1e-16*mu[0]*x[" + str(coord) + "]**2"
             )
-        non_affine_shape_parametrization_expression.append(tuple(non_affine_shape_parametrization_expression_on_subdomain))
+        non_affine_shape_parametrization_expression.append(tuple(
+            non_affine_shape_parametrization_expression_on_subdomain))
     return non_affine_shape_parametrization_expression
 
 def NoDecorator():
@@ -70,7 +77,9 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decora
                 header,
                 [
                     (keep_shape_parametrization_affine, NoDecorator, None, None),
-                    (make_shape_parametrization_non_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
+                    (make_shape_parametrization_non_affine, NoDecorator, AssertionError, (
+                        "Non affine parametric dependence detected. Please use one among DEIM, EIM"
+                        + " and ExactParametrizedFunctions")),
                     (make_shape_parametrization_non_affine, DEIM, None, None),
                     (make_shape_parametrization_non_affine, EIM, None, None),
                     (make_shape_parametrization_non_affine, ExactParametrizedFunctions, None, None)
@@ -80,7 +89,9 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decora
             return (
                 header,
                 [
-                    (keep_shape_parametrization_affine, NoDecorator, AssertionError, "Non affine parametric dependence detected. Please use one among DEIM, EIM and ExactParametrizedFunctions"),
+                    (keep_shape_parametrization_affine, NoDecorator, AssertionError, (
+                        "Non affine parametric dependence detected. Please use one among DEIM, EIM"
+                        + " and ExactParametrizedFunctions")),
                     (keep_shape_parametrization_affine, DEIM, None, None),
                     (keep_shape_parametrization_affine, EIM, None, None),
                     (keep_shape_parametrization_affine, ExactParametrizedFunctions, None, None)
@@ -105,7 +116,8 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decora
             []
         )
         assert len(decorator_args[decorator_arg_id][1]) == len(decorator_args[decorator_arg_id][2])
-        for (decorator_arg_1, decorator_arg_2) in zip(decorator_args[decorator_arg_id][1], decorator_args[decorator_arg_id][2]):
+        for (decorator_arg_1, decorator_arg_2) in zip(
+                decorator_args[decorator_arg_id][1], decorator_args[decorator_arg_id][2]):
             for default_decorator_arg_1 in default_decorator_args[decorator_arg_2][1]:
                 combined_default_decorator_args[1].append(default_decorator_arg_1 + decorator_arg_1)
         combined_default_decorator_args = tuple(combined_default_decorator_args)
@@ -113,14 +125,18 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decora
         for (decorator_arg_id, decorator_arg) in enumerate(decorator_args):
             if decorator_arg_id != decorator_args_change_affinity:
                 decorator_args_list.append(decorator_arg)
-    decorators = [pytest.mark.parametrize(decorator_arg[0], decorator_arg[1]) for decorator_arg in decorator_args_list]
+    decorators = [pytest.mark.parametrize(decorator_arg[0], decorator_arg[1])
+                  for decorator_arg in decorator_args_list]
 
     def check_affine_and_non_affine_shape_parametrizations_decorator(original_test):
         @pytest.mark.pull_back_to_reference_domain
         @functools.wraps(original_test)
-        def test_with_exception_check(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, **kwargs):
+        def test_with_exception_check(
+                shape_parametrization_preprocessing, AdditionalProblemDecorator,
+                ExceptionType, exception_message, **kwargs):
             with raises(ExceptionType) as excinfo:
-                original_test(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, **kwargs)
+                original_test(shape_parametrization_preprocessing, AdditionalProblemDecorator,
+                              ExceptionType, exception_message, **kwargs)
             if ExceptionType is not None:
                 assert str(excinfo.value) == exception_message
         decorated_test = test_with_exception_check
@@ -133,7 +149,8 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decora
 # Test forms pull back to reference domain for tutorial 03
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_hole(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "hole.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "hole_physical_region.xml"))
@@ -170,7 +187,9 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -198,9 +217,9 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
             mu = self.mu
             if term == "a":
                 # subdomains 1 and 7
-                theta_a0 = - (mu[1] - 2)/mu[0] - (2*(2*mu[0] - 2)*(mu[0] - 1))/(mu[0]*(mu[1] - 2)) # K11
-                theta_a1 = -mu[0]/(mu[1] - 2) # K22
-                theta_a2 = -(2*(mu[0] - 1))/(mu[1] - 2) # K12 and K21
+                theta_a0 = - (mu[1] - 2)/mu[0] - (2*(2*mu[0] - 2)*(mu[0] - 1))/(mu[0]*(mu[1] - 2))
+                theta_a1 = -mu[0]/(mu[1] - 2)
+                theta_a2 = -(2*(mu[0] - 1))/(mu[1] - 2)
                 # subdomains 2 and 8
                 theta_a3 = 2 - (mu[0] - 1)*(mu[0] - 1)/(mu[1] - 2) - mu[1]
                 theta_a4 = -1/(mu[1] - 2)
@@ -216,7 +235,8 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
                 # boundaries 5, 6, 7 and 8
                 theta_a12 = mu[2]
                 # Return
-                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12)
+                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8,
+                        theta_a9, theta_a10, theta_a11, theta_a12)
             elif term == "f":
                 theta_f0 = mu[0] # boundary 1
                 theta_f1 = mu[1] # boundary 2
@@ -232,19 +252,23 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
                 # subdomains 1 and 7
                 a0 = inner(u.dx(0), v.dx(0))*dx(1) + inner(u.dx(0), v.dx(0))*dx(7)
                 a1 = inner(u.dx(1), v.dx(1))*dx(1) + inner(u.dx(1), v.dx(1))*dx(7)
-                a2 = inner(u.dx(0), v.dx(1))*dx(1) + inner(u.dx(1), v.dx(0))*dx(1) - (inner(u.dx(0), v.dx(1))*dx(7) + inner(u.dx(1), v.dx(0))*dx(7))
+                a2 = (inner(u.dx(0), v.dx(1))*dx(1) + inner(u.dx(1), v.dx(0))*dx(1)
+                      - inner(u.dx(0), v.dx(1))*dx(7) + inner(u.dx(1), v.dx(0))*dx(7))
                 # subdomains 2 and 8
                 a3 = inner(u.dx(0), v.dx(0))*dx(2) + inner(u.dx(0), v.dx(0))*dx(8)
                 a4 = inner(u.dx(1), v.dx(1))*dx(2) + inner(u.dx(1), v.dx(1))*dx(8)
-                a5 = inner(u.dx(0), v.dx(1))*dx(2) + inner(u.dx(1), v.dx(0))*dx(2) - (inner(u.dx(0), v.dx(1))*dx(8) + inner(u.dx(1), v.dx(0))*dx(8))
+                a5 = (inner(u.dx(0), v.dx(1))*dx(2) + inner(u.dx(1), v.dx(0))*dx(2)
+                      - inner(u.dx(0), v.dx(1))*dx(8) + inner(u.dx(1), v.dx(0))*dx(8))
                 # subdomains 3 and 5
                 a6 = inner(u.dx(0), v.dx(0))*dx(3) + inner(u.dx(0), v.dx(0))*dx(5)
                 a7 = inner(u.dx(1), v.dx(1))*dx(3) + inner(u.dx(1), v.dx(1))*dx(5)
-                a8 = inner(u.dx(0), v.dx(1))*dx(3) + inner(u.dx(1), v.dx(0))*dx(3) - (inner(u.dx(0), v.dx(1))*dx(5) + inner(u.dx(1), v.dx(0))*dx(5))
+                a8 = (inner(u.dx(0), v.dx(1))*dx(3) + inner(u.dx(1), v.dx(0))*dx(3)
+                      - inner(u.dx(0), v.dx(1))*dx(5) + inner(u.dx(1), v.dx(0))*dx(5))
                 # subdomains 4 and 6
                 a9 = inner(u.dx(0), v.dx(0))*dx(4) + inner(u.dx(0), v.dx(0))*dx(6)
                 a10 = inner(u.dx(1), v.dx(1))*dx(4) + inner(u.dx(1), v.dx(1))*dx(6)
-                a11 = inner(u.dx(0), v.dx(1))*dx(4) + inner(u.dx(1), v.dx(0))*dx(4) - (inner(u.dx(0), v.dx(1))*dx(6) + inner(u.dx(1), v.dx(0))*dx(6))
+                a11 = (inner(u.dx(0), v.dx(1))*dx(4) + inner(u.dx(1), v.dx(0))*dx(4)
+                       - inner(u.dx(0), v.dx(1))*dx(6) + inner(u.dx(1), v.dx(0))*dx(6))
                 # boundaries 5, 6, 7 and 8
                 a12 = inner(u, v)*ds(5) + inner(u, v)*ds(6) + inner(u, v)*ds(7) + inner(u, v)*ds(8)
                 # Return
@@ -312,7 +336,8 @@ def test_pull_back_to_reference_domain_hole(shape_parametrization_preprocessing,
 # Test forms pull back to reference domain for tutorial 03 rotation
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_hole_rotation(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "hole.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "hole_physical_region.xml"))
@@ -320,14 +345,30 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + 2", "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + 2"), # subdomain 1
-        ("2*sqrt(2.0)*sin(mu[0]) + x[0] + x[1]*(sqrt(2.0)*sin(mu[0]) - 1) - 2", "-2*sqrt(2.0)*cos(mu[0]) + x[1]*(-sqrt(2.0)*cos(mu[0]) + 2) + 2"), # subdomain 2
-        ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2", "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2"), # subdomain 3
-        ("-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 2) + 2", "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*cos(mu[0]) - 1) + x[1] - 2"), # subdomain 4
-        ("2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) - 2", "-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + 3*sqrt(2.0)*cos(mu[0])/2 - 2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2"), # subdomain 5
-        ("2*sqrt(2.0)*cos(mu[0]) + x[0]*(-sqrt(2.0)*cos(mu[0]) + 2) - 2", "2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 1) + x[1] - 2"), # subdomain 6
-        ("-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + x[1]*(3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 - 2) + 2", "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2) + x[1]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) - 2"), # subdomain 7
-        ("2*sqrt(2.0)*cos(mu[0]) + x[0] + x[1]*(-sqrt(2.0)*cos(mu[0]) + 1) - 2", "2*sqrt(2.0)*sin(mu[0]) + x[1]*(-sqrt(2.0)*sin(mu[0]) + 2) - 2")  # subdomain 8
+        ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2)"
+         + "+ x[1]*(-sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) + 2",
+         "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2)"
+         + "+ x[1]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2) + 2"), # subdomain 1
+        ("2*sqrt(2.0)*sin(mu[0]) + x[0] + x[1]*(sqrt(2.0)*sin(mu[0]) - 1) - 2",
+         "-2*sqrt(2.0)*cos(mu[0]) + x[1]*(-sqrt(2.0)*cos(mu[0]) + 2) + 2"), # subdomain 2
+        ("-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2)"
+         + "+ x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2",
+         "-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2 + 2)"
+         + "+ x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2"), # subdomain 3
+        ("-2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 2) + 2",
+         "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*cos(mu[0]) - 1) + x[1] - 2"), # subdomain 4
+        ("2*sqrt(2.0)*sin(mu[0]) + x[0]*(-3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 + 2)"
+         + "+ x[1]*(-sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) - 2",
+         "-2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + 3*sqrt(2.0)*cos(mu[0])/2 - 2)"
+         + "+ x[1]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2) + 2"), # subdomain 5
+        ("2*sqrt(2.0)*cos(mu[0]) + x[0]*(-sqrt(2.0)*cos(mu[0]) + 2) - 2",
+         "2*sqrt(2.0)*sin(mu[0]) + x[0]*(-sqrt(2.0)*sin(mu[0]) + 1) + x[1] - 2"), # subdomain 6
+        ("-2*sqrt(2.0)*sin(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2)"
+         + "+ x[1]*(3*sqrt(2.0)*sin(mu[0])/2 + sqrt(2.0)*cos(mu[0])/2 - 2) + 2",
+         "2*sqrt(2.0)*cos(mu[0]) + x[0]*(sqrt(2.0)*sin(mu[0])/2 - sqrt(2.0)*cos(mu[0])/2)"
+         + "+ x[1]*(sqrt(2.0)*sin(mu[0])/2 - 3*sqrt(2.0)*cos(mu[0])/2 + 2) - 2"), # subdomain 7
+        ("2*sqrt(2.0)*cos(mu[0]) + x[0] + x[1]*(-sqrt(2.0)*cos(mu[0]) + 1) - 2",
+         "2*sqrt(2.0)*sin(mu[0]) + x[1]*(-sqrt(2.0)*sin(mu[0]) + 2) - 2")  # subdomain 8
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -349,7 +390,9 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -376,35 +419,46 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
         def compute_theta(self, term):
             mu = self.mu
             if term == "a":
-                theta_a0 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
+                theta_a0 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(
+                    sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
                 theta_a1 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu[0]))
                 theta_a2 = (-2*sqrt(2.0) + 4*sin(mu[0]))/(sqrt(2.0) - 4*cos(mu[0]))
-                theta_a3 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu[0]) + 4*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a3 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu[0]) + 4*sqrt(2.0)*cos(mu[0]) - 5)/(
+                    sqrt(2.0)*cos(mu[0]) - 2)
                 theta_a4 = -1/(sqrt(2.0)*cos(mu[0]) - 2)
                 theta_a5 = (sqrt(2.0)*sin(mu[0]) - 1)/(sqrt(2.0)*cos(mu[0]) - 2)
                 theta_a6 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu[0]))
-                theta_a7 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu[0]) + 16*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu[0])))
+                theta_a7 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu[0]) + 16*sqrt(2.0)*cos(mu[0]) - 16)/(
+                    sqrt(2.0)*(sqrt(2.0) - 4*sin(mu[0])))
                 theta_a8 = (-2*sqrt(2.0) + 4*cos(mu[0]))/(sqrt(2.0) - 4*sin(mu[0]))
                 theta_a9 = -1/(sqrt(2.0)*sin(mu[0]) - 2)
-                theta_a10 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu[0]) + 2*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a10 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu[0]) + 2*sqrt(2.0)*cos(mu[0]) - 5)/(
+                    sqrt(2.0)*sin(mu[0]) - 2)
                 theta_a11 = (sqrt(2.0)*cos(mu[0]) - 1)/(sqrt(2.0)*sin(mu[0]) - 2)
                 theta_a12 = -sqrt(2.0)/(sqrt(2.0) - 4*cos(mu[0]))
-                theta_a13 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
+                theta_a13 = (-5*sqrt(2.0)**2 + 16*sqrt(2.0)*sin(mu[0]) + 8*sqrt(2.0)*cos(mu[0]) - 16)/(
+                    sqrt(2.0)*(sqrt(2.0) - 4*cos(mu[0])))
                 theta_a14 = 2*(sqrt(2.0) - 2*sin(mu[0]))/(sqrt(2.0) - 4*cos(mu[0]))
                 theta_a15 = -1/(sqrt(2.0)*cos(mu[0]) - 2)
-                theta_a16 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu[0]) + 4*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*cos(mu[0]) - 2)
+                theta_a16 = (-sqrt(2.0)**2 + 2*sqrt(2.0)*sin(mu[0]) + 4*sqrt(2.0)*cos(mu[0]) - 5)/(
+                    sqrt(2.0)*cos(mu[0]) - 2)
                 theta_a17 = (-sqrt(2.0)*sin(mu[0]) + 1)/(sqrt(2.0)*cos(mu[0]) - 2)
-                theta_a18 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu[0]) + 16*sqrt(2.0)*cos(mu[0]) - 16)/(sqrt(2.0)*(sqrt(2.0) - 4*sin(mu[0])))
+                theta_a18 = (-5*sqrt(2.0)**2 + 8*sqrt(2.0)*sin(mu[0]) + 16*sqrt(2.0)*cos(mu[0]) - 16)/(
+                    sqrt(2.0)*(sqrt(2.0) - 4*sin(mu[0])))
                 theta_a19 = -sqrt(2.0)/(sqrt(2.0) - 4*sin(mu[0]))
                 theta_a20 = 2*(sqrt(2.0) - 2*cos(mu[0]))/(sqrt(2.0) - 4*sin(mu[0]))
-                theta_a21 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu[0]) + 2*sqrt(2.0)*cos(mu[0]) - 5)/(sqrt(2.0)*sin(mu[0]) - 2)
+                theta_a21 = (-sqrt(2.0)**2 + 4*sqrt(2.0)*sin(mu[0]) + 2*sqrt(2.0)*cos(mu[0]) - 5)/(
+                    sqrt(2.0)*sin(mu[0]) - 2)
                 theta_a22 = -1/(sqrt(2.0)*sin(mu[0]) - 2)
                 theta_a23 = (-sqrt(2.0)*cos(mu[0]) + 1)/(sqrt(2.0)*sin(mu[0]) - 2)
                 theta_a24 = mu[1]
                 theta_a25 = mu[1]
                 theta_a26 = mu[1]
                 theta_a27 = mu[1]
-                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16, theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24, theta_a25, theta_a26, theta_a27)
+                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8,
+                        theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16,
+                        theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24,
+                        theta_a25, theta_a26, theta_a27)
             elif term == "f":
                 theta_f0 = 1.0
                 theta_f1 = 1.0
@@ -444,7 +498,8 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
                 a25 = u*v*ds(6)
                 a26 = u*v*ds(7)
                 a27 = u*v*ds(8)
-                return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27)
+                return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19,
+                        a20, a21, a22, a23, a24, a25, a26, a27)
             elif term == "f":
                 f0 = v*ds(1)
                 f1 = v*ds(2)
@@ -510,8 +565,10 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
     "ExpressionOnDeformedDomainGenerator", [
         (lambda problem, cppcode, **kwargs: Expression(cppcode, element=kwargs["element"]), ),
         (lambda problem, cppcode, **kwargs: ParametrizedExpression(problem, cppcode, **kwargs), ),
-        (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, Expression(cppcode, element=kwargs["element"])), ),
-        (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, ParametrizedExpression(problem, cppcode, **kwargs)), )
+        (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, Expression(
+            cppcode, element=kwargs["element"])), ),
+        (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, ParametrizedExpression(
+            problem, cppcode, **kwargs)), )
     ], [ # is_affine:
         True,
         False,
@@ -519,7 +576,9 @@ def test_pull_back_to_reference_domain_hole_rotation(shape_parametrization_prepr
         False
     ]
 ))
-def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator):
+def test_pull_back_to_reference_domain_graetz(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator,
+        ExceptionType, exception_message, ExpressionOnDeformedDomainGenerator):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "graetz.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "graetz_physical_region.xml"))
@@ -550,7 +609,9 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -613,7 +674,8 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
             Graetz.__init__(self, "GraetzPullBack")
             self.V = V
             self._solution = Function(V)
-            self.vel = ExpressionOnDeformedDomainGenerator(self, "x[1]*(1-x[1])", mu=(1.0, 1.0), element=V.ufl_element())
+            self.vel = ExpressionOnDeformedDomainGenerator(
+                self, "x[1]*(1-x[1])", mu=(1.0, 1.0), element=V.ufl_element())
 
         def compute_theta(self, term):
             mu = self.mu
@@ -709,7 +771,10 @@ def test_pull_back_to_reference_domain_graetz(shape_parametrization_preprocessin
         )
     ]
 ), is_affine=False)
-def test_pull_back_to_reference_domain_nonlinear_elliptic(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, nonlinear_theta_on_reference_domain, nonlinear_theta_on_deformed_domain, nonlinear_operator, initial_guess):
+def test_pull_back_to_reference_domain_nonlinear_elliptic(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator,
+        ExceptionType, exception_message,
+        nonlinear_theta_on_reference_domain, nonlinear_theta_on_deformed_domain, nonlinear_operator, initial_guess):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "square.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "square_physical_region.xml"))
@@ -743,7 +808,9 @@ def test_pull_back_to_reference_domain_nonlinear_elliptic(shape_parametrization_
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -867,7 +934,9 @@ def test_pull_back_to_reference_domain_nonlinear_elliptic(shape_parametrization_
         (CellDiameter, lambda mu: sqrt(mu))
     ]
 ))
-def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
+def test_pull_back_to_reference_domain_advection_dominated(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator,
+        ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "graetz.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "graetz_physical_region.xml"))
@@ -900,7 +969,9 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__, str(cell_diameter_pull_back(4.))])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__, str(cell_diameter_pull_back(4.))])
 
         def init(self):
             self._init_operators()
@@ -1020,7 +1091,8 @@ def test_pull_back_to_reference_domain_advection_dominated(shape_parametrization
 # Test forms pull back to reference domain for tutorial 12
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_stokes(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "t_bypass.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "t_bypass_physical_region.xml"))
@@ -1028,8 +1100,10 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 1
-        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 2
+        ("mu[4]*x[0] + mu[1] - mu[4]",
+         "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 1
+        ("mu[4]*x[0] + mu[1] - mu[4]",
+         "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 2
         ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 3
         ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 4
         ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 5
@@ -1065,7 +1139,9 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -1131,7 +1207,8 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         def assemble_operator(self, term):
             if term == "a":
                 a0 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*(dx(1) + dx(2))
-                a1 = (u[0].dx(0)*v[0].dx(1) + u[0].dx(1)*v[0].dx(0) + u[1].dx(0)*v[1].dx(1) + u[1].dx(1)*v[1].dx(0))*(dx(1) + dx(2))
+                a1 = (u[0].dx(0)*v[0].dx(1) + u[0].dx(1)*v[0].dx(0)
+                      + u[1].dx(0)*v[1].dx(1) + u[1].dx(1)*v[1].dx(0))*(dx(1) + dx(2))
                 a2 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*(dx(1) + dx(2))
                 a3 = (u[0].dx(0)*v[0].dx(0) + u[1].dx(0)*v[1].dx(0))*(dx(3) + dx(4))
                 a4 = (u[0].dx(1)*v[0].dx(1) + u[1].dx(1)*v[1].dx(1))*(dx(3) + dx(4))
@@ -1260,7 +1337,9 @@ def test_pull_back_to_reference_domain_stokes(shape_parametrization_preprocessin
         (CellDiameter, lambda mu: sqrt(mu))
     ]
 ))
-def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
+def test_pull_back_to_reference_domain_stokes_stabilization(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator,
+        ExceptionType, exception_message, CellDiameter, cell_diameter_pull_back):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "cavity.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_physical_region.xml"))
@@ -1299,7 +1378,9 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__, str(cell_diameter_pull_back(4.))])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__, str(cell_diameter_pull_back(4.))])
 
         def init(self):
             self._init_operators()
@@ -1459,7 +1540,8 @@ def test_pull_back_to_reference_domain_stokes_stabilization(shape_parametrizatio
 # Test forms pull back to reference domain for tutorial 13
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_elliptic_optimal_control_1(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "elliptic_optimal_control_1.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "elliptic_optimal_control_1_physical_region.xml"))
@@ -1496,7 +1578,9 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -1666,7 +1750,8 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
                 raise ValueError("Invalid term for assemble_operator().")
 
     # Check forms
-    problem_on_reference_domain = EllipticOptimalControlOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain = EllipticOptimalControlOnReferenceDomain(
+        V, subdomains=subdomains, boundaries=boundaries)
     problem_pull_back = EllipticOptimalControlPullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
@@ -1713,7 +1798,8 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(shape_parametr
 # Test forms pull back to reference domain for tutorial 14
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_stokes_optimal_control_1(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "stokes_optimal_control_1.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "stokes_optimal_control_1_physical_region.xml"))
@@ -1751,7 +1837,9 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -1949,7 +2037,8 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
             else:
                 raise ValueError("Invalid term for assemble_operator().")
     # Check forms
-    problem_on_reference_domain = StokesOptimalControlOnReferenceDomain(V, subdomains=subdomains, boundaries=boundaries)
+    problem_on_reference_domain = StokesOptimalControlOnReferenceDomain(
+        V, subdomains=subdomains, boundaries=boundaries)
     problem_pull_back = StokesOptimalControlPullBack(V, subdomains=subdomains, boundaries=boundaries)
     problem_on_reference_domain.init()
     problem_pull_back.init()
@@ -2016,7 +2105,8 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(shape_parametriz
 # Test forms pull back to reference domain for tutorial 16
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_stokes_coupled(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "t_bypass.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "t_bypass_physical_region.xml"))
@@ -2024,8 +2114,10 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 1
-        ("mu[4]*x[0] + mu[1] - mu[4]", "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 2
+        ("mu[4]*x[0] + mu[1] - mu[4]",
+         "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 1
+        ("mu[4]*x[0] + mu[1] - mu[4]",
+         "mu[4]*tan(mu[5])*x[0] + mu[0]*x[1] + mu[2] - mu[4]*tan(mu[5]) - mu[0]"), # subdomain 2
         ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 3
         ("mu[1]*x[0]", "mu[3]*x[1] + mu[2] + mu[0] - 2*mu[3]"), # subdomain 4
         ("mu[1]*x[0]", "mu[0]*x[1] + mu[2] - mu[0]"), # subdomain 5
@@ -2057,7 +2149,9 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -2113,7 +2207,10 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
                 theta_a24 = mu[1]
                 theta_a25 = mu[2]
                 theta_a26 = mu[1]
-                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8, theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16, theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24, theta_a25, theta_a26)
+                return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8,
+                        theta_a9, theta_a10, theta_a11, theta_a12, theta_a13, theta_a14, theta_a15, theta_a16,
+                        theta_a17, theta_a18, theta_a19, theta_a20, theta_a21, theta_a22, theta_a23, theta_a24,
+                        theta_a25, theta_a26)
             elif term == "f":
                 theta_f0 = mu[0]*mu[4]
                 theta_f1 = mu[1]*mu[3]
@@ -2154,7 +2251,8 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
                 a24 = vel[1]*c.dx(1)*d*dx(5) + vel[1]*c.dx(1)*d*dx(6)
                 a25 = vel[0]*c.dx(0)*d*dx(7) + vel[0]*c.dx(0)*d*dx(8)
                 a26 = vel[1]*c.dx(1)*d*dx(7) + vel[1]*c.dx(1)*d*dx(8)
-                return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24, a25, a26)
+                return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19,
+                        a20, a21, a22, a23, a24, a25, a26)
             elif term == "f":
                 f0 = ff*d*dx(1) + ff*d*dx(2)
                 f1 = ff*d*dx(3) + ff*d*dx(4)
@@ -2214,7 +2312,8 @@ def test_pull_back_to_reference_domain_stokes_coupled(shape_parametrization_prep
 # Test forms pull back to reference domain for tutorial 17
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_navier_stokes(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "backward_facing_step.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "backward_facing_step_physical_region.xml"))
@@ -2256,7 +2355,9 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()
@@ -2435,7 +2536,8 @@ def test_pull_back_to_reference_domain_navier_stokes(shape_parametrization_prepr
 # Test forms pull back to reference domain for tutorial 18
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
-def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
+def test_pull_back_to_reference_domain_stokes_unsteady(
+        shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message):
     # Read the mesh for this problem
     mesh = Mesh(os.path.join(data_dir, "cavity.xml"))
     subdomains = MeshFunction("size_t", mesh, os.path.join(data_dir, "cavity_physical_region.xml"))
@@ -2472,7 +2574,9 @@ def test_pull_back_to_reference_domain_stokes_unsteady(shape_parametrization_pre
             self.Q = dict()
 
         def name(self):
-            return "___".join([self.folder_prefix, shape_parametrization_preprocessing.__name__, AdditionalProblemDecorator.__name__])
+            return "___".join([
+                self.folder_prefix, shape_parametrization_preprocessing.__name__,
+                AdditionalProblemDecorator.__name__])
 
         def init(self):
             self._init_operators()

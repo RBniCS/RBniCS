@@ -4,7 +4,8 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from rbnics.scm.problems.decorated_reduced_problem_with_stability_factor_evaluation import DecoratedReducedProblemWithStabilityFactorEvaluation
+from rbnics.scm.problems.decorated_reduced_problem_with_stability_factor_evaluation import (
+    DecoratedReducedProblemWithStabilityFactorEvaluation)
 from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 

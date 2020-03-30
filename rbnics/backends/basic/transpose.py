@@ -10,7 +10,10 @@ from rbnics.utils.decorators import overload
 
 logger = getLogger("rbnics/backends/basic/transpose.py")
 
-def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None, AdditionalIsVector=None, ConvertAdditionalVectorTypes=None, AdditionalIsMatrix=None, ConvertAdditionalMatrixTypes=None):
+def transpose(backend, wrapping, online_backend, online_wrapping,
+              AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None,
+              AdditionalIsVector=None, ConvertAdditionalVectorTypes=None,
+              AdditionalIsMatrix=None, ConvertAdditionalMatrixTypes=None):
     # Preprocess optional inputs
     if AdditionalIsFunction is None:
         def _AdditionalIsFunction(arg):
@@ -37,14 +40,42 @@ def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFu
             raise NotImplementedError("Please implement conversion of additional matrix types")
         ConvertAdditionalMatrixTypes = _ConvertAdditionalMatrixTypes
     # Prepare all possible auxiliary classes, which will be dispatched depending on the input argument
-    _FunctionsList_Transpose__times__Matrix = FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes)
-    _FunctionsList_Transpose = FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _FunctionsList_Transpose__times__Matrix)
-    _BasisFunctionsMatrix_Transpose__times__Matrix = BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes)
-    _BasisFunctionsMatrix_Transpose = BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _BasisFunctionsMatrix_Transpose__times__Matrix)
-    _Vector_Transpose__times__Matrix = Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes)
-    _Vector_Transpose = Vector_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _Vector_Transpose__times__Matrix)
-    _VectorizedMatrix_Transpose = VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsMatrix, ConvertAdditionalMatrixTypes)
-    _TensorsList_Transpose = TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping, _Vector_Transpose, _VectorizedMatrix_Transpose)
+    _FunctionsList_Transpose__times__Matrix = FunctionsList_Transpose__times__Matrix(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+        AdditionalIsVector, ConvertAdditionalVectorTypes)
+    _FunctionsList_Transpose = FunctionsList_Transpose(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+        AdditionalIsVector, ConvertAdditionalVectorTypes,
+        AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
+        _FunctionsList_Transpose__times__Matrix)
+    _BasisFunctionsMatrix_Transpose__times__Matrix = BasisFunctionsMatrix_Transpose__times__Matrix(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+        AdditionalIsVector, ConvertAdditionalVectorTypes)
+    _BasisFunctionsMatrix_Transpose = BasisFunctionsMatrix_Transpose(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+        AdditionalIsVector, ConvertAdditionalVectorTypes,
+        AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
+        _BasisFunctionsMatrix_Transpose__times__Matrix)
+    _Vector_Transpose__times__Matrix = Vector_Transpose__times__Matrix(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+        AdditionalIsVector, ConvertAdditionalVectorTypes)
+    _Vector_Transpose = Vector_Transpose(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+        AdditionalIsVector, ConvertAdditionalVectorTypes,
+        AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
+        _Vector_Transpose__times__Matrix)
+    _VectorizedMatrix_Transpose = VectorizedMatrix_Transpose(
+        backend, wrapping, online_backend, online_wrapping,
+        AdditionalIsMatrix, ConvertAdditionalMatrixTypes)
+    _TensorsList_Transpose = TensorsList_Transpose(
+        backend, wrapping, online_backend, online_wrapping,
+        _Vector_Transpose, _VectorizedMatrix_Transpose)
     # Start dispatching based on input argument
     class _Transpose(object):
         @overload(backend.FunctionsList, )
@@ -87,7 +118,11 @@ def transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFu
     return _Transpose()
 
 # Auxiliary: transpose of a vector
-def Vector_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _Vector_Transpose__times__Matrix):
+def Vector_Transpose(backend, wrapping, online_backend, online_wrapping,
+                     AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                     AdditionalIsVector, ConvertAdditionalVectorTypes,
+                     AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
+                     _Vector_Transpose__times__Matrix):
     class _Vector_Transpose(object):
         @overload(backend.Function.Type(), )
         def __init__(self, function):
@@ -150,7 +185,9 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping, Additio
     return _Vector_Transpose
 
 # Auxiliary: multiplication of the transpose of a Vector with a Matrix
-def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes):
+def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping,
+                                    AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                                    AdditionalIsVector, ConvertAdditionalVectorTypes):
     class _Vector_Transpose__times__Matrix(object):
         @overload(backend.Function.Type(), backend.Matrix.Type())
         def __init__(self, function, matrix):
@@ -165,7 +202,8 @@ def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wr
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
             logger.log(DEBUG, "Begin v^T A w")
-            output = wrapping.vector_mul_vector(self.vector, wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(function)))
+            output = wrapping.vector_mul_vector(
+                self.vector, wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(function)))
             logger.log(DEBUG, "End v^T A w")
             return output
 
@@ -189,7 +227,11 @@ def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wr
     return _Vector_Transpose__times__Matrix
 
 # Auxiliary: transpose of a FunctionsList
-def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _FunctionsList_Transpose__times__Matrix):
+def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping,
+                            AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                            AdditionalIsVector, ConvertAdditionalVectorTypes,
+                            AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
+                            _FunctionsList_Transpose__times__Matrix):
     class _FunctionsList_Transpose(object):
         @overload(backend.FunctionsList, )
         def __init__(self, functions_list):
@@ -200,7 +242,8 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, 
             logger.log(DEBUG, "Begin S^T w")
             output = online_backend.OnlineVector(len(self.functions_list))
             for (i, fun_i) in enumerate(self.functions_list):
-                output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
+                output[i] = wrapping.vector_mul_vector(
+                    wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
             logger.log(DEBUG, "End S^T w")
             return output
 
@@ -234,7 +277,9 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping, 
     return _FunctionsList_Transpose
 
 # Auxiliary: multiplication of the transpose of a FunctionsList with a Matrix
-def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes):
+def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping,
+                                           AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                                           AdditionalIsVector, ConvertAdditionalVectorTypes):
     class _FunctionsList_Transpose__times__Matrix(object):
         @overload(backend.FunctionsList, backend.Matrix.Type())
         def __init__(self, functions_list, matrix):
@@ -285,13 +330,19 @@ def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, on
     return _FunctionsList_Transpose__times__Matrix
 
 # Auxiliary: transpose of a BasisFunctionsMatrix
-def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes, AdditionalIsMatrix, ConvertAdditionalMatrixTypes, _BasisFunctionsMatrix_Transpose__times__Matrix):
+def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wrapping,
+                                   AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                                   AdditionalIsVector, ConvertAdditionalVectorTypes,
+                                   AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
+                                   _BasisFunctionsMatrix_Transpose__times__Matrix):
     class _BasisFunctionsMatrix_Transpose(object):
         @overload(backend.BasisFunctionsMatrix, )
         def __init__(self, basis_functions_matrix):
             self.basis_functions_matrix = basis_functions_matrix
-            self._component_name_to_basis_component_index = basis_functions_matrix._component_name_to_basis_component_index
-            self._component_name_to_basis_component_length = basis_functions_matrix._component_name_to_basis_component_length
+            self._component_name_to_basis_component_index = (
+                basis_functions_matrix._component_name_to_basis_component_index)
+            self._component_name_to_basis_component_length = (
+                basis_functions_matrix._component_name_to_basis_component_length)
 
         @overload(backend.Function.Type(), )
         def __mul__(self, function):
@@ -300,7 +351,8 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
             i = 0
             for component_name in self.basis_functions_matrix._components_name:
                 for fun_i in self.basis_functions_matrix._components[component_name]:
-                    output[i] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
+                    output[i] = wrapping.vector_mul_vector(
+                        wrapping.function_to_vector(fun_i), wrapping.function_to_vector(function))
                     i += 1
             logger.log(DEBUG, "End Z^T w")
             # Assert consistency of private attributes storing the order of components and their basis length.
@@ -353,33 +405,45 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
     return _BasisFunctionsMatrix_Transpose
 
 # Auxiliary: multiplication of the transpose of a BasisFunctionsMatrix with a Matrix
-def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping, AdditionalIsFunction, ConvertAdditionalFunctionTypes, AdditionalIsVector, ConvertAdditionalVectorTypes):
+def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping,
+                                                  AdditionalIsFunction, ConvertAdditionalFunctionTypes,
+                                                  AdditionalIsVector, ConvertAdditionalVectorTypes):
     class _BasisFunctionsMatrix_Transpose__times__Matrix(object):
         @overload(backend.BasisFunctionsMatrix, backend.Matrix.Type())
         def __init__(self, basis_functions_matrix, matrix):
             self.basis_functions_matrix = basis_functions_matrix
             self.matrix = matrix
-            self._component_name_to_basis_component_index = basis_functions_matrix._component_name_to_basis_component_index
-            self._component_name_to_basis_component_length = basis_functions_matrix._component_name_to_basis_component_length
+            self._component_name_to_basis_component_index = (
+                basis_functions_matrix._component_name_to_basis_component_index)
+            self._component_name_to_basis_component_length = (
+                basis_functions_matrix._component_name_to_basis_component_length)
 
         @overload(backend.BasisFunctionsMatrix)
         def __mul__(self, other_basis_functions_matrix):
             logger.log(DEBUG, "Begin Z^T*A*Z")
-            output = online_backend.OnlineMatrix(self.basis_functions_matrix._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
+            output = online_backend.OnlineMatrix(
+                self.basis_functions_matrix._component_name_to_basis_component_length,
+                other_basis_functions_matrix._component_name_to_basis_component_length)
             j = 0
             for other_component_name in other_basis_functions_matrix._components_name:
                 for fun_j in other_basis_functions_matrix._components[other_component_name]:
-                    matrix_times_fun_j = wrapping.matrix_mul_vector(self.matrix, wrapping.function_to_vector(fun_j))
+                    matrix_times_fun_j = wrapping.matrix_mul_vector(
+                        self.matrix, wrapping.function_to_vector(fun_j))
                     i = 0
                     for self_component_name in self.basis_functions_matrix._components_name:
                         for fun_i in self.basis_functions_matrix._components[self_component_name]:
-                            output[i, j] = wrapping.vector_mul_vector(wrapping.function_to_vector(fun_i), matrix_times_fun_j)
+                            output[i, j] = wrapping.vector_mul_vector(
+                                wrapping.function_to_vector(fun_i), matrix_times_fun_j)
                             i += 1
                     j += 1
             logger.log(DEBUG, "End Z^T*A*Z")
             # Assert consistency of private attributes storing the order of components and their basis length.
-            assert output._component_name_to_basis_component_index == (self._component_name_to_basis_component_index, other_basis_functions_matrix._component_name_to_basis_component_index)
-            assert output._component_name_to_basis_component_length == (self._component_name_to_basis_component_length, other_basis_functions_matrix._component_name_to_basis_component_length)
+            assert output._component_name_to_basis_component_index == (
+                self._component_name_to_basis_component_index,
+                other_basis_functions_matrix._component_name_to_basis_component_index)
+            assert output._component_name_to_basis_component_length == (
+                self._component_name_to_basis_component_length,
+                other_basis_functions_matrix._component_name_to_basis_component_length)
             # Return
             return output
 
@@ -430,7 +494,8 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
     return _BasisFunctionsMatrix_Transpose__times__Matrix
 
 # Auxiliary: transpose of a vectorized matrix (i.e. vector obtained by stacking its columns)
-def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrapping, AdditionalIsMatrix, ConvertAdditionalMatrixTypes):
+def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrapping,
+                               AdditionalIsMatrix, ConvertAdditionalMatrixTypes):
     class _VectorizedMatrix_Transpose(object):
         @overload(backend.Matrix.Type(), )
         def __init__(self, matrix):
@@ -460,7 +525,8 @@ def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrappin
     return _VectorizedMatrix_Transpose
 
 # Auxiliary: transpose of a TensorsList
-def TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping, _Vector_Transpose, _VectorizedMatrix_Transpose):
+def TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping,
+                          _Vector_Transpose, _VectorizedMatrix_Transpose):
     class _TensorsList_Transpose(object):
         @overload(backend.TensorsList, )
         def __init__(self, tensors_list):

@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from collections import MutableMapping
+from collections.abc import MutableMapping
 from functools import wraps
 from logging import DEBUG, getLogger
 from pylru import lrucache
@@ -86,16 +86,24 @@ class Cache(object):
                 try:
                     self._storage[storage_key] = self._import(storage_filename)
                 except OSError:
-                    logger.log(DEBUG, "Could not load key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache or disk")
+                    logger.log(DEBUG, "Could not load key " + str(storage_key)
+                               + " (corresponding to args = " + str(args)
+                               + " and kwargs = " + str(kwargs) + ") from cache or disk")
                     raise key_error
                 else:
-                    logger.log(DEBUG, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from disk")
+                    logger.log(DEBUG, "Loaded key " + str(storage_key)
+                               + " (corresponding to args = " + str(args)
+                               + " and kwargs = " + str(kwargs) + ") from disk")
                     return self._storage[storage_key]
             else:
-                logger.log(DEBUG, "Could not load key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
+                logger.log(DEBUG, "Could not load key " + str(storage_key)
+                           + " (corresponding to args = " + str(args)
+                           + " and kwargs = " + str(kwargs) + ") from cache")
                 raise key_error
         else:
-            logger.log(DEBUG, "Loaded key " + str(storage_key) + " (corresponding to args = " + str(args) + " and kwargs = " + str(kwargs) + ") from cache")
+            logger.log(DEBUG, "Loaded key " + str(storage_key)
+                       + " (corresponding to args = " + str(args)
+                       + " and kwargs = " + str(kwargs) + ") from cache")
             return storage_value
 
     def __setitem__(self, key, value):

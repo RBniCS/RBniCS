@@ -105,7 +105,8 @@ reduced_basis_method.set_Nmax(15)
 reduced_basis_method.set_tolerance(1e-5)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(100, sampling=BetaDistribution(beta_a, beta_b), weight=BetaWeight(beta_a, beta_b))
+reduced_basis_method.initialize_training_set(
+    100, sampling=BetaDistribution(beta_a, beta_b), weight=BetaWeight(beta_a, beta_b))
 reduced_thermal_block_problem = reduced_basis_method.offline()
 
 # 6. Perform an online solve

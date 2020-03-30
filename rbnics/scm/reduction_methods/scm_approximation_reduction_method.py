@@ -10,7 +10,8 @@ from rbnics.backends import transpose
 from rbnics.backends.online import OnlineVector
 from rbnics.reduction_methods.base import ReductionMethod
 from rbnics.scm.problems import ParametrizedStabilityFactorEigenProblem
-from rbnics.utils.io import ErrorAnalysisTable, Folders, GreedyErrorEstimatorsList, SpeedupAnalysisTable, TextBox, TextLine, Timer
+from rbnics.utils.io import (ErrorAnalysisTable, Folders, GreedyErrorEstimatorsList, SpeedupAnalysisTable,
+                             TextBox, TextLine, Timer)
 
 # Empirical interpolation method for the interpolation of parametrized functions
 class SCMApproximationReductionMethod(ReductionMethod):
@@ -31,12 +32,14 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # OFFLINE: set the elements in the training set.
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         assert enable_import
-        import_successful = ReductionMethod.initialize_training_set(self, self.SCM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
+        import_successful = ReductionMethod.initialize_training_set(
+            self, self.SCM_approximation.mu_range, ntrain, enable_import, sampling, **kwargs)
         self.SCM_approximation.training_set = self.training_set
         return import_successful
 
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-        return ReductionMethod.initialize_testing_set(self, self.SCM_approximation.mu_range, ntest, enable_import, sampling, **kwargs)
+        return ReductionMethod.initialize_testing_set(
+            self, self.SCM_approximation.mu_range, ntest, enable_import, sampling, **kwargs)
 
     # Perform the offline phase of SCM
     def offline(self):
@@ -53,10 +56,14 @@ class SCMApproximationReductionMethod(ReductionMethod):
         required_folders.update(self.folder)
         required_folders.update(self.SCM_approximation.folder)
         optional_folders = Folders()
-        optional_folders["cache"] = required_folders.pop("cache") # this does not affect the availability of offline data
-        optional_folders["testing_set"] = required_folders.pop("testing_set") # this is required only in the error/speedup analysis
-        optional_folders["error_analysis"] = required_folders.pop("error_analysis") # this is required only in the error analysis
-        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis") # this is required only in the speedup analysis
+        optional_folders["cache"] = required_folders.pop("cache")
+        # cache does not affect the availability of offline data
+        optional_folders["testing_set"] = required_folders.pop("testing_set")
+        # testing set is required only in the error/speedup analysis
+        optional_folders["error_analysis"] = required_folders.pop("error_analysis")
+        # error analysis folder is required only in the error analysis
+        optional_folders["speedup_analysis"] = required_folders.pop("speedup_analysis")
+        # speedup analysis folder is required only in the speedup analysis
         at_least_one_required_folder_created = required_folders.create()
         at_least_one_optional_folder_created = optional_folders.create()  # noqa: F841
         if not at_least_one_required_folder_created:
@@ -114,20 +121,28 @@ class SCMApproximationReductionMethod(ReductionMethod):
 
         for q in range(Q):
             # Compute the minimum eigenvalue
-            minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "smallest", self.SCM_approximation.truth_problem._eigen_solver_parameters["bounding_box_minimum"], self.folder_prefix, expansion_index=q)
+            minimum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(
+                self.SCM_approximation.truth_problem, "smallest",
+                self.SCM_approximation.truth_problem._eigen_solver_parameters["bounding_box_minimum"],
+                self.folder_prefix, expansion_index=q)
             minimum_eigenvalue_calculator.init()
             (self.SCM_approximation.bounding_box_min[q], _) = minimum_eigenvalue_calculator.solve()
             print("bounding_box_min[" + str(q) + "] = " + str(self.SCM_approximation.bounding_box_min[q]))
 
             # Compute the maximum eigenvalue
-            maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(self.SCM_approximation.truth_problem, "largest", self.SCM_approximation.truth_problem._eigen_solver_parameters["bounding_box_maximum"], self.folder_prefix, expansion_index=q)
+            maximum_eigenvalue_calculator = ParametrizedStabilityFactorEigenProblem(
+                self.SCM_approximation.truth_problem, "largest",
+                self.SCM_approximation.truth_problem._eigen_solver_parameters["bounding_box_maximum"],
+                self.folder_prefix, expansion_index=q)
             maximum_eigenvalue_calculator.init()
             (self.SCM_approximation.bounding_box_max[q], _) = maximum_eigenvalue_calculator.solve()
             print("bounding_box_max[" + str(q) + "] = " + str(self.SCM_approximation.bounding_box_max[q]))
 
         # Save to file
-        self.SCM_approximation.bounding_box_min.save(self.SCM_approximation.folder["reduced_operators"], "bounding_box_min")
-        self.SCM_approximation.bounding_box_max.save(self.SCM_approximation.folder["reduced_operators"], "bounding_box_max")
+        self.SCM_approximation.bounding_box_min.save(
+            self.SCM_approximation.folder["reduced_operators"], "bounding_box_min")
+        self.SCM_approximation.bounding_box_max.save(
+            self.SCM_approximation.folder["reduced_operators"], "bounding_box_max")
 
     # Store the greedy parameter
     def store_greedy_selected_parameters(self):
@@ -137,7 +152,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.N = len(self.SCM_approximation.greedy_selected_parameters)
 
         # Save to file
-        self.SCM_approximation.greedy_selected_parameters.save(self.SCM_approximation.folder["reduced_operators"], "greedy_selected_parameters")
+        self.SCM_approximation.greedy_selected_parameters.save(
+            self.SCM_approximation.folder["reduced_operators"], "greedy_selected_parameters")
 
     def compute_upper_bound_vector(self, u):
         Q = self.SCM_approximation.truth_problem.Q["stability_factor_left_hand_matrix"]
@@ -152,7 +168,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
 
     def update_upper_bound_vectors(self, upper_bound_vector):
         self.SCM_approximation.upper_bound_vectors.append(upper_bound_vector)
-        self.SCM_approximation.upper_bound_vectors.save(self.SCM_approximation.folder["reduced_operators"], "upper_bound_vectors")
+        self.SCM_approximation.upper_bound_vectors.save(
+            self.SCM_approximation.folder["reduced_operators"], "upper_bound_vectors")
 
     # Choose the next parameter in the offline stage in a greedy fashion
     def greedy(self):
@@ -164,9 +181,12 @@ class SCMApproximationReductionMethod(ReductionMethod):
             ratio = stability_factor_lower_bound/stability_factor_upper_bound
 
             if ratio < 0. and not isclose(ratio, 0.): # if ratio << 0
-                print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
+                print("SCM warning at mu = " + str(mu)
+                      + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
             if ratio > 1. and not isclose(ratio, 1.): # if ratio >> 1
-                print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor upper bound = " + str(stability_factor_upper_bound))
+                print("SCM warning at mu = " + str(mu)
+                      + ": stability factor lower bound = " + str(stability_factor_lower_bound)
+                      + " > stability factor upper bound = " + str(stability_factor_upper_bound))
 
             error_estimator = 1. - ratio
             return error_estimator
@@ -221,14 +241,23 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 ratio_lower_bound_to_upper_bound = stability_factor_lower_bound/stability_factor_upper_bound
                 ratio_lower_bound_to_exact = stability_factor_lower_bound/exact_stability_factor
 
-                if ratio_lower_bound_to_upper_bound < 0. and not isclose(ratio_lower_bound_to_upper_bound, 0.): # if ratio_lower_bound_to_upper_bound << 0
-                    print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
-                if ratio_lower_bound_to_upper_bound > 1. and not isclose(ratio_lower_bound_to_upper_bound, 1.): # if ratio_lower_bound_to_upper_bound >> 1
-                    print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > stability factor upper bound = " + str(stability_factor_upper_bound))
-                if ratio_lower_bound_to_exact > 1. and not isclose(ratio_lower_bound_to_exact, 1.): # if ratio_lower_bound_to_exact >> 1
-                    print("SCM warning at mu = " + str(mu) + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " > exact stability factor =" + str(exact_stability_factor))
+                if ratio_lower_bound_to_upper_bound < 0. and not isclose(ratio_lower_bound_to_upper_bound, 0.):
+                    # if ratio_lower_bound_to_upper_bound << 0
+                    print("SCM warning at mu = " + str(mu)
+                          + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
+                if ratio_lower_bound_to_upper_bound > 1. and not isclose(ratio_lower_bound_to_upper_bound, 1.):
+                    # if ratio_lower_bound_to_upper_bound >> 1
+                    print("SCM warning at mu = " + str(mu)
+                          + ": stability factor lower bound = " + str(stability_factor_lower_bound)
+                          + " > stability factor upper bound = " + str(stability_factor_upper_bound))
+                if ratio_lower_bound_to_exact > 1. and not isclose(ratio_lower_bound_to_exact, 1.):
+                    # if ratio_lower_bound_to_exact >> 1
+                    print("SCM warning at mu = " + str(mu)
+                          + ": stability factor lower bound = " + str(stability_factor_lower_bound)
+                          + " > exact stability factor =" + str(exact_stability_factor))
 
-                error_analysis_table["normalized_error", n, mu_index] = (exact_stability_factor - stability_factor_lower_bound)/stability_factor_upper_bound
+                error_analysis_table["normalized_error", n, mu_index] = (
+                    exact_stability_factor - stability_factor_lower_bound) / stability_factor_upper_bound
 
         # Print
         print("")
@@ -305,4 +334,5 @@ class SCMApproximationReductionMethod(ReductionMethod):
         print("")
 
         # Export speedup analysis table
-        speedup_analysis_table.save(self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)
+        speedup_analysis_table.save(
+            self.folder["speedup_analysis"], "speedup_analysis" if filename is None else filename)

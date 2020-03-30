@@ -8,14 +8,17 @@ from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem import StokesOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
-from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import StokesOptimalControlReductionMethod
+from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_reduction_method import (
+    StokesOptimalControlReductionMethod)
 
-StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod))
+StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
+    StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):
 
-    # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
+    # Initialize data structures required for the offline phase: overridden version because supremizer POD
+    # is different from a standard component
     def _init_offline(self):
         # We cannot use the standard initialization provided by PODGalerkinReduction because
         # supremizer POD requires a custom initialization. We thus duplicate here part of its code
@@ -27,10 +30,12 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         self.POD = dict()
         for component in ("v", "p", "u", "w", "q"):
             inner_product = self.truth_problem.inner_product[component][0]
-            self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+            self.POD[component] = ProperOrthogonalDecomposition(
+                self.truth_problem.V, inner_product)
         for component in ("s", "r"):
             inner_product = self.truth_problem.inner_product[component][0]
-            self.POD[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product, component=component)
+            self.POD[component] = ProperOrthogonalDecomposition(
+                self.truth_problem.V, inner_product, component=component)
 
         # Return
         return output
@@ -56,7 +61,8 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         for component in self.truth_problem.components:
             print("# POD for component", component)
             POD = self.POD[component]
-            assert self.tol[component] == 0. # TODO first negelect tolerances, then compute the max of N for each aggregated pair
+            assert self.tol[component] == 0.
+            # TODO first negelect tolerances, then compute the max of N for each aggregated pair
             (_, _, basis_functions[component], N[component]) = POD.apply(self.Nmax, self.tol[component])
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
@@ -69,9 +75,11 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
         # Aggregate POD modes related to state and adjoint
         for pair in (("v", "w"), ("s", "r"), ("p", "q")):
             for component_to in pair:
-                for i in range(self.Nmax): # TODO should have been N[component_from], but cannot switch the next line
+                for i in range(self.Nmax):
+                    # TODO should have been N[component_from], but cannot switch the next line
                     for component_from in pair:
-                        self.reduced_problem.basis_functions.enrich(basis_functions[component_from][i], component={component_from: component_to})
+                        self.reduced_problem.basis_functions.enrich(
+                            basis_functions[component_from][i], component={component_from: component_to})
                     self.reduced_problem.N[component_to] += 2
 
         # Save

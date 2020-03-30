@@ -22,7 +22,8 @@ class Gaussian(EllipticCoerciveProblem):
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
-        self.f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
+        self.f = ParametrizedExpression(
+            self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         # note that we cannot use self.mu in the initialization of self.f, because self.mu has not been initialized yet
 
     # Return custom problem name

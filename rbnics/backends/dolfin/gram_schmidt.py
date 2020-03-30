@@ -11,7 +11,8 @@ from rbnics.backends.basic import GramSchmidt as BasicGramSchmidt
 from rbnics.backends.dolfin.function import Function
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.transpose import transpose
-from rbnics.backends.dolfin.wrapping import function_extend_or_restrict, function_from_ufl_operators, get_function_subspace, gram_schmidt_projection_step
+from rbnics.backends.dolfin.wrapping import (function_extend_or_restrict, function_from_ufl_operators,
+                                             get_function_subspace, gram_schmidt_projection_step)
 from rbnics.utils.decorators import BackendFor, dict_of, ModuleWrapper, overload
 
 backend = ModuleWrapper(Function, transpose)

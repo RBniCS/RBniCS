@@ -32,9 +32,11 @@ class EIMApproximation(ParametrizedProblem):
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension
         self.N = 0
-        # Define additional storage for EIM
-        self.interpolation_locations = parametrized_expression.create_interpolation_locations_container() # interpolation locations selected by the greedy (either a ReducedVertices or ReducedMesh)
-        self.interpolation_matrix = OnlineAffineExpansionStorage(1) # interpolation matrix
+        # Define additional storage for EIM:
+        # Interpolation locations selected by the greedy (either a ReducedVertices or ReducedMesh)_
+        self.interpolation_locations = parametrized_expression.create_interpolation_locations_container()
+        # Interpolation matrix
+        self.interpolation_matrix = OnlineAffineExpansionStorage(1)
         # Solution
         self._interpolation_coefficients = None # OnlineFunction
 
@@ -163,12 +165,15 @@ class EIMApproximation(ParametrizedProblem):
         (absolute_error, maximum_absolute_error, maximum_location) = self.compute_maximum_interpolation_error(N)
         (maximum_snapshot_value, _) = max(abs(self.snapshot))
         if maximum_snapshot_value != 0.:
-            return (absolute_error/maximum_snapshot_value, maximum_absolute_error/maximum_snapshot_value, maximum_location)
+            return (absolute_error/maximum_snapshot_value, maximum_absolute_error/maximum_snapshot_value,
+                    maximum_location)
         else:
             if maximum_absolute_error == 0.:
-                return (absolute_error, maximum_absolute_error, maximum_location) # the first two arguments are a zero expression and zero scalar
+                # the first two arguments are a zero expression and zero scalar
+                return (absolute_error, maximum_absolute_error, maximum_location)
             else:
-                return (None, float("NaN"), maximum_location) # the first argument should be a NaN expression
+                # the first argument should be a NaN expression
+                return (None, float("NaN"), maximum_location)
 
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None):

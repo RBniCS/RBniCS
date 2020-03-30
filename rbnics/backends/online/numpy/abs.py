@@ -9,8 +9,8 @@ from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import backend_for, overload
 
-# abs function to compute maximum absolute value of an expression, matrix or vector (for EIM). To be used in combination with max,
-# even though here we actually carry out both the max and the abs!
+# abs function to compute maximum absolute value of an expression, matrix or vector (for EIM).
+# To be used in combination with max, even though here we actually carry out both the max and the abs!
 @backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), ))
 def abs(expression):
     return _abs(expression)
@@ -19,7 +19,8 @@ def abs(expression):
 def _abs(matrix: Matrix.Type()):
     abs_matrix = numpy_abs(matrix)
     (i_max, j_max) = unravel_index(argmax(abs_matrix), abs_matrix.shape)
-    (i_max, j_max) = (int(i_max), int(j_max)) # numpy.intXX types are not subclasses of int, but can be converted to int
+    # i_max and j_max are of type numpy.intXX which is not a subclass of int, but can be converted to int
+    (i_max, j_max) = (int(i_max), int(j_max))
     return AbsOutput(matrix[(i_max, j_max)], (i_max, j_max))
 
 @overload

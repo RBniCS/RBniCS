@@ -15,7 +15,8 @@ from rbnics.backends.online.numpy.export import export
 from rbnics.backends.online.numpy.function import Function
 from rbnics.backends.online.numpy.functions_list import FunctionsList
 from rbnics.backends.online.numpy.gram_schmidt import GramSchmidt
-from rbnics.backends.online.numpy.high_order_proper_orthogonal_decomposition import HighOrderProperOrthogonalDecomposition
+from rbnics.backends.online.numpy.high_order_proper_orthogonal_decomposition import (
+    HighOrderProperOrthogonalDecomposition)
 from rbnics.backends.online.numpy.import_ import import_
 from rbnics.backends.online.numpy.linear_solver import LinearSolver
 from rbnics.backends.online.numpy.matrix import Matrix

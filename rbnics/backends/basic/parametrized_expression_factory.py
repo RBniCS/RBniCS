@@ -45,11 +45,13 @@ def ParametrizedExpressionFactory(backend, wrapping):
                         truth_problem = get_problem_from_solution(truth_solution)
                         auxiliary_problems_and_components.add((truth_problem, component))
                     elif wrapping.is_problem_solution_dot(node):
-                        (preprocessed_node, component, truth_solution_dot) = wrapping.solution_dot_identify_component(node)
+                        (preprocessed_node, component,
+                         truth_solution_dot) = wrapping.solution_dot_identify_component(node)
                         truth_problem = get_problem_from_solution_dot(truth_solution_dot)
                         auxiliary_problems_and_components.add((truth_problem, component))
                     else:
-                        (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
+                        (preprocessed_node, component,
+                         auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
                         auxiliary_problems_and_components.add((auxiliary_problem, component))
                     # Make sure to skip any parent solution related to this one
                     visited.add(node)
@@ -59,7 +61,8 @@ def ParametrizedExpressionFactory(backend, wrapping):
             if len(auxiliary_problems_and_components) == 0:
                 auxiliary_problems_and_components = None
             # Create reduced vertices container
-            return backend.ReducedVertices(self._space, auxiliary_problems_and_components=auxiliary_problems_and_components)
+            return backend.ReducedVertices(
+                self._space, auxiliary_problems_and_components=auxiliary_problems_and_components)
 
         def create_snapshots_container(self):
             return backend.SnapshotsMatrix(self._space)
@@ -68,7 +71,8 @@ def ParametrizedExpressionFactory(backend, wrapping):
             return backend.Function(self._space)
 
         def create_basis_container(self):
-            # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested in storing multiple components
+            # We use FunctionsList instead of BasisFunctionsMatrix since we are not interested
+            # in storing multiple components
             return backend.FunctionsList(self._space)
 
         def create_POD_container(self):
@@ -81,7 +85,8 @@ def ParametrizedExpressionFactory(backend, wrapping):
 
         def description(self):
             if self._description is None:
-                self._description = PrettyTuple(self._expression, wrapping.expression_description(self._expression), self.name())
+                self._description = PrettyTuple(
+                    self._expression, wrapping.expression_description(self._expression), self.name())
             return self._description
 
         def is_parametrized(self):

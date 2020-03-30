@@ -13,7 +13,8 @@ from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
-@BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None), ThetaType + DictOfThetaType + (None,)))
+@BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None),
+                             ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):
     def __init__(self, basis_functions, A, B=None, bcs=None):
         assert A.N == A.M

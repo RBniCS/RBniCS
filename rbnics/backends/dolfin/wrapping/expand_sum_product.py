@@ -16,7 +16,8 @@ from ufl.tensors import ComponentTensor
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 
 def expand_sum_product(form):
-    form = remove_complex_nodes(form) # TODO support forms in the complex field. This is currently needed otherwise conj((a+b)*c) does not get expanded.
+    # TODO support forms in the complex field. This is currently needed otherwise conj((a+b)*c) does not get expanded.
+    form = remove_complex_nodes(form)
     # Patch Expr.__mul__ and Expr.__rmul__
     patch_expr_mul()
     # Call sympy replacer
@@ -26,7 +27,8 @@ def expand_sum_product(form):
     for integral in expanded_form.integrals():
         expanded_split_form_integrands = list()
         split_sum(integral.integrand(), expanded_split_form_integrands)
-        expanded_split_form_integrals.extend([integral.reconstruct(integrand=integrand) for integrand in expanded_split_form_integrands])
+        expanded_split_form_integrals.extend([integral.reconstruct(integrand=integrand)
+                                              for integrand in expanded_split_form_integrands])
     expanded_split_form = Form(expanded_split_form_integrals)
     # Undo patch to Expr.__mul__ and Expr.__rmul__
     unpatch_expr_mul()
@@ -109,7 +111,9 @@ class SympyExpander(MultiFunction):
         assert arg2 in self.ufl_to_sympy
         sympy_arg2 = self.ufl_to_sympy[arg2]
         sympy_expanded_e = expand_mul(op(sympy_arg1, sympy_arg2))
-        sympy_expanded_e = self._pow_to_mul(sympy_expanded_e) # Indexed does not support power with integer exponents, only multiplication
+        # Convert power to a multiplication, because Indexed does not support power with integer exponents,
+        # only multiplication
+        sympy_expanded_e = self._pow_to_mul(sympy_expanded_e)
         ufl_expanded_e = sympy_eval(str(sympy_expanded_e), self.sympy_id_to_ufl)
         return (ufl_expanded_e, sympy_expanded_e)
 

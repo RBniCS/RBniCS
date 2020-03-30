@@ -56,10 +56,13 @@ def EIMDecoratedProblem(
 
             @overload(str)
             def _store_EIM_stages(self, stage):
-                assert stages != "offline", "This choice does not make any sense because it requires an EIM offline stage which then is not used online"
+                assert stages != "offline", (
+                    "This choice does not make any sense because it requires an EIM offline stage"
+                    + " which then is not used online")
                 assert stages == "online"
                 self._apply_EIM_at_stages = (stages, )
-                assert hasattr(self, "_apply_exact_evaluation_at_stages"), "Please apply @ExactParametrizedFunctions(\"offline\") below @EIM(\"online\") decorator"
+                assert hasattr(self, "_apply_exact_evaluation_at_stages"), (
+                    "Please apply @ExactParametrizedFunctions(\"offline\") below @EIM(\"online\") decorator")
                 assert self._apply_exact_evaluation_at_stages == ("offline", )
 
             @overload(tuple_of(str))
@@ -70,7 +73,9 @@ def EIMDecoratedProblem(
                     assert stages[1] in ("offline", "online")
                     assert stages[0] != stages[1]
                 self._apply_EIM_at_stages = stages
-                assert not hasattr(self, "_apply_exact_evaluation_at_stages"), "This choice does not make any sense because there is at least a stage for which both EIM and ExactParametrizedFunctions are required"
+                assert not hasattr(self, "_apply_exact_evaluation_at_stages"), (
+                    "This choice does not make any sense because there is at least a stage"
+                    + " for which both EIM and ExactParametrizedFunctions are required")
 
             def _init_EIM_approximations(self):
                 # Preprocess each term in the affine expansions.
@@ -103,20 +108,24 @@ def EIMDecoratedProblem(
                                 self.separated_forms[term][q].separate()
                                 # All parametrized coefficients should be approximated by EIM
                                 for (addend_index, addend) in enumerate(self.separated_forms[term][q].coefficients):
-                                    for (factor, factor_name) in zip(addend, self.separated_forms[term][q].placeholders_names(addend_index)):
+                                    for (factor, factor_name) in zip(
+                                            addend, self.separated_forms[term][q].placeholders_names(addend_index)):
                                         if factor not in self.EIM_approximations:
                                             factory_factor = ParametrizedExpressionFactory(factor)
                                             if factory_factor.is_time_dependent():
                                                 EIMApproximationType = TimeDependentEIMApproximation
                                             else:
                                                 EIMApproximationType = EIMApproximation
-                                            self.EIM_approximations[factor] = EIMApproximationType(self, factory_factor, os.path.join(self.name(), "eim", factor_name), basis_generation)
+                                            self.EIM_approximations[factor] = EIMApproximationType(
+                                                self, factory_factor, os.path.join(self.name(), "eim", factor_name),
+                                                basis_generation)
                     # Restore float parameters
                     self.detach_symbolic_parameters()
 
             def init(self):
                 # Call parent's method (enforcing an empty parent call to _init_operators)
-                self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None) # may be shared between EIM and exact evaluation
+                self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_: None)
+                # self.disable_init_operators may be shared between EIM and exact evaluation
                 self.disable_init_operators.patch()
                 ParametrizedDifferentialProblem_DerivedClass.init(self)
                 self.disable_init_operators.unpatch()
@@ -125,7 +134,8 @@ def EIMDecoratedProblem(
                 self._init_operators_EIM()
 
             def _init_operators_EIM(self):
-                # Initialize offline/online switch storage only once (may be shared between EIM and exact evaluation)
+                # Initialize offline/online switch storage only once
+                # (may be shared between EIM and exact evaluation)
                 OfflineOnlineClassMethod = self.offline_online_backend.OfflineOnlineClassMethod
                 OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
                 OfflineOnlineExpansionStorageSize = self.offline_online_backend.OfflineOnlineExpansionStorageSize
@@ -149,8 +159,10 @@ def EIMDecoratedProblem(
                 for stage_EIM in self._apply_EIM_at_stages:
                     OfflineOnlineSwitch.set_current_stage(stage_EIM)
                     # Replace assemble_operator and compute_theta with EIM computations
-                    self.assemble_operator.attach(self._assemble_operator_EIM, lambda term: term in self.separated_forms)
-                    self.compute_theta.attach(self._compute_theta_EIM, lambda term: term in self.separated_forms)
+                    self.assemble_operator.attach(self._assemble_operator_EIM,
+                                                  lambda term: term in self.separated_forms)
+                    self.compute_theta.attach(self._compute_theta_EIM,
+                                              lambda term: term in self.separated_forms)
                     # Setup offline/online operators storage with EIM operators
                     self.operator.set_is_affine(True)
                     self._init_operators()

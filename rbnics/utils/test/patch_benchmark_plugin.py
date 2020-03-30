@@ -59,7 +59,8 @@ def patch_benchmark_plugin(benchmark_plugin):
                     teardown(*args, result)
                 def calibration_teardown(result):
                     pass
-                setup_function_teardown_runner = self._make_runner(calibration_setup, calibration_function, calibration_teardown, (), {})
+                setup_function_teardown_runner = self._make_runner(
+                    calibration_setup, calibration_function, calibration_teardown, (), {})
                 duration, iterations, loops_range = self._calibrate_timer(setup_function_teardown_runner)
                 rounds = int(ceil(self._max_time / duration))
                 rounds = max(rounds, self._min_rounds)
@@ -68,7 +69,8 @@ def patch_benchmark_plugin(benchmark_plugin):
 
                 # Create a runner on the function to benchmark
                 runner = self._make_runner(setup, function_to_benchmark, teardown, args, kwargs)
-                self._logger.debug("  Running %s rounds x %s iterations ..." % (rounds, iterations), yellow=True, bold=True)
+                self._logger.debug(
+                    "  Running %s rounds x %s iterations ..." % (rounds, iterations), yellow=True, bold=True)
                 run_start = time.time()
                 if self._warmup:
                     warmup_rounds = min(rounds, max(1, int(self._warmup / iterations)))
@@ -128,7 +130,9 @@ def patch_benchmark_plugin(benchmark_plugin):
             datetimes = list() # over runs
             speedups_tmp = dict() # from (test name, test type, arguments) to list (over runs) of speedups
             for (idx, run) in enumerate(list(self.storage.load())[:-8:-1]):
-                datetimes.append(time.strftime("%Y-%m-%d %H:%M", time.localtime(time.mktime(time.strptime(run[1]["datetime"], "%Y-%m-%dT%H:%M:%S.%f")))))
+                datetimes.append(time.strftime(
+                    "%Y-%m-%d %H:%M", time.localtime(time.mktime(
+                        time.strptime(run[1]["datetime"], "%Y-%m-%dT%H:%M:%S.%f")))))
                 # Convert benchmarks to a dict over name
                 benchmarks = dict()
                 for benchmark in run[1]["benchmarks"]:
@@ -146,7 +150,8 @@ def patch_benchmark_plugin(benchmark_plugin):
                     if params_dict["test_type"] == "builtin":
                         continue
                     else:
-                        builtin_name_with_parametrized = name + "[" + params_str.replace(params_dict["test_type"], "builtin") + "]"
+                        builtin_name_with_parametrized = name + "[" + params_str.replace(
+                            params_dict["test_type"], "builtin") + "]"
                         builtin_benchmark = benchmarks[builtin_name_with_parametrized]
                         backend_mean_time = benchmark["stats"]["mean"]
                         builtin_mean_time = builtin_benchmark["stats"]["mean"]
@@ -189,7 +194,8 @@ def patch_benchmark_plugin(benchmark_plugin):
                     ax.get_xticklabels()[0].set_color("blue")
                     ax.set_ylabel(ylabel)
                     legend = plt.legend(plt_legends, loc="center left", bbox_to_anchor=(1, 0.5))
-                    plt_filename = os.path.join(storage_dir, "_".join(external_key) + "_" + str(int(time.mktime(time.strptime(datetimes[0], "%Y-%m-%d %H:%M")))) + ".png")
+                    plt_filename = os.path.join(storage_dir, "_".join(external_key) + "_" + str(int(
+                        time.mktime(time.strptime(datetimes[0], "%Y-%m-%d %H:%M")))) + ".png")
                     plt.savefig(plt_filename, bbox_extra_artists=(legend,), bbox_inches="tight")
 
     # Auxiliary do nothing function

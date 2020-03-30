@@ -33,8 +33,10 @@ def basic_tensor_load(backend, wrapping):
             else:
                 raise OSError
         generator_mpi_size_string = parallel_io(load_generator_mpi_size, mpi_comm)
-        # Read in generator mapping from processor dependent indices (at the time of saving) to processor independent (global_cell_index, cell_dof) tuple
-        permutation = _permutation_load(tensor, directory, filename, form, generator_string + "_" + generator_mpi_size_string, mpi_comm)
+        # Read in generator mapping from processor dependent indices (at the time of saving)
+        # to processor independent (global_cell_index, cell_dof) tuple
+        permutation = _permutation_load(tensor, directory, filename, form,
+                                        generator_string + "_" + generator_mpi_size_string, mpi_comm)
         _tensor_load(tensor, directory, filename, permutation, mpi_comm)
 
     @overload(backend.Matrix.Type(), (Folders.Folder, str), str, object, str, object)
@@ -47,7 +49,8 @@ def basic_tensor_load(backend, wrapping):
                 V_1 = wrapping.form_argument_space(form, 1)
                 V_0__dof_map_reader_mapping = wrapping.build_dof_map_reader_mapping(V_0)
                 V_1__dof_map_reader_mapping = wrapping.build_dof_map_reader_mapping(V_1)
-                (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(directory, "." + form_name)
+                (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(
+                    directory, "." + form_name)
                 matrix_row_permutation = dict() # from row index at time of saving to current row index
                 matrix_col_permutation = dict() # from col index at time of saving to current col index
                 writer_mat = _matrix_load(directory, filename, mpi_comm)
@@ -59,7 +62,8 @@ def basic_tensor_load(backend, wrapping):
                     for writer_col in writer_cols:
                         if writer_col not in matrix_col_permutation:
                             (global_cell_index, cell_dof) = V_1__dof_map_writer_mapping[writer_col]
-                            matrix_col_permutation[writer_col] = V_1__dof_map_reader_mapping[global_cell_index][cell_dof]
+                            matrix_col_permutation[writer_col] = V_1__dof_map_reader_mapping[
+                                global_cell_index][cell_dof]
                 _permutation_storage[form_name] = (matrix_row_permutation, matrix_col_permutation)
 
         return _permutation_storage[form_name]

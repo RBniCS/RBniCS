@@ -15,7 +15,8 @@ def export(backend, wrapping):
 
         @overload(backend.Function.Type(), (Folders.Folder, str), str, (int, None), (int, str))
         def __call__(self, solution, directory, filename, suffix, component):
-            restricted_solution = wrapping.function_extend_or_restrict(solution, component, wrapping.get_function_subspace(solution, component), None, weight=None, copy=True)
+            restricted_solution = wrapping.function_extend_or_restrict(
+                solution, component, wrapping.get_function_subspace(solution, component), None, weight=None, copy=True)
             wrapping.function_save(restricted_solution, directory, filename, suffix=suffix)
 
         @overload((backend.Matrix.Type(), backend.Vector.Type()), (Folders.Folder, str), str, None, None)

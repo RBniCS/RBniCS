@@ -17,7 +17,8 @@ def OfflineOnlineRieszSolver(problem_name):
     class _OfflineOnlineRieszSolver(_OfflineOnlineRieszSolver_Base):
 
         def __call__(self, problem):
-            return _OfflineOnlineRieszSolver._RieszSolver(problem, self._content[_OfflineOnlineRieszSolver_Base._current_stage])
+            return _OfflineOnlineRieszSolver._RieszSolver(
+                problem, self._content[_OfflineOnlineRieszSolver_Base._current_stage])
 
         def set_is_affine(self, is_affine):
             assert isinstance(is_affine, bool)
@@ -41,7 +42,8 @@ def OfflineOnlineRieszSolver(problem_name):
             @overload
             def solve(self, rhs: object):
                 problem = self.problem
-                args = (problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs, problem._riesz_solve_homogeneous_dirichlet_bc)
+                args = (problem._riesz_solve_inner_product, problem._riesz_solve_storage, rhs,
+                        problem._riesz_solve_homogeneous_dirichlet_bc)
                 if not self.delay:
                     solver = LinearSolver(*args)
                     solver.set_parameters(problem._linear_solver_parameters)

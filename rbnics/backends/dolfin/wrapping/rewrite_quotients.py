@@ -23,5 +23,6 @@ class RewriteQuotientsReplacer(MultiFunction):
         return n*(1./d)
 
 def rewrite_quotients(form):
-    form = remove_complex_nodes(form) # TODO support forms in the complex field. This is currently needed otherwise conj(a/b) does not get rewritten.
+    # TODO support forms in the complex field. This is currently needed otherwise conj(a/b) does not get rewritten.
+    form = remove_complex_nodes(form)
     return map_integrand_dags(RewriteQuotientsReplacer(), form)

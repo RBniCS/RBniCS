@@ -12,7 +12,8 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators, to_petsc4py
 from rbnics.utils.decorators import backend_for, list_of, overload
 
-@backend_for("dolfin", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()), (Function.Type(), list_of(Function.Type()), Matrix.Type(), Operator, Vector.Type())))
+@backend_for("dolfin", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()),
+                               (Function.Type(), list_of(Function.Type()), Matrix.Type(), Operator, Vector.Type())))
 def assign(object_to, object_from):
     _assign(object_to, object_from)
 

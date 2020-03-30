@@ -9,8 +9,8 @@ from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdi
 
 # Customize item selection
 def pytest_collection_modifyitems(session, config, items):
-    # Deselect first using markers
-    from _pytest.mark import pytest_collection_modifyitems as pytest_collection_modifyitems_from_marks # cannot import globally
+    # Deselect first using markers (note: cannot import _pytest.mark globally)
+    from _pytest.mark import pytest_collection_modifyitems as pytest_collection_modifyitems_from_marks
     pytest_collection_modifyitems_from_marks(items, config)
 
     # Separated parametrized forms tests require clean UFL and DOLFIN counters ...
@@ -21,13 +21,10 @@ def pytest_collection_modifyitems(session, config, items):
             deselect_separated_parametrized_forms = True
         # ... and with each other (scalar vs vector vs mixed)
         elif (
-            (
-                any([item.name.startswith("test_separated_parametrized_forms_scalar") for item in items])
-                    +
-                any([item.name.startswith("test_separated_parametrized_forms_vector") for item in items])
-                    +
-                any([item.name.startswith("test_separated_parametrized_forms_mixed") for item in items])
-            ) > 1
+            any([item.name.startswith("test_separated_parametrized_forms_scalar") for item in items])
+            + any([item.name.startswith("test_separated_parametrized_forms_vector") for item in items])
+            + any([item.name.startswith("test_separated_parametrized_forms_mixed") for item in items])
+            > 1
         ):
             deselect_separated_parametrized_forms = True
     if deselect_separated_parametrized_forms:
@@ -64,11 +61,14 @@ def pytest_collection_modifyitems(session, config, items):
     for test_matplotlib_prefixes in (
         ("test_sampling", ),
         ("test_linear_solver", "test_nonlinear_solver", "test_time_stepping"),
-        ("test_mesh_to_submesh", "test_submesh_to_mesh", "test_submesh_global_cell_numbering_independent_on_mpi", "test_shared_entities_detection")
+        ("test_mesh_to_submesh", "test_submesh_to_mesh", "test_submesh_global_cell_numbering_independent_on_mpi",
+         "test_shared_entities_detection")
     ):
-        if not all([any([item.name.startswith(test_matplotlib_prefix) for test_matplotlib_prefix in test_matplotlib_prefixes]) for item in items]):
+        if not all([any([item.name.startswith(test_matplotlib_prefix)
+                         for test_matplotlib_prefix in test_matplotlib_prefixes]) for item in items]):
             for item in items:
-                if any([item.name.startswith(test_matplotlib_prefix) for test_matplotlib_prefix in test_matplotlib_prefixes]):
+                if any([item.name.startswith(test_matplotlib_prefix)
+                        for test_matplotlib_prefix in test_matplotlib_prefixes]):
                     assert not hasattr(item, "_runtest_setup_function")
                     item._runtest_setup_function = disable_matplotlib
                     assert not hasattr(item, "_runtest_teardown_function")

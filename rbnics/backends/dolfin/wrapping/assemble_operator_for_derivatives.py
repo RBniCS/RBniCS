@@ -12,7 +12,8 @@ def assemble_operator_for_derivatives(assemble_operator):
     from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
     from rbnics.problems.navier_stokes import NavierStokesProblem
 
-    module = types.ModuleType("assemble_operator_for_derivatives", "Storage for implementation of assemble_operator_for_derivatives")
+    module = types.ModuleType("assemble_operator_for_derivatives",
+                              "Storage for implementation of assemble_operator_for_derivatives")
 
     def assemble_operator_for_derivatives_impl(self, term):
         return module._assemble_operator_for_derivatives_impl(self, term)

@@ -8,7 +8,8 @@ from numpy import dot, isclose
 from numpy.linalg import norm as monitor_norm
 import matplotlib
 import matplotlib.pyplot as plt
-from dolfin import assemble, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad, inner, IntervalMesh, pi, plot, project, TestFunction, TrialFunction
+from dolfin import (assemble, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad, inner, IntervalMesh, pi,
+                    plot, project, TestFunction, TrialFunction)
 from rbnics.backends.abstract import LinearProblemWrapper
 
 """
@@ -137,9 +138,11 @@ def _test_linear_solver_dense(V, a, f, X, exact_solution):
         def monitor(self, solution):
             if matplotlib.get_backend() != "agg":
                 solution_array = solution.vector()
-                solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+                solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[
+                    [0, 1, min_dof_0_2pi, max_dof_0_2pi]]
                 plt.plot(x_to_dof.keys(), solution_array)
-                solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+                solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[
+                    [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
                 plt.show(block=False)
                 plt.pause(1)
             else:

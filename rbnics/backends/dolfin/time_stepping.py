@@ -28,7 +28,9 @@ class TimeStepping(AbstractTimeStepping):
         ic = problem_wrapper.ic_eval()
         if ic is not None:
             assign(solution, ic)
-        self.problem = _TimeDependentProblem(problem_wrapper.residual_eval, solution, solution_dot, problem_wrapper.bc_eval, problem_wrapper.jacobian_eval, problem_wrapper.set_time)
+        self.problem = _TimeDependentProblem(problem_wrapper.residual_eval, solution, solution_dot,
+                                             problem_wrapper.bc_eval, problem_wrapper.jacobian_eval,
+                                             problem_wrapper.set_time)
         self.solver = PETScTSIntegrator(self.problem, solution, solution_dot)
         self.solver.monitor.monitor_callback = problem_wrapper.monitor
         # Set default linear solver
@@ -52,8 +54,10 @@ class _TimeDependentProblem(object):
         self.jacobian_eval = jacobian_eval
         self.set_time = set_time
         # Make sure that residual vector and jacobian matrix are properly initialized
-        self.residual_vector = self._residual_vector_assemble(self.residual_eval(0., self.solution, self.solution_dot))
-        self.jacobian_matrix = self._jacobian_matrix_assemble(self.jacobian_eval(0., self.solution, self.solution_dot, 0.))
+        self.residual_vector = self._residual_vector_assemble(self.residual_eval(
+            0., self.solution, self.solution_dot))
+        self.jacobian_matrix = self._jacobian_matrix_assemble(self.jacobian_eval(
+            0., self.solution, self.solution_dot, 0.))
 
     def residual_vector_eval(self, ts, t, petsc_solution, petsc_solution_dot, petsc_residual):
         """
@@ -130,7 +134,8 @@ class _TimeDependentProblem(object):
             for bc in bcs[key]:
                 bc.apply(self.residual_vector, self.solution.vector())
 
-    def jacobian_matrix_eval(self, ts, t, petsc_solution, petsc_solution_dot, solution_dot_coefficient, petsc_jacobian, petsc_preconditioner):
+    def jacobian_matrix_eval(self, ts, t, petsc_solution, petsc_solution_dot, solution_dot_coefficient,
+                             petsc_jacobian, petsc_preconditioner):
         """
            TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
                             provided with TSSetIFunction().
@@ -175,7 +180,8 @@ class _TimeDependentProblem(object):
         #    since this has already been done by the residual
         # 2. Assemble the jacobian
         assert petsc_jacobian == petsc_preconditioner
-        self._jacobian_matrix_assemble(self.jacobian_eval(t, self.solution, self.solution_dot, solution_dot_coefficient), petsc_jacobian)
+        self._jacobian_matrix_assemble(
+            self.jacobian_eval(t, self.solution, self.solution_dot, solution_dot_coefficient), petsc_jacobian)
         # 3. Apply boundary conditions
         bcs = self.bc_eval(t)
         self._jacobian_bcs_apply(bcs)

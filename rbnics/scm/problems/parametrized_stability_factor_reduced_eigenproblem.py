@@ -23,8 +23,10 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
 
         # Matrices/vectors resulting from the truth discretization
         self.operator = {
-            "stability_factor_left_hand_matrix": None, # OnlineAffineExpansionStorage
-            "stability_factor_right_hand_matrix": None # OnlineAffineExpansionStorage, even though it will contain only one matrix
+            "stability_factor_left_hand_matrix": None,
+            # OnlineAffineExpansionStorage
+            "stability_factor_right_hand_matrix": None
+            # OnlineAffineExpansionStorage, even though it will contain only one matrix
         }
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
@@ -48,10 +50,14 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
 
     def init(self, current_stage="online"):
         # Store the left and right hand side operators
-        if self.operator["stability_factor_left_hand_matrix"] is None: # init was not called already
-            self.operator["stability_factor_left_hand_matrix"] = self.reduced_problem.operator["stability_factor_left_hand_matrix"]
-        if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
-            self.operator["stability_factor_right_hand_matrix"] = self.reduced_problem.operator["stability_factor_right_hand_matrix"]
+        if self.operator["stability_factor_left_hand_matrix"] is None:
+            # init was not called already
+            self.operator["stability_factor_left_hand_matrix"] = self.reduced_problem.operator[
+                "stability_factor_left_hand_matrix"]
+        if self.operator["stability_factor_right_hand_matrix"] is None:
+            # init was not called already
+            self.operator["stability_factor_right_hand_matrix"] = self.reduced_problem.operator[
+                "stability_factor_right_hand_matrix"]
             assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
 
     def solve(self, N=None, **kwargs):
@@ -70,7 +76,9 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
 
     def _solve(self, N, **kwargs):
         assert self.operator["stability_factor_left_hand_matrix"] is not None
-        A = sum(product(self.reduced_problem.compute_theta("stability_factor_left_hand_matrix"), self.operator["stability_factor_left_hand_matrix"][:N, :N]))
+        A = sum(product(
+            self.reduced_problem.compute_theta("stability_factor_left_hand_matrix"),
+            self.operator["stability_factor_left_hand_matrix"][:N, :N]))
         assert self.operator["stability_factor_right_hand_matrix"] is not None
         assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
         B = self.operator["stability_factor_right_hand_matrix"][0][:N, :N]

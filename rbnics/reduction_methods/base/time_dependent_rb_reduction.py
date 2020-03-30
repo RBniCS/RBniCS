@@ -32,8 +32,12 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
             #   orthogonal ~> Haasdonk, Ohlberger; ESAIM: M2AN, 2008
             #   POD ~>  Nguyen, Rozza, Patera; Calcolo, 2009
             # Declare POD objects for basis computation using POD-Greedy
-            self.POD_time_trajectory = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
-            self.POD_basis = None # ProperOrthogonalDecomposition (for problems with one component) or dict of ProperOrthogonalDecomposition (for problem with several components)
+            # POD_time_trajectory: ProperOrthogonalDecomposition (for problems with one component)
+            # or dict of ProperOrthogonalDecomposition (for problem with several components)
+            self.POD_time_trajectory = None
+            # POD_basis: ProperOrthogonalDecomposition (for problems with one component)
+            # or dict of ProperOrthogonalDecomposition (for problem with several components)
+            self.POD_basis = None
             # POD-Greedy size
             self.N1 = 0
             self.N2 = 0
@@ -93,7 +97,8 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 assert isinstance(tol, (dict, Number))
                 if isinstance(tol, dict):
                     for component in self.truth_problem.components:
-                        assert component in tol, "You need to specify the tolerance of all components in tolerance dictionary"
+                        assert component in tol, (
+                            "You need to specify the tolerance of all components in tolerance dictionary")
                 else:
                     tol_number = tol
                     tol = dict()
@@ -123,13 +128,17 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 if self.POD_greedy_basis_extension == "POD":
                     self.POD_basis = dict()
                 for component in self.truth_problem.components:
-                    assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product[component]) == 1
+                    # the affine expansion storage contains only the inner product matrix
                     inner_product = self.truth_problem.inner_product[component][0]
-                    self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+                    self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(
+                        self.truth_problem.V, inner_product)
                     if self.POD_greedy_basis_extension == "POD":
-                        self.POD_basis[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+                        self.POD_basis[component] = ProperOrthogonalDecomposition(
+                            self.truth_problem.V, inner_product)
             else:
-                assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+                assert len(self.truth_problem.inner_product) == 1
+                # the affine expansion storage contains only the inner product matrix
                 inner_product = self.truth_problem.inner_product[0]
                 self.POD_time_trajectory = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
                 if self.POD_greedy_basis_extension == "POD":
@@ -145,11 +154,13 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:
                         print("# POD-Greedy for component", component)
-                        (basis_functions1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(orthogonal_snapshot_over_time, component=component)
+                        (basis_functions1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(
+                            orthogonal_snapshot_over_time, component=component)
                         self.reduced_problem.basis_functions.enrich(basis_functions1, component=component)
                         self.reduced_problem.N[component] += N1
                 else:
-                    (basis_functions1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(orthogonal_snapshot_over_time)
+                    (basis_functions1, N1) = self._POD_greedy_compute_basis_extension_with_orthogonal_snapshot(
+                        orthogonal_snapshot_over_time)
                     self.reduced_problem.basis_functions.enrich(basis_functions1)
                     self.reduced_problem.N += N1
             elif self.POD_greedy_basis_extension == "POD":
@@ -157,11 +168,13 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 if len(self.truth_problem.components) > 1:
                     for component in self.truth_problem.components:
                         print("# POD-Greedy for component", component)
-                        (basis_functions2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(snapshot_over_time, component=component)
+                        (basis_functions2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(
+                            snapshot_over_time, component=component)
                         self.reduced_problem.basis_functions.enrich(basis_functions2, component=component)
                         self.reduced_problem.N[component] = N_plus_N2
                 else:
-                    (basis_functions2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(snapshot_over_time)
+                    (basis_functions2, N_plus_N2) = self._POD_greedy_compute_basis_extension_with_POD(
+                        snapshot_over_time)
                     self.reduced_problem.basis_functions.enrich(basis_functions2)
                     self.reduced_problem.N = N_plus_N2
 
@@ -170,15 +183,17 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         def _POD_greedy_orthogonalize_snapshot(self, snapshot_over_time):
             if self.reduced_problem.N > 0:
                 basis_functions = self.reduced_problem.basis_functions
-                projected_snapshot_N_over_time = self.reduced_problem.project(snapshot_over_time, on_dirichlet_bc=False)
+                projected_snapshot_N_over_time = self.reduced_problem.project(
+                    snapshot_over_time, on_dirichlet_bc=False)
                 orthogonal_snapshot_over_time = SnapshotsMatrix(self.truth_problem.V)
                 for (snapshot, projected_snapshot_N) in zip(snapshot_over_time, projected_snapshot_N_over_time):
-                    orthogonal_snapshot_over_time.enrich(snapshot - basis_functions*projected_snapshot_N)
+                    orthogonal_snapshot_over_time.enrich(snapshot - basis_functions * projected_snapshot_N)
                 return orthogonal_snapshot_over_time
             else:
                 return snapshot_over_time
 
-        def _POD_greedy_compute_basis_extension_with_orthogonal_snapshot(self, orthogonal_snapshot_over_time, component=None):
+        def _POD_greedy_compute_basis_extension_with_orthogonal_snapshot(
+                self, orthogonal_snapshot_over_time, component=None):
             N1 = self.N1
             if component is None:
                 POD_time_trajectory = self.POD_time_trajectory
@@ -194,8 +209,10 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs")
                 POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy")
             else:
-                POD_time_trajectory.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
-                POD_time_trajectory.save_retained_energy_file(self.folder["post_processing"], "retained_energy_" + component)
+                POD_time_trajectory.save_eigenvalues_file(
+                    self.folder["post_processing"], "eigs_" + component)
+                POD_time_trajectory.save_retained_energy_file(
+                    self.folder["post_processing"], "retained_energy_" + component)
             return (basis_functions1, N1)
 
         def _POD_greedy_compute_basis_extension_with_POD(self, snapshot_over_time, component=None):
@@ -247,12 +264,14 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 # Print some additional information related to the current value of the parameter
                 error_over_time = self.reduced_problem.compute_error()
                 error_squared_over_time = [v**2 for v in error_over_time]
-                error_time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_squared_over_time)
+                error_time_quadrature = TimeQuadrature(
+                    (0., self.truth_problem.T), error_squared_over_time)
                 error = sqrt(error_time_quadrature.integrate())
                 print("absolute error for current mu =", error)
                 error_estimator_over_time = self.reduced_problem.estimate_error()
                 error_estimator_squared_over_time = [v**2 for v in error_estimator_over_time]
-                error_estimator_time_quadrature = TimeQuadrature((0., self.truth_problem.T), error_estimator_squared_over_time)
+                error_estimator_time_quadrature = TimeQuadrature(
+                    (0., self.truth_problem.T), error_estimator_squared_over_time)
                 error_estimator = sqrt(error_estimator_time_quadrature.integrate())
                 print("absolute error estimator for current mu =", error_estimator)
 
@@ -296,15 +315,19 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
                 for component in components:
                     all_components_string += component
                     for column_prefix in ("error_", "relative_error_"):
-                        ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem)
+                        ErrorAnalysisTable.preprocess_setitem(
+                            column_prefix + component, solution_preprocess_setitem)
                 for column_prefix in ("error_", "error_estimator_", "relative_error_", "relative_error_estimator_"):
-                    ErrorAnalysisTable.preprocess_setitem(column_prefix + all_components_string, solution_preprocess_setitem)
+                    ErrorAnalysisTable.preprocess_setitem(
+                        column_prefix + all_components_string, solution_preprocess_setitem)
             else:
                 component = components[0]
                 for column_prefix in ("error_", "error_estimator_", "relative_error_", "relative_error_estimator_"):
-                    ErrorAnalysisTable.preprocess_setitem(column_prefix + component, solution_preprocess_setitem)
+                    ErrorAnalysisTable.preprocess_setitem(
+                        column_prefix + component, solution_preprocess_setitem)
 
-            for column in ("error_output", "error_estimator_output", "relative_error_output", "relative_error_estimator_output"):
+            for column in ("error_output", "error_estimator_output",
+                           "relative_error_output", "relative_error_estimator_output"):
                 ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
 
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N_generator, filename, **kwargs)

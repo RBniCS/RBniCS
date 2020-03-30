@@ -8,7 +8,8 @@ import pytest
 from mpi4py import MPI
 from logging import DEBUG, getLogger
 from numpy import array, isclose, nonzero, sort
-from dolfin import assemble, dx, Expression, FiniteElement, FunctionSpace, inner, MixedElement, Point, project, split, TestFunction, TrialFunction, UnitIntervalMesh, UnitSquareMesh, Vector, VectorElement
+from dolfin import (assemble, dx, Expression, FiniteElement, FunctionSpace, inner, MixedElement, Point, project,
+                    split, TestFunction, TrialFunction, UnitIntervalMesh, UnitSquareMesh, Vector, VectorElement)
 try:
     from mshr import generate_mesh, Rectangle
 except ImportError:
@@ -16,7 +17,8 @@ except ImportError:
 else:
     has_mshr = True
 from rbnics.backends.dolfin import ReducedMesh
-from rbnics.backends.dolfin.wrapping import evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs
+from rbnics.backends.dolfin.wrapping import (
+    evaluate_and_vectorize_sparse_matrix_at_dofs, evaluate_sparse_function_at_dofs, evaluate_sparse_vector_at_dofs)
 from rbnics.utils.test import enable_logging
 
 # Logger
@@ -35,9 +37,11 @@ if has_mshr:
         domain = Rectangle(Point(0., 0.), Point(1., 1.))
         return generate_mesh(domain, 5)
 
-    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh_1d(), structured_mesh_2d(), unstructured_mesh_2d()])
+    generate_meshes = pytest.mark.parametrize("mesh", [
+        structured_mesh_1d(), structured_mesh_2d(), unstructured_mesh_2d()])
 else:
-    generate_meshes = pytest.mark.parametrize("mesh", [structured_mesh_1d(), structured_mesh_2d()])
+    generate_meshes = pytest.mark.parametrize("mesh", [
+        structured_mesh_1d(), structured_mesh_2d()])
 
 # Helper functions
 def nonzero_values(function):
@@ -292,8 +296,12 @@ def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
     (u_N_0, u_N_1) = split(u_N)
     (v_N_0, v_N_1) = split(v_N)
 
-    A = assemble(u_0[0]*v_0[0]*dx + u_0[0]*v_0[1]*dx + u_0[1]*v_0[0]*dx + u_0[1]*v_0[1]*dx + u_1*v_1*dx + u_0[0]*v_1*dx + u_1*v_0[1]*dx)
-    A_N = assemble(u_N_0[0]*v_N_0[0]*dx + u_N_0[0]*v_N_0[1]*dx + u_N_0[1]*v_N_0[0]*dx + u_N_0[1]*v_N_0[1]*dx + u_N_1*v_N_1*dx + u_N_0[0]*v_N_1*dx + u_N_1*v_N_0[1]*dx)
+    A = assemble(
+        u_0[0]*v_0[0]*dx + u_0[0]*v_0[1]*dx + u_0[1]*v_0[0]*dx + u_0[1]*v_0[1]*dx
+        + u_1*v_1*dx + u_0[0]*v_1*dx + u_1*v_0[1]*dx)
+    A_N = assemble(
+        u_N_0[0]*v_N_0[0]*dx + u_N_0[0]*v_N_0[1]*dx + u_N_0[1]*v_N_0[0]*dx + u_N_0[1]*v_N_0[1]*dx
+        + u_N_1*v_N_1*dx + u_N_0[0]*v_N_1*dx + u_N_1*v_N_0[1]*dx)
 
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)

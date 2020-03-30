@@ -31,5 +31,6 @@ def preserve_generator_attribute(operator):
             return original_operator(self, other)
     setattr(GenericVector, operator, custom_operator)
 
-for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__", "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
+for operator in ("__add__", "__radd__", "__iadd__", "__sub__", "__rsub__", "__isub__",
+                 "__mul__", "__rmul__", "__imul__", "__truediv__", "__itruediv__"):
     preserve_generator_attribute(operator)

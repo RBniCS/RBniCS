@@ -104,7 +104,8 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         assert "subdomains" in kwargs
         assert "boundaries" in kwargs
         assert "stokes_problem" in kwargs
-        self.subdomains, self.boundaries, self.stokes_problem = kwargs["subdomains"], kwargs["boundaries"], kwargs["stokes_problem"]
+        self.subdomains, self.boundaries = kwargs["subdomains"], kwargs["boundaries"]
+        self.stokes_problem = kwargs["stokes_problem"]
         self.c = TrialFunction(V)
         self.d = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
@@ -198,7 +199,8 @@ element_c = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 C = FunctionSpace(mesh, element_c)
 
 # 3b. Allocate an object of the AdvectionDiffusionProblem class
-advection_diffusion_problem = AdvectionDiffusion(C, subdomains=subdomains, boundaries=boundaries, stokes_problem=stokes_problem)
+advection_diffusion_problem = AdvectionDiffusion(
+    C, subdomains=subdomains, boundaries=boundaries, stokes_problem=stokes_problem)
 advection_diffusion_problem.set_mu_range(mu_range)
 
 # 4b. Prepare reduction with a POD-Galerkin method

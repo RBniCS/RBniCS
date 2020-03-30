@@ -125,14 +125,17 @@ def BasicPETScTSIntegrator(backend, wrapping):
             # Assert consistency of final time and time step size
             t0, dt, T = self.ts.getTime(), self.ts.getTimeStep(), self.ts.getMaxTime()
             final_time_consistency = (T - t0)/dt
-            assert isclose(round(final_time_consistency), final_time_consistency), "Final time should be occuring after an integer number of time steps"
+            assert isclose(round(final_time_consistency), final_time_consistency), (
+                "Final time should be occuring after an integer number of time steps")
             # Init monitor
             self.monitor.init(self.solution, self.solution_dot)
-            # Solve
-            solution_copy = wrapping.function_copy(self.solution) # create copy to avoid possible internal storage overwriting by linesearch
+            # Create copy to avoid possible internal storage overwriting by linesearch
+            solution_copy = wrapping.function_copy(self.solution)
             petsc_solution_copy = wrapping.to_petsc4py(solution_copy)
+            # Solve
             self.ts.solve(petsc_solution_copy)
-            text_output = "Total time steps %d (%d rejected, %d SNES fails)" % (self.ts.getStepNumber(), self.ts.getStepRejections(), self.ts.getSNESFailures())
+            text_output = "Total time steps %d (%d rejected, %d SNES fails)" % (
+                self.ts.getStepNumber(), self.ts.getStepRejections(), self.ts.getSNESFailures())
             if self.ts.getProblemType() == self.ts.ProblemType.NONLINEAR:
                 text_output += ", with total %d nonlinear iterations" % (self.ts.getSNESIterations(), )
             if self._report:
@@ -167,17 +170,20 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 if self.monitor_t0 is None:
                     self.monitor_t0 = self.t0
                 monitor_t0_consistency = (self.monitor_t0 - self.t0)/self.dt
-                assert isclose(round(monitor_t0_consistency), monitor_t0_consistency), "Monitor initial time should be occuring after an integer number of time steps"
+                assert isclose(round(monitor_t0_consistency), monitor_t0_consistency), (
+                    "Monitor initial time should be occuring after an integer number of time steps")
                 self.monitor_t = self.monitor_t0
                 self.monitor_eps = 0.1*self.dt
                 if self.monitor_dt is None:
                     self.monitor_dt = self.dt
                 monitor_dt_consistency = self.monitor_dt/self.dt
-                assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), "Monitor time step size should be a multiple of the time step size"
+                assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), (
+                    "Monitor time step size should be a multiple of the time step size")
                 assert self.monitor_T is None
                 self.monitor_T = self.T
                 monitor_T_consistency = (self.monitor_T - self.t0)/self.dt
-                assert isclose(round(monitor_T_consistency), monitor_T_consistency), "Monitor initial time should be occuring after an integer number of time steps"
+                assert isclose(round(monitor_T_consistency), monitor_T_consistency), (
+                    "Monitor initial time should be occuring after an integer number of time steps")
 
         def __call__(self, ts, step, time, solution):
             """
@@ -198,15 +204,19 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     $    int monitor(TS ts,PetscInt steps,PetscReal time,Vec u,void *mctx)
 
                     +    ts - the TS context
-                    .    steps - iteration number (after the final time step the monitor routine may be called with a step of -1, this indicates the solution has been interpolated to this time)
+                    .    steps - iteration number (after the final time step the monitor routine
+                                 may be called with a step of -1, this indicates the solution has
+                                 been interpolated to this time)
                     .    time - current time
                     .    u - current iterate
                     -    mctx - [optional] monitoring context
             """
 
             if self.monitor_callback is not None:
-                monitor_times = arange(self.monitor_t, min(self.monitor_T, time) + self.monitor_eps, self.monitor_dt).tolist()
-                assert all(monitor_t <= time or isclose(monitor_t, time, self.monitor_eps) for monitor_t in monitor_times)
+                monitor_times = arange(self.monitor_t, min(self.monitor_T, time) + self.monitor_eps,
+                                       self.monitor_dt).tolist()
+                assert all(monitor_t <= time or isclose(monitor_t, time, self.monitor_eps)
+                           for monitor_t in monitor_times)
                 monitor_times = [min(monitor_t, time) for monitor_t in monitor_times]
                 for self.monitor_t in monitor_times:
                     self._evaluate_solution(self.monitor_t, self.monitor_solution)
@@ -242,7 +252,8 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     self._evaluate_solution(t, result)
                     self._evaluate_solution(t - current_dt, self.monitor_solution_prev)
                 else: # use forward finite difference
-                    assert isclose(t, self.T, atol=self.monitor_eps) # this case will only happen when TS steps over final time
+                    assert isclose(t, self.T, atol=self.monitor_eps), (
+                        "This case should only happen when TS steps over final time")
                     assert t + current_dt <= self.ts.getTime()
                     bak_monitor_eps = self.monitor_eps
                     self.monitor_eps = 2*current_dt # disable assert inside self._evaluate_solution

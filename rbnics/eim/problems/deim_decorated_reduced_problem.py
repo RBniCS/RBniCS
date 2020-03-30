@@ -20,7 +20,9 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
 
                 def init(self, current_stage="online"):
                     # Call parent's method (enforcing an empty parent call to _init_error_estimation_operators)
-                    self.disable_init_error_estimation_operators = PatchInstanceMethod(self, "_init_error_estimation_operators", lambda self_, current_stage="online": None) # may be shared between DEIM and exact evaluation
+                    self.disable_init_error_estimation_operators = PatchInstanceMethod(
+                        self, "_init_error_estimation_operators", lambda self_, current_stage="online": None)
+                    # self.disable_init_error_estimation_operators may be shared between DEIM and exact evaluation
                     self.disable_init_error_estimation_operators.patch()
                     ParametrizedReducedDifferentialProblem_DecoratedClass.init(self, current_stage)
                     self.disable_init_error_estimation_operators.unpatch()
@@ -29,7 +31,8 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     self._init_error_estimation_operators_DEIM(current_stage)
 
                 def _init_error_estimation_operators_DEIM(self, current_stage="online"):
-                    # Initialize offline/online switch storage only once (may be shared between DEIM and exact evaluation)
+                    # Initialize offline/online switch storage only once
+                    # (may be shared between DEIM and exact evaluation)
                     OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
                     OfflineOnlineRieszSolver = self.offline_online_backend.OfflineOnlineRieszSolver
                     OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -40,7 +43,8 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     if not isinstance(self.error_estimation_operator, OfflineOnlineSwitch):
                         assert isinstance(self.error_estimation_operator, dict)
                         assert len(self.error_estimation_operator) == 0
-                        self.error_estimation_operator = OfflineOnlineExpansionStorage(self, "ErrorEstimationOperatorExpansionStorage")
+                        self.error_estimation_operator = OfflineOnlineExpansionStorage(
+                            self, "ErrorEstimationOperatorExpansionStorage")
                     if not isinstance(self.RieszSolver, OfflineOnlineSwitch):
                         assert inspect.isclass(self.RieszSolver)
                         self.RieszSolver = OfflineOnlineRieszSolver()
@@ -63,9 +67,12 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
 
                 def build_error_estimation_operators(self, current_stage="offline"):
                     # Call parent's method (enforcing an empty parent call to _build_error_estimation_operators)
-                    self.disable_build_error_estimation_operators = PatchInstanceMethod(self, "_build_error_estimation_operators", lambda self_, current_stage="offline": None) # may be shared between DEIM and exact evaluation
+                    self.disable_build_error_estimation_operators = PatchInstanceMethod(
+                        self, "_build_error_estimation_operators", lambda self_, current_stage="offline": None)
+                    # self.disable_build_error_estimation_operators may be shared between DEIM and exact evaluation
                     self.disable_build_error_estimation_operators.patch()
-                    ParametrizedReducedDifferentialProblem_DecoratedClass.build_error_estimation_operators(self, current_stage)
+                    ParametrizedReducedDifferentialProblem_DecoratedClass.build_error_estimation_operators(
+                        self, current_stage)
                     self.disable_build_error_estimation_operators.unpatch()
                     del self.disable_build_error_estimation_operators
                     # Then, build error estimators associated to DEIM operators
@@ -97,7 +104,9 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
 
         def init(self, current_stage="online"):
             # Call parent's method (enforcing an empty parent call to _init_operators)
-            self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_, current_stage="online": None) # may be shared between DEIM and exact evaluation
+            self.disable_init_operators = PatchInstanceMethod(
+                self, "_init_operators", lambda self_, current_stage="online": None)
+            # self.disable_init_operators may be shared between DEIM and exact evaluation
             self.disable_init_operators.patch()
             ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
             self.disable_init_operators.unpatch()
@@ -106,7 +115,8 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._init_operators_DEIM(current_stage)
 
         def _init_operators_DEIM(self, current_stage="online"):
-            # Initialize offline/online switch storage only once (may be shared between DEIM and exact evaluation)
+            # Initialize offline/online switch storage only once
+            # (may be shared between DEIM and exact evaluation)
             OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
             OfflineOnlineExpansionStorageSize = self.offline_online_backend.OfflineOnlineExpansionStorageSize
             OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -140,7 +150,9 @@ def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
 
         def build_reduced_operators(self, current_stage="offline"):
             # Call parent's method (enforcing an empty parent call to _build_reduced_operators)
-            self.disable_build_reduced_operators = PatchInstanceMethod(self, "_build_reduced_operators", lambda self_, current_stage="offline": None) # may be shared between DEIM and exact evaluation
+            self.disable_build_reduced_operators = PatchInstanceMethod(
+                self, "_build_reduced_operators", lambda self_, current_stage="offline": None)
+            # self.disable_build_reduced_operators may be shared between DEIM and exact evaluation
             self.disable_build_reduced_operators.patch()
             ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self, current_stage)
             self.disable_build_reduced_operators.unpatch()

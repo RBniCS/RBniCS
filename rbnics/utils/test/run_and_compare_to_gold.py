@@ -54,7 +54,8 @@ def run_and_compare_to_gold(subdirectory=""):
                             if os.path.exists(os.path.join(reference_dir, set_directory)):
                                 if os.path.exists(os.path.join(current_dir, set_directory)):
                                     shutil.rmtree(os.path.join(current_dir, set_directory))
-                                shutil.copytree(os.path.join(reference_dir, set_directory), os.path.join(current_dir, set_directory))
+                                shutil.copytree(os.path.join(reference_dir, set_directory),
+                                                os.path.join(current_dir, set_directory))
                 parallel_io(copy_training_and_testing_sets)
             # Run test/tutorial
             runtest(self)
@@ -73,7 +74,8 @@ def run_and_compare_to_gold(subdirectory=""):
                             with open(os.path.join(current_dir, filename + "_diff"), "w") as failure_file:
                                 failure_file.writelines(diffs)
                     if len(failures) > 0:
-                        raise RuntimeError(self.name + ", comparison has failed for the following files: " + str(failures) + ".")
+                        raise RuntimeError(
+                            self.name + ", comparison has failed for the following files: " + str(failures) + ".")
                 elif action == "regold":
                     data_dir_repo = git.Repo(data_dir)
                     assert not data_dir_repo.is_dirty()
@@ -88,7 +90,8 @@ def run_and_compare_to_gold(subdirectory=""):
                     commit = str(git.Repo(rootdir).head.reference.commit)
                     relpath = os.path.relpath(str(self.fspath), rootdir)
                     if self.name != relpath:
-                        message = "Automatic regold of " + self.name + " in " + relpath + " at upstream commit " + commit
+                        message = ("Automatic regold of " + self.name + " in " + relpath
+                                   + " at upstream commit " + commit)
                     else:
                         message = "Automatic regold of " + relpath + " at upstream commit " + commit
                     data_dir_repo.git.commit(message=message)

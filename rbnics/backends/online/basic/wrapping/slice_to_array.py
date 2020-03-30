@@ -33,10 +33,12 @@ def slice_to_array(obj, key, length_dict, index_dict):
                 current_slice_length_cumsum = [0]
             current_slice_start = [0]*len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
-                current_slice_start[basis_component_index] = current_slice_length_cumsum[basis_component_index] + slice_.start[component_name]
+                current_slice_start[basis_component_index] = current_slice_length_cumsum[
+                    basis_component_index] + slice_.start[component_name]
             current_slice_stop = [0]*len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
-                current_slice_stop[basis_component_index] = current_slice_length_cumsum[basis_component_index] + slice_.stop[component_name]
+                current_slice_stop[basis_component_index] = current_slice_length_cumsum[
+                    basis_component_index] + slice_.stop[component_name]
             assert len(current_slice_start) == len(current_slice_stop)
             slices_start.append(current_slice_start)
             slices_stop.append(current_slice_stop)
@@ -49,7 +51,8 @@ def slice_to_array(obj, key, length_dict, index_dict):
             slices.append(tuple(range(current_slice_start, current_slice_stop)))
         else:
             current_slice = list()
-            for (current_slice_start_component, current_slice_stop_component) in zip(current_slice_start, current_slice_stop):
+            for (current_slice_start_component, current_slice_stop_component) in zip(
+                    current_slice_start, current_slice_stop):
                 current_slice.extend(list(range(current_slice_start_component, current_slice_stop_component)))
             slices.append(tuple(current_slice))
 
@@ -127,6 +130,7 @@ def _check_index_dict(key, index_dict):
     elif isinstance(index_dict, ComponentNameToBasisComponentIndexDict):
         index_dict = (index_dict, )
     assert isinstance(index_dict, tuple)
-    assert all([isinstance(index_dict_i, ComponentNameToBasisComponentIndexDict) or index_dict_i is None for index_dict_i in index_dict])
+    assert all([isinstance(
+        index_dict_i, ComponentNameToBasisComponentIndexDict) or index_dict_i is None for index_dict_i in index_dict])
     assert len(key) == len(index_dict)
     return index_dict

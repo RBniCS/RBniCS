@@ -10,7 +10,8 @@ from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProb
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 from rbnics.reduction_methods.navier_stokes.navier_stokes_reduction_method import NavierStokesReductionMethod
 
-NavierStokesPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(NavierStokesReductionMethod(StokesPODGalerkinReduction))
+NavierStokesPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(
+    NavierStokesReductionMethod(StokesPODGalerkinReduction))
 
 @ReductionMethodFor(NavierStokesProblem, "PODGalerkin")
 class NavierStokesPODGalerkinReduction(NavierStokesPODGalerkinReduction_Base):

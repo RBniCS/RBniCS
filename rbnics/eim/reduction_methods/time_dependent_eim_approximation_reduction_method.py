@@ -17,13 +17,15 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         EIMApproximationReductionMethod.__init__(self, EIM_approximation)
 
     def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
-        import_successful = EIMApproximationReductionMethod.initialize_training_set(self, ntrain, enable_import, sampling, **kwargs)
+        import_successful = EIMApproximationReductionMethod.initialize_training_set(
+            self, ntrain, enable_import, sampling, **kwargs)
         # Initialize time training set
         time_training_set = ParameterSpaceSubset()
         # Test if can import
         time_import_successful = False
         if enable_import:
-            time_import_successful = time_training_set.load(self.folder["training_set"], "time_training_set") and (len(time_training_set) == ntrain)
+            time_import_successful = time_training_set.load(
+                self.folder["training_set"], "time_training_set") and (len(time_training_set) == ntrain)
         if not time_import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
             time_training_set.generate([(0., self.EIM_approximation.T)], ntrain, time_sampling)
@@ -32,19 +34,22 @@ class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMeth
         # Combine both sets into one
         self._combine_sets(self.training_set, time_training_set)
         # Also initialize the map from parameter values to snapshots container index
-        self._training_set_parameters_to_snapshots_container_index = {(mu["mu"], mu["t"]): mu_index for (mu_index, mu) in enumerate(self.training_set)}
+        self._training_set_parameters_to_snapshots_container_index = {
+            (mu["mu"], mu["t"]): mu_index for (mu_index, mu) in enumerate(self.training_set)}
         # Return
         assert time_import_successful == import_successful
         return import_successful
 
     def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
-        import_successful = EIMApproximationReductionMethod.initialize_testing_set(self, ntest, enable_import, sampling, **kwargs)
+        import_successful = EIMApproximationReductionMethod.initialize_testing_set(
+            self, ntest, enable_import, sampling, **kwargs)
         # Initialize time testing set
         time_testing_set = ParameterSpaceSubset()
         # Test if can import
         time_import_successful = False
         if enable_import:
-            time_import_successful = time_testing_set.load(self.folder["testing_set"], "time_testing_set") and (len(time_testing_set) == ntest)
+            time_import_successful = time_testing_set.load(
+                self.folder["testing_set"], "time_testing_set") and (len(time_testing_set) == ntest)
         if not import_successful:
             time_sampling = self._generate_time_sampling(**kwargs)
             try:

@@ -8,9 +8,11 @@
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
-from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import EllipticOptimalControlReductionMethod
+from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_reduction_method import (
+    EllipticOptimalControlReductionMethod)
 
-EllipticOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod))
+EllipticOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
+    EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
 @ReductionMethodFor(EllipticOptimalControlProblem, "PODGalerkin")
 class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerkinReduction_Base):
@@ -23,7 +25,8 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
         for component in self.truth_problem.components:
             print("# POD for component", component)
             POD = self.POD[component]
-            assert self.tol[component] == 0. # TODO first negelect tolerances, then compute the max of N for each aggregated pair
+            assert self.tol[component] == 0.
+            # TODO first negelect tolerances, then compute the max of N for each aggregated pair
             (_, _, basis_functions[component], N[component]) = POD.apply(self.Nmax, self.tol[component])
             POD.print_eigenvalues(N[component])
             POD.save_eigenvalues_file(self.folder["post_processing"], "eigs_" + component)
@@ -35,9 +38,11 @@ class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerk
 
         # Aggregate POD modes related to state and adjoint
         for component_to in ("y", "p"):
-            for i in range(self.Nmax): # TODO should have been N[component_from], but cannot switch the next line
+            for i in range(self.Nmax):
+                # TODO should have been N[component_from] instead of Nmax, but cannot switch the next line
                 for component_from in ("y", "p"):
-                    self.reduced_problem.basis_functions.enrich(basis_functions[component_from][i], component={component_from: component_to})
+                    self.reduced_problem.basis_functions.enrich(
+                        basis_functions[component_from][i], component={component_from: component_to})
                 self.reduced_problem.N[component_to] += 2
 
         # Save

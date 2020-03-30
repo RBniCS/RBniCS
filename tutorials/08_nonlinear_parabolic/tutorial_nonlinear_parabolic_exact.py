@@ -150,9 +150,12 @@ fitz_hugh_nagumo_problem.export_solution(filename="offline_solution")
 reduced_solution_over_time = reduced_fitz_hugh_nagumo_problem.solve()
 reduced_fitz_hugh_nagumo_problem.export_solution(filename="online_solution")
 basis_functions = reduced_fitz_hugh_nagumo_problem.basis_functions
-plot_phase_space(solution_over_time, reduced_solution_over_time, basis_functions, 0.0, "FitzHughNagumoExact", "phase_space_0.0")
-plot_phase_space(solution_over_time, reduced_solution_over_time, basis_functions, 0.1, "FitzHughNagumoExact", "phase_space_0.1")
-plot_phase_space(solution_over_time, reduced_solution_over_time, basis_functions, 0.5, "FitzHughNagumoExact", "phase_space_0.5")
+plot_phase_space(
+    solution_over_time, reduced_solution_over_time, basis_functions, 0.0, "FitzHughNagumoExact", "phase_space_0.0")
+plot_phase_space(
+    solution_over_time, reduced_solution_over_time, basis_functions, 0.1, "FitzHughNagumoExact", "phase_space_0.1")
+plot_phase_space(
+    solution_over_time, reduced_solution_over_time, basis_functions, 0.5, "FitzHughNagumoExact", "phase_space_0.5")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(1)

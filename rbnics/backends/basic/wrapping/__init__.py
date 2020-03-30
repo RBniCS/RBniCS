@@ -4,14 +4,16 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from rbnics.backends.basic.wrapping.basis_functions_matrix_mul import basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector
+from rbnics.backends.basic.wrapping.basis_functions_matrix_mul import (
+    basis_functions_matrix_mul_online_matrix, basis_functions_matrix_mul_online_vector)
 from rbnics.backends.basic.wrapping.delayed_basis_functions_matrix import DelayedBasisFunctionsMatrix
 from rbnics.backends.basic.wrapping.delayed_functions_list import DelayedFunctionsList
 from rbnics.backends.basic.wrapping.delayed_linear_solver import DelayedLinearSolver
 from rbnics.backends.basic.wrapping.delayed_product import DelayedProduct
 from rbnics.backends.basic.wrapping.delayed_sum import DelayedSum
 from rbnics.backends.basic.wrapping.delayed_transpose import DelayedTranspose
-from rbnics.backends.basic.wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs import evaluate_and_vectorize_sparse_matrix_at_dofs
+from rbnics.backends.basic.wrapping.evaluate_and_vectorize_sparse_matrix_at_dofs import (
+    evaluate_and_vectorize_sparse_matrix_at_dofs)
 from rbnics.backends.basic.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 from rbnics.backends.basic.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
 from rbnics.backends.basic.wrapping.expression_description import expression_description
@@ -28,7 +30,8 @@ from rbnics.backends.basic.wrapping.function_copy import function_copy
 from rbnics.backends.basic.wrapping.function_extend_or_restrict import function_extend_or_restrict
 from rbnics.backends.basic.wrapping.function_load import function_load
 from rbnics.backends.basic.wrapping.function_save import function_save
-from rbnics.backends.basic.wrapping.functions_list_mul import functions_list_mul_online_matrix, functions_list_mul_online_vector
+from rbnics.backends.basic.wrapping.functions_list_mul import (
+    functions_list_mul_online_matrix, functions_list_mul_online_vector)
 from rbnics.backends.basic.wrapping.get_function_space import get_function_space
 from rbnics.backends.basic.wrapping.get_function_subspace import get_function_subspace
 from rbnics.backends.basic.wrapping.get_mpi_comm import get_mpi_comm

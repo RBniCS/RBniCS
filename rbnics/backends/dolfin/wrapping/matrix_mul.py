@@ -15,7 +15,8 @@ cpp_code = """
 
     void throw_error(PetscErrorCode ierr, std::string reason);
 
-    PetscScalar vectorized_matrix_inner_vectorized_matrix(std::shared_ptr<dolfin::PETScMatrix> A, std::shared_ptr<dolfin::PETScMatrix> B)
+    PetscScalar vectorized_matrix_inner_vectorized_matrix(std::shared_ptr<dolfin::PETScMatrix> A,
+                                                          std::shared_ptr<dolfin::PETScMatrix> B)
     {
         Mat a = A->mat();
         Mat b = B->mat();
@@ -51,7 +52,8 @@ cpp_code = """
 
     void throw_error(PetscErrorCode ierr, std::string reason)
     {
-        throw std::runtime_error("Error in vectorized_matrix_inner_vectorized_matrix: reason " + reason + ", error code " + std::to_string(ierr));
+        throw std::runtime_error("Error in vectorized_matrix_inner_vectorized_matrix: reason " + reason
+                                 + ", error code " + std::to_string(ierr));
     }
 
     PYBIND11_MODULE(SIGNATURE, m)

@@ -23,7 +23,8 @@ def python_string_to_sympy(string_expression: str, problem: ParametrizedProblem)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
 
 @overload
-def python_string_to_sympy(string_expression: str, x_symb: (Matrix, MatrixSymbol, None), mu_symb: (Matrix, MatrixSymbol, None)):
+def python_string_to_sympy(string_expression: str, x_symb: (Matrix, MatrixSymbol, None),
+                           mu_symb: (Matrix, MatrixSymbol, None)):
     return sympify(string_expression, locals={"x": x_symb, "mu": mu_symb})
 
 @overload
@@ -36,7 +37,8 @@ def python_string_to_sympy(string_expression: tuple_of(str), problem: Parametriz
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
 
 @overload
-def python_string_to_sympy(string_expression: tuple_of(str), x_symb: (Matrix, MatrixSymbol, None), mu_symb: (Matrix, MatrixSymbol, None)):
+def python_string_to_sympy(string_expression: tuple_of(str), x_symb: (Matrix, MatrixSymbol, None),
+                           mu_symb: (Matrix, MatrixSymbol, None)):
     sympy_expression = zeros(len(string_expression), 1)
     for (i, si) in enumerate(string_expression):
         sympy_expression[i] = sympify(si, locals={"x": x_symb, "mu": mu_symb})
@@ -52,7 +54,8 @@ def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), problem: 
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
 
 @overload
-def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), x_symb: (Matrix, MatrixSymbol, None), mu_symb: (Matrix, MatrixSymbol, None)):
+def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), x_symb: (Matrix, MatrixSymbol, None),
+                           mu_symb: (Matrix, MatrixSymbol, None)):
     assert all([len(si) == len(string_expression[0]) for si in string_expression[1:]])
     sympy_expression = zeros(len(string_expression), len(string_expression[0]))
     for (i, si) in enumerate(string_expression):

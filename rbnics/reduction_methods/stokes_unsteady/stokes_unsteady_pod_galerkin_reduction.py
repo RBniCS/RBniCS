@@ -12,10 +12,12 @@ from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReductio
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_reduction_method import StokesUnsteadyReductionMethod
 
-def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, AbstractCFDUnsteadyPODGalerkinReduction_Base):
+def AbstractCFDUnsteadyPODGalerkinReduction(
+        AbstractCFDPODGalerkinReduction, AbstractCFDUnsteadyPODGalerkinReduction_Base):
     class AbstractCFDUnsteadyPODGalerkinReduction_Class(AbstractCFDUnsteadyPODGalerkinReduction_Base):
 
-        # Initialize data structures required for the offline phase: overridden version because supremizer POD is different from a standard component
+        # Initialize data structures required for the offline phase: overridden version because supremizer POD
+        # is different from a standard component
         def _init_offline(self):
             # Call parent to initialize
             output = AbstractCFDUnsteadyPODGalerkinReduction_Base._init_offline(self)
@@ -25,10 +27,12 @@ def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, Abs
                 self.POD_time_trajectory = dict()
                 for component in ("u", "p"):
                     inner_product = self.truth_problem.inner_product[component][0]
-                    self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product)
+                    self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(
+                        self.truth_problem.V, inner_product)
                 for component in ("s", ):
                     inner_product = self.truth_problem.inner_product[component][0]
-                    self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(self.truth_problem.V, inner_product, component="s")
+                    self.POD_time_trajectory[component] = ProperOrthogonalDecomposition(
+                        self.truth_problem.V, inner_product, component="s")
 
             # Return
             return output
@@ -43,21 +47,25 @@ def AbstractCFDUnsteadyPODGalerkinReduction(AbstractCFDPODGalerkinReduction, Abs
 
             if self.nested_POD:
                 for component in ("u", "p"):
-                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(snapshot_over_time, component=component)
-                    self.POD[component].store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
+                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(
+                        snapshot_over_time, component=component)
+                    self.POD[component].store_snapshot(
+                        basis_functions1, weight=[sqrt(e) for e in eigs1], component=component)
                 for component in ("s", ):
-                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(supremizer_over_time, component=component)
-                    self.POD[component].store_snapshot(basis_functions1, weight=[sqrt(e) for e in eigs1])
+                    (eigs1, basis_functions1) = self._nested_POD_compress_time_trajectory(
+                        supremizer_over_time, component=component)
+                    self.POD[component].store_snapshot(
+                        basis_functions1, weight=[sqrt(e) for e in eigs1])
             else:
                 # Call the steady method, which will add all snapshots and supremizers
-                AbstractCFDPODGalerkinReduction.update_snapshots_matrix(self, (snapshot_over_time, supremizer_over_time))
+                AbstractCFDPODGalerkinReduction.update_snapshots_matrix(
+                    self, (snapshot_over_time, supremizer_over_time))
 
     return AbstractCFDUnsteadyPODGalerkinReduction_Class
 
 StokesUnsteadyPODGalerkinReduction_Base = AbstractCFDUnsteadyPODGalerkinReduction(
     StokesPODGalerkinReduction,
-    LinearTimeDependentPODGalerkinReduction(StokesUnsteadyReductionMethod(StokesPODGalerkinReduction))
-)
+    LinearTimeDependentPODGalerkinReduction(StokesUnsteadyReductionMethod(StokesPODGalerkinReduction)))
 
 @ReductionMethodFor(StokesUnsteadyProblem, "PODGalerkin")
 class StokesUnsteadyPODGalerkinReduction(StokesUnsteadyPODGalerkinReduction_Base):

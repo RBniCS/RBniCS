@@ -7,7 +7,8 @@
 import itertools
 from sympy import Inverse, Matrix, MatrixSymbol, zeros
 from rbnics.shape_parametrization.utils.symbolic.python_string_to_sympy import MatrixListSymbol, python_string_to_sympy
-from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
+from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import (
+    strings_to_sympy_symbolic_parameters)
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
 def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):

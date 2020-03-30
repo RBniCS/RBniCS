@@ -15,9 +15,15 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
-@BackendFor("dolfin", inputs=((Form, Matrix.Type(), ParametrizedTensorFactory, LinearProblemWrapper), Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type(), None), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)))
+@BackendFor("dolfin", inputs=((Form, Matrix.Type(), ParametrizedTensorFactory, LinearProblemWrapper),
+                              Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type(), None),
+                              (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+                               dict_of(str, ProductOutputDirichletBC), None)))
 class LinearSolver(AbstractLinearSolver):
-    @overload((Form, Matrix.Type(), ParametrizedTensorFactory), Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type()), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None))
+    @overload((Form, Matrix.Type(), ParametrizedTensorFactory),
+              Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type()),
+              (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+               dict_of(str, ProductOutputDirichletBC), None))
     def __init__(self, lhs, solution, rhs, bcs=None):
         self.solution = solution
         self._init_lhs(lhs, bcs)
@@ -31,53 +37,61 @@ class LinearSolver(AbstractLinearSolver):
         self.__init__(problem_wrapper.matrix_eval(), solution, problem_wrapper.vector_eval(), problem_wrapper.bc_eval())
         self.monitor = problem_wrapper.monitor
 
-    @overload
-    def _init_lhs(self, lhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+    @overload(Form, (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+                     dict_of(str, ProductOutputDirichletBC), None))
+    def _init_lhs(self, lhs, bcs):
         self.lhs = assemble(lhs, keep_diagonal=True)
 
-    @overload
-    def _init_lhs(self, lhs: ParametrizedTensorFactory, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+    @overload(ParametrizedTensorFactory, (list_of(DirichletBC), ProductOutputDirichletBC,
+                                          dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC),
+                                          None))
+    def _init_lhs(self, lhs, bcs):
         self.lhs = evaluate(lhs)
 
-    @overload
-    def _init_lhs(self, lhs: Matrix.Type(), bcs: None):
+    @overload(Matrix.Type(), None)
+    def _init_lhs(self, lhs, bcs):
         self.lhs = lhs
 
-    @overload
-    def _init_lhs(self, lhs: Matrix.Type(), bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+    @overload(Matrix.Type(), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+                              dict_of(str, ProductOutputDirichletBC)))
+    def _init_lhs(self, lhs, bcs):
         # Create a copy of lhs, in order not to change
         # the original references when applying bcs
         self.lhs = lhs.copy()
 
-    @overload
-    def _init_rhs(self, rhs: Form, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+    @overload(Form, (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+                     dict_of(str, ProductOutputDirichletBC), None))
+    def _init_rhs(self, rhs, bcs):
         self.rhs = assemble(rhs)
 
-    @overload
-    def _init_rhs(self, rhs: ParametrizedTensorFactory, bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC), None)):
+    @overload(ParametrizedTensorFactory, (list_of(DirichletBC), ProductOutputDirichletBC,
+                                          dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC),
+                                          None))
+    def _init_rhs(self, rhs, bcs):
         self.rhs = evaluate(rhs)
 
-    @overload
-    def _init_rhs(self, rhs: Vector.Type(), bcs: None):
+    @overload(Vector.Type(), None)
+    def _init_rhs(self, rhs, bcs):
         self.rhs = rhs
 
-    @overload
-    def _init_rhs(self, rhs: Vector.Type(), bcs: (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+    @overload(Vector.Type(), (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),
+                              dict_of(str, ProductOutputDirichletBC)))
+    def _init_rhs(self, rhs, bcs):
         # Create a copy of rhs, in order not to change
         # the original references when applying bcs
         self.rhs = rhs.copy()
 
-    @overload
-    def _apply_bcs(self, bcs: None):
+    @overload(None)
+    def _apply_bcs(self, bcs):
         pass
 
-    @overload
-    def _apply_bcs(self, bcs: (list_of(DirichletBC), ProductOutputDirichletBC)):
+    @overload((list_of(DirichletBC), ProductOutputDirichletBC))
+    def _apply_bcs(self, bcs):
         for bc in bcs:
             bc.apply(self.lhs, self.rhs)
 
-    @overload
-    def _apply_bcs(self, bcs: (dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC))):
+    @overload((dict_of(str, list_of(DirichletBC)), dict_of(str, ProductOutputDirichletBC)))
+    def _apply_bcs(self, bcs):
         for key in bcs:
             for bc in bcs[key]:
                 bc.apply(self.lhs, self.rhs)

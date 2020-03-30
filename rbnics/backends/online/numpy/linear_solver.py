@@ -17,7 +17,10 @@ backend = ModuleWrapper(Function, Matrix, Vector)
 wrapping = ModuleWrapper(DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
 LinearSolver_Base = BasicLinearSolver(backend, wrapping)
 
-@BackendFor("numpy", inputs=((Matrix.Type(), DelayedTransposeWithArithmetic, LinearProblemWrapper), Function.Type(), (Vector.Type(), DelayedTransposeWithArithmetic, None), ThetaType + DictOfThetaType + (None,)))
+@BackendFor("numpy", inputs=((Matrix.Type(), DelayedTransposeWithArithmetic, LinearProblemWrapper),
+                             Function.Type(),
+                             (Vector.Type(), DelayedTransposeWithArithmetic, None),
+                             ThetaType + DictOfThetaType + (None,)))
 class LinearSolver(LinearSolver_Base):
     def set_parameters(self, parameters):
         assert len(parameters) == 0, "NumPy linear solver does not accept parameters yet"

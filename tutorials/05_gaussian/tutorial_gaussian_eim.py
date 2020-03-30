@@ -21,7 +21,8 @@ class Gaussian(EllipticCoerciveProblem):
         self.u = TrialFunction(V)
         self.v = TestFunction(V)
         self.dx = Measure("dx")(subdomain_data=subdomains)
-        self.f = ParametrizedExpression(self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
+        self.f = ParametrizedExpression(
+            self, "exp( - 2*pow(x[0]-mu[0], 2) - 2*pow(x[1]-mu[1], 2) )", mu=(0., 0.), element=V.ufl_element())
         # note that we cannot use self.mu in the initialization of self.f, because self.mu has not been initialized yet
 
     # Return custom problem name
@@ -113,8 +114,10 @@ reduced_basis_method.speedup_analysis(with_respect_to=exact_problem, filename="s
 
 # 11. Perform an error analysis with respect to the exact problem, but
 #     employing a smaller number of EIM basis functions
-reduced_basis_method.error_analysis(with_respect_to=exact_problem, EIM=11, filename="error_analysis__with_respect_to_exact__EIM_11")
+reduced_basis_method.error_analysis(
+    with_respect_to=exact_problem, EIM=11, filename="error_analysis__with_respect_to_exact__EIM_11")
 
 # 12. Perform a speedup analysis with respect to the exact problem, but
 #     employing a smaller number of EIM basis functions
-reduced_basis_method.speedup_analysis(with_respect_to=exact_problem, EIM=11, filename="speedup_analysis__with_respect_to_exact__DEIM_11")
+reduced_basis_method.speedup_analysis(
+    with_respect_to=exact_problem, EIM=11, filename="speedup_analysis__with_respect_to_exact__DEIM_11")

@@ -20,7 +20,8 @@ from rbnics.utils.test import PatchInstanceMethod
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
     Base class containing the interface of a projection based ROM.
-    Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
+    Initialization of dimension of reduced problem N, boundary conditions, terms and their order, number of terms
+    in the affine expansion Q, reduced operators and inner products, reduced solution, reduced basis functions matrix.
 
     :param truth_problem: class of the truth problem to be solved.
     """
@@ -34,10 +35,15 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
 
         # $$ ONLINE DATA STRUCTURES $$ #
         # Online reduced space dimension
-        self.N = None # integer (for problems with one component) or dict of integers (for problem with several components)
-        self.N_bc = None # integer (for problems with one component) or dict of integers (for problem with several components)
-        self.dirichlet_bc = None # bool (for problems with one component) or dict of bools (for problem with several components)
-        self.dirichlet_bc_are_homogeneous = None # bool (for problems with one component) or dict of bools (for problem with several components)
+        # N: integer (for problems with one component) or dict of integers (for problem with several components)
+        self.N = None
+        # N_bc: integer (for problems with one component) or dict of integers (for problem with several components)
+        self.N_bc = None
+        # dirichlet_bc: bool (for problems with one component) or dict of bools (for problem with several components)
+        self.dirichlet_bc = None
+        # dirichlet_bc_are_homogeneous: bool (for problems with one component) or dict of bools (for problem with
+        # several components)
+        self.dirichlet_bc_are_homogeneous = None
         self._combined_and_homogenized_dirichlet_bc = None
         # Form names and order
         self.terms = truth_problem.terms
@@ -47,13 +53,18 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self.Q = dict() # from string to integer
         # Reduced order operators
         self.OperatorExpansionStorage = OnlineAffineExpansionStorage
-        self.operator = dict() # from string to OperatorExpansionStorage
-        self.inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        # operator: from string to OperatorExpansionStorage
+        self.operator = dict()
+        # inner_product: AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage
+        # (for problem with several components), even though it will contain only one matrix
+        self.inner_product = None
         self._combined_inner_product = None
-        self.projection_inner_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        # projection_inner_product: AffineExpansionStorage (for problems with one component) or dict of
+        # AffineExpansionStorage (for problem with several components), even though it will contain only one matrix
+        self.projection_inner_product = None
         self._combined_projection_inner_product = None
-        # Solution
-        self._solution = None # OnlineFunction
+        # Solution: OnlineFunction
+        self._solution = None
         self._output = 0.
         # I/O
         def _solution_cache_key_generator(*args, **kwargs):
@@ -76,8 +87,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # $$ OFFLINE DATA STRUCTURES $$ #
         # High fidelity problem
         self.truth_problem = truth_problem
-        # Basis functions matrix
-        self.basis_functions = None # BasisFunctionsMatrix
+        # Basis functions matrix: BasisFunctionsMatrix
+        self.basis_functions = None
         # I/O
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
@@ -163,11 +174,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if len(self.components) > 1:
             all_inner_products = list()
             for component in self.components:
-                assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                # the affine expansion storage contains only the inner product matrix
+                assert len(self.inner_product[component]) == 1
                 all_inner_products.append(self.inner_product[component][0])
             all_inner_products = tuple(all_inner_products)
         else:
-            assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            # the affine expansion storage contains only the inner product matrix
+            assert len(self.inner_product) == 1
             all_inner_products = (self.inner_product[0], )
         all_inner_products = OnlineAffineExpansionStorage(all_inner_products)
         all_inner_products_thetas = (1.,)*len(all_inner_products)
@@ -177,11 +190,13 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if len(self.components) > 1:
             all_projection_inner_products = list()
             for component in self.components:
-                assert len(self.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
+                # the affine expansion storage contains only the inner product matrix
+                assert len(self.projection_inner_product[component]) == 1
                 all_projection_inner_products.append(self.projection_inner_product[component][0])
             all_projection_inner_products = tuple(all_projection_inner_products)
         else:
-            assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
+            # the affine expansion storage contains only the inner product matrix
+            assert len(self.projection_inner_product) == 1
             all_projection_inner_products = (self.projection_inner_product[0], )
         all_projection_inner_products = OnlineAffineExpansionStorage(all_projection_inner_products)
         all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
@@ -256,7 +271,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         elif current_stage == "offline":
             # Store the lifting functions in self.basis_functions
             for component in self.components:
-                self.assemble_operator(dirichlet_bc_string.format(c=component), "offline") # no return value from assemble_operator in this case
+                self.assemble_operator(dirichlet_bc_string.format(c=component), "offline")
+                # no return value from assemble_operator in this case
             # Save basis functions matrix, that contains up to now only lifting functions
             self.basis_functions.save(self.folder["basis"], "basis")
             # Properly fill in self.N_bc
@@ -306,7 +322,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if N == 0: # trivial case
             return self._solution
         try:
-            assign(self._solution, self._solution_cache[self.mu, N, kwargs]) # **kwargs is not supported by __getitem__
+            assign(self._solution, self._solution_cache[self.mu, N, kwargs])
+            # **kwargs is not supported by __getitem__
         except KeyError:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
@@ -365,9 +382,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
 
         # Project on reduced basis
         if on_dirichlet_bc:
-            solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot)
+            solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N,
+                                        transpose(basis_functions) * inner_product * snapshot)
         else:
-            solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N, transpose(basis_functions)*inner_product*snapshot, self._combined_and_homogenized_dirichlet_bc)
+            solver = OnlineLinearSolver(inner_product_N, projected_snapshot_N,
+                                        transpose(basis_functions) * inner_product * snapshot,
+                                        self._combined_and_homogenized_dirichlet_bc)
         solver.set_parameters(self._linear_solver_parameters)
         solver.solve()
         return projected_snapshot_N
@@ -380,7 +400,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         N = self._solution.N
         kwargs = self._latest_solve_kwargs
         try:
-            self._output = self._output_cache[self.mu, N, kwargs] # **kwargs is not supported by __getitem__
+            self._output = self._output_cache[self.mu, N, kwargs]
+            # **kwargs is not supported by __getitem__
         except KeyError:
             try:
                 self._compute_output(N)
@@ -432,7 +453,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if n_components > 1:
             inner_product_string = "inner_product_{c}"
             for component in self.components:
-                self.inner_product[component] = self.assemble_operator(inner_product_string.format(c=component), current_stage)
+                self.inner_product[component] = self.assemble_operator(
+                    inner_product_string.format(c=component), current_stage)
         else:
             self.inner_product = self.assemble_operator("inner_product", current_stage)
         self._combined_inner_product = self._combine_all_inner_products()
@@ -440,7 +462,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if n_components > 1:
             projection_inner_product_string = "projection_inner_product_{c}"
             for component in self.components:
-                self.projection_inner_product[component] = self.assemble_operator(projection_inner_product_string.format(c=component), current_stage)
+                self.projection_inner_product[component] = self.assemble_operator(
+                    projection_inner_product_string.format(c=component), current_stage)
         else:
             self.projection_inner_product = self.assemble_operator("projection_inner_product", current_stage)
         self._combined_projection_inner_product = self._combine_all_projection_inner_products()
@@ -456,7 +479,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
 
     def _compute_error(self, **kwargs):
         """
-        It computes the error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the error of the reduced order approximation with respect to the full order one
+        for the current value of mu.
         """
         (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
         # Storage
@@ -468,7 +492,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             truth_solution = self.truth_problem._solution
             error_function = truth_solution - reduced_solution
             for component in components:
-                error_norm_squared_component = transpose(error_function)*inner_product[component]*error_function
+                error_norm_squared_component = transpose(error_function) * inner_product[component] * error_function
                 assert error_norm_squared_component >= 0. or isclose(error_norm_squared_component, 0.)
                 error[component] = sqrt(abs(error_norm_squared_component))
         # Simplify trivial case
@@ -488,7 +512,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
 
     def _compute_relative_error(self, absolute_error, **kwargs):
         """
-        It computes the relative error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the relative error of the reduced order approximation with respect to the full order one
+        for the current value of mu.
         """
         (components, inner_product) = self._preprocess_compute_error_and_relative_error_kwargs(**kwargs)
         # Handle trivial case from compute_error
@@ -502,10 +527,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if len(components) > 0:
             truth_solution = self.truth_problem._solution
             for component in components:
-                truth_solution_norm_squared_component = transpose(truth_solution)*inner_product[component]*truth_solution
+                truth_solution_norm_squared_component = (
+                    transpose(truth_solution) * inner_product[component] * truth_solution)
                 assert truth_solution_norm_squared_component >= 0. or isclose(truth_solution_norm_squared_component, 0.)
                 if truth_solution_norm_squared_component != 0.:
-                    relative_error[component] = absolute_error[component]/sqrt(abs(truth_solution_norm_squared_component))
+                    relative_error[component] = (
+                        absolute_error[component] / sqrt(abs(truth_solution_norm_squared_component)))
                 else:
                     if absolute_error[component] == 0.:
                         relative_error[component] = 0.
@@ -519,7 +546,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
 
     def _preprocess_compute_error_and_relative_error_kwargs(self, **kwargs):
         """
-        This function returns the components and the inner products, picking them up from the kwargs or choosing default ones in case they are not defined yet. Internal method.
+        This function returns the components and the inner products, picking them up from the kwargs
+        or choosing default ones in case they are not defined yet. Internal method.
 
         :return: components and inner_product.
         """
@@ -558,7 +586,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     # Internal method for output error computation
     def _compute_error_output(self, **kwargs):
         """
-        It computes the output error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the output error of the reduced order approximation with respect to the full order one
+        for the current value of mu.
         """
         # Skip if no output defined
         if self._output is NotImplemented:
@@ -584,7 +613,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
     # Internal method for output error computation
     def _compute_relative_error_output(self, absolute_error_output, **kwargs):
         """
-        It computes the realtive output error of the reduced order approximation with respect to the full order one for the current value of mu.
+        It computes the realtive output error of the reduced order approximation with respect to the full order one
+        for the current value of mu.
         """
         # Skip if no output defined
         if self._output is NotImplemented:
@@ -674,7 +704,8 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.projection_inner_product.load(self.folder["reduced_operators"], term)
                     return self.projection_inner_product
             elif term.startswith("dirichlet_bc"):
-                raise ValueError("There should be no need to assemble Dirichlet BCs when querying online reduced problems.")
+                raise ValueError("There should be no need to assemble Dirichlet BCs when querying"
+                                 + " online reduced problems.")
             else:
                 raise ValueError("Invalid term for assemble_operator().")
         elif current_stage == "offline":
@@ -688,9 +719,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 for q in range(self.Q[term]):
                     assert self.terms_order[term] in (0, 1, 2)
                     if self.terms_order[term] == 2:
-                        self.operator[term][q] = transpose(self.basis_functions)*self.truth_problem.operator[term][q]*self.basis_functions
+                        self.operator[term][q] = (
+                            transpose(self.basis_functions) * self.truth_problem.operator[term][q]
+                            * self.basis_functions)
                     elif self.terms_order[term] == 1:
-                        self.operator[term][q] = transpose(self.basis_functions)*self.truth_problem.operator[term][q]
+                        self.operator[term][q] = (
+                            transpose(self.basis_functions) * self.truth_problem.operator[term][q])
                     elif self.terms_order[term] == 0:
                         self.operator[term][q] = self.truth_problem.operator[term][q]
                     else:
@@ -701,39 +735,55 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 component = term.replace("inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    assert len(self.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.inner_product[component][0] = transpose(self.basis_functions)*self.truth_problem.inner_product[component][0]*self.basis_functions
+                    assert len(self.inner_product[component]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product[component]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    self.inner_product[component][0] = (
+                        transpose(self.basis_functions) * self.truth_problem.inner_product[component][0]
+                        * self.basis_functions)
                     self.inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
                 else:
                     assert len(self.components) == 1 # single component case
-                    assert len(self.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.inner_product[0] = transpose(self.basis_functions)*self.truth_problem.inner_product[0]*self.basis_functions
+                    assert len(self.inner_product) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.inner_product) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    self.inner_product[0] = (
+                        transpose(self.basis_functions) * self.truth_problem.inner_product[0] * self.basis_functions)
                     self.inner_product.save(self.folder["reduced_operators"], term)
                     return self.inner_product
             elif term.startswith("projection_inner_product"):
                 component = term.replace("projection_inner_product", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    assert len(self.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.projection_inner_product[component]) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.projection_inner_product[component][0] = transpose(self.basis_functions)*self.truth_problem.projection_inner_product[component][0]*self.basis_functions
+                    assert len(self.projection_inner_product[component]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.projection_inner_product[component]) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    self.projection_inner_product[component][0] = (
+                        transpose(self.basis_functions) * self.truth_problem.projection_inner_product[component][0]
+                        * self.basis_functions)
                     self.projection_inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product[component]
                 else:
                     assert len(self.components) == 1 # single component case
-                    assert len(self.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    assert len(self.truth_problem.projection_inner_product) == 1 # the affine expansion storage contains only the inner product matrix
-                    self.projection_inner_product[0] = transpose(self.basis_functions)*self.truth_problem.projection_inner_product[0]*self.basis_functions
+                    assert len(self.projection_inner_product) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    assert len(self.truth_problem.projection_inner_product) == 1
+                    # the affine expansion storage contains only the inner product matrix
+                    self.projection_inner_product[0] = (
+                        transpose(self.basis_functions) * self.truth_problem.projection_inner_product[0]
+                        * self.basis_functions)
                     self.projection_inner_product.save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product
             elif term.startswith("dirichlet_bc"):
                 component = term.replace("dirichlet_bc", "").replace("_", "")
                 if component != "":
                     assert component in self.components
-                    has_non_homogeneous_dirichlet_bc = self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
+                    has_non_homogeneous_dirichlet_bc = (
+                        self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component])
                 else:
                     assert len(self.components) == 1
                     component = None

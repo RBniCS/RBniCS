@@ -46,7 +46,8 @@ def OfflineOnlineExpansionStorage(problem_name):
                         original_method = getattr(expansion_storage, method)
                         def patched_method(self, directory, filename):
                             # Get full directory name
-                            full_directory = Folders.Folder(os.path.join(str(directory), _OfflineOnlineExpansionStorage_Base._current_stage))
+                            full_directory = Folders.Folder(
+                                os.path.join(str(directory), _OfflineOnlineExpansionStorage_Base._current_stage))
                             full_directory.create()
                             # Call original implementation
                             return original_method(full_directory, filename)

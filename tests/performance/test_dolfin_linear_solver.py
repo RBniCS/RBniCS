@@ -6,7 +6,8 @@
 
 import pytest
 from numpy import isclose
-from dolfin import assemble, dx, Function, FunctionSpace, grad, inner, solve, TestFunction, TrialFunction, UnitSquareMesh
+from dolfin import (assemble, dx, Function, FunctionSpace, grad, inner, solve, TestFunction, TrialFunction,
+                    UnitSquareMesh)
 from rbnics.backends import LinearSolver as FactoryLinearSolver
 from rbnics.backends.dolfin import LinearSolver as DolfinLinearSolver
 from test_utils import RandomDolfinFunction

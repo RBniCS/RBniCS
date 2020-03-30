@@ -22,7 +22,8 @@ class TimeSeries(AbstractTimeSeries):
             time_interval, time_step_size = args
             self._time_interval = time_interval
             self._time_step_size = time_step_size
-        self._times = arange(self._time_interval[0], self._time_interval[1] + self._time_step_size/2., self._time_step_size).tolist()
+        self._times = arange(self._time_interval[0], self._time_interval[1] + self._time_step_size/2.,
+                             self._time_step_size).tolist()
         self._list = list()
 
     def stored_times(self):
@@ -57,7 +58,8 @@ class TimeSeries(AbstractTimeSeries):
         assert time >= self._time_interval[0]
         assert time <= self._time_interval[1]
         index = int(round(time/self._time_step_size))
-        assert isclose(index*self._time_step_size, time), "Requested time should be a multiple of discretization time step size"
+        assert isclose(index*self._time_step_size, time), (
+            "Requested time should be a multiple of discretization time step size")
         return self._list[index]
 
     def __iter__(self):

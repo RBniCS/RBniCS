@@ -6,7 +6,9 @@
 
 import inspect
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-from rbnics.eim.utils.decorators import StoreMapFromBasisFunctionsToReducedProblem, StoreMapFromEachBasisFunctionToComponentAndIndex, StoreMapFromRieszStorageToReducedProblem
+from rbnics.eim.utils.decorators import (StoreMapFromBasisFunctionsToReducedProblem,
+                                         StoreMapFromEachBasisFunctionToComponentAndIndex,
+                                         StoreMapFromRieszStorageToReducedProblem)
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
@@ -22,10 +24,13 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             class _AlsoDecorateErrorEstimationOperators_Class(ParametrizedReducedDifferentialProblem_DecoratedClass):
 
                 def init(self, current_stage="online"):
-                    has_disable_init_error_estimation_operators = hasattr(self, "disable_init_error_estimation_operators") # may be shared between EIM/DEIM and exact evaluation
+                    # self.disable_init_error_estimation_operators may be shared between EIM/DEIM and exact evaluation
+                    has_disable_init_error_estimation_operators = hasattr(
+                        self, "disable_init_error_estimation_operators")
                     # Call parent's method (enforcing an empty parent call to _init_error_estimation_operators)
                     if not has_disable_init_error_estimation_operators:
-                        self.disable_init_error_estimation_operators = PatchInstanceMethod(self, "_init_error_estimation_operators", lambda self_, current_stage="online": None)
+                        self.disable_init_error_estimation_operators = PatchInstanceMethod(
+                            self, "_init_error_estimation_operators", lambda self_, current_stage="online": None)
                     self.disable_init_error_estimation_operators.patch()
                     ParametrizedReducedDifferentialProblem_DecoratedClass.init(self, current_stage)
                     self.disable_init_error_estimation_operators.unpatch()
@@ -35,7 +40,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     self._init_error_estimation_operators_exact(current_stage)
 
                 def _init_error_estimation_operators_exact(self, current_stage="online"):
-                    # Initialize offline/online switch storage only once (may be shared between EIM/DEIM and exact evaluation)
+                    # Initialize offline/online switch storage only once (may be shared between EIM/DEIM
+                    # and exact evaluation)
                     OfflineOnlineExpansionStorage = self.offline_online_backend.OfflineOnlineExpansionStorage
                     OfflineOnlineRieszSolver = self.offline_online_backend.OfflineOnlineRieszSolver
                     OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
@@ -46,7 +52,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     if not isinstance(self.error_estimation_operator, OfflineOnlineSwitch):
                         assert isinstance(self.error_estimation_operator, dict)
                         assert len(self.error_estimation_operator) == 0
-                        self.error_estimation_operator = OfflineOnlineExpansionStorage(self, "ErrorEstimationOperatorExpansionStorage")
+                        self.error_estimation_operator = OfflineOnlineExpansionStorage(
+                            self, "ErrorEstimationOperatorExpansionStorage")
                     if not isinstance(self.RieszSolver, OfflineOnlineSwitch):
                         assert inspect.isclass(self.RieszSolver)
                         self.RieszSolver = OfflineOnlineRieszSolver()
@@ -54,7 +61,8 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     assert current_stage in ("online", "offline")
                     apply_exact_evaluation_at_stages = self.truth_problem._apply_exact_evaluation_at_stages
                     if current_stage == "online":
-                        apply_exact_evaluation_at_stages = ("online", ) if "online" in apply_exact_evaluation_at_stages else ()
+                        apply_exact_evaluation_at_stages = (
+                            "online", ) if "online" in apply_exact_evaluation_at_stages else ()
                     for stage_exact in apply_exact_evaluation_at_stages:
                         OfflineOnlineSwitch.set_current_stage(stage_exact)
                         self.riesz.set_is_affine(False)
@@ -68,12 +76,16 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
                     OfflineOnlineSwitch.set_current_stage(current_stage)
 
                 def build_error_estimation_operators(self, current_stage="offline"):
-                    has_disable_build_error_estimation_operators = hasattr(self, "disable_build_error_estimation_operators") # may be shared between EIM/DEIM and exact evaluation
+                    # self.disable_build_error_estimation_operators may be shared between EIM/DEIM and exact evaluation
+                    has_disable_build_error_estimation_operators = hasattr(
+                        self, "disable_build_error_estimation_operators")
                     # Call parent's method (enforcing an empty parent call to _build_error_estimation_operators)
                     if not has_disable_build_error_estimation_operators:
-                        self.disable_build_error_estimation_operators = PatchInstanceMethod(self, "_build_error_estimation_operators", lambda self_, current_stage="offline": None)
+                        self.disable_build_error_estimation_operators = PatchInstanceMethod(
+                            self, "_build_error_estimation_operators", lambda self_, current_stage="offline": None)
                     self.disable_build_error_estimation_operators.patch()
-                    ParametrizedReducedDifferentialProblem_DecoratedClass.build_error_estimation_operators(self, current_stage)
+                    ParametrizedReducedDifferentialProblem_DecoratedClass.build_error_estimation_operators(
+                        self, current_stage)
                     self.disable_build_error_estimation_operators.unpatch()
                     if not has_disable_build_error_estimation_operators:
                         del self.disable_build_error_estimation_operators
@@ -106,10 +118,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             self.offline_online_backend = truth_problem.offline_online_backend
 
         def init(self, current_stage="online"):
-            has_disable_init_operators = hasattr(self, "disable_init_operators") # may be shared between EIM/DEIM and exact evaluation
+            # self.disable_init_operators may be shared between EIM/DEIM and exact evaluation
+            has_disable_init_operators = hasattr(self, "disable_init_operators")
             # Call parent's method (enforcing an empty parent call to _init_operators)
             if not has_disable_init_operators:
-                self.disable_init_operators = PatchInstanceMethod(self, "_init_operators", lambda self_, current_stage="online": None)
+                self.disable_init_operators = PatchInstanceMethod(
+                    self, "_init_operators", lambda self_, current_stage="online": None)
             self.disable_init_operators.patch()
             ParametrizedReducedDifferentialProblem_DerivedClass.init(self, current_stage)
             self.disable_init_operators.unpatch()
@@ -145,10 +159,12 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             OfflineOnlineSwitch.set_current_stage(current_stage)
 
         def build_reduced_operators(self, current_stage="offline"):
-            has_disable_build_reduced_operators = hasattr(self, "disable_build_reduced_operators") # may be shared between EIM/DEIM and exact evaluation
+            # self.disable_build_reduced_operators may be shared between EIM/DEIM and exact evaluation
+            has_disable_build_reduced_operators = hasattr(self, "disable_build_reduced_operators")
             # Call parent's method (enforcing an empty parent call to _build_reduced_operators)
             if not has_disable_build_reduced_operators:
-                self.disable_build_reduced_operators = PatchInstanceMethod(self, "_build_reduced_operators", lambda self_, current_stage="offline": None)
+                self.disable_build_reduced_operators = PatchInstanceMethod(
+                    self, "_build_reduced_operators", lambda self_, current_stage="offline": None)
             self.disable_build_reduced_operators.patch()
             ParametrizedReducedDifferentialProblem_DerivedClass.build_reduced_operators(self, current_stage)
             self.disable_build_reduced_operators.unpatch()
@@ -168,15 +184,18 @@ def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDiffere
             OfflineOnlineSwitch.set_current_stage(current_stage)
 
         def _cache_key_from_N_and_kwargs(self, N, **kwargs):
-            if len(self.truth_problem._apply_exact_evaluation_at_stages) == 1: # uses EIM/DEIM online and exact evaluation offline
-                cache_key = ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(self, N, **kwargs)
+            if len(self.truth_problem._apply_exact_evaluation_at_stages) == 1:
+                # uses EIM/DEIM online and exact evaluation offline
+                cache_key = ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(
+                    self, N, **kwargs)
                 # Append current stage to cache key
                 OfflineOnlineSwitch = self.offline_online_backend.OfflineOnlineSwitch
                 cache_key = cache_key + (OfflineOnlineSwitch.get_current_stage(), )
                 # Return
                 return cache_key
             else:
-                return ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(self, N, **kwargs)
+                return ParametrizedReducedDifferentialProblem_DerivedClass._cache_key_from_N_and_kwargs(
+                    self, N, **kwargs)
 
     # return value (a class) for the decorator
     return ExactParametrizedFunctionsDecoratedReducedProblem_Class

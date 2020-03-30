@@ -12,8 +12,10 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.eim.problems.eim_decorated_problem import EIMDecoratedProblem
 from rbnics.eim.problems.eim_decorated_reduced_problem import EIMDecoratedReducedProblem
 from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
-from rbnics.eim.problems.exact_parametrized_functions_decorated_problem import ExactParametrizedFunctionsDecoratedProblem
-from rbnics.eim.problems.exact_parametrized_functions_decorated_reduced_problem import ExactParametrizedFunctionsDecoratedReducedProblem
+from rbnics.eim.problems.exact_parametrized_functions_decorated_problem import (
+    ExactParametrizedFunctionsDecoratedProblem)
+from rbnics.eim.problems.exact_parametrized_functions_decorated_reduced_problem import (
+    ExactParametrizedFunctionsDecoratedReducedProblem)
 from rbnics.eim.problems.time_dependent_eim_approximation import TimeDependentEIMApproximation
 
 __all__ = [

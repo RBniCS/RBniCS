@@ -12,7 +12,8 @@ def assemble_operator_for_supremizers(assemble_operator):
     from rbnics.problems.stokes import StokesProblem
     from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem
 
-    module = types.ModuleType("assemble_operator_for_supremizers", "Storage for implementation of assemble_operator_for_supremizers")
+    module = types.ModuleType("assemble_operator_for_supremizers",
+                              "Storage for implementation of assemble_operator_for_supremizers")
 
     def assemble_operator_for_supremizers_impl(self, term):
         return module._assemble_operator_for_supremizers_impl(self, term)

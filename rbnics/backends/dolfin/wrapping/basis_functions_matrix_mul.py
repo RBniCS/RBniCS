@@ -15,7 +15,8 @@ def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matr
     j = 0
     for col_component_name in basis_functions_matrix._components_name:
         for _ in range(online_matrix.M[col_component_name]):
-            assert len(online_matrix[:, j]) == sum(len(functions_list) for functions_list in basis_functions_matrix._components)
+            assert len(online_matrix[:, j]) == sum(
+                len(functions_list) for functions_list in basis_functions_matrix._components)
             output_j = Function(space)
             i = 0
             for row_component_name in basis_functions_matrix._components_name:

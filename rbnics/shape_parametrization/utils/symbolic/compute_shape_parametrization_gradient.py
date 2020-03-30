@@ -6,7 +6,8 @@
 
 from sympy import MatrixSymbol, zeros
 from rbnics.shape_parametrization.utils.symbolic.python_string_to_sympy import python_string_to_sympy
-from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import strings_to_sympy_symbolic_parameters
+from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_parameters import (
+    strings_to_sympy_symbolic_parameters)
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
 def compute_shape_parametrization_gradient(shape_parametrization_expression_on_subdomain):

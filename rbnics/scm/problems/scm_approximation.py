@@ -30,9 +30,14 @@ class SCMApproximation(ParametrizedProblem):
         self.bounding_box_min = BoundingBoxSideList() # minimum values of the bounding box. Vector of size Q
         self.bounding_box_max = BoundingBoxSideList() # maximum values of the bounding box. Vector of size Q
         self.training_set = None # SCM algorithm needs the training set also in the online stage
-        self.greedy_selected_parameters = GreedySelectedParametersList() # list storing the parameters selected during the training phase
-        self.greedy_selected_parameters_complement = dict() # dict, over N, of list storing the complement of parameters selected during the training phase
-        self.upper_bound_vectors = UpperBoundsList() # list of Q-dimensional vectors storing the infimizing elements at the greedily selected parameters
+        # greedy_selected_parameters: list storing the parameters selected during the training phase
+        self.greedy_selected_parameters = GreedySelectedParametersList()
+        # greedy_selected_parameters_complement: dict, over N, of list storing the complement of parameters
+        # selected during the training phase
+        self.greedy_selected_parameters_complement = dict()
+        # upper_bound_vectors: list of Q-dimensional vectors storing the infimizing elements at the greedily
+        # selected parameters
+        self.upper_bound_vectors = UpperBoundsList()
         self.N = 0
 
         # Storage for online computations
@@ -78,7 +83,9 @@ class SCMApproximation(ParametrizedProblem):
         )
 
         # Stability factor eigen problem
-        self.stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(self.truth_problem, "smallest", self.truth_problem._eigen_solver_parameters["stability_factor"], self.folder_prefix)
+        self.stability_factor_calculator = ParametrizedStabilityFactorEigenProblem(
+            self.truth_problem, "smallest", self.truth_problem._eigen_solver_parameters["stability_factor"],
+            self.folder_prefix)
 
     # Initialize data structures required for the online phase
     def init(self, current_stage="online"):
@@ -156,8 +163,8 @@ class SCMApproximation(ParametrizedProblem):
             for q in range(Q):
                 constraints_matrix[j, q] = current_theta[q]
 
-            # Assemble the RHS of the constraint
-            (constraints_vector[j], _) = self.evaluate_stability_factor() # note that computations for this call may be already cached
+            # Assemble the RHS of the constraint: note that computations for this call may be already cached
+            (constraints_vector[j], _) = self.evaluate_stability_factor()
         self.set_mu(mu_bak)
 
         # 2b. Add constraints: also constrain the closest point in the complement of selected parameters,
@@ -175,9 +182,9 @@ class SCMApproximation(ParametrizedProblem):
             for q in range(Q):
                 constraints_matrix[M_e + j, q] = current_theta[q]
 
-            # Assemble the RHS of the constraint
+            # Assemble the RHS of the constraint: note that computations for this call may be already cached
             if N > 1:
-                constraints_vector[M_e + j] = self.get_stability_factor_lower_bound(N - 1) # note that computations for this call may be already cached
+                constraints_vector[M_e + j] = self.get_stability_factor_lower_bound(N - 1)
             else:
                 constraints_vector[M_e + j] = 0.
         self.set_mu(mu_bak)

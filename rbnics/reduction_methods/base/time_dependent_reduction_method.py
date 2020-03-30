@@ -18,7 +18,8 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             postprocessed_snapshot = TimeSeries(snapshot_over_time)
             for (k, t) in enumerate(snapshot_over_time.stored_times()):
                 self.reduced_problem.set_time(t)
-                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(self, snapshot_over_time[k], snapshot_index)
+                postprocessed_snapshot_k = DifferentialProblemReductionMethod_DerivedClass.postprocess_snapshot(
+                    self, snapshot_over_time[k], snapshot_index)
                 postprocessed_snapshot.append(postprocessed_snapshot_k)
             return postprocessed_snapshot
 
@@ -56,13 +57,17 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 self.reduced_problem._solution_dot_over_time_cache.clear()
 
                 # Disable the capability of importing/exporting truth solutions
-                def disable_import_solution_method(self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
+                def disable_import_solution_method(
+                        self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
                     raise OSError
-                self.disable_import_solution = PatchInstanceMethod(other_truth_problem, "import_solution", disable_import_solution_method)
+                self.disable_import_solution = PatchInstanceMethod(
+                    other_truth_problem, "import_solution", disable_import_solution_method)
                 self.disable_import_solution.patch()
-                def disable_export_solution_method(self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
+                def disable_export_solution_method(
+                        self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
                     pass
-                self.disable_export_solution = PatchInstanceMethod(other_truth_problem, "export_solution", disable_export_solution_method)
+                self.disable_export_solution = PatchInstanceMethod(
+                    other_truth_problem, "export_solution", disable_export_solution_method)
                 self.disable_export_solution.patch()
 
         def _patch_truth_compute_output(self, force, **kwargs):
@@ -95,13 +100,17 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 self.reduced_problem._output_over_time_cache.clear()
 
                 # Disable the capability of importing/exporting truth output
-                def disable_import_output_method(self_, folder=None, filename=None, output_over_time=None, suffix=None):
+                def disable_import_output_method(
+                        self_, folder=None, filename=None, output_over_time=None, suffix=None):
                     raise OSError
-                self.disable_import_output = PatchInstanceMethod(other_truth_problem, "import_output", disable_import_output_method)
+                self.disable_import_output = PatchInstanceMethod(
+                    other_truth_problem, "import_output", disable_import_output_method)
                 self.disable_import_output.patch()
-                def disable_export_output_method(self_, folder=None, filename=None, output_over_time=None, suffix=None):
+                def disable_export_output_method(
+                        self_, folder=None, filename=None, output_over_time=None, suffix=None):
                     pass
-                self.disable_export_output = PatchInstanceMethod(other_truth_problem, "export_output", disable_export_output_method)
+                self.disable_export_output = PatchInstanceMethod(
+                    other_truth_problem, "export_output", disable_export_output_method)
                 self.disable_export_output.patch()
 
     # return value (a class) for the decorator

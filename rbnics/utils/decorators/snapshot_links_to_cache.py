@@ -29,12 +29,14 @@ def snapshot_links_to_cache(offline_method):
                 def create_links():
                     for cache_path in glob.iglob(os.path.join(str(cache_folder), cache_filename + "*")):
                         cache_path_filename = os.path.basename(cache_path)
-                        cache_relpath = os.path.join(os.path.relpath(str(cache_folder), str(folder)), cache_path_filename)
-                        snapshot_path = os.path.join(str(folder), cache_path_filename.replace(cache_filename, filename))
+                        cache_relpath = os.path.join(
+                            os.path.relpath(str(cache_folder), str(folder)), cache_path_filename)
+                        snapshot_path = os.path.join(
+                            str(folder), cache_path_filename.replace(cache_filename, filename))
                         if not os.path.exists(snapshot_path):
-                            # Paraview output formats may require a light xml file that stores the path of a (possibly heavy)
-                            # binary file. If the file is an xml file, we need to copy it and change the stored path.
-                            # Otherwise, create a symbolic link.
+                            # Paraview output formats may require a light xml file that stores the path of a
+                            # (possibly heavy) binary file. If the file is an xml file, we need to copy it and
+                            # change the stored path. Otherwise, create a symbolic link.
                             try:
                                 with open(cache_path, "r") as cache_file:
                                     header = cache_file.read(5)
@@ -55,18 +57,15 @@ def snapshot_links_to_cache(offline_method):
 
     def patched_offline_method(self_):
         # Patch truth_problem's export_solution
-        assert (
-            hasattr(self_, "truth_problem")
-                or
-            hasattr(self_, "EIM_approximation")
-        )
+        assert hasattr(self_, "truth_problem") or hasattr(self_, "EIM_approximation")
         if hasattr(self_, "truth_problem"): # differential problem
             truth_problem = self_.truth_problem
         elif hasattr(self_, "EIM_approximation"): # EIM
             truth_problem = self_.EIM_approximation
         else:
             raise AttributeError("Invalid truth problem attribute.")
-        export_solution_patch = PatchInstanceMethod(truth_problem, "export_solution", patched_export_solution(truth_problem, self_.folder["snapshots"]))
+        export_solution_patch = PatchInstanceMethod(
+            truth_problem, "export_solution", patched_export_solution(truth_problem, self_.folder["snapshots"]))
         export_solution_patch.patch()
 
         # Call standard offline

@@ -39,7 +39,8 @@ class Replacer(MultiFunction):
                     and
                 not isinstance(k, (Indexed, ListTensor))
             ):
-                error("This implementation can only replace Terminal objects or non terminal Indexed and ListTensor objects.")
+                error("This implementation can only replace Terminal objects or non terminal Indexed"
+                      + " and ListTensor objects.")
         if not all(k.ufl_shape == v.ufl_shape for k, v in mapping.items()):
             error("Replacement expressions must have the same shape as what they replace.")
         # Prepare the mapping extracting each Indexed from any ListTensor

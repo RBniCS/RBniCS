@@ -148,7 +148,8 @@ class DelayedBasisFunctionsMatrix(object):
             output = DelayedBasisFunctionsMatrix(self.space)
             output.init(self._components_name)
             for component_name in self._components_name:
-                output._enrich_memory[component_name].enrich(self._enrich_memory[component_name][N_start[component_name]:N_stop[component_name]])
+                output._enrich_memory[component_name].enrich(
+                    self._enrich_memory[component_name][N_start[component_name]:N_stop[component_name]])
             self._precomputed_slices[N_start_key, N_stop_key] = output
         return self._precomputed_slices[N_start_key, N_stop_key]
 

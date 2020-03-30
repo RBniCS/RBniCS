@@ -20,7 +20,8 @@ def ReductionMethodFor(Problem, category, replaces=None, replaces_if=None):
         assert inspect.isclass(ReductionMethod)
         ReductionMethodGenerator = _ReductionMethodGenerator(ReductionMethod)
         # Add to cache
-        dispatch(Problem, name=category, module=_cache, replaces=replaces, replaces_if=replaces_if)(ReductionMethodGenerator)
+        dispatch(Problem, name=category, module=_cache, replaces=replaces,
+                 replaces_if=replaces_if)(ReductionMethodGenerator)
         # Return unchanged reduction method
         return ReductionMethod
     return ReductionMethodFor_Decorator

@@ -7,7 +7,8 @@
 import hashlib
 from numbers import Number
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
-from rbnics.eim.utils.decorators import add_to_map_from_parametrized_operator_to_problem, get_problem_from_parametrized_operator
+from rbnics.eim.utils.decorators import (add_to_map_from_parametrized_operator_to_problem,
+                                         get_problem_from_parametrized_operator)
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot, overload
 
 def ParametrizedTensorFactory(backend, wrapping):
@@ -47,11 +48,13 @@ def ParametrizedTensorFactory(backend, wrapping):
                         truth_problem = get_problem_from_solution(truth_solution)
                         auxiliary_problems_and_components.add((truth_problem, component))
                     elif wrapping.is_problem_solution_dot(node):
-                        (preprocessed_node, component, truth_solution_dot) = wrapping.solution_dot_identify_component(node)
+                        (preprocessed_node, component,
+                         truth_solution_dot) = wrapping.solution_dot_identify_component(node)
                         truth_problem = get_problem_from_solution_dot(truth_solution_dot)
                         auxiliary_problems_and_components.add((truth_problem, component))
                     else:
-                        (preprocessed_node, component, auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
+                        (preprocessed_node, component,
+                         auxiliary_problem) = wrapping.get_auxiliary_problem_for_non_parametrized_function(node)
                         auxiliary_problems_and_components.add((auxiliary_problem, component))
                     # Make sure to skip any parent solution related to this one
                     visited.add(node)
@@ -135,11 +138,12 @@ def ParametrizedTensorFactory(backend, wrapping):
             # Set corresponding problem
             add_to_map_from_parametrized_operator_to_problem(output, get_problem_from_parametrized_operator(self))
             # Do not recompute name, as the computed name would:
-            # * account that other is a solution (or its derivative) while called from an high fidelity solve, because of
-            #   known mapping from truth solution to truth problem.
-            # * not be able account that other is the high fidelity representation of a reduced solution, because mapping
-            #   from (high fidelity representation of) reduced solution to truth problem is not known, as a new
-            #   reduced solution (and corresponding representation) is generated at every reduced solve
+            # * account that other is a solution (or its derivative) while called from an high fidelity solve,
+            #   because of known mapping from truth solution to truth problem.
+            # * not be able account that other is the high fidelity representation of a reduced solution,
+            #   because mapping from (high fidelity representation of) reduced solution to truth problem
+            #   is not known, as a new reduced solution (and corresponding representation) is generated
+            #   at every reduced solve
             # Simply re-use the existing name with a custom suffix.
             output._name = _ParametrizedTensorFactory._hash_name(self.name() + "_mul_function")
             # This method is only used by exact parametrized operator evaluations, and not by DEIM.

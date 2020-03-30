@@ -13,7 +13,8 @@ from rbnics.utils.decorators import overload
 def assemble_operator_for_stability_factor(assemble_operator):
     from rbnics.problems.elliptic import EllipticCoerciveProblem
 
-    module = types.ModuleType("assemble_operator_for_stability_factor", "Storage for implementation of assemble_operator_for_stability_factor")
+    module = types.ModuleType("assemble_operator_for_stability_factor",
+                              "Storage for implementation of assemble_operator_for_stability_factor")
 
     def assemble_operator_for_stability_factor_impl(self, term):
         return module._assemble_operator_for_stability_factor_impl(self, term)

@@ -44,7 +44,8 @@ class MeshMotion(AbstractMeshMotion):
                 self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
         # Subdomain numbering is contiguous
         assert min(self.subdomain_id_to_deformation_dofs.keys()) == 0
-        assert len(self.subdomain_id_to_deformation_dofs.keys()) == max(self.subdomain_id_to_deformation_dofs.keys()) + 1
+        assert len(self.subdomain_id_to_deformation_dofs.keys()) == (
+            max(self.subdomain_id_to_deformation_dofs.keys()) + 1)
 
         # Store the shape parametrization expression
         self.shape_parametrization_expression = shape_parametrization_expression
@@ -68,9 +69,12 @@ class MeshMotion(AbstractMeshMotion):
             for shape_parametrization_expression_on_subdomain in self.shape_parametrization_expression:
                 displacement_expression_on_subdomain = list()
                 assert len(shape_parametrization_expression_on_subdomain) == self.mesh.geometry().dim()
-                for (component, shape_parametrization_component_on_subdomain) in enumerate(shape_parametrization_expression_on_subdomain):
+                for (component, shape_parametrization_component_on_subdomain) in enumerate(
+                        shape_parametrization_expression_on_subdomain):
                     # convert from shape parametrization T to displacement d = T - I
-                    displacement_expression_component_on_subdomain = sympify(shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]", locals={"x": x, "mu": mu})
+                    displacement_expression_component_on_subdomain = sympify(
+                        shape_parametrization_component_on_subdomain + " - x[" + str(component) + "]",
+                        locals={"x": x, "mu": mu})
                     displacement_expression_on_subdomain.append(
                         ccode(displacement_expression_component_on_subdomain).replace(", 0]", "]"),
                     )

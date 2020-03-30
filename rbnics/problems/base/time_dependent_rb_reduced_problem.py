@@ -22,7 +22,9 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
 
             # Storage related to error estimation for initial condition
-            self.initial_condition_product = None # AffineExpansionStorage (for problems with one component) or dict of AffineExpansionStorage (for problem with several components)
+            # initial_condition_product: AffineExpansionStorage (for problems with one component)
+            # or dict of AffineExpansionStorage (for problem with several components)
+            self.initial_condition_product = None
 
         def _init_error_estimation_operators(self, current_stage="online"):
             ParametrizedReducedDifferentialProblem_DerivedClass._init_error_estimation_operators(self, current_stage)
@@ -31,10 +33,12 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 initial_condition_product = dict()
                 for component in self.components:
                     if self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]:
-                        initial_condition_product[component, component] = OnlineAffineExpansionStorage(self.Q_ic[component], self.Q_ic[component])
+                        initial_condition_product[component, component] = OnlineAffineExpansionStorage(
+                            self.Q_ic[component], self.Q_ic[component])
                         assert current_stage in ("online", "offline")
                         if current_stage == "online":
-                            self.assemble_error_estimation_operators(("initial_condition_" + component, "initial_condition_" + component), "online")
+                            self.assemble_error_estimation_operators(
+                                ("initial_condition_" + component, "initial_condition_" + component), "online")
                         elif current_stage == "offline":
                             pass # Nothing else to be done
                         else:
@@ -63,7 +67,8 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             if len(self.components) > 1:
                 for component in self.components:
                     if self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]:
-                        self.assemble_error_estimation_operators(("initial_condition_" + component, "initial_condition_" + component), current_stage)
+                        self.assemble_error_estimation_operators(
+                            ("initial_condition_" + component, "initial_condition_" + component), current_stage)
             else:
                 if self.initial_condition and not self.initial_condition_is_homogeneous:
                     self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), current_stage)
@@ -79,11 +84,14 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     if component0 != "":
                         assert component0 in self.components
                         assert component1 in self.components
-                        self.initial_condition_product[component0, component1].load(self.folder["error_estimation"], "initial_condition_product_" + component0 + "_" + component1)
+                        self.initial_condition_product[component0, component1].load(
+                            self.folder["error_estimation"],
+                            "initial_condition_product_" + component0 + "_" + component1)
                         return self.initial_condition_product[component0, component1]
                     else:
                         assert len(self.components) == 1
-                        self.initial_condition_product.load(self.folder["error_estimation"], "initial_condition_product")
+                        self.initial_condition_product.load(
+                            self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
                 elif current_stage == "offline":
                     inner_product = self.truth_problem._combined_projection_inner_product
@@ -91,20 +99,28 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     if component0 != "":
                         for q0 in range(self.Q_ic[component0]):
                             for q1 in range(self.Q_ic[component1]):
-                                self.initial_condition_product[component0, component1][q0, q1] = transpose(self.truth_problem.initial_condition[component0][q0])*inner_product*self.truth_problem.initial_condition[component1][q1]
-                        self.initial_condition_product[component0, component1].save(self.folder["error_estimation"], "initial_condition_product_" + component0 + "_" + component1)
+                                self.initial_condition_product[component0, component1][q0, q1] = (
+                                    transpose(self.truth_problem.initial_condition[component0][q0])
+                                    * inner_product * self.truth_problem.initial_condition[component1][q1])
+                        self.initial_condition_product[component0, component1].save(
+                            self.folder["error_estimation"],
+                            "initial_condition_product_" + component0 + "_" + component1)
                         return self.initial_condition_product[component0, component1]
                     else:
                         assert len(self.components) == 1
                         for q0 in range(self.Q_ic):
                             for q1 in range(self.Q_ic):
-                                self.initial_condition_product[q0, q1] = transpose(self.truth_problem.initial_condition[q0])*inner_product*self.truth_problem.initial_condition[q1]
-                        self.initial_condition_product.save(self.folder["error_estimation"], "initial_condition_product")
+                                self.initial_condition_product[q0, q1] = (
+                                    transpose(self.truth_problem.initial_condition[q0])
+                                    * inner_product * self.truth_problem.initial_condition[q1])
+                        self.initial_condition_product.save(
+                            self.folder["error_estimation"], "initial_condition_product")
                         return self.initial_condition_product
                 else:
                     raise ValueError("Invalid stage in assemble_error_estimation_operators().")
             else:
-                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(self, term, current_stage)
+                return ParametrizedReducedDifferentialProblem_DerivedClass.assemble_error_estimation_operators(
+                    self, term, current_stage)
 
         # Return the error bound for the initial condition
         def get_initial_error_estimate_squared(self):
@@ -121,7 +137,9 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     if self.initial_condition[component] and not self.initial_condition_is_homogeneous[component]:
                         at_least_one_non_homogeneous_initial_condition = True
                         theta_ic_component = self.compute_theta("initial_condition_" + component)
-                        addend_0 += sum(product(theta_ic_component, self.initial_condition_product[component, component], theta_ic_component))
+                        addend_0 += sum(product(
+                            theta_ic_component, self.initial_condition_product[component, component],
+                            theta_ic_component))
                         addend_1_right += sum(product(theta_ic_component, self.initial_condition[:N]))
             else:
                 if self.initial_condition and not self.initial_condition_is_homogeneous:

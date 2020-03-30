@@ -7,7 +7,8 @@
 import pytest
 from numpy import dot, isclose
 from numpy.linalg import norm as monitor_norm
-from dolfin import assemble, Constant, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad, inner, IntervalMesh, PETScOptions, pi, plot, project, sin, TestFunction, TrialFunction
+from dolfin import (assemble, Constant, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad,
+                    inner, IntervalMesh, PETScOptions, pi, plot, project, sin, TestFunction, TrialFunction)
 import matplotlib
 import matplotlib.pyplot as plt
 from rbnics.backends.abstract import TimeDependentProblemWrapper
@@ -149,10 +150,12 @@ def _test_time_stepping_1_sparse(callback_type, integrator_type):
     print("Sparse error (" + callback_type + ", " + integrator_type + "):", error_norm, error_dot_norm)
     assert isclose(error_norm, 0., atol=1.e-4)
     assert isclose(error_dot_norm, 0., atol=1.e-4)
-    return ((error_norm, error_dot_norm), V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot)
+    return ((error_norm, error_dot_norm), V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
+            exact_solution_expression, exact_solution, exact_solution_dot)
 
 # ~~~ Dense case ~~~ #
-def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot):
+def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
+                                exact_solution_expression, exact_solution, exact_solution_dot):
     from rbnics.backends.online.numpy import Function, Matrix, TimeStepping, Vector
 
     x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
@@ -171,7 +174,8 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             self._solution_from_dense_to_sparse(solution_dot, u_dot)
             g.t = t
             residual_array = assemble(r).get_local()
-            residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = residual_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            residual_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = residual_array[
+                [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             residual = Vector(*residual_array.shape)
             residual[:] = residual_array
             return residual
@@ -180,8 +184,10 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             self._solution_from_dense_to_sparse(solution, u)
             self._solution_from_dense_to_sparse(solution_dot, u_dot)
             jacobian_array = assemble(Constant(solution_dot_coefficient)*j_u_dot + j_u).array()
-            jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = jacobian_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
-            jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = jacobian_array[:, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = jacobian_array[
+                [min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
+            jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = jacobian_array[
+                :, [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             jacobian = Matrix(*jacobian_array.shape)
             jacobian[:, :] = jacobian_array
             return jacobian
@@ -196,7 +202,8 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
             solution = Function(*exact_solution.vector().get_local().shape)
             solution.vector()[:] = project(exact_solution_expression, V).vector().get_local()
             solution_array = solution.vector()
-            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[
+                [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
             return solution
 
         # Define custom monitor to plot the solution
@@ -217,11 +224,13 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
 
         def _solution_from_dense_to_sparse(self, solution, u):
             solution_array = solution.vector()
-            solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]]
+            solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]] = solution_array[
+                [0, 1, min_dof_0_2pi, max_dof_0_2pi]]
             u.vector().zero()
             u.vector().add_local(solution_array.__array__())
             u.vector().apply("")
-            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[[min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
+            solution_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi]] = solution_array[
+                [min_dof_0_2pi, max_dof_0_2pi, 0, 1]]
 
     # Solve the time dependent problem
     problem_wrapper = ProblemWrapper()
@@ -264,15 +273,24 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
 # ~~~ Test function ~~~ #
 @pytest.mark.time_stepping
 def test_time_stepping_1():
-    (error_sparse_tensor_callbacks_beuler, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot) = _test_time_stepping_1_sparse("tensor callbacks", "beuler")
-    (error_sparse_form_callbacks_beuler, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_1_sparse("form callbacks", "beuler")
+    (error_sparse_tensor_callbacks_beuler, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
+        exact_solution_expression, exact_solution, exact_solution_dot) = _test_time_stepping_1_sparse(
+            "tensor callbacks", "beuler")
+    (error_sparse_form_callbacks_beuler, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_1_sparse(
+        "form callbacks", "beuler")
     assert isclose(error_sparse_tensor_callbacks_beuler, error_sparse_form_callbacks_beuler).all()
-    (error_sparse_tensor_callbacks_bdf, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_1_sparse("tensor callbacks", "bdf")
-    (error_sparse_form_callbacks_bdf, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_1_sparse("form callbacks", "bdf")
+    (error_sparse_tensor_callbacks_bdf, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_1_sparse(
+        "tensor callbacks", "bdf")
+    (error_sparse_form_callbacks_bdf, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_1_sparse(
+        "form callbacks", "bdf")
     assert isclose(error_sparse_tensor_callbacks_bdf, error_sparse_form_callbacks_bdf).all()
     if V.mesh().mpi_comm().size == 1: # dense solver is not partitioned
-        error_dense_beuler = _test_time_stepping_1_dense("beuler", V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot)
+        error_dense_beuler = _test_time_stepping_1_dense(
+            "beuler", V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
+            exact_solution_expression, exact_solution, exact_solution_dot)
         assert isclose(error_dense_beuler, error_sparse_tensor_callbacks_beuler).all()
         assert isclose(error_dense_beuler, error_sparse_form_callbacks_beuler).all()
         if has_IDA:
-            _test_time_stepping_1_dense("ida", V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X, exact_solution_expression, exact_solution, exact_solution_dot)
+            _test_time_stepping_1_dense(
+                "ida", V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
+                exact_solution_expression, exact_solution, exact_solution_dot)

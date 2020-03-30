@@ -6,7 +6,9 @@
 
 from math import sqrt
 from numpy import isclose
-from dolfin import assemble, Constant, DirichletBC, div, DOLFIN_EPS, dx, FiniteElement, FunctionSpace, grad, inner, MeshFunction, MixedElement, split, SubDomain, TestFunction, TrialFunction, UnitSquareMesh, VectorElement
+from dolfin import (assemble, Constant, DirichletBC, div, DOLFIN_EPS, dx, FiniteElement, FunctionSpace, grad, inner,
+                    MeshFunction, MixedElement, split, SubDomain, TestFunction, TrialFunction, UnitSquareMesh,
+                    VectorElement)
 
 """
 Computation of the inf-sup constant
