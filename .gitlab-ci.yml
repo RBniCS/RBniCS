@@ -70,6 +70,27 @@ tests_separated_parametrized_form:
       - pytest_test_separated_parametrized_form_*.html
     when: on_failure
 
+tests_tensor_io:
+  image:
+    name: $TESTING_IMAGE
+    entrypoint: ["/sbin/my_init","--quiet","--","/sbin/setuser","fenics"]
+  stage: test
+  before_script:
+    - source $FENICS_HOME/fenics.env.conf
+    - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
+    - python3 -c "import dolfin; import rbnics"
+  script:
+    - pytest -vv --html=pytest_test_tensor_save_serial.html --self-contained-html -k test_tensor_save tests/unit/test_tensor_io.py
+    - pytest -vv --html=pytest_test_tensor_load_serial_from_serial.html --self-contained-html -k test_tensor_load tests/unit/test_tensor_io.py
+    - mpirun -n 2 pytest -vv --gc-disable --gc-scope function --html=pytest_test_tensor_load_parallel_from_serial.html --self-contained-html -k test_tensor_load tests/unit/test_tensor_io.py
+    - mpirun -n 2 pytest -vv --gc-disable --gc-scope function --html=pytest_test_tensor_save_parallel.html --self-contained-html -k test_tensor_save tests/unit/test_tensor_io.py
+    - mpirun -n 2 pytest -vv --gc-disable --gc-scope function --html=pytest_test_tensor_load_parallel_from_parallel.html --self-contained-html -k test_tensor_load tests/unit/test_tensor_io.py
+    - pytest -vv --html=pytest_test_tensor_load_serial_from_parallel.html --self-contained-html -k test_tensor_load tests/unit/test_tensor_io.py
+  artifacts:
+    paths:
+      - pytest_test_tensor_*.html
+    when: on_failure
+
 release:
   image: docker:latest
   services:
