@@ -52,6 +52,24 @@ tests_unit_serial:
       - pytest_tests_serial.html
     when: on_failure
 
+tests_separated_parametrized_form:
+  image:
+    name: $TESTING_IMAGE
+    entrypoint: ["/sbin/my_init","--quiet","--","/sbin/setuser","fenics"]
+  stage: test
+  before_script:
+    - source $FENICS_HOME/fenics.env.conf
+    - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
+    - python3 -c "import dolfin; import rbnics"
+  script:
+    - pytest -vv --html=pytest_test_separated_parametrized_form_scalar.html --self-contained-html tests/unit/test_separated_parametrized_form_scalar.py
+    - pytest -vv --html=pytest_test_separated_parametrized_form_vector.html --self-contained-html tests/unit/test_separated_parametrized_form_vector.py
+    - pytest -vv --html=pytest_test_separated_parametrized_form_mixed.html --self-contained-html tests/unit/test_separated_parametrized_form_mixed.py
+  artifacts:
+    paths:
+      - pytest_test_separated_parametrized_form_*.html
+    when: on_failure
+
 release:
   image: docker:latest
   services:
