@@ -36,6 +36,22 @@ flake8:
       - pytest_flake8_*.html
     when: on_failure
 
+tests_performance_serial:
+  image:
+    name: $TESTING_IMAGE
+    entrypoint: ["/sbin/my_init","--quiet","--","/sbin/setuser","fenics"]
+  stage: test
+  before_script:
+    - source $FENICS_HOME/fenics.env.conf
+    - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
+    - python3 -c "import dolfin; import rbnics"
+  script:
+    - pytest --benchmark-disable -n auto -vv --html=pytest_tests_performance_serial.html --self-contained-html tests/performance
+  artifacts:
+    paths:
+      - pytest_tests_performance_serial.html
+    when: on_failure
+
 tests_unit_serial:
   image:
     name: $TESTING_IMAGE
@@ -46,10 +62,10 @@ tests_unit_serial:
     - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
     - python3 -c "import dolfin; import rbnics"
   script:
-    - pytest -n auto -vv -k "not time_stepping and not pull_back_to_reference_domain" --html=pytest_tests_serial.html --self-contained-html tests/unit
+    - pytest -n auto -vv -k "not time_stepping and not pull_back_to_reference_domain" --html=pytest_tests_unit_serial.html --self-contained-html tests/unit
   artifacts:
     paths:
-      - pytest_tests_serial.html
+      - pytest_tests_unit_serial.html
     when: on_failure
 
 tests_separated_parametrized_form:
