@@ -189,9 +189,9 @@ def ShapeParametrizationJacobianDeterminant(shape_parametrization_expression_on_
 @shape_parametrization_cache
 def ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expression_on_subdomain, problem):
     nanson = (ShapeParametrizationJacobianDeterminant(
-                shape_parametrization_expression_on_subdomain, problem).ufl
+              shape_parametrization_expression_on_subdomain, problem).ufl
               * ShapeParametrizationJacobianInverseTranspose(
-                shape_parametrization_expression_on_subdomain, problem).ufl
+              shape_parametrization_expression_on_subdomain, problem).ufl
               * FacetNormal(problem.V.mesh().ufl_domain()))
     i = Index()
     return sqrt(nanson[i]*nanson[i])
@@ -455,8 +455,9 @@ def pull_back_expression_code(pull_back_expression_name, expression_constructor)
                        dolfin::Expression>(m, "PULL_BACK_EXPRESSION_NAME", py::dynamic_attr())
               .def(py::init<std::shared_ptr<dolfin::Expression>, std::shared_ptr<dolfin::Expression>>());
         }
-    """.replace("PULL_BACK_EXPRESSION_NAME", pull_back_expression_name).replace(
-                "EXPRESSION_CONSTRUCTOR", expression_constructor)
+    """.replace(
+        "PULL_BACK_EXPRESSION_NAME", pull_back_expression_name).replace(
+            "EXPRESSION_CONSTRUCTOR", expression_constructor)
 
 def PullBackExpression(shape_parametrization_expression_on_subdomain, f, problem):
     shape_parametrization_expression_on_subdomain = ShapeParametrizationMap(
@@ -609,14 +610,16 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
         from rbnics.eim.problems import DEIM, EIM, ExactParametrizedFunctions
         from rbnics.scm.problems import ExactStabilityFactor, SCM
         from rbnics.shape_parametrization.problems import AffineShapeParametrization, ShapeParametrization
-        assert all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
-                    for Algorithm in (DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor, SCM)]), (
-                    "DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor and SCM should be applied"
-                    + " above PullBackFormsToReferenceDomain")
-        assert any([Algorithm in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
-                    for Algorithm in (AffineShapeParametrization, ShapeParametrization)]), (
-                    "PullBackFormsToReferenceDomain should be applied above AffineShapeParametrization"
-                    + " or ShapeParametrization")
+        assert (
+            all([Algorithm not in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
+                 for Algorithm in (DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor, SCM)])), (
+            "DEIM, EIM, ExactParametrizedFunctions, ExactStabilityFactor and SCM should be applied"
+            + " above PullBackFormsToReferenceDomain")
+        assert (
+            any([Algorithm in ParametrizedDifferentialProblem_DerivedClass.ProblemDecorators
+                 for Algorithm in (AffineShapeParametrization, ShapeParametrization)])), (
+            "PullBackFormsToReferenceDomain should be applied above AffineShapeParametrization"
+            + " or ShapeParametrization")
 
         from rbnics.backends.dolfin import SeparatedParametrizedForm
         from rbnics.shape_parametrization.utils.symbolic import sympy_eval
@@ -725,10 +728,11 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                         pull_back_is_affine.append(
                                             (True, ) * len(postprocessed_pulled_back_forms[q]))
                                     else:
-                                        assert any([Algorithm in self.ProblemDecorators
-                                                    for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)]), (
-                                                    "Non affine parametric dependence detected. Please use one"
-                                                    + " among DEIM, EIM and ExactParametrizedFunctions")
+                                        assert (
+                                            any([Algorithm in self.ProblemDecorators
+                                                 for Algorithm in (DEIM, EIM, ExactParametrizedFunctions)])), (
+                                            "Non affine parametric dependence detected. Please use one"
+                                            + " among DEIM, EIM and ExactParametrizedFunctions")
                                         postprocessed_pulled_back_forms.append((pulled_back_form, ))
                                         postprocessed_pulled_back_theta_factors.append((1, ))
                                         pull_back_is_affine.append((False, ))
@@ -839,7 +843,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                     thetas = ParametrizedDifferentialProblem_DerivedClass.compute_theta(self, term)
                     return tuple([sympy_eval(str(pulled_back_theta_factor), {"mu": self.mu}) * thetas[q]
                                   for (q, pulled_back_theta_factors) in enumerate(
-                                    self._pulled_back_theta_factors[term])
+                                      self._pulled_back_theta_factors[term])
                                   for pulled_back_theta_factor in pulled_back_theta_factors])
                 elif term in self._stability_factor_terms_blacklist:
                     return self._stability_factor_decorated_compute_theta(self, term)
