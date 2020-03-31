@@ -68,6 +68,22 @@ tests_unit_serial:
       - pytest_tests_unit_serial.html
     when: on_failure
 
+tests_unit_parallel:
+  image:
+    name: $TESTING_IMAGE
+    entrypoint: ["/sbin/my_init","--quiet","--","/sbin/setuser","fenics"]
+  stage: test
+  before_script:
+    - source $FENICS_HOME/fenics.env.conf
+    - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
+    - python3 -c "import dolfin; import rbnics"
+  script:
+    - mpirun -n 2 pytest -vv --gc-disable --gc-scope function -k "not time_stepping and not pull_back_to_reference_domain" --html=pytest_tests_unit_parallel.html --self-contained-html tests/unit
+  artifacts:
+    paths:
+      - pytest_tests_unit_parallel.html
+    when: on_failure
+
 tests_separated_parametrized_form:
   image:
     name: $TESTING_IMAGE
