@@ -34,11 +34,8 @@ class Replacer(MultiFunction):
     def __init__(self, mapping):
         MultiFunction.__init__(self)
         for k in mapping:
-            if (
-                not k._ufl_is_terminal_
-                    and
-                not isinstance(k, (Indexed, ListTensor))
-            ):
+            if (not k._ufl_is_terminal_
+                    and not isinstance(k, (Indexed, ListTensor))):
                 error("This implementation can only replace Terminal objects or non terminal Indexed"
                       + " and ListTensor objects.")
         if not all(k.ufl_shape == v.ufl_shape for k, v in mapping.items()):

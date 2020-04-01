@@ -23,11 +23,8 @@ class DelayedLinearSolver(object):
     def __init__(self, lhs=None, solution=None, rhs=None, bcs=None):
         self._lhs = lhs
         self._solution = solution
-        assert (
-            rhs is None
-                or
-            isinstance(rhs, (AbstractParametrizedTensorFactory, DelayedProduct, DelayedSum))
-        )
+        assert (rhs is None
+                or isinstance(rhs, (AbstractParametrizedTensorFactory, DelayedProduct, DelayedSum)))
         self._rhs = rhs
         self._bcs = bcs
         self._parameters = dict()

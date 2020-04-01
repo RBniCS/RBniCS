@@ -362,7 +362,7 @@ def dispatch(*types, **kwargs):
             assert len(types) == (
                 len(tuple(param_name for (param_name, param_value) in signature.parameters.items()
                           if param_value.kind in (
-                            inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)))
+                              inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)))
                 - (1 if is_method else 0) # throw self away
             )
 

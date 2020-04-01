@@ -41,8 +41,7 @@ def Vector(backend, wrapping, VectorBaseType):
         def __getitem__(self, key):
             if (
                 isinstance(key, slice)  # vector[:5]
-                    or
-                isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
+                or isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
             ):
                 if isinstance(key, slice): # vector[:5]
                     output_content = self.content[
@@ -86,8 +85,7 @@ def Vector(backend, wrapping, VectorBaseType):
         def __setitem__(self, key, value):
             if (
                 isinstance(key, slice)  # vector[:5]
-                    or
-                isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
+                or isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
             ):
                 if isinstance(key, slice): # vector[:5]
                     converted_key = wrapping.Slicer(

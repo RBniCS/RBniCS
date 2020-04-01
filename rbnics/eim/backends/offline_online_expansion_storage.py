@@ -54,11 +54,7 @@ def OfflineOnlineExpansionStorage(problem_name):
                         PatchInstanceMethod(expansion_storage, method, patched_method).patch()
                         setattr(expansion_storage, method + "_patched", True)
 
-                assert (
-                    hasattr(expansion_storage, "save")
-                        ==
-                    hasattr(expansion_storage, "load")
-                )
+                assert hasattr(expansion_storage, "save") == hasattr(expansion_storage, "load")
                 if hasattr(expansion_storage, "save"):
                     for method in ("save", "load"):
                         _patch_save_load(expansion_storage, method)

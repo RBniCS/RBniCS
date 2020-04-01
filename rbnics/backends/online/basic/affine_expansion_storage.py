@@ -390,16 +390,16 @@ def AffineExpansionStorage(backend, wrapping):
             if isinstance(item, backend.Function.Type()):
                 item = item.vector()
             if isinstance(item, (backend.Matrix.Type(), backend.Vector.Type(), AbstractBasisFunctionsMatrix)):
-                assert (self._component_name_to_basis_component_index is None) == (
-                        self._component_name_to_basis_component_length is None)
+                assert ((self._component_name_to_basis_component_index is None)
+                        == (self._component_name_to_basis_component_length is None))
                 if self._component_name_to_basis_component_index is None:
                     self._component_name_to_basis_component_index = item._component_name_to_basis_component_index
                     self._component_name_to_basis_component_length = item._component_name_to_basis_component_length
                 else:
-                    assert self._component_name_to_basis_component_index == (
-                        item._component_name_to_basis_component_index)
-                    assert self._component_name_to_basis_component_length == (
-                        item._component_name_to_basis_component_length)
+                    assert (self._component_name_to_basis_component_index
+                            == item._component_name_to_basis_component_index)
+                    assert (self._component_name_to_basis_component_length
+                            == item._component_name_to_basis_component_length)
             else:
                 assert self._component_name_to_basis_component_index is None
                 assert self._component_name_to_basis_component_length is None

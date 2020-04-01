@@ -29,12 +29,10 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                             problem.compute_theta(term), problem.operator[term][:N]))
                     else:
                         raise ValueError("Invalid value for order of term " + term)
-                return (
-                      assembled_operator["m"]*solution_dot
-                    + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"])*solution
-                    + assembled_operator["c"]
-                    - assembled_operator["f"] - assembled_operator["g"]
-                )
+                return (assembled_operator["m"] * solution_dot
+                        + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]) * solution
+                        + assembled_operator["c"]
+                        - assembled_operator["f"] - assembled_operator["g"])
 
             def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
                 problem = self.problem
@@ -43,11 +41,9 @@ def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
                 for term in ("m", "a", "b", "bt", "dc"):
                     assembled_operator[term] = sum(product(
                         problem.compute_theta(term), problem.operator[term][:N, :N]))
-                return (
-                      assembled_operator["m"]*solution_dot_coefficient
-                    + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
-                    + assembled_operator["dc"]
-                )
+                return (assembled_operator["m"] * solution_dot_coefficient
+                        + assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]
+                        + assembled_operator["dc"])
 
     # return value (a class) for the decorator
     return NavierStokesUnsteadyReducedProblem_Class

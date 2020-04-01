@@ -191,11 +191,8 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                                + ") is not currently solving, and its offline stage has finished:"
                                + " truth problem will be replaced by reduced problem")
                     # Store the replacement for solution
-                    if (
-                        reduced_problem not in reduced_problem_to_reduced_mesh_solution
-                            and
-                        truth_problem in truth_problem_to_reduced_mesh_solution
-                    ):
+                    if (reduced_problem not in reduced_problem_to_reduced_mesh_solution
+                            and truth_problem in truth_problem_to_reduced_mesh_solution):
                         reduced_problem_to_reduced_mesh_solution[
                             reduced_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
                         # Store the component
@@ -255,11 +252,8 @@ def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_w
                         else:
                             exact_truth_problem = truth_problem_to_exact_truth_problem[truth_problem]
                         # Store the replacement for solution
-                        if (
-                            exact_truth_problem not in truth_problem_to_reduced_mesh_solution
-                                and
-                            truth_problem in truth_problem_to_reduced_mesh_solution
-                        ):
+                        if (exact_truth_problem not in truth_problem_to_reduced_mesh_solution
+                                and truth_problem in truth_problem_to_reduced_mesh_solution):
                             truth_problem_to_reduced_mesh_solution[
                                 exact_truth_problem] = truth_problem_to_reduced_mesh_solution[truth_problem]
                             # Store the component

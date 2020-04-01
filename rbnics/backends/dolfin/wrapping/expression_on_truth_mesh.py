@@ -155,11 +155,8 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                                + ") is not currently solving, and its offline stage has finished:"
                                + " truth problem will be replaced by reduced problem")
                     # Store the solution
-                    if (
-                        reduced_problem not in reduced_problem_to_truth_solution
-                            and
-                        truth_problem in truth_problem_to_truth_solution
-                    ):
+                    if (reduced_problem not in reduced_problem_to_truth_solution
+                            and truth_problem in truth_problem_to_truth_solution):
                         reduced_problem_to_truth_solution[
                             reduced_problem] = truth_problem_to_truth_solution[truth_problem]
                         assert reduced_problem not in reduced_problem_to_truth_solution_copy
@@ -172,11 +169,8 @@ def basic_expression_on_truth_mesh(backend, wrapping):
                         reduced_problem_to_components[
                             0][reduced_problem] = truth_problem_to_components[0][truth_problem]
                     # Store the solution_dot
-                    if (
-                        reduced_problem not in reduced_problem_to_truth_solution_dot
-                            and
-                        truth_problem in truth_problem_to_truth_solution_dot
-                    ):
+                    if (reduced_problem not in reduced_problem_to_truth_solution_dot
+                            and truth_problem in truth_problem_to_truth_solution_dot):
                         reduced_problem_to_truth_solution_dot[
                             reduced_problem] = truth_problem_to_truth_solution_dot[truth_problem]
                         assert reduced_problem not in reduced_problem_to_truth_solution_dot_copy

@@ -968,11 +968,9 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                         if self._facet_id_to_normal_direction_if_straight[integral_subdomain_id] is None:
                             return False
                     elif integral_type.startswith("interior_facet"):
-                        if (
-                            self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "+")] is None
-                                or
-                            self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "-")] is None
-                        ):
+                        if (self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "+")] is None
+                                or self._facet_id_to_normal_direction_if_straight[(integral_subdomain_id, "-")]
+                                is None):
                             return False
                     else:
                         raise ValueError(

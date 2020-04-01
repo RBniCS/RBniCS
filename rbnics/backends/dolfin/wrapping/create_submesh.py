@@ -316,8 +316,7 @@ def create_submesh(mesh, markers):
             for (global_entity_index, processors) in submesh_shared_entities__global.items():
                 if (
                     mpi_comm.rank in processors  # only local entities
-                        and
-                    len(processors) > 1 # it was still shared after submesh extraction
+                    and len(processors) > 1 # it was still shared after submesh extraction
                 ):
                     other_processors_list = list(processors)
                     other_processors_list.remove(mpi_comm.rank)

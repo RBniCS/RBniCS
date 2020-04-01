@@ -33,26 +33,17 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                 if other_object in _synced_setters[method__name]:
                     all_synced_setters_for_method_other_object = _synced_setters[method__name][other_object]
                 # Add current methods to the set of syncronized setters in storage
-                if (
-                    all_synced_setters_for_method_self is not None
-                        and
-                    all_synced_setters_for_method_other_object is not None
-                ):
+                if (all_synced_setters_for_method_self is not None
+                        and all_synced_setters_for_method_other_object is not None):
                     assert all_synced_setters_for_method_self is all_synced_setters_for_method_other_object
-                elif (
-                    all_synced_setters_for_method_self is None
-                        and
-                    all_synced_setters_for_method_other_object is not None
-                ):
+                elif (all_synced_setters_for_method_self is None
+                        and all_synced_setters_for_method_other_object is not None):
                     _original_setters[method__name][self] = getattr(self, method__name)
                     all_synced_setters_for_method = all_synced_setters_for_method_other_object
                     all_synced_setters_for_method.add(self)
                     _synced_setters[method__name][self] = all_synced_setters_for_method
-                elif (
-                    all_synced_setters_for_method_self is not None
-                        and
-                    all_synced_setters_for_method_other_object is None
-                ):
+                elif (all_synced_setters_for_method_self is not None
+                        and all_synced_setters_for_method_other_object is None):
                     _original_setters[method__name][other_object] = getattr(other_object, method__name)
                     all_synced_setters_for_method = all_synced_setters_for_method_self
                     all_synced_setters_for_method.add(other_object)

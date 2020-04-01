@@ -84,7 +84,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             ErrorEstimationInnerProductIO.save_file(
                 get_reduced_problem_from_error_estimation_inner_product(
                     self._content["inner_product_matrix"]).truth_problem.name(), full_directory,
-                    "inner_product_matrix_problem_name")
+                "inner_product_matrix_problem_name")
         elif self._type == "operators":
             # Save truth content
             it = NonAffineExpansionStorageContent_Iterator(

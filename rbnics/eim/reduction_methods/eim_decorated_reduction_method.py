@@ -127,13 +127,13 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 # otherwise we assume the user was interested in computing the error w.r.t.
                 # an exact parametrized functions, so he probably is not interested in the error analysis of EIM
                 and (
-                     "EIM" not in kwargs
-                     # otherwise we assume the user was interested in computing the error for a fixed number
-                     # of EIM basis functions, thus he has already carried out the error analysis of EIM
-                     or (
-                         "EIM" in kwargs and kwargs["EIM"] is not None
-                         # shorthand to disable EIM error analysis
-                     )
+                    "EIM" not in kwargs
+                    # otherwise we assume the user was interested in computing the error for a fixed number
+                    # of EIM basis functions, thus he has already carried out the error analysis of EIM
+                    or (
+                        "EIM" in kwargs and kwargs["EIM"] is not None
+                        # shorthand to disable EIM error analysis
+                    )
                 )
             ):
                 EIM_N_generator = kwargs.pop("EIM_N_generator", None)
@@ -156,13 +156,13 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 # otherwise we assume the user was interested in computing the speedup w.r.t.
                 # an exact parametrized functions, so he probably is not interested in the speedup analysis of EIM
                 and (
-                     "EIM" not in kwargs
-                     # otherwise we assume the user was interested in computing the speedup for a fixed number
-                     # of EIM basis functions, thus he has already carried out the speedup analysis of EIM
-                     or (
-                         "EIM" in kwargs and kwargs["EIM"] is not None
-                         # shorthand to disable EIM error analysis
-                     )
+                    "EIM" not in kwargs
+                    # otherwise we assume the user was interested in computing the speedup for a fixed number
+                    # of EIM basis functions, thus he has already carried out the speedup analysis of EIM
+                    or (
+                        "EIM" in kwargs and kwargs["EIM"] is not None
+                        # shorthand to disable EIM error analysis
+                    )
                 )
             ):
                 EIM_N_generator = kwargs.pop("EIM_N_generator", None)

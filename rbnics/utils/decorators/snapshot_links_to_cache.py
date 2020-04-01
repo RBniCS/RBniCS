@@ -15,11 +15,8 @@ def snapshot_links_to_cache(offline_method):
         original_export_solution = truth_problem.export_solution
         def patched_export_solution_internal(self_, folder=None, filename=None, *args, **kwargs):
             if str(folder) == str(snapshots_folder):
-                assert (
-                    hasattr(truth_problem, "_cache_file_from_kwargs")
-                        or
-                    hasattr(truth_problem, "_cache_file")
-                )
+                assert (hasattr(truth_problem, "_cache_file_from_kwargs")
+                        or hasattr(truth_problem, "_cache_file"))
                 if hasattr(truth_problem, "_cache_file_from_kwargs"): # differential problem
                     cache_filename = truth_problem._cache_file_from_kwargs(**truth_problem._latest_solve_kwargs)
                 elif hasattr(truth_problem, "_cache_file"): # EIM

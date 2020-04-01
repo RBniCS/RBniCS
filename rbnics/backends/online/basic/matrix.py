@@ -70,8 +70,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
             key_is_tuple_of_int = all([isinstance(key_i, int) for key_i in key])
             if (
                 key_is_tuple_of_slices # matrix[:5, :5]
-                    or
-                key_is_tuple_of_tuples_or_lists # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+                or key_is_tuple_of_tuples_or_lists # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
             ):
                 assert key_is_tuple_of_slices is not key_is_tuple_of_tuples_or_lists
                 if key_is_tuple_of_slices: # matrix[:5, :5]
@@ -90,8 +89,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 output._component_name_to_basis_component_index = self._component_name_to_basis_component_index
                 if (
                     self._component_name_to_basis_component_length[0] is None
-                        and
-                    self._component_name_to_basis_component_length[1] is None
+                    and self._component_name_to_basis_component_length[1] is None
                 ):
                     output._component_name_to_basis_component_length = (None, None)
                 else:

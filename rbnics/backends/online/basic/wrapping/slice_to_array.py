@@ -73,11 +73,8 @@ def _check_key(obj, key):
     for (slice_index, slice_) in enumerate(key):
         shape_index = shape_attribute(slice_index)
         assert isinstance(slice_.start, (int, OnlineSizeDict)) or slice_.start is None
-        if (
-            (isinstance(slice_.start, int) and slice_.start == 0)
-                or
-            slice_.start is None
-        ):
+        if ((isinstance(slice_.start, int) and slice_.start == 0)
+                or slice_.start is None):
             assert isinstance(shape_index, (int, OnlineSizeDict))
             if isinstance(shape_index, int):
                 start = 0
@@ -92,11 +89,8 @@ def _check_key(obj, key):
         assert slice_.step is None
         step = slice_.step
         assert isinstance(slice_.stop, (int, OnlineSizeDict)) or slice_.stop is None
-        if (
-            (isinstance(slice_.stop, int) and slice_.stop == sys.maxsize)
-                or
-            slice_.stop is None
-        ):
+        if ((isinstance(slice_.stop, int) and slice_.stop == sys.maxsize)
+                or slice_.stop is None):
             stop = shape_index
         else:
             stop = slice_.stop

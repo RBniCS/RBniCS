@@ -68,10 +68,7 @@ def is_training_started(problem):
 
 def is_training_finished(problem):
     assert problem in _problem_to_training_status
-    return (
-        _problem_to_training_status[problem] is not None
-            and
-        _problem_to_training_status[problem]
-    )
+    return (_problem_to_training_status[problem] is not None
+            and _problem_to_training_status[problem])
 
 _problem_to_training_status = Cache()

@@ -59,7 +59,7 @@ class StokesRBReducedProblem(StokesRBReducedProblem_Base):
         theta_f = self.compute_theta("f")
         theta_g = self.compute_theta("g")
         return (
-              sum(product(theta_f, self.error_estimation_operator["f", "f"], theta_f))
+            sum(product(theta_f, self.error_estimation_operator["f", "f"], theta_f))
             + sum(product(theta_g, self.error_estimation_operator["g", "g"], theta_g))
             + 2.0 * (transpose(self._solution)
                      * sum(product(theta_a, self.error_estimation_operator["a", "f"][:N], theta_f)))

@@ -130,13 +130,13 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 # otherwise we assume the user was interested in computing the error w.r.t.
                 # an exact parametrized functions, so he probably is not interested in the error analysis of DEIM
                 and (
-                     "DEIM" not in kwargs
-                     # otherwise we assume the user was interested in computing the error for a fixed number
-                     # of DEIM basis functions, thus he has already carried out the error analysis of DEIM
-                     or (
-                         "DEIM" in kwargs and kwargs["DEIM"] is not None
-                         # shorthand to disable DEIM error analysis
-                     )
+                    "DEIM" not in kwargs
+                    # otherwise we assume the user was interested in computing the error for a fixed number
+                    # of DEIM basis functions, thus he has already carried out the error analysis of DEIM
+                    or (
+                        "DEIM" in kwargs and kwargs["DEIM"] is not None
+                        # shorthand to disable DEIM error analysis
+                    )
                 )
             ):
                 DEIM_N_generator = kwargs.pop("DEIM_N_generator", None)
@@ -160,13 +160,13 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 # otherwise we assume the user was interested in computing the speedup w.r.t.
                 # an exact parametrized functions, so he probably is not interested in the speedup analysis of DEIM
                 and (
-                     "DEIM" not in kwargs
-                     # otherwise we assume the user was interested in computing the speedup for a fixed number
-                     # of DEIM basis functions, thus he has already carried out the speedup analysis of DEIM
-                     or (
-                         "DEIM" in kwargs and kwargs["DEIM"] is not None
-                         # shorthand to disable DEIM speedup analysis
-                     )
+                    "DEIM" not in kwargs
+                    # otherwise we assume the user was interested in computing the speedup for a fixed number
+                    # of DEIM basis functions, thus he has already carried out the speedup analysis of DEIM
+                    or (
+                        "DEIM" in kwargs and kwargs["DEIM"] is not None
+                        # shorthand to disable DEIM speedup analysis
+                    )
                 )
             ):
                 DEIM_N_generator = kwargs.pop("DEIM_N_generator", None)

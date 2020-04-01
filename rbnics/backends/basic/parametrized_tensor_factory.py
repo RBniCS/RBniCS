@@ -23,13 +23,9 @@ def ParametrizedTensorFactory(backend, wrapping):
             self._description = None
 
         def __eq__(self, other):
-            return (
-                isinstance(other, type(self))
-                    and
-                self._form == other._form
-                    and
-                self._spaces == other._spaces
-            )
+            return (isinstance(other, type(self))
+                    and self._form == other._form
+                    and self._spaces == other._spaces)
 
         def __hash__(self):
             return hash((self._form, self._spaces))

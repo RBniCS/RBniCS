@@ -143,11 +143,8 @@ class Config(object):
                 self._config_as_dict[section][option] = self._value_from_parser(section, option, value)
 
     def __eq__(self, other):
-        return (
-            self._config_as_parser == other._config_as_parser
-                and
-            self._config_as_dict == other._config_as_dict
-        )
+        return (self._config_as_parser == other._config_as_parser
+                and self._config_as_dict == other._config_as_dict)
 
 config = Config()
 config.read()

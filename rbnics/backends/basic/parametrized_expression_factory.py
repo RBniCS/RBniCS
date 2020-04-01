@@ -18,15 +18,10 @@ def ParametrizedExpressionFactory(backend, wrapping):
             self._description = None
 
         def __eq__(self, other):
-            return (
-                isinstance(other, type(self))
-                    and
-                self._expression == other._expression
-                    and
-                self._space == other._space
-                    and
-                self._inner_product == other._inner_product
-            )
+            return (isinstance(other, type(self))
+                    and self._expression == other._expression
+                    and self._space == other._space
+                    and self._inner_product == other._inner_product)
 
         def __hash__(self):
             return hash((self._expression, self._space, self._inner_product))

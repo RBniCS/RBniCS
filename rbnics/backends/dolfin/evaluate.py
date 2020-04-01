@@ -100,11 +100,8 @@ def _evaluate(
     at: None,
     **kwargs
 ):
-    assert (
-        len(kwargs) == 0
-            or
-        (len(kwargs) == 1 and "tensor" in kwargs)
-    )
+    assert (len(kwargs) == 0
+            or (len(kwargs) == 1 and "tensor" in kwargs))
     tensor = kwargs.get("tensor", None)
     return evaluate_base(expression, at, tensor)
 
@@ -123,11 +120,8 @@ def _evaluate(
     at: None,
     **kwargs
 ):
-    assert (
-        len(kwargs) == 0
-            or
-        (len(kwargs) == 1 and "function" in kwargs)
-    )
+    assert (len(kwargs) == 0
+            or (len(kwargs) == 1 and "function" in kwargs))
     function = kwargs.get("function", None)
     return evaluate_base(expression, at, function)
 

@@ -85,11 +85,7 @@ def EIMDecoratedProblem(
                 # but we need EIM approximations to be already set up at the time the reduction method
                 # instance is built. Thus, we will call this method in the reduction method instance
                 # constructor (having a safeguard in place to avoid repeated calls).
-                assert (
-                    (len(self.separated_forms) == 0)
-                        ==
-                    (len(self.EIM_approximations) == 0)
-                )
+                assert (len(self.separated_forms) == 0) == (len(self.EIM_approximations) == 0)
                 if len(self.EIM_approximations) == 0: # initialize EIM approximations only once
                     # Temporarily replace float parameters with symbols, so that we can detect if operators
                     # are parametrized

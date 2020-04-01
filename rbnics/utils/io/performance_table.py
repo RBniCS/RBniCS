@@ -76,11 +76,8 @@ class PerformanceTable(object):
         mu_index = args[2]
         assert self._columns_not_implemented[column_name] in (True, False)
         assert self._rows_not_implemented[column_name][N - self._Nmin] in (True, False)
-        if (
-            not self._columns_not_implemented[column_name]
-                and
-            not self._rows_not_implemented[column_name][N - self._Nmin]
-        ):
+        if (not self._columns_not_implemented[column_name]
+                and not self._rows_not_implemented[column_name][N - self._Nmin]):
             return self._columns[column_name][N - self._Nmin, mu_index]
         else:
             return CustomNotImplementedAfterDiv

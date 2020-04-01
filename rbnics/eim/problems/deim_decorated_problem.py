@@ -84,11 +84,7 @@ def DEIMDecoratedProblem(
                 # but we need DEIM approximations to be already set up at the time the reduction method
                 # instance is built. Thus, we will call this method in the reduction method instance
                 # constructor (having a safeguard in place to avoid repeated calls).
-                assert (
-                    (len(self.DEIM_approximations) == 0)
-                        ==
-                    (len(self.non_DEIM_forms) == 0)
-                )
+                assert (len(self.DEIM_approximations) == 0) == (len(self.non_DEIM_forms) == 0)
                 if len(self.DEIM_approximations) == 0: # initialize DEIM approximations only once
                     # Temporarily replace float parameters with symbols, so that we can detect if operators
                     # are parametrized

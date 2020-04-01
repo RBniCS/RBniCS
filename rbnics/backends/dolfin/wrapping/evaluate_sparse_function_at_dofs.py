@@ -11,11 +11,7 @@ from rbnics.backends.dolfin.wrapping.evaluate_sparse_vector_at_dofs import evalu
 from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 
 def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, reduced_dofs_list=None):
-    assert (
-        (output_V is None)
-            ==
-        (reduced_dofs_list is None)
-    )
+    assert (output_V is None) == (reduced_dofs_list is None)
     if output_V is None:
         return evaluate_sparse_vector_at_dofs(input_function.vector(), dofs_list)
     else:

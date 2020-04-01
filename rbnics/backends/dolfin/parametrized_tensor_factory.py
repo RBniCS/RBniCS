@@ -69,13 +69,9 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
         ParametrizedTensorFactory_Base.__init__(self, form, spaces, assemble_empty_snapshot)
 
     def __eq__(self, other):
-        return (
-            isinstance(other, type(self))
-                and
-            self._form.equals(other._form)
-                and
-            self._spaces == other._spaces
-        )
+        return (isinstance(other, type(self))
+                and self._form.equals(other._form)
+                and self._spaces == other._spaces)
 
     def __hash__(self):
         return hash((self._form, self._spaces))

@@ -55,22 +55,17 @@ class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
             assembled_operator = dict()
             for term in ("a", "a*", "c", "c*", "m", "n"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (
-                  assembled_operator["m"]                           + assembled_operator["a*"]
-                                          + assembled_operator["n"] - assembled_operator["c*"]
-                + assembled_operator["a"] - assembled_operator["c"]
-            )
+            return (assembled_operator["m"] + assembled_operator["a*"]
+                    + assembled_operator["n"] - assembled_operator["c*"]
+                    + assembled_operator["a"] - assembled_operator["c"])
 
         def vector_eval(self):
             problem = self.problem
             assembled_operator = dict()
             for term in ("f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (
-                  assembled_operator["g"]
-
-                + assembled_operator["f"]
-            )
+            return (assembled_operator["g"]
+                    + assembled_operator["f"])
 
     # Perform a truth evaluation of the cost functional
     def _compute_output(self):

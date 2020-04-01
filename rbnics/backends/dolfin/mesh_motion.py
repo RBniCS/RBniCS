@@ -28,11 +28,8 @@ class MeshMotion(AbstractMeshMotion):
             dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
             for dof in dofs:
                 global_dof = self.deformation_V.dofmap().local_to_global_index(dof)
-                if (
-                    self.deformation_V.dofmap().ownership_range()[0] <= global_dof
-                        and
-                    global_dof < self.deformation_V.dofmap().ownership_range()[1]
-                ):
+                if (self.deformation_V.dofmap().ownership_range()[0] <= global_dof
+                        and global_dof < self.deformation_V.dofmap().ownership_range()[1]):
                     self.subdomain_id_to_deformation_dofs[subdomain_id].append(dof)
         # In parallel some subdomains may not be present on all processors. Fill in
         # the dict with empty lists if that is the case

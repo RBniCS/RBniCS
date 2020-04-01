@@ -35,8 +35,7 @@ def _split_function(solution, solution_split_to_component, solution_split_to_sol
     element = solution.ufl_element()
     if (
         isinstance(element, MixedElement)
-            and
-        not isinstance(element, TensorElement) # split() does not work with TensorElement
+        and not isinstance(element, TensorElement) # split() does not work with TensorElement
     ):
         sub_elements = _get_all_sub_elements(solution.function_space())
         for sub_element_index in sub_elements:

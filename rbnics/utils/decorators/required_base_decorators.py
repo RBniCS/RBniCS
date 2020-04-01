@@ -13,11 +13,8 @@ def RequiredBaseDecorators(*BaseDecorators):
                 AlreadyAppliedBaseDecorators.extend(Class.AlreadyAppliedBaseDecorators)
 
             for BaseDecorator in BaseDecorators:
-                if (
-                    BaseDecorator is not None
-                        and
-                    BaseDecorator.__name__ not in AlreadyAppliedBaseDecorators
-                ):
+                if (BaseDecorator is not None
+                        and BaseDecorator.__name__ not in AlreadyAppliedBaseDecorators):
                     BaseClass = BaseDecorator(BaseClass)
                     AlreadyAppliedBaseDecorators.append(BaseDecorator.__name__)
 

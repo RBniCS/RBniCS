@@ -384,12 +384,12 @@ if has_IDA:
                 self._monitor_initial_time = self._initial_time
             assert isclose(round(self._monitor_initial_time/self._time_step_size),
                            self._monitor_initial_time/self._time_step_size), (
-                           "Monitor initial time should be a multiple of the time step size")
+                "Monitor initial time should be a multiple of the time step size")
             if self._monitor_time_step_size is None:
                 self._monitor_time_step_size = self._time_step_size
             assert isclose(round(self._monitor_time_step_size/self._time_step_size),
                            self._monitor_time_step_size/self._time_step_size), (
-                           "Monitor time step size should be a multiple of the time step size")
+                "Monitor time step size should be a multiple of the time step size")
             monitor_t = arange(self._monitor_initial_time, self._final_time + self._monitor_time_step_size/2.,
                                self._monitor_time_step_size)
             # Solve

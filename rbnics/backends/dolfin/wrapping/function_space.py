@@ -48,11 +48,8 @@ def _enable_string_components(components, function_space):
             components[i] = None
         else:
             components = OrderedDict()
-            if (
-                len(self_._index_to_components) == 1
-                    and
-                None in self_._index_to_components
-            ):
+            if (len(self_._index_to_components) == 1
+                    and None in self_._index_to_components):
                 for c in self_._index_to_components[None]:
                     components[c] = None
             else:

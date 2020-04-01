@@ -24,18 +24,15 @@ class Boundary1(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (
             abs(x[1] - 0.) < DOLFIN_EPS
-                or
-            (abs(x[0] - 0.) < DOLFIN_EPS and x[1] <= 0.25)
+            or (abs(x[0] - 0.) < DOLFIN_EPS and x[1] <= 0.25)
         )
 
 class Boundary2(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (
             abs(x[1] - 1.) < DOLFIN_EPS
-                or
-            abs(x[0] - 1.) < DOLFIN_EPS
-                or
-            (abs(x[0] - 0.) < DOLFIN_EPS and x[1] >= 0.25)
+            or abs(x[0] - 1.) < DOLFIN_EPS
+            or (abs(x[0] - 0.) < DOLFIN_EPS and x[1] >= 0.25)
         )
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
