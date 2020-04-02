@@ -194,19 +194,19 @@ def ShapeParametrizationFacetJacobianDeterminant(shape_parametrization_expressio
               shape_parametrization_expression_on_subdomain, problem).ufl
               * FacetNormal(problem.V.mesh().ufl_domain()))
     i = Index()
-    return sqrt(nanson[i]*nanson[i])
+    return sqrt(nanson[i] * nanson[i])
 
 @shape_parametrization_cache
 def ShapeParametrizationCircumradius(shape_parametrization_expression_on_subdomain, problem):
     return ShapeParametrizationJacobianDeterminant(
         shape_parametrization_expression_on_subdomain, problem).ufl**(
-            1./problem.V.mesh().ufl_domain().topological_dimension())
+            1. / problem.V.mesh().ufl_domain().topological_dimension())
 
 @shape_parametrization_cache
 def ShapeParametrizationCellDiameter(shape_parametrization_expression_on_subdomain, problem):
     return ShapeParametrizationJacobianDeterminant(
         shape_parametrization_expression_on_subdomain, problem).ufl**(
-            1./problem.V.mesh().ufl_domain().topological_dimension())
+            1. / problem.V.mesh().ufl_domain().topological_dimension())
 
 # ===== Pull back form measures: inspired by ufl/algorithms/apply_integral_scaling.py ===== #
 def pull_back_measures(shape_parametrization_expression_on_subdomain, problem, integral, subdomain_id):
@@ -264,7 +264,7 @@ class PullBackGradients(MultiFunction):
 
         # Wrap back in tensor shape
         grad_f = GradWithSympy(f, self.x_symb, self.problem)
-        replaced_o = as_tensor(Jinv[j, last]*grad_f[first + (last, j)], first)
+        replaced_o = as_tensor(Jinv[j, last] * grad_f[first + (last, j)], first)
         return replaced_o
 
     def grad(self, o, f):
@@ -281,7 +281,7 @@ class PullBackGradients(MultiFunction):
 
         # Wrap back in tensor shape, derivative axes at the end
         grad_f = GradWithSympy(f, self.x_symb, self.problem)
-        return as_tensor(Jinv[j, k]*grad_f[f_indices + (j,)], f_indices + (k,))
+        return as_tensor(Jinv[j, k] * grad_f[f_indices + (j,)], f_indices + (k,))
 
     def reference_div(self, o):
         raise ValueError("Not expecting reference div.")
@@ -341,7 +341,7 @@ class PullBackGeometricQuantities(MultiFunction):
     def jacobian(self, o):
         assert self.problem.V.mesh().ufl_domain() == o.ufl_domain()
         return ShapeParametrizationJacobian(
-            self.shape_parametrization_expression_on_subdomain, self.problem)*Jacobian(o.ufl_domain()).ufl
+            self.shape_parametrization_expression_on_subdomain, self.problem) * Jacobian(o.ufl_domain()).ufl
 
     @memoized_handler
     def jacobian_inverse(self, o):
@@ -377,7 +377,7 @@ class PullBackGeometricQuantities(MultiFunction):
 
     @memoized_handler
     def facet_area(self, o):
-        return self.facet_jacobian_determinant(o)*FacetArea(o.ufl_domain())
+        return self.facet_jacobian_determinant(o) * FacetArea(o.ufl_domain())
 
     @memoized_handler
     def circumradius(self, o):
@@ -410,7 +410,7 @@ class PullBackGeometricQuantities(MultiFunction):
             * ShapeParametrizationJacobianInverseTranspose(
                 self.shape_parametrization_expression_on_subdomain, self.problem).ufl * FacetNormal(o.ufl_domain()))
         i = Index()
-        return nanson/sqrt(nanson[i] * nanson[i])
+        return nanson / sqrt(nanson[i] * nanson[i])
 
 def pull_back_geometric_quantities(shape_parametrization_expression_on_subdomain, problem, integrand):
     # This function is inspired by apply_geometry_lowering in the aforementioned file
@@ -767,7 +767,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             thetas_pull_back = self.compute_theta(term)
                             forms_pull_back = self.assemble_operator(term)
                             tensor_pull_back = tensor_assemble(
-                                sum([Constant(theta)*discard_inexact_terms(operator)
+                                sum([Constant(theta) * discard_inexact_terms(operator)
                                      for (theta, operator) in zip(thetas_pull_back, forms_pull_back)]))
                             # Assemble from forms on parametrized domain
                             self.mesh_motion.move_mesh()
@@ -776,7 +776,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                             forms_parametrized_domain = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(
                                 self, term)
                             tensor_parametrized_domain = tensor_assemble(
-                                sum([Constant(theta)*discard_inexact_terms(operator)
+                                sum([Constant(theta) * discard_inexact_terms(operator)
                                     for (theta, operator) in zip(
                                         thetas_parametrized_domain, forms_parametrized_domain)]))
                             self.mesh_motion.reset_reference()
@@ -983,7 +983,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 # Append forms which were not originally affinely dependent
                 for (index, addend) in enumerate(separated_pulled_back_form.coefficients):
                     affine_parameter_dependent_forms.append(
-                        separated_pulled_back_form.replace_placeholders(index, [1]*len(addend)))
+                        separated_pulled_back_form.replace_placeholders(index, [1] * len(addend)))
                 # Append forms which were already affinely dependent
                 for unchanged_form in separated_pulled_back_form.unchanged_forms:
                     affine_parameter_dependent_forms.append(unchanged_form)
@@ -1192,10 +1192,10 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
         if postprocessed_pulled_back_theta_factor not in postprocessed_pulled_back_theta_factors_ufl_to_sympy:
             for (previous_theta_factor_ufl, previous_theta_factor_sympy) in (
                     postprocessed_pulled_back_theta_factors_ufl_to_sympy.items()):
-                ratio = simplify(postprocessed_pulled_back_theta_factor/previous_theta_factor_ufl)
+                ratio = simplify(postprocessed_pulled_back_theta_factor / previous_theta_factor_ufl)
                 if isinstance(ratio, Number):
                     postprocessed_pulled_back_theta_factors_ufl_to_sympy[
-                        postprocessed_pulled_back_theta_factor] = ratio*previous_theta_factor_sympy
+                        postprocessed_pulled_back_theta_factor] = ratio * previous_theta_factor_sympy
                     break
             else:
                 sympy_id = "sympytheta" + str(len(postprocessed_pulled_back_theta_factors_sympy_id_to_ufl))
@@ -1225,7 +1225,7 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
                 postprocessed_pulled_back_theta_factor]
     collected_sum_product = 0
     for (collected_theta_factor, collected_form) in collected_with_respect_to_theta_ordered.items():
-        collected_sum_product += collected_theta_factor*collected_form
+        collected_sum_product += collected_theta_factor * collected_form
     # Collect then with respect to form factors
     collected_with_respect_to_form = collect(
         collected_sum_product, collected_with_respect_to_theta_ordered.values(), evaluate=False, exact=True)
@@ -1234,12 +1234,12 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
         if collected_form in collected_with_respect_to_form:
             collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
         else: # it may happen that factors get multiplied by a number during collection
-            ratios = tuple(simplify(collected_form/collected_with_respect_to_form_key)
+            ratios = tuple(simplify(collected_form / collected_with_respect_to_form_key)
                            for collected_with_respect_to_form_key in collected_with_respect_to_form.keys())
             is_numeric_ratio = tuple(isinstance(r, Number) for r in ratios)
             assert sum(is_numeric_ratio) == 1
             ratio = ratios[is_numeric_ratio.index(True)]
-            collected_form = collected_form/ratio
+            collected_form = collected_form / ratio
             assert collected_form in collected_with_respect_to_form
             collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
     # Convert back to ufl

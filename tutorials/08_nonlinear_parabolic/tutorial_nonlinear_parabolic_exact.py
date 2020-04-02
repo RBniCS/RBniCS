@@ -32,8 +32,8 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         self.b = 0.5
         self.gamma = 2
         self.c = 0.05
-        self.i0 = lambda t: 50000*t**3*exp(-15*t)
-        self.f = lambda v: v*(v - 0.1)*(1 - v)
+        self.i0 = lambda t: 50000 * t**3 * exp(-15 * t)
+        self.f = lambda v: v * (v - 0.1) * (1 - v)
         # Customize time stepping parameters
         self._time_stepping_parameters.update({
             "report": True,
@@ -67,7 +67,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         elif term == "f":
             t = self.t
             theta_f0 = self.c
-            theta_f1 = self.epsilon**2*self.i0(t)
+            theta_f1 = self.epsilon**2 * self.i0(t)
             return (theta_f0, theta_f1)
         else:
             raise ValueError("Invalid term for compute_theta().")
@@ -79,28 +79,28 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         dx = self.dx
         if term == "m":
             (u1, u2) = (self.du1, self.du2)
-            m0 = u1*v1*dx
-            m1 = u2*v2*dx
+            m0 = u1 * v1 * dx
+            m1 = u2 * v2 * dx
             return (m0, m1)
         elif term == "a":
             (u1, u2) = (self.du1, self.du2)
-            a0 = inner(grad(u1), grad(v1))*dx
-            a1 = u2*v1*dx
-            a2 = u1*v2*dx
-            a3 = u2*v2*dx
+            a0 = inner(grad(u1), grad(v1)) * dx
+            a1 = u2 * v1 * dx
+            a2 = u1 * v2 * dx
+            a3 = u2 * v2 * dx
             return (a0, a1, a2, a3)
         elif term == "c":
             u1 = self.u1
-            c0 = self.f(u1)*v1*dx
+            c0 = self.f(u1) * v1 * dx
             return (c0,)
         elif term == "f":
             ds = self.ds
-            f0 = v1*dx + v2*dx
-            f1 = v1*ds(1)
+            f0 = v1 * dx + v2 * dx
+            f1 = v1 * ds(1)
             return (f0, f1)
         elif term == "inner_product":
             (u1, u2) = (self.du1, self.du2)
-            x0 = inner(grad(u1), grad(v1))*dx + u2*v2*dx
+            x0 = inner(grad(u1), grad(v1)) * dx + u2 * v2 * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

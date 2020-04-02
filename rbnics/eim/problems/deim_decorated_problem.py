@@ -205,7 +205,7 @@ def DEIMDecoratedProblem(
                     N_DEIM = None
                     if self._N_DEIM is not None:
                         N_DEIM = self._N_DEIM[term][q]
-                    deim_thetas_q = [v*original_thetas[q]
+                    deim_thetas_q = [v * original_thetas[q]
                                      for v in deim_approximation.compute_interpolated_theta(N_DEIM)]
                     deim_thetas.extend(deim_thetas_q)
                 # Append forms which did not require DEIM, if applicable

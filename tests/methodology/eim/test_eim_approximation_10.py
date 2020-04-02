@@ -68,7 +68,7 @@ def test_eim_approximation_10(expression_type, basis_generation):
                     basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(V)
-                form = f*v*dx
+                form = f * v * dx
                 # Call Parent constructor
                 TimeDependentEIMApproximation.__init__(
                     self, mock_time_dependent_problem, ParametrizedTensorFactory(form), folder_prefix,
@@ -76,7 +76,7 @@ def test_eim_approximation_10(expression_type, basis_generation):
             elif expression_type == "Matrix":
                 u = TrialFunction(V)
                 v = TestFunction(V)
-                form = f*u*v*dx
+                form = f * u * v * dx
                 # Call Parent constructor
                 TimeDependentEIMApproximation.__init__(
                     self, mock_time_dependent_problem, ParametrizedTensorFactory(form), folder_prefix,

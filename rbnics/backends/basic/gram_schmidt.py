@@ -27,7 +27,7 @@ def GramSchmidt(backend, wrapping):
             for b in basis_functions:
                 new_basis_function = wrapping.gram_schmidt_projection_step(new_basis_function, inner_product, b,
                                                                            transpose)
-            norm_new_basis_function = sqrt(transpose(new_basis_function)*inner_product*new_basis_function)
+            norm_new_basis_function = sqrt(transpose(new_basis_function) * inner_product * new_basis_function)
             if norm_new_basis_function != 0.:
                 new_basis_function /= norm_new_basis_function
 

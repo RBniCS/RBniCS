@@ -23,6 +23,6 @@ class BetaWeight(Weight):
             p_mu = 1.0
             assert len(mu) == len(box)
             for (mu_j, box_j, a_j, b_j) in zip(mu, box, self.a, self.b):
-                p_mu *= beta.pdf((mu_j - box_j[0])/(box_j[1] - box_j[0]), a=a_j, b=b_j)
+                p_mu *= beta.pdf((mu_j - box_j[0]) / (box_j[1] - box_j[0]), a=a_j, b=b_j)
             samples_density.append(p_mu)
         return samples_density

@@ -36,7 +36,7 @@ class ThermalBlock(NonlinearEllipticProblem):
     def compute_theta(self, term):
         mu = self.mu
         if term in ("a", "c", "dc"):
-            theta_a0 = 0.5*mu[0]
+            theta_a0 = 0.5 * mu[0]
             theta_a1 = 0.5
             return (theta_a0, theta_a1)
         elif term == "f":
@@ -51,24 +51,24 @@ class ThermalBlock(NonlinearEllipticProblem):
         dx = self.dx
         if term in ("a", "dc"):
             u = self.u
-            a0 = inner(grad(u), grad(v))*dx(1)
-            a1 = inner(grad(u), grad(v))*dx(2)
+            a0 = inner(grad(u), grad(v)) * dx(1)
+            a1 = inner(grad(u), grad(v)) * dx(2)
             return (a0, a1)
         elif term == "c":
             u = self._solution
-            c0 = inner(grad(u), grad(v))*dx(1)
-            c1 = inner(grad(u), grad(v))*dx(2)
+            c0 = inner(grad(u), grad(v)) * dx(1)
+            c1 = inner(grad(u), grad(v)) * dx(2)
             return (c0, c1)
         elif term == "f":
             ds = self.ds
-            f0 = v*ds(1)
+            f0 = v * ds(1)
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

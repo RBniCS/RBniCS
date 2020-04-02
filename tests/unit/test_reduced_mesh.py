@@ -100,8 +100,8 @@ def _test_reduced_mesh_elliptic_matrix(V, reduced_mesh):
     u_N = TrialFunction(reduced_V[trial])
     v_N = TestFunction(reduced_V[test])
 
-    A = assemble((u.dx(0)*v + u*v)*dx)
-    A_N = assemble((u_N.dx(0)*v_N + u_N*v_N)*dx)
+    A = assemble((u.dx(0) * v + u * v) * dx)
+    A_N = assemble((u_N.dx(0) * v_N + u_N * v_N) * dx)
 
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
@@ -158,8 +158,8 @@ def _test_reduced_mesh_elliptic_vector(V, reduced_mesh):
     test = 0
     v_N = TestFunction(reduced_V[test])
 
-    b = assemble(v*dx)
-    b_N = assemble(v_N*dx)
+    b = assemble(v * dx)
+    b_N = assemble(v_N * dx)
 
     b_dofs = evaluate_sparse_vector_at_dofs(b, dofs)
     b_N_reduced_dofs = evaluate_sparse_vector_at_dofs(b_N, reduced_dofs)
@@ -297,11 +297,11 @@ def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
     (v_N_0, v_N_1) = split(v_N)
 
     A = assemble(
-        u_0[0]*v_0[0]*dx + u_0[0]*v_0[1]*dx + u_0[1]*v_0[0]*dx + u_0[1]*v_0[1]*dx
-        + u_1*v_1*dx + u_0[0]*v_1*dx + u_1*v_0[1]*dx)
+        u_0[0] * v_0[0] * dx + u_0[0] * v_0[1] * dx + u_0[1] * v_0[0] * dx + u_0[1] * v_0[1] * dx
+        + u_1 * v_1 * dx + u_0[0] * v_1 * dx + u_1 * v_0[1] * dx)
     A_N = assemble(
-        u_N_0[0]*v_N_0[0]*dx + u_N_0[0]*v_N_0[1]*dx + u_N_0[1]*v_N_0[0]*dx + u_N_0[1]*v_N_0[1]*dx
-        + u_N_1*v_N_1*dx + u_N_0[0]*v_N_1*dx + u_N_1*v_N_0[1]*dx)
+        u_N_0[0] * v_N_0[0] * dx + u_N_0[0] * v_N_0[1] * dx + u_N_0[1] * v_N_0[0] * dx + u_N_0[1] * v_N_0[1] * dx
+        + u_N_1 * v_N_1 * dx + u_N_0[0] * v_N_1 * dx + u_N_1 * v_N_0[1] * dx)
 
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
@@ -360,8 +360,8 @@ def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
     v_N = TestFunction(reduced_V[test])
     (v_N_0, v_N_1) = split(v_N)
 
-    b = assemble(v_0[0]*dx + v_0[1]*dx + v_1*dx)
-    b_N = assemble(v_N_0[0]*dx + v_N_0[1]*dx + v_N_1*dx)
+    b = assemble(v_0[0] * dx + v_0[1] * dx + v_1 * dx)
+    b_N = assemble(v_N_0[0] * dx + v_N_0[1] * dx + v_N_1 * dx)
 
     b_dofs = evaluate_sparse_vector_at_dofs(b, dofs)
     b_N_reduced_dofs = evaluate_sparse_vector_at_dofs(b_N, reduced_dofs)
@@ -432,8 +432,8 @@ def _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh):
     v_N = TestFunction(reduced_V[test])
     (u_N_0, u_N_1) = split(u_N)
 
-    A = assemble(inner(u_0, v)*dx + u_1*v[0]*dx)
-    A_N = assemble(inner(u_N_0, v_N)*dx + u_N_1*v_N[0]*dx)
+    A = assemble(inner(u_0, v) * dx + u_1 * v[0] * dx)
+    A_N = assemble(inner(u_N_0, v_N) * dx + u_N_1 * v_N[0] * dx)
 
     A_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A, dofs)
     A_N_reduced_dofs = evaluate_and_vectorize_sparse_matrix_at_dofs(A_N, reduced_dofs)
@@ -490,8 +490,8 @@ def _test_reduced_mesh_collapsed_vector(V, reduced_mesh):
     test = 0
     v_N = TestFunction(reduced_V[test])
 
-    b = assemble(v[0]*dx + v[1]*dx)
-    b_N = assemble(v_N[0]*dx + v_N[1]*dx)
+    b = assemble(v[0] * dx + v[1] * dx)
+    b_N = assemble(v_N[0] * dx + v_N[1] * dx)
 
     b_dofs = evaluate_sparse_vector_at_dofs(b, dofs)
     b_N_reduced_dofs = evaluate_sparse_vector_at_dofs(b_N, reduced_dofs)

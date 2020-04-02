@@ -73,7 +73,7 @@ class SympyExpander(MultiFunction):
         if e not in self.ufl_to_replaced_ufl:
             self._store_sympy_symbol(e)
             def op(arg1, arg2):
-                return arg1*arg2
+                return arg1 * arg2
             (new_e, new_sympy_e) = self._apply_sympy_simplify(e, arg1, arg2, op)
             self._update_sympy_symbol(e, new_e, new_sympy_e)
             self.ufl_to_replaced_ufl[e] = new_e
@@ -154,7 +154,7 @@ class SympyExpander(MultiFunction):
         https://stackoverflow.com/questions/14264431/expanding-algebraic-powers-in-python-sympy
         """
         pows = [p for p in expr.atoms(Pow) if p.exp.is_Integer and p.exp >= 0]
-        repl = dict(zip(pows, (Mul(*[p.base]*p.exp, evaluate=False) for p in pows)))
+        repl = dict(zip(pows, (Mul(*[p.base] * p.exp, evaluate=False) for p in pows)))
         output, _ = SympyExpander._non_eval_xreplace(expr, repl)
         return output
 

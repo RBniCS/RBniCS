@@ -11,7 +11,7 @@ from rbnics.sampling.distributions.distribution import Distribution
 
 class EquispacedDistribution(Distribution):
     def sample(self, box, n):
-        n_P_root = int(ceil(n**(1./len(box))))
+        n_P_root = int(ceil(n**(1. / len(box))))
         grid = list() # of linspaces
         for box_p in box:
             grid.append(linspace(box_p[0], box_p[1], num=n_P_root).tolist())

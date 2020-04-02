@@ -35,7 +35,7 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
                 assembled_operator["m"] = sum(product(problem.compute_theta("m"), problem.operator["m"][:N, :N]))
                 assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
                 assembled_operator["dc"] = sum(product(problem.compute_theta("dc"), problem.operator["dc"][:N, :N]))
-                return (assembled_operator["m"]*solution_dot_coefficient
+                return (assembled_operator["m"] * solution_dot_coefficient
                         + assembled_operator["a"]
                         + assembled_operator["dc"])
 

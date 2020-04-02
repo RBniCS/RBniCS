@@ -76,11 +76,11 @@ class Graetz(EllipticCoerciveProblem):
         if term == "a":
             u = self.u
             vel = self.vel
-            a0 = inner(grad(u), grad(v))*dx
-            a1 = vel*u.dx(0)*v*dx
+            a0 = inner(grad(u), grad(v)) * dx
+            a1 = vel * u.dx(0) * v * dx
             return (a0, a1)
         elif term == "f":
-            f0 = Constant(0.0)*v*dx
+            f0 = Constant(0.0) * v * dx
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
@@ -100,7 +100,7 @@ class Graetz(EllipticCoerciveProblem):
             return (bc0, bc1)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

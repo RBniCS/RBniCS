@@ -339,7 +339,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                     self._compute_output(N)
                 except ValueError: # raised by compute_theta if output computation is optional
                     self._output_over_time.clear()
-                    self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
+                    self._output_over_time.extend([NotImplemented] * len(self._solution_over_time))
                     self._output = NotImplemented
                 self._output_over_time_cache[self.mu, N, kwargs] = self._output_over_time
             else:
@@ -349,7 +349,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         # Perform an online evaluation of the output. Internal method
         def _compute_output(self, N):
             self._output_over_time.clear()
-            self._output_over_time.extend([NotImplemented]*len(self._solution_over_time))
+            self._output_over_time.extend([NotImplemented] * len(self._solution_over_time))
             self._output = NotImplemented
 
         def _lifting_truth_solve(self, term, i):
@@ -366,7 +366,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 theta_over_time.append(self.truth_problem.compute_theta(term)[i])
             # We average the time dependent solution to be used as time independent lifting.
             # Do not even bother adding the initial condition if it is zero
-            if not isclose(times[0], self.truth_problem.t0, self.truth_problem.dt/2):
+            if not isclose(times[0], self.truth_problem.t0, self.truth_problem.dt / 2):
                 has_non_homogeneous_initial_condition = True
             else:
                 if component != "":
@@ -506,7 +506,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                 N = solution.N
                 assert suffix is None
                 self.truth_problem.export_solution(
-                    folder, filename, self.basis_functions[:N]*solution, component=component, suffix=k)
+                    folder, filename, self.basis_functions[:N] * solution, component=component, suffix=k)
 
         def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
             self.truth_problem.solve(**kwargs)

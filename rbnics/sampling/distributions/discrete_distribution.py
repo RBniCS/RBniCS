@@ -18,6 +18,6 @@ class DiscreteDistribution(Distribution):
         for mu in set_:
             rounded_mu = list()
             for (p, step_size) in enumerate(self.box_step_size):
-                rounded_mu.append(round(mu[p]/step_size)*step_size)
+                rounded_mu.append(round(mu[p] / step_size) * step_size)
             rounded_set.append(tuple(rounded_mu))
         return rounded_set

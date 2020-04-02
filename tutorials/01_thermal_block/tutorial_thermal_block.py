@@ -45,19 +45,19 @@ class ThermalBlock(EllipticCoerciveCompliantProblem):
         dx = self.dx
         if term == "a":
             u = self.u
-            a0 = inner(grad(u), grad(v))*dx(1)
-            a1 = inner(grad(u), grad(v))*dx(2)
+            a0 = inner(grad(u), grad(v)) * dx(1)
+            a1 = inner(grad(u), grad(v)) * dx(2)
             return (a0, a1)
         elif term == "f":
             ds = self.ds
-            f0 = v*ds(1)
+            f0 = v * ds(1)
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

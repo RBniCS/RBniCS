@@ -42,11 +42,11 @@ class Data(object):
 
     def assert_backend(self, theta, ff_product, ff_product_legacy, result_backend):
         result_builtin = self.evaluate_builtin(theta, ff_product, ff_product_legacy)
-        relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
+        relative_error = abs(result_builtin - result_backend) / abs(result_builtin)
         assert isclose(relative_error, 0., atol=1e-10)
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
-@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 3)])
+@pytest.mark.parametrize("Q", [2 + 4 * j for j in range(1, 3)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
 def test_numpy_error_estimation_ff_evaluation(N, Q, test_type, benchmark):
     data = Data(N, Q)

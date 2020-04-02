@@ -57,4 +57,4 @@ def RandomTuple(Q):
     return tuple_
 
 def _rand(*args):
-    return (-1)**randint(2, size=(args))*random(args)/(1e-3 + random(args))
+    return (-1)**randint(2, size=(args)) * random(args) / (1e-3 + random(args))

@@ -83,47 +83,47 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         if term == "a":
             y = self.y
             q = self.q
-            a0 = inner(grad(y), grad(q))*dx
+            a0 = inner(grad(y), grad(q)) * dx
             return (a0,)
         elif term == "a*":
             z = self.z
             p = self.p
-            as0 = inner(grad(z), grad(p))*dx
+            as0 = inner(grad(z), grad(p)) * dx
             return (as0,)
         elif term == "c":
             u = self.u
             q = self.q
-            c0 = u*q*dx
+            c0 = u * q * dx
             return (c0,)
         elif term == "c*":
             v = self.v
             p = self.p
-            cs0 = v*p*dx
+            cs0 = v * p * dx
             return (cs0,)
         elif term == "m":
             y = self.y
             z = self.z
-            m0 = y*z*dx
+            m0 = y * z * dx
             return (m0,)
         elif term == "n":
             u = self.u
             v = self.v
-            n0 = u*v*dx
+            n0 = u * v * dx
             return (n0,)
         elif term == "f":
             q = self.q
-            f0 = Constant(0.0)*q*dx
+            f0 = Constant(0.0) * q * dx
             return (f0,)
         elif term == "g":
             z = self.z
             y_d = self.y_d
-            g0 = y_d*z*dx(1)
-            g1 = y_d*z*dx(2)
+            g0 = y_d * z * dx(1)
+            g1 = y_d * z * dx(2)
             return (g0, g1)
         elif term == "h":
             y_d = self.y_d
-            h0 = y_d*y_d*dx(1, domain=mesh)
-            h1 = y_d*y_d*dx(2, domain=mesh)
+            h0 = y_d * y_d * dx(1, domain=mesh)
+            h1 = y_d * y_d * dx(2, domain=mesh)
             return (h0, h1)
         elif term == "dirichlet_bc_y":
             bc0 = [DirichletBC(self.V.sub(0), Constant(1.0), self.boundaries, i) for i in range(1, 9)]
@@ -134,17 +134,17 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         elif term == "inner_product_y":
             y = self.y
             z = self.z
-            x0 = inner(grad(y), grad(z))*dx
+            x0 = inner(grad(y), grad(z)) * dx
             return (x0,)
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = u*v*dx
+            x0 = u * v * dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
             q = self.q
-            x0 = inner(grad(p), grad(q))*dx
+            x0 = inner(grad(p), grad(q)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

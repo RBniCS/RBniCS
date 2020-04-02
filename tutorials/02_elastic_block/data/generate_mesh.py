@@ -11,7 +11,7 @@ from mshr import *
 domain = Rectangle(Point(0., 0.), Point(1., 1.))
 for i in range(3):
     for j in range(3):
-        domain.set_subdomain(i + j*3 + 1, Rectangle(Point(i/3., j/3.), Point((i+1)/3., (j+1)/3.)))
+        domain.set_subdomain(i + j * 3 + 1, Rectangle(Point(i / 3., j / 3.), Point((i + 1) / 3., (j + 1) / 3.)))
 mesh = generate_mesh(domain, 32)
 
 # Create subdomains
@@ -57,13 +57,13 @@ class Top(SubDomain):
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
 for i in range(3):
-    left = Left(i/3., (i+1)/3.)
+    left = Left(i / 3., (i + 1) / 3.)
     left.mark(boundaries, 6)
-    top = Top(i/3., (i+1)/3.)
+    top = Top(i / 3., (i + 1) / 3.)
     top.mark(boundaries, 5)
-    right = Right(i/3., (i+1)/3.)
-    right.mark(boundaries, i+2)
-    bottom = Bottom(i/3., (i+1)/3.)
+    right = Right(i / 3., (i + 1) / 3.)
+    right.mark(boundaries, i + 2)
+    bottom = Bottom(i / 3., (i + 1) / 3.)
     bottom.mark(boundaries, 1)
 
 # Save

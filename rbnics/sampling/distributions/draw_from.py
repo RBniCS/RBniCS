@@ -17,6 +17,6 @@ class DrawFrom(Distribution):
         for i in range(n):
             mu = list() # of numbers
             for box_p in box:
-                mu.append(box_p[0] + self.generator(*self.args, **self.kwargs)*(box_p[1] - box_p[0]))
+                mu.append(box_p[0] + self.generator(*self.args, **self.kwargs) * (box_p[1] - box_p[0]))
             set_.append(tuple(mu))
         return set_

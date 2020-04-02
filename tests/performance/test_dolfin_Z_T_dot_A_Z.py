@@ -24,7 +24,7 @@ class Data(object):
         self.V = FunctionSpace(mesh, "Lagrange", 1)
         u = TrialFunction(self.V)
         v = TestFunction(self.V)
-        self.a = lambda k: k*inner(grad(u), grad(v))*dx
+        self.a = lambda k: k * inner(grad(u), grad(v)) * dx
 
     def generate_random(self):
         # Generate random vectors
@@ -42,21 +42,21 @@ class Data(object):
     def evaluate_builtin(self, Z, A):
         result_builtin = NumpyMatrix({"u": self.N}, {"u": self.N})
         for j in range(self.N):
-            A_Z_j = A*Z[j].vector()
+            A_Z_j = A * Z[j].vector()
             for i in range(self.N):
                 result_builtin[i, j] = Z[i].vector().inner(A_Z_j)
         return result_builtin
 
     def evaluate_backend(self, Z, A):
-        return transpose(Z)*A*Z
+        return transpose(Z) * A * Z
 
     def assert_backend(self, Z, A, result_backend):
         result_builtin = self.evaluate_builtin(Z, A)
-        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        relative_error = norm(result_builtin - result_backend) / norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
-@pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_dolfin_Z_T_dot_A_Z(Th, N, test_type, benchmark):
     data = Data(Th, N)

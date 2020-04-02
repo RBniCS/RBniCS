@@ -25,17 +25,17 @@ def slice_to_array(obj, key, length_dict, index_dict):
             slices_stop.append(slice_.stop)
         else:
             if len(index_dict[slice_index]) > 1:
-                current_slice_length = [0]*len(index_dict[slice_index])
+                current_slice_length = [0] * len(index_dict[slice_index])
                 for (component_name, basis_component_index) in index_dict[slice_index].items():
                     current_slice_length[basis_component_index] = length_dict[slice_index][component_name]
                 current_slice_length_cumsum = [0] + cumsum(current_slice_length).tolist()[:-1]
             else:
                 current_slice_length_cumsum = [0]
-            current_slice_start = [0]*len(index_dict[slice_index])
+            current_slice_start = [0] * len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
                 current_slice_start[basis_component_index] = current_slice_length_cumsum[
                     basis_component_index] + slice_.start[component_name]
-            current_slice_stop = [0]*len(index_dict[slice_index])
+            current_slice_stop = [0] * len(index_dict[slice_index])
             for (component_name, basis_component_index) in index_dict[slice_index].items():
                 current_slice_stop[basis_component_index] = current_slice_length_cumsum[
                     basis_component_index] + slice_.stop[component_name]
@@ -110,7 +110,7 @@ _slice_shape_attribute = {
 
 def _check_length_dict(key, length_dict):
     if length_dict is None:
-        length_dict = (None, )*len(key)
+        length_dict = (None, ) * len(key)
     elif isinstance(length_dict, OnlineSizeDict):
         length_dict = (length_dict, )
     assert isinstance(length_dict, tuple)
@@ -120,7 +120,7 @@ def _check_length_dict(key, length_dict):
 
 def _check_index_dict(key, index_dict):
     if index_dict is None:
-        index_dict = (None, )*len(key)
+        index_dict = (None, ) * len(key)
     elif isinstance(index_dict, ComponentNameToBasisComponentIndexDict):
         index_dict = (index_dict, )
     assert isinstance(index_dict, tuple)

@@ -36,9 +36,9 @@ class Data(object):
         return (theta, F, slice(N_start, N_stop))
 
     def evaluate_builtin(self, theta, F, slice_):
-        result_builtin = theta[0]*F[0][slice_]
+        result_builtin = theta[0] * F[0][slice_]
         for i in range(1, self.Q):
-            result_builtin += theta[i]*F[i][slice_]
+            result_builtin += theta[i] * F[i][slice_]
         result_builtin.N = slice_.stop - slice_.start
         return result_builtin
 
@@ -47,11 +47,11 @@ class Data(object):
 
     def assert_backend(self, theta, F, slice_, result_backend):
         result_builtin = self.evaluate_builtin(theta, F, slice_)
-        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        relative_error = norm(result_builtin - result_backend) / norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
-@pytest.mark.parametrize("Q", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("Q", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
 def test_numpy_vector_assembly_with_slicing(N, Q, test_type, benchmark):
     data = Data(N, Q)

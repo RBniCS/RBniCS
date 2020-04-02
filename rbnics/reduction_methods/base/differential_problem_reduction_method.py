@@ -97,7 +97,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             if has_non_homogeneous_dirichlet_bc(component):
                 theta_bc = self.reduced_problem.compute_theta(dirichlet_bc_string.format(c=component))
                 assert_lengths(component, theta_bc)
-                return snapshot - self.reduced_problem.basis_functions[:self.reduced_problem.N_bc]*theta_bc
+                return snapshot - self.reduced_problem.basis_functions[:self.reduced_problem.N_bc] * theta_bc
             else:
                 return snapshot
 

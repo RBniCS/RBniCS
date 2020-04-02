@@ -44,12 +44,12 @@ def test_eim_approximation_15(expression_type, basis_generation):
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (-1., -1.))
-            self.f00 = 1./sqrt(pow(x[0]-mu[0], 2) + pow(x[1]-mu[1], 2) + 0.01)
-            self.f01 = 1./sqrt(pow(x[0]-mu[0], 4) + pow(x[1]-mu[1], 4) + 0.01)
+            self.f00 = 1. / sqrt(pow(x[0] - mu[0], 2) + pow(x[1] - mu[1], 2) + 0.01)
+            self.f01 = 1. / sqrt(pow(x[0] - mu[0], 4) + pow(x[1] - mu[1], 4) + 0.01)
             # Inner product
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
-            self.inner_product = assemble(inner(f, g)*dx)
+            self.inner_product = assemble(inner(f, g) * dx)
             # Collapsed vector and space
             self.V0 = V.sub(0).collapse()
             self.V00 = V.sub(0).sub(0).collapse()
@@ -139,7 +139,7 @@ def test_eim_approximation_15(expression_type, basis_generation):
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             f = self.truth_problem.solve()
-            f_N = transpose(self.basis_functions)*self.truth_problem.inner_product*f
+            f_N = transpose(self.basis_functions) * self.truth_problem.inner_product * f
             # Return the reduced solution
             self._solution = OnlineFunction(f_N)
             delattr(self, "_is_solving")
@@ -154,14 +154,14 @@ def test_eim_approximation_15(expression_type, basis_generation):
             assert expression_type in ("Vector", "Matrix")
             if expression_type == "Vector":
                 v = TestFunction(self.V)
-                form = inner(f0, grad(v))*dx
+                form = inner(f0, grad(v)) * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(self.V)
                 v = TestFunction(self.V)
-                form = inner(f0, grad(u))*v*dx
+                form = inner(f0, grad(u)) * v * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)

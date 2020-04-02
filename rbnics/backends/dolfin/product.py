@@ -53,7 +53,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
         for addend in item:
             theta = float(thetas[addend[1]])
             fun = addend[0].value()
-            value.vector().add_local(theta*fun.vector().get_local())
+            value.vector().add_local(theta * fun.vector().get_local())
         value.vector().apply("add")
         args = list()
         args.append(item[0][0].function_space())
@@ -77,7 +77,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Form)):
         for (theta, operator) in zip(thetas, operators):
             theta = float(theta)
             constant = Constant(theta)
-            output += constant*operator
+            output += constant * operator
             constants.append(constant)
         output = ProductOutput(output)
         _product_forms_output_cache[operators] = output
@@ -124,7 +124,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Matrix.Type())):
     output.zero()
     for (theta, operator) in zip(thetas, operators):
         theta = float(theta)
-        output += theta*operator
+        output += theta * operator
     return ProductOutput(output)
 
 @overload
@@ -133,7 +133,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Vector.Type())):
     output.zero()
     for (theta, operator) in zip(thetas, operators):
         theta = float(theta)
-        output.add_local(theta*operator.get_local())
+        output.add_local(theta * operator.get_local())
     output.apply("add")
     return ProductOutput(output)
 
@@ -142,7 +142,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Number)):
     output = 0.
     for (theta, operator) in zip(thetas, operators):
         theta = float(theta)
-        output += theta*operator
+        output += theta * operator
     return ProductOutput(output)
 
 @overload
@@ -151,7 +151,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_Function):
     output.vector().zero()
     for (theta, operator) in zip(thetas, operators):
         theta = float(theta)
-        output.vector().add_local(theta*operator.vector().get_local())
+        output.vector().add_local(theta * operator.vector().get_local())
     output.vector().apply("add")
     return ProductOutput(output)
 

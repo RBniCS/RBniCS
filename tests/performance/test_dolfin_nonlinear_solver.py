@@ -27,7 +27,7 @@ class Data(object):
         du = TrialFunction(self.V)
         v = TestFunction(self.V)
         self.u = Function(self.V)
-        self.r = lambda u, g: inner(grad(u), grad(v))*dx + inner(u + u**3, v)*dx - g*v*dx
+        self.r = lambda u, g: inner(grad(u), grad(v)) * dx + inner(u + u**3, v) * dx - g * v * dx
         self.j = lambda u, r: derivative(r, u, du)
         # Define initial guess
         self.initial_guess_expression = Expression("0.1 + 0.9*x[0]*x[1]", element=self.V.ufl_element())
@@ -104,7 +104,7 @@ class Data(object):
         error.vector().add_local(+ result_backend.vector().get_local())
         error.vector().add_local(- result_builtin.vector().get_local())
         error.vector().apply("add")
-        relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
+        relative_error = error.vector().norm("l2") / result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 8)])

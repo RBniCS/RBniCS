@@ -23,8 +23,8 @@ class Data(object):
         # Define variational problem
         u = TrialFunction(self.V)
         v = TestFunction(self.V)
-        self.a = inner(grad(u), grad(v))*dx + inner(u, v)*dx
-        self.f = lambda g: g*v*dx
+        self.a = inner(grad(u), grad(v)) * dx + inner(u, v) * dx
+        self.f = lambda g: g * v * dx
         # Define callback function depending on callback type
         assert callback_type in ("form callbacks", "tensor callbacks")
         if callback_type == "form callbacks":
@@ -69,7 +69,7 @@ class Data(object):
         error.vector().add_local(+ result_backend.vector().get_local())
         error.vector().add_local(- result_builtin.vector().get_local())
         error.vector().apply("add")
-        relative_error = error.vector().norm("l2")/result_builtin.vector().norm("l2")
+        relative_error = error.vector().norm("l2") / result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 9)])

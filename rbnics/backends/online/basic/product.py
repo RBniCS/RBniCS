@@ -26,9 +26,9 @@ def product(backend, wrapping):
                 assert len(thetas) == len(operators)
                 for (index, (theta, operator)) in enumerate(zip(thetas, operators)):
                     if index == 0:
-                        output = theta*operator
+                        output = theta * operator
                     elif theta != 0.:
-                        output += theta*operator
+                        output += theta * operator
             elif order == 2:
                 # matrix storage of affine expansion online data structures (e.g. error estimation ff/af/aa products)
                 first_operator = operators[0, 0]
@@ -39,9 +39,9 @@ def product(backend, wrapping):
                 # current operator interface does not provide a 2D len method
                 for (i, j) in cartesian_product(range(len(thetas)), range(len(thetas2))):
                     if i == 0 and j == 0:
-                        output = thetas[0]*operators[0, 0]*thetas2[0]
+                        output = thetas[0] * operators[0, 0] * thetas2[0]
                     elif thetas[i] != 0. and thetas2[j] != 0.:
-                        output += thetas[i]*operators[i, j]*thetas2[j]
+                        output += thetas[i] * operators[i, j] * thetas2[j]
             else:
                 raise ValueError("product(): invalid operands.")
             # Return
@@ -82,12 +82,12 @@ def product(backend, wrapping):
                     output = sum_product_truth_operators
                 elif len(basis_functions) == 1:
                     assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
-                    output = transpose(basis_functions[0])*sum_product_truth_operators
+                    output = transpose(basis_functions[0]) * sum_product_truth_operators
                     assert isinstance(output, DelayedTranspose)
                     output = wrapping.DelayedTransposeWithArithmetic(output)
                 elif len(basis_functions) == 2:
                     assert isinstance(sum_product_truth_operators, AbstractParametrizedTensorFactory)
-                    output = transpose(basis_functions[0])*sum_product_truth_operators*basis_functions[1]
+                    output = transpose(basis_functions[0]) * sum_product_truth_operators * basis_functions[1]
                     assert isinstance(output, DelayedTranspose)
                     output = wrapping.DelayedTransposeWithArithmetic(output)
                 else:

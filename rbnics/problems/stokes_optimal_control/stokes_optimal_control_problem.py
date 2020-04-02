@@ -151,7 +151,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
-        assembled_operator_rhs = assembled_operator_bt*solution
+        assembled_operator_rhs = assembled_operator_bt * solution
         if self.dirichlet_bc["s"] is not None:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_s"), self.dirichlet_bc["s"]))
         else:
@@ -179,7 +179,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         assert len(self.inner_product["r"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["r"][0]
         assembled_operator_btstar = sum(product(self.compute_theta("bt*_restricted"), self.operator["bt*_restricted"]))
-        assembled_operator_rhs = assembled_operator_btstar*solution
+        assembled_operator_rhs = assembled_operator_btstar * solution
         if self.dirichlet_bc["r"] is not None:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_r"), self.dirichlet_bc["r"]))
         else:
@@ -205,10 +205,10 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         for term in ("m", "n", "g", "h"):
             assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
         self._output = (
-            0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
-            0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
-            transpose(assembled_operator["g"])*self._solution +
-            0.5*assembled_operator["h"]
+            0.5 * (transpose(self._solution) * assembled_operator["m"] * self._solution)
+            + 0.5 * (transpose(self._solution) * assembled_operator["n"] * self._solution)
+            - transpose(assembled_operator["g"]) * self._solution
+            + 0.5 * assembled_operator["h"]
         )
 
     def export_supremizer(self, folder=None, filename=None, supremizer=None, component=None, suffix=None):

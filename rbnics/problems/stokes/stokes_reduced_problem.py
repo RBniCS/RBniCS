@@ -82,7 +82,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             assembled_operator_lhs = self.inner_product["s"][0][:N_us, :N_us]
             assembled_operator_bt = sum(product(
                 self.compute_theta("bt_restricted"), self.operator["bt_restricted"][:N_us, :N_usp]))
-            assembled_operator_rhs = assembled_operator_bt*solution
+            assembled_operator_rhs = assembled_operator_bt * solution
             if self.dirichlet_bc["u"] and not self.dirichlet_bc_are_homogeneous["u"]:
                 assembled_dirichlet_bc = dict()
                 assert self.dirichlet_bc["s"]
@@ -126,7 +126,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             N_us = supremizer.N
             basis_functions_us = self.basis_functions[["u", "s"]]
             self.truth_problem.export_supremizer(
-                folder, filename, basis_functions_us[:N_us]*supremizer, component, suffix)
+                folder, filename, basis_functions_us[:N_us] * supremizer, component, suffix)
 
         # Assemble the reduced order affine expansion
         def assemble_operator(self, term, current_stage="online"):

@@ -154,7 +154,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             self.greedy_selected_parameters.save(self.folder["post_processing"], "mu_greedy")
             self.greedy_error_estimators.append(error_estimator_max)
             self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
-            return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
+            return (error_estimator_max, error_estimator_max / self.greedy_error_estimators[0])
 
         def _greedy(self):
             """
@@ -530,7 +530,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
 
                     if solution is not NotImplemented:
                         speedup_analysis_table[
-                            "speedup_solve", n_int, mu_index] = elapsed_truth_solve/elapsed_reduced_solve
+                            "speedup_solve", n_int, mu_index] = elapsed_truth_solve / elapsed_reduced_solve
                     else:
                         speedup_analysis_table[
                             "speedup_solve", n_int, mu_index] = NotImplemented

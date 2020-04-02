@@ -188,7 +188,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert len(self.inner_product) == 1
             all_inner_products = (self.inner_product[0], )
         all_inner_products = AffineExpansionStorage(all_inner_products)
-        all_inner_products_thetas = (1.,)*len(all_inner_products)
+        all_inner_products_thetas = (1., ) * len(all_inner_products)
         return sum(product(all_inner_products_thetas, all_inner_products))
 
     def _combine_all_projection_inner_products(self):
@@ -204,7 +204,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert len(self.projection_inner_product) == 1
             all_projection_inner_products = (self.projection_inner_product[0], )
         all_projection_inner_products = AffineExpansionStorage(all_projection_inner_products)
-        all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
+        all_projection_inner_products_thetas = (1., ) * len(all_projection_inner_products)
         return sum(product(all_projection_inner_products_thetas, all_projection_inner_products))
 
     def _init_dirichlet_bc(self):
@@ -246,7 +246,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                             standard_compute_theta = self.compute_theta
                             def modified_compute_theta(self_, term):
                                 if term == dirichlet_bc_string.format(c=component):
-                                    return (0.,)*len(operator_bc)
+                                    return (0., ) * len(operator_bc)
                                 else:
                                     return standard_compute_theta(term)
                             return modified_compute_theta
@@ -278,7 +278,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         else:
             all_dirichlet_bcs = self.dirichlet_bc
         if all_dirichlet_bcs is not None:
-            all_dirichlet_bcs_thetas = (0.,)*len(all_dirichlet_bcs)
+            all_dirichlet_bcs_thetas = (0., ) * len(all_dirichlet_bcs)
             return sum(product(all_dirichlet_bcs_thetas, all_dirichlet_bcs))
         else:
             return None

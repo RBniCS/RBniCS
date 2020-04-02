@@ -82,7 +82,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
 
         # Arbitrarily start from the first parameter in the training set
         self.SCM_approximation.set_mu(self.training_set[0])
-        relative_error_estimator_max = 2.*self.tol
+        relative_error_estimator_max = 2. * self.tol
 
         while self.SCM_approximation.N < self.Nmax and relative_error_estimator_max >= self.tol:
             print(TextLine("SCM N = " + str(self.SCM_approximation.N), fill="~"))
@@ -160,10 +160,10 @@ class SCMApproximationReductionMethod(ReductionMethod):
         A = self.SCM_approximation.truth_problem.operator["stability_factor_left_hand_matrix"]
         B = self.SCM_approximation.truth_problem.operator["stability_factor_right_hand_matrix"]
         assert len(B) == 1
-        normalization = transpose(u)*B[0]*u
+        normalization = transpose(u) * B[0] * u
         upper_bound_vector = OnlineVector(Q)
         for q in range(Q):
-            upper_bound_vector[q] = (transpose(u)*A[q]*u)/normalization
+            upper_bound_vector[q] = (transpose(u) * A[q] * u) / normalization
         return upper_bound_vector
 
     def update_upper_bound_vectors(self, upper_bound_vector):
@@ -178,7 +178,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
 
             stability_factor_lower_bound = self.SCM_approximation.get_stability_factor_lower_bound()
             stability_factor_upper_bound = self.SCM_approximation.get_stability_factor_upper_bound()
-            ratio = stability_factor_lower_bound/stability_factor_upper_bound
+            ratio = stability_factor_lower_bound / stability_factor_upper_bound
 
             if ratio < 0. and not isclose(ratio, 0.): # if ratio << 0
                 print("SCM warning at mu = " + str(mu)
@@ -195,7 +195,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         self.SCM_approximation.set_mu(self.training_set[error_estimator_argmax])
         self.greedy_error_estimators.append(error_estimator_max)
         self.greedy_error_estimators.save(self.folder["post_processing"], "error_estimator_max")
-        return (error_estimator_max, error_estimator_max/self.greedy_error_estimators[0])
+        return (error_estimator_max, error_estimator_max / self.greedy_error_estimators[0])
 
     # Initialize data structures required for the error analysis phase
     def _init_error_analysis(self, **kwargs):
@@ -238,8 +238,8 @@ class SCMApproximationReductionMethod(ReductionMethod):
             for n in N_generator():
                 stability_factor_lower_bound = self.SCM_approximation.get_stability_factor_lower_bound(n)
                 stability_factor_upper_bound = self.SCM_approximation.get_stability_factor_upper_bound(n)
-                ratio_lower_bound_to_upper_bound = stability_factor_lower_bound/stability_factor_upper_bound
-                ratio_lower_bound_to_exact = stability_factor_lower_bound/exact_stability_factor
+                ratio_lower_bound_to_upper_bound = stability_factor_lower_bound / stability_factor_upper_bound
+                ratio_lower_bound_to_exact = stability_factor_lower_bound / exact_stability_factor
 
                 if ratio_lower_bound_to_upper_bound < 0. and not isclose(ratio_lower_bound_to_upper_bound, 0.):
                     # if ratio_lower_bound_to_upper_bound << 0
@@ -323,7 +323,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
                 self.SCM_approximation.get_stability_factor_lower_bound(n)
                 self.SCM_approximation.get_stability_factor_upper_bound(n)
                 elapsed_SCM = SCM_timer.stop()
-                speedup_analysis_table["speedup", n, mu_index] = elapsed_exact/elapsed_SCM
+                speedup_analysis_table["speedup", n, mu_index] = elapsed_exact / elapsed_SCM
 
         # Print
         print("")

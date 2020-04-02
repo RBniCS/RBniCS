@@ -53,11 +53,11 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             (delta_psi, delta_q) = split(delta_psiq)
             (psi, q) = split(psiq)
             # Variational forms
-            F = (inner(q, phi)*dx + inner(grad(psi), grad(phi))*dx
-                 + Constant(-(delta_I/L)**2)*inner(psi, q.dx(1)*p.dx(0) - q.dx(0)*p.dx(1))*dx
-                 + inner(psi.dx(0), p)*dx + Constant((delta_M/L)**3)*inner(grad(q), grad(p))*dx
-                 + Constant(C)*inner(q, p)*dx
-                 - inner(self.f, p)*dx)
+            F = (inner(q, phi) * dx + inner(grad(psi), grad(phi)) * dx
+                 + Constant(- (delta_I / L)**2) * inner(psi, q.dx(1) * p.dx(0) - q.dx(0) * p.dx(1)) * dx
+                 + inner(psi.dx(0), p) * dx + Constant((delta_M / L)**3) * inner(grad(q), grad(p)) * dx
+                 + Constant(C) * inner(q, p) * dx
+                 - inner(self.f, p) * dx)
             J = derivative(F, psiq, delta_psiq)
             # Boundary conditions
             bc = [DirichletBC(W, Constant((0., 0.)), boundaries, idx) for idx in [1, 2, 3, 4]]
@@ -113,53 +113,53 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             ypsi = self.ypsi
             qpsi = self.qpsi
             qq = self.qq
-            a0 = inner(grad(ypsi), grad(qpsi))*dx + yq*qpsi*dx
-            a1 = inner(grad(yq), grad(qq))*dx
-            a2 = inner(yq, qq)*dx
-            a3 = ypsi.dx(0)*qq*dx
+            a0 = inner(grad(ypsi), grad(qpsi)) * dx + yq * qpsi * dx
+            a1 = inner(grad(yq), grad(qq)) * dx
+            a2 = inner(yq, qq) * dx
+            a3 = ypsi.dx(0) * qq * dx
             return (a0, a1, a2, a3)
         elif term == "a*":
             pq = self.pq
             zpsi = self.zpsi
             zq = self.zq
             ppsi = self.ppsi
-            as0 = inner(grad(ppsi), grad(zpsi))*dx + ppsi*zq*dx
-            as1 = inner(grad(pq), grad(zq))*dx
-            as2 = inner(pq, zq)*dx
-            as3 = - pq.dx(0)*zpsi*dx
+            as0 = inner(grad(ppsi), grad(zpsi)) * dx + ppsi * zq * dx
+            as1 = inner(grad(pq), grad(zq)) * dx
+            as2 = inner(pq, zq) * dx
+            as3 = - pq.dx(0) * zpsi * dx
             return (as0, as1, as2, as3)
         elif term == "c":
             u = self.u
             qq = self.qq
-            c0 = u*qq*dx
+            c0 = u * qq * dx
             return (c0,)
         elif term == "c*":
             v = self.v
             pq = self.pq
-            cs0 = v*pq*dx
+            cs0 = v * pq * dx
             return (cs0,)
         elif term == "m":
             ypsi = self.ypsi
             zpsi = self.zpsi
-            m0 = ypsi*zpsi*dx
+            m0 = ypsi * zpsi * dx
             return (m0,)
         elif term == "n":
             u = self.u
             v = self.v
-            n0 = u*v*dx
+            n0 = u * v * dx
             return (n0,)
         elif term == "f":
             qq = self.qq
-            f0 = Constant(0.0)*qq*dx
+            f0 = Constant(0.0) * qq * dx
             return (f0,)
         elif term == "g":
             yd = self.yd
             zpsi = self.zpsi
-            g0 = yd*zpsi*dx
+            g0 = yd * zpsi * dx
             return (g0,)
         elif term == "h":
             yd = self.yd
-            h0 = assemble(yd*yd*dx)
+            h0 = assemble(yd * yd * dx)
             return (h0,)
         elif term == "dirichlet_bc_ypsi":
             bc0 = [DirichletBC(self.V.sub(0), Constant(0.0), boundaries, idx) for idx in [1, 2, 3, 4]]
@@ -176,27 +176,27 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
         elif term == "inner_product_ypsi":
             ypsi = self.ypsi
             zpsi = self.zpsi
-            x0 = inner(grad(ypsi), grad(zpsi))*dx
+            x0 = inner(grad(ypsi), grad(zpsi)) * dx
             return (x0,)
         elif term == "inner_product_yq":
             yq = self.yq
             zq = self.zq
-            x0 = inner(grad(yq), grad(zq))*dx
+            x0 = inner(grad(yq), grad(zq)) * dx
             return (x0,)
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = u*v*dx
+            x0 = u * v * dx
             return (x0,)
         elif term == "inner_product_ppsi":
             ppsi = self.ppsi
             qpsi = self.qpsi
-            x0 = inner(grad(ppsi), grad(qpsi))*dx
+            x0 = inner(grad(ppsi), grad(qpsi)) * dx
             return (x0,)
         elif term == "inner_product_pq":
             pq = self.pq
             qq = self.qq
-            x0 = inner(grad(pq), grad(qq))*dx
+            x0 = inner(grad(pq), grad(qq)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -225,7 +225,7 @@ pod_galerkin_method.initialize_training_set(50, sampling=LogUniformDistribution(
 reduced_geostrophic_optimal_control = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = ((7e4/1e6)**3, 1e-4)
+online_mu = ((7e4 / 1e6)**3, 1e-4)
 reduced_geostrophic_optimal_control.set_mu(online_mu)
 reduced_geostrophic_optimal_control.solve()
 reduced_geostrophic_optimal_control.export_solution("GeostrophicOptimalControl", "online_solution")

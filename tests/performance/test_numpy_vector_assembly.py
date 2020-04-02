@@ -33,9 +33,9 @@ class Data(object):
         return (theta, F)
 
     def evaluate_builtin(self, theta, F):
-        result_builtin = theta[0]*F[0]
+        result_builtin = theta[0] * F[0]
         for i in range(1, self.Q):
-            result_builtin += theta[i]*F[i]
+            result_builtin += theta[i] * F[i]
         return result_builtin
 
     def evaluate_backend(self, theta, F):
@@ -43,11 +43,11 @@ class Data(object):
 
     def assert_backend(self, theta, F, result_backend):
         result_builtin = self.evaluate_builtin(theta, F)
-        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        relative_error = norm(result_builtin - result_backend) / norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
-@pytest.mark.parametrize("Q", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("Q", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
 def test_numpy_vector_assembly(N, Q, test_type, benchmark):
     data = Data(N, Q)

@@ -17,7 +17,7 @@ def plot(obj, *args, **kwargs):
         del kwargs["reduced_problem"]
         basis_functions = reduced_problem.basis_functions[:N]
         truth_problem = reduced_problem.truth_problem
-        obj = basis_functions*obj
+        obj = basis_functions * obj
     elif "truth_problem" in kwargs:
         truth_problem = kwargs["truth_problem"]
         del kwargs["truth_problem"]

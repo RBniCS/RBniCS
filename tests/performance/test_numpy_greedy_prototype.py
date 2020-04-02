@@ -90,8 +90,8 @@ class Data(object):
         result_backend = []
         for t in range(self.Ntrain):
             result_backend.append(
-                transpose(u[t])*sum(product(theta_a[t], aa_product[:self.N, :self.N], theta_a[t]))*v[t] +
-                transpose(u[t])*sum(product(theta_a[t], af_product[:self.N], theta_f[t])) +
+                transpose(u[t]) * sum(product(theta_a[t], aa_product[:self.N, :self.N], theta_a[t])) * v[t] +
+                transpose(u[t]) * sum(product(theta_a[t], af_product[:self.N], theta_f[t])) +
                 sum(product(theta_f[t], ff_product, theta_f[t]))
             )
         return result_backend
@@ -115,8 +115,8 @@ class Data(object):
         assert isclose(relative_error, 0., atol=1e-10)
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
-@pytest.mark.parametrize("Qa", [2 + 4*j for j in range(1, 3)])
-@pytest.mark.parametrize("Qf", [2 + 4*k for k in range(1, 3)])
+@pytest.mark.parametrize("Qa", [2 + 4 * j for j in range(1, 3)])
+@pytest.mark.parametrize("Qf", [2 + 4 * k for k in range(1, 3)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_numpy_greedy_prototype(N, Qa, Qf, test_type, benchmark):
     data = Data(N, Qa, Qf)

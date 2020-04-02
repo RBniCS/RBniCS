@@ -25,12 +25,12 @@ def _test_nonlinear_solver_sparse(callback_type):
     from rbnics.backends.dolfin import NonlinearSolver
 
     # Create mesh and define function space
-    mesh = IntervalMesh(132, 0, 2*pi)
+    mesh = IntervalMesh(132, 0, 2 * pi)
     V = FunctionSpace(mesh, "Lagrange", 1)
 
-    # Define Dirichlet boundary (x = 0 or x = 2*pi)
+    # Define Dirichlet boundary (x = 0 or x = 2 * pi)
     def boundary(x):
-        return x[0] < 0 + DOLFIN_EPS or x[0] > 2*pi - 10*DOLFIN_EPS
+        return x[0] < 0 + DOLFIN_EPS or x[0] > 2 * pi - 10 * DOLFIN_EPS
 
     # Define exact solution
     exact_solution_expression = Expression("x[0] + sin(2*x[0])", element=V.ufl_element())
@@ -41,18 +41,20 @@ def _test_nonlinear_solver_sparse(callback_type):
     v = TestFunction(V)
     u = Function(V)
     g = Expression(
-        "4*sin(2*x[0])*(pow(x[0]+sin(2*x[0]), 2)+1)-2*(x[0]+sin(2*x[0]))*pow(2*cos(2*x[0])+1, 2)",
+        "4 * sin(2 * x[0]) * (pow(x[0] + sin(2 * x[0]), 2) + 1)"
+        + " - 2 * (x[0] + sin(2 * x[0])) * pow(2 * cos(2 * x[0]) + 1,"
+        + " 2)",
         element=V.ufl_element())
-    r = inner((1+u**2)*grad(u), grad(v))*dx - g*v*dx
+    r = inner((1 + u**2) * grad(u), grad(v)) * dx - g * v * dx
     j = derivative(r, u, du)
-    x = inner(du, v)*dx
+    x = inner(du, v) * dx
 
     # Assemble inner product matrix
     X = assemble(x)
 
     # Define initial guess
     def initial_guess():
-        initial_guess_expression = Expression("0.1 + 0.9*x[0]", element=V.ufl_element())
+        initial_guess_expression = Expression("0.1 + 0.9 * x[0]", element=V.ufl_element())
         return project(initial_guess_expression, V)
 
     # Define boundary condition
@@ -107,7 +109,7 @@ def _test_nonlinear_solver_sparse(callback_type):
     error.vector().add_local(+ solution.vector().get_local())
     error.vector().add_local(- exact_solution.vector().get_local())
     error.vector().apply("")
-    error_norm = error.vector().inner(X*error.vector())
+    error_norm = error.vector().inner(X * error.vector())
     print("Sparse error (" + callback_type + "):", error_norm)
     assert isclose(error_norm, 0., atol=1.e-5)
     return (error_norm, V, u, r, j, X, initial_guess, exact_solution)
@@ -119,7 +121,7 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     # Define boundary condition
     x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
-    dof_2pi = x_to_dof[2*pi]
+    dof_2pi = x_to_dof[2 * pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)
     max_dof_0_2pi = max(dof_0, dof_2pi)
 
@@ -155,9 +157,9 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
 
         def bc_eval(self):
             if min_dof_0_2pi == dof_0:
-                return (0., 2*pi)
+                return (0., 2 * pi)
             else:
-                return (2*pi, 0.)
+                return (2 * pi, 0.)
 
         # Define custom monitor to plot the solution
         def monitor(self, solution):

@@ -159,7 +159,7 @@ def patch_benchmark_plugin(benchmark_plugin):
                         if key not in speedups_tmp:
                             assert idx == 0
                             speedups_tmp[key] = list()
-                        speedups_tmp[key].append(builtin_mean_time/backend_mean_time)
+                        speedups_tmp[key].append(builtin_mean_time / backend_mean_time)
             # Convert speedups to overheads if the computed number is less than 1, and
             # change the indexing to collect tests with the same name
             speedups = dict()   # from (test_name, test type) to a dict from arguments to
@@ -170,7 +170,7 @@ def patch_benchmark_plugin(benchmark_plugin):
                 if all([value < 1. for value in values]):
                     if external_key not in overheads:
                         overheads[external_key] = dict()
-                    overheads[external_key][internal_key] = [1./value for value in values]
+                    overheads[external_key][internal_key] = [1. / value for value in values]
                 else:
                     if external_key not in speedups:
                         speedups[external_key] = dict()

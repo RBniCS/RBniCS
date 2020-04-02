@@ -630,9 +630,9 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         if len(pre_post) == 0:
             return op
         elif len(pre_post) == 1:
-            return DelayedTranspose(pre_post[0])*op
+            return DelayedTranspose(pre_post[0]) * op
         else:
-            return DelayedTranspose(pre_post[0])*op*pre_post[1]
+            return DelayedTranspose(pre_post[0]) * op * pre_post[1]
 
 class DelayedTransposeShape(object):
     def __init__(self, basis_functions):

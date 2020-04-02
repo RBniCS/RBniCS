@@ -162,8 +162,8 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                         vanishing_viscosity_expansion = OnlineAffineExpansionStorage(1)
                         vanishing_viscosity_eigenvalues = self.vanishing_viscosity_eigenvalues[n - 1]
                         vanishing_viscosity_operator = OnlineMatrix(n, n)
-                        n_min = int(n*self._N_threshold_min)
-                        n_max = int(n*self._N_threshold_max)
+                        n_min = int(n * self._N_threshold_min)
+                        n_max = int(n * self._N_threshold_max)
                         lambda_n_min = vanishing_viscosity_eigenvalues[n_min]
                         lambda_n_max = vanishing_viscosity_eigenvalues[n_max]
                         for i in range(n):
@@ -173,12 +173,12 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                             elif i < n_max:
                                 viscosity_i = (
                                     self._viscosity *
-                                    (lambda_i - lambda_n_min)**2/(lambda_n_max - lambda_n_min)**3 *
-                                    (2*lambda_n_max**2 - (lambda_n_min + lambda_n_max)*lambda_i)
+                                    (lambda_i - lambda_n_min)**2 / (lambda_n_max - lambda_n_min)**3 *
+                                    (2 * lambda_n_max**2 - (lambda_n_min + lambda_n_max) * lambda_i)
                                 )
                             else:
-                                viscosity_i = self._viscosity*lambda_i
-                            vanishing_viscosity_operator[i, i] = viscosity_i*lambda_i
+                                viscosity_i = self._viscosity * lambda_i
+                            vanishing_viscosity_operator[i, i] = viscosity_i * lambda_i
                         vanishing_viscosity_expansion[0] = vanishing_viscosity_operator
                         self.operator["vanishing_viscosity"][:n, :n] = vanishing_viscosity_expansion
                     # Save to file

@@ -151,8 +151,8 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
             if at_least_one_non_homogeneous_initial_condition:
                 inner_product_N = self._combined_projection_inner_product[:N, :N]
                 addend_1_left = self._solution
-                addend_2 = transpose(self._solution)*inner_product_N*self._solution
-                return addend_0 - 2.0*(transpose(addend_1_left)*addend_1_right) + addend_2
+                addend_2 = transpose(self._solution) * inner_product_N * self._solution
+                return addend_0 - 2.0 * (transpose(addend_1_left) * addend_1_right) + addend_2
             else:
                 return 0.
 

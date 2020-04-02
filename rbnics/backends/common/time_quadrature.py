@@ -17,7 +17,7 @@ def TimeQuadrature(time_interval, function_over_time):
 class TimeQuadrature_Numbers(AbstractTimeQuadrature):
     def __init__(self, time_interval, function_over_time):
         assert len(function_over_time) > 1
-        self._time_step_size = (time_interval[1] - time_interval[0])/(len(function_over_time) - 1)
+        self._time_step_size = (time_interval[1] - time_interval[0]) / (len(function_over_time) - 1)
         self._function_over_time = function_over_time
 
     def integrate(self):

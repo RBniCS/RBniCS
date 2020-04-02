@@ -102,7 +102,7 @@ class _ScipyImplicitEuler(object):
                     self.set_time(t)
                     self.minus_solution_previous_over_dt.vector()[:] = self.solution_previous.vector()
                     self.minus_solution_previous_over_dt.vector()[:] /= - self._time_step_size
-                    lhs = self.jacobian_eval(t, self.zero, self.zero, 1./self._time_step_size)
+                    lhs = self.jacobian_eval(t, self.zero, self.zero, 1. / self._time_step_size)
                     rhs = - self.residual_eval(t, self.zero, self.minus_solution_previous_over_dt)
                     bcs_t = self.bc_eval(t)
                     LinearSolver.__init__(self_, lhs, self.solution, rhs, bcs_t)
@@ -117,10 +117,10 @@ class _ScipyImplicitEuler(object):
                         def _store_solution_and_solution_dot(self_, solution):
                             self.solution.vector()[:] = solution.vector()
                             self.solution_dot.vector()[:] = (
-                                solution.vector() - self.solution_previous.vector())/self._time_step_size
+                                solution.vector() - self.solution_previous.vector()) / self._time_step_size
                         def jacobian_eval(self_, solution):
                             self_._store_solution_and_solution_dot(solution)
-                            return self.jacobian_eval(t, self.solution, self.solution_dot, 1./self._time_step_size)
+                            return self.jacobian_eval(t, self.solution, self.solution_dot, 1. / self._time_step_size)
                         def residual_eval(self_, solution):
                             self_._store_solution_and_solution_dot(solution)
                             return self.residual_eval(t, self.solution, self.solution_dot)
@@ -183,29 +183,29 @@ class _ScipyImplicitEuler(object):
         # Prepar time array
         assert self._max_time_steps is not None or self._time_step_size is not None
         if self._time_step_size is not None:
-            all_t = arange(self._initial_time, self._final_time + self._time_step_size/2., self._time_step_size)
+            all_t = arange(self._initial_time, self._final_time + self._time_step_size / 2., self._time_step_size)
         elif self._max_time_steps is not None:
-            all_t = linspace(self._initial_time, self._final_time, num=self._max_time_steps+1)
+            all_t = linspace(self._initial_time, self._final_time, num=self._max_time_steps + 1)
             self._time_step_size = float(all_t[2] - all_t[1])
         else:
             raise ValueError("Time step size and maximum time steps cannot be both None")
         # Assert consistency of final time and time step size
-        final_time_consistency = (all_t[-1] - all_t[0])/self._time_step_size
+        final_time_consistency = (all_t[-1] - all_t[0]) / self._time_step_size
         assert isclose(round(final_time_consistency), final_time_consistency), (
             "Final time should be occuring after an integer number of time steps")
         # Prepare monitor computation if not provided by parameters
         if self._monitor_initial_time is None:
             self._monitor_initial_time = all_t[0]
-        monitor_initial_time_consistency = (self._monitor_initial_time - self._initial_time)/self._time_step_size
+        monitor_initial_time_consistency = (self._monitor_initial_time - self._initial_time) / self._time_step_size
         assert isclose(round(monitor_initial_time_consistency), monitor_initial_time_consistency), (
             "Monitor initial time should be occuring after an integer number of time steps")
         if self._monitor_time_step_size is None:
             self._monitor_time_step_size = self._time_step_size
-        monitor_dt_consistency = self._monitor_time_step_size/self._time_step_size
+        monitor_dt_consistency = self._monitor_time_step_size / self._time_step_size
         assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), (
             "Monitor time step size should be a multiple of the time step size")
         monitor_first_index = abs(all_t - self._monitor_initial_time).argmin()
-        assert isclose(all_t[monitor_first_index], self._monitor_initial_time, atol=0.1*self._time_step_size)
+        assert isclose(all_t[monitor_first_index], self._monitor_initial_time, atol=0.1 * self._time_step_size)
         monitor_step = int(round(monitor_dt_consistency))
         monitor_t = all_t[monitor_first_index::monitor_step]
         # Solve
@@ -220,7 +220,7 @@ class _ScipyImplicitEuler(object):
                     solver.set_parameters(self._nonlinear_solver_parameters)
             solver.solve()
             self.solution_dot.vector()[:] = (
-                self.solution.vector() - self.solution_previous.vector())/self._time_step_size
+                self.solution.vector() - self.solution_previous.vector()) / self._time_step_size
             if t in monitor_t:
                 self._monitor(t, self.solution, self.solution_dot)
             self.solution_previous.vector()[:] = self.solution.vector()
@@ -376,21 +376,21 @@ if has_IDA:
                 solver.verbosity = 50
             # Assert consistency of final time and time step size
             assert self._final_time is not None
-            final_time_consistency = (self._final_time - self._initial_time)/self._time_step_size
+            final_time_consistency = (self._final_time - self._initial_time) / self._time_step_size
             assert isclose(round(final_time_consistency), final_time_consistency), (
                 "Final time should be occuring after an integer number of time steps")
             # Prepare monitor computation if not provided by parameters
             if self._monitor_initial_time is None:
                 self._monitor_initial_time = self._initial_time
-            assert isclose(round(self._monitor_initial_time/self._time_step_size),
-                           self._monitor_initial_time/self._time_step_size), (
+            assert isclose(round(self._monitor_initial_time / self._time_step_size),
+                           self._monitor_initial_time / self._time_step_size), (
                 "Monitor initial time should be a multiple of the time step size")
             if self._monitor_time_step_size is None:
                 self._monitor_time_step_size = self._time_step_size
-            assert isclose(round(self._monitor_time_step_size/self._time_step_size),
-                           self._monitor_time_step_size/self._time_step_size), (
+            assert isclose(round(self._monitor_time_step_size / self._time_step_size),
+                           self._monitor_time_step_size / self._time_step_size), (
                 "Monitor time step size should be a multiple of the time step size")
-            monitor_t = arange(self._monitor_initial_time, self._final_time + self._monitor_time_step_size/2.,
+            monitor_t = arange(self._monitor_initial_time, self._final_time + self._monitor_time_step_size / 2.,
                                self._monitor_time_step_size)
             # Solve
             solver.simulate(self._final_time, ncp_list=monitor_t)

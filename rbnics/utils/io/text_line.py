@@ -12,7 +12,7 @@ class TextLine(object):
         self._fill = fill
 
     def __str__(self):
-        cols = int(shutil.get_terminal_size(fallback=(80/0.7, 1)).columns*0.7)
+        cols = int(shutil.get_terminal_size(fallback=(80 / 0.7, 1)).columns * 0.7)
         if cols == 0:
             cols = 80
         return "{:{fill}^{cols}}".format(self._text, fill=self._fill, cols=cols)

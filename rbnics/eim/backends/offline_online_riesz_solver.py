@@ -57,7 +57,7 @@ def OfflineOnlineRieszSolver(problem_name):
             @overload
             def solve(self, coef: Number, matrix: object, basis_function: object):
                 if not self.delay:
-                    rhs = coef*matrix*basis_function
+                    rhs = coef * matrix * basis_function
                 else:
                     rhs = DelayedProduct(coef)
                     rhs *= matrix

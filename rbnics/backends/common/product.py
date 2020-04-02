@@ -22,7 +22,7 @@ def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExp
     output = 0.
     assert len(thetas) == len(operators)
     for (theta, operator) in zip(thetas, operators):
-        output += theta*operator
+        output += theta * operator
     return ProductOutput(output)
 
 @overload
@@ -33,7 +33,7 @@ def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExp
     # current operator interface does not provide a 2D len method
     for i, theta_i in enumerate(thetas):
         for j, theta2_j in enumerate(thetas2):
-            output += theta_i*operators[i, j]*theta2_j
+            output += theta_i * operators[i, j] * theta2_j
     return ProductOutput(output)
 
 @overload
@@ -50,7 +50,7 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
             assert len(operator._rhs._args) == 3
             assert operator._rhs._args[0] == -1
             assert isinstance(operator._rhs._args[1], AbstractParametrizedTensorFactory)
-            rhs = DelayedProduct(theta*operator._rhs._args[0])
+            rhs = DelayedProduct(theta * operator._rhs._args[0])
             rhs *= operator._rhs._args[1]
             rhs *= operator._rhs._args[2]
         else:

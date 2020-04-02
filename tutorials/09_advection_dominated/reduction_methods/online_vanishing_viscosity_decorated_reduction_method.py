@@ -86,7 +86,7 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
                     rotated_basis_functions.enrich(lifting_basis_functions[i])
                 for i in range(0, n):
                     (eigenvector_i, _) = rotation_eigensolver.get_eigenvector(i)
-                    rotated_basis_functions.enrich(unrotated_basis_functions[:n]*eigenvector_i)
+                    rotated_basis_functions.enrich(unrotated_basis_functions[:n] * eigenvector_i)
                 self.reduced_problem.basis_functions[:n] = rotated_basis_functions
                 # Attach eigenvalues to the vanishing viscosity reduced operator
                 self.reduced_problem.vanishing_viscosity_eigenvalues.append(rotation_eigenvalues)

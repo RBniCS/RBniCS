@@ -48,7 +48,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             theta_a1 = 1.0
             if self.stabilized:
                 delta = self.delta
-                theta_a2 = - delta*10.0**(- mu[0])
+                theta_a2 = - delta * 10.0**(- mu[0])
                 theta_a3 = delta
             else:
                 theta_a2 = 0.0
@@ -73,17 +73,17 @@ class AdvectionDominated(EllipticCoerciveProblem):
             u = self.u
             beta = self.beta
             h = self.h
-            a0 = inner(grad(u), grad(v))*dx
-            a1 = inner(beta, grad(u))*v*dx
-            a2 = inner(div(grad(u)), h*inner(beta, grad(v)))*dx
-            a3 = inner(inner(beta, grad(u)), h*inner(beta, grad(v)))*dx
+            a0 = inner(grad(u), grad(v)) * dx
+            a1 = inner(beta, grad(u)) * v * dx
+            a2 = inner(div(grad(u)), h * inner(beta, grad(v))) * dx
+            a3 = inner(inner(beta, grad(u)), h * inner(beta, grad(v))) * dx
             return (a0, a1, a2, a3)
         elif term == "f":
             f = self.f
             beta = self.beta
             h = self.h
-            f0 = f*v*dx
-            f1 = inner(f, h*inner(beta, grad(v)))*dx
+            f0 = f * v * dx
+            f1 = inner(f, h * inner(beta, grad(v))) * dx
             return (f0, f1)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
@@ -91,7 +91,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

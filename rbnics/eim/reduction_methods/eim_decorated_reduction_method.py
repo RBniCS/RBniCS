@@ -88,7 +88,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                         assert term in kwarg_EIM, "Please provide a value for term " + str(term)
                         assert isinstance(kwarg_EIM[term], (int, tuple))
                         if isinstance(kwarg_EIM[term], int):
-                            kwarg_EIM[term] = [kwarg_EIM[term]]*len(self.truth_problem.separated_forms[term])
+                            kwarg_EIM[term] = [kwarg_EIM[term]] * len(self.truth_problem.separated_forms[term])
                         else:
                             assert len(self.truth_problem.separated_forms[term]) == len(kwarg_EIM[term])
                         for (form, kwarg_EIM_form) in zip(self.truth_problem.separated_forms[term], kwarg_EIM[term]):

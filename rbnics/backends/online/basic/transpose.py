@@ -34,10 +34,10 @@ def transpose(backend, wrapping, online_backend, online_wrapping,
 
         @overload(wrapping.DelayedTransposeWithArithmetic, )
         def __mul__(self, other):
-            return self.basic_transpose_instance_call*other.evaluate()
+            return self.basic_transpose_instance_call * other.evaluate()
 
         @overload(object, )
         def __mul__(self, other):
-            return self.basic_transpose_instance_call*other
+            return self.basic_transpose_instance_call * other
 
     return _Transpose_Functor()

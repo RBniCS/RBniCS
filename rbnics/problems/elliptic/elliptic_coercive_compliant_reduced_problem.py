@@ -15,7 +15,7 @@ def EllipticCoerciveCompliantReducedProblem(EllipticCoerciveReducedProblem_Deriv
     class EllipticCoerciveCompliantReducedProblem_Class(EllipticCoerciveCompliantReducedProblem_Base):
         # Perform an online evaluation of the compliant output
         def _compute_output(self, N):
-            self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"][:N]))
+            self._output = transpose(self._solution) * sum(product(self.compute_theta("f"), self.operator["f"][:N]))
 
         # Internal method for error computation
         def _compute_error(self, **kwargs):

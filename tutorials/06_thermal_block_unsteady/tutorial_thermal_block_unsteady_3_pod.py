@@ -44,7 +44,7 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
             theta_f0 = mu[1]
             return (theta_f0,)
         elif term == "dirichlet_bc":
-            theta_bc0 = t*(1.-t) if t <= 1. else 0.
+            theta_bc0 = t * (1. - t) if t <= 1. else 0.
             return (theta_bc0,)
         elif term == "initial_condition":
             theta_ic0 = - mu[1]
@@ -58,16 +58,16 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
         dx = self.dx
         if term == "m":
             u = self.u
-            m0 = u*v*dx
+            m0 = u * v * dx
             return (m0, )
         elif term == "a":
             u = self.u
-            a0 = inner(grad(u), grad(v))*dx(1)
-            a1 = inner(grad(u), grad(v))*dx(2)
+            a0 = inner(grad(u), grad(v)) * dx(1)
+            a1 = inner(grad(u), grad(v)) * dx(2)
             return (a0, a1)
         elif term == "f":
             ds = self.ds
-            f0 = v*ds(1)
+            f0 = v * ds(1)
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, self.bc, self.boundaries, 3)]
@@ -77,11 +77,11 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
             return (ic0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         elif term == "projection_inner_product":
             u = self.u
-            x0 = u*v*dx
+            x0 = u * v * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

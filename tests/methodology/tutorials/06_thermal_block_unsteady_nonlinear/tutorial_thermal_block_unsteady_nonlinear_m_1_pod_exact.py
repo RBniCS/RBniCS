@@ -58,36 +58,36 @@ class UnsteadyThermalBlock(NonlinearParabolicProblem):
         dx = self.dx
         if term == "m":
             u = self.u
-            m0 = u*v*dx
+            m0 = u * v * dx
             return (m0, )
         elif term == "a":
             u = self.u
-            a0 = inner(grad(u), grad(v))*dx(1)
-            a1 = inner(grad(u), grad(v))*dx(2)
+            a0 = inner(grad(u), grad(v)) * dx(1)
+            a1 = inner(grad(u), grad(v)) * dx(2)
             return (a0, a1)
         elif term == "c":
             u = self._solution_dot
-            c0 = u*v*dx
+            c0 = u * v * dx
             return (c0, )
         elif term == "dc":
             u = self.u
             dt = Constant(self.dt)
-            dc0 = 1./dt*u*v*dx
+            dc0 = 1. / dt * u * v * dx
             return (dc0, )
         elif term == "f":
             ds = self.ds
-            f0 = v*ds(1)
+            f0 = v * ds(1)
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 3)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         elif term == "projection_inner_product":
             u = self.u
-            x0 = u*v*dx
+            x0 = u * v * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

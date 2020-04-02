@@ -77,41 +77,41 @@ class StokesUnsteady(NavierStokesUnsteadyProblem):
         if term == "a":
             u = self.u
             v = self.v
-            a0 = inner(grad(u), grad(v))*dx
+            a0 = inner(grad(u), grad(v)) * dx
             return (a0, )
         elif term == "b":
             u = self.u
             q = self.q
-            b0 = - q*div(u)*dx
+            b0 = - q * div(u) * dx
             return (b0, )
         elif term == "bt":
             p = self.p
             v = self.v
-            bt0 = - p*div(v)*dx
+            bt0 = - p * div(v) * dx
             return (bt0, )
         elif term == "c":
             (u, _) = split(self._solution_dot)
             v = self.v
-            c0 = inner(u, v)*dx
+            c0 = inner(u, v) * dx
             return (c0, )
         elif term == "dc":
             u = self.u
             v = self.v
             dt = Constant(self.dt)
-            dc0 = 1./dt*inner(u, v)*dx
+            dc0 = 1. / dt * inner(u, v) * dx
             return (dc0, )
         elif term == "f":
             v = self.v
-            f0 = inner(self.f, v)*dx
+            f0 = inner(self.f, v) * dx
             return (f0, )
         elif term == "g":
             q = self.q
-            g0 = self.g*q*dx
+            g0 = self.g * q * dx
             return (g0, )
         elif term == "m":
             u = self.u
             v = self.v
-            m0 = inner(u, v)*dx
+            m0 = inner(u, v) * dx
             return (m0, )
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), self.bc1, self.boundaries, 1),
@@ -127,12 +127,12 @@ class StokesUnsteady(NavierStokesUnsteadyProblem):
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
             q = self.q
-            x0 = inner(p, q)*dx
+            x0 = inner(p, q) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

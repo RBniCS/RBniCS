@@ -23,7 +23,7 @@ class Data(object):
         mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
         v = TestFunction(self.V)
-        self.f = lambda g: g*v*dx
+        self.f = lambda g: g * v * dx
 
     def generate_random(self):
         f = ()
@@ -42,7 +42,7 @@ class Data(object):
         result_builtin = F[0].copy()
         result_builtin.zero()
         for i in range(self.Q):
-            result_builtin.add_local(theta[i]*F[i].get_local())
+            result_builtin.add_local(theta[i] * F[i].get_local())
         result_builtin.apply("insert")
         return result_builtin
 
@@ -51,11 +51,11 @@ class Data(object):
 
     def assert_backend(self, theta, F, result_backend):
         result_builtin = self.evaluate_builtin(theta, F)
-        relative_error = (result_builtin - result_backend).norm("l2")/result_builtin.norm("l2")
+        relative_error = (result_builtin - result_backend).norm("l2") / result_builtin.norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
-@pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
 def test_dolfin_vector_assembly(Th, N, test_type, benchmark):
     data = Data(Th, N)

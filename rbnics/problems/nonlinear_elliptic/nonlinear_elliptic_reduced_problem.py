@@ -21,7 +21,7 @@ def NonlinearEllipticReducedProblem(EllipticReducedProblem_DerivedClass):
                 assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"][:N, :N]))
                 assembled_operator["c"] = sum(product(problem.compute_theta("c"), problem.operator["c"][:N]))
                 assembled_operator["f"] = sum(product(problem.compute_theta("f"), problem.operator["f"][:N]))
-                return assembled_operator["a"]*solution + assembled_operator["c"] - assembled_operator["f"]
+                return assembled_operator["a"] * solution + assembled_operator["c"] - assembled_operator["f"]
 
             def jacobian_eval(self, solution):
                 problem = self.problem

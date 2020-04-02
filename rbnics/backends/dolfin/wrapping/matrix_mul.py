@@ -7,7 +7,7 @@
 from dolfin import as_backend_type, compile_cpp_code
 
 def matrix_mul_vector(matrix, vector):
-    return matrix*vector
+    return matrix * vector
 
 cpp_code = """
     #include <pybind11/pybind11.h>

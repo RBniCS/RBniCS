@@ -41,15 +41,15 @@ class Data(object):
         return result_builtin
 
     def evaluate_backend(self, Z, F):
-        return transpose(Z)*F.vector()
+        return transpose(Z) * F.vector()
 
     def assert_backend(self, Z, F, result_backend):
         result_builtin = self.evaluate_builtin(Z, F)
-        relative_error = norm(result_builtin - result_backend)/norm(result_builtin)
+        relative_error = norm(result_builtin - result_backend) / norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
-@pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_dolfin_Z_T_dot_F(Th, N, test_type, benchmark):
     data = Data(Th, N)

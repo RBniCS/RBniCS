@@ -38,7 +38,7 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
             except KeyError:
                 assert self.dt is not None
                 monitor_dt = self.dt
-            return int(round((self.t - monitor_t0)/monitor_dt))
+            return int(round((self.t - monitor_t0) / monitor_dt))
 
         def _supremizer_cache_key_from_kwargs(self, **kwargs):
             cache_key = AbstractCFDUnsteadyProblem_Base._supremizer_cache_key_from_kwargs(self, **kwargs)
@@ -86,7 +86,7 @@ class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
             assembled_operator = dict()
             for term in ("m", "a", "b", "bt", "f", "g"):
                 assembled_operator[term] = sum(product(problem.compute_theta(term), problem.operator[term]))
-            return (assembled_operator["m"]*solution_dot
+            return (assembled_operator["m"] * solution_dot
                     + (assembled_operator["a"] + assembled_operator["b"] + assembled_operator["bt"]) * solution
                     - assembled_operator["f"] - assembled_operator["g"])
 

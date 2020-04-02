@@ -25,8 +25,8 @@ class ElasticBlock(EllipticCoerciveProblem):
         self.f = Constant((1.0, 0.0))
         self.E = 1.0
         self.nu = 0.3
-        self.lambda_1 = self.E*self.nu / ((1.0 + self.nu)*(1.0 - 2.0*self.nu))
-        self.lambda_2 = self.E / (2.0*(1.0 + self.nu))
+        self.lambda_1 = self.E * self.nu / ((1.0 + self.nu) * (1.0 - 2.0 * self.nu))
+        self.lambda_2 = self.E / (2.0 * (1.0 + self.nu))
 
     # Return theta multiplicative terms of the affine expansion of the problem.
     def compute_theta(self, term):
@@ -56,29 +56,29 @@ class ElasticBlock(EllipticCoerciveProblem):
         dx = self.dx
         if term == "a":
             u = self.u
-            a0 = self.elasticity(u, v)*dx(1)
-            a1 = self.elasticity(u, v)*dx(2)
-            a2 = self.elasticity(u, v)*dx(3)
-            a3 = self.elasticity(u, v)*dx(4)
-            a4 = self.elasticity(u, v)*dx(5)
-            a5 = self.elasticity(u, v)*dx(6)
-            a6 = self.elasticity(u, v)*dx(7)
-            a7 = self.elasticity(u, v)*dx(8)
-            a8 = self.elasticity(u, v)*dx(9)
+            a0 = self.elasticity(u, v) * dx(1)
+            a1 = self.elasticity(u, v) * dx(2)
+            a2 = self.elasticity(u, v) * dx(3)
+            a3 = self.elasticity(u, v) * dx(4)
+            a4 = self.elasticity(u, v) * dx(5)
+            a5 = self.elasticity(u, v) * dx(6)
+            a6 = self.elasticity(u, v) * dx(7)
+            a7 = self.elasticity(u, v) * dx(8)
+            a8 = self.elasticity(u, v) * dx(9)
             return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
         elif term == "f":
             ds = self.ds
             f = self.f
-            f0 = inner(f, v)*ds(2)
-            f1 = inner(f, v)*ds(3)
-            f2 = inner(f, v)*ds(4)
+            f0 = inner(f, v) * ds(2)
+            f1 = inner(f, v) * ds(3)
+            f2 = inner(f, v) * ds(4)
             return (f0, f1, f2)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant((0.0, 0.0)), self.boundaries, 6)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(u, v)*dx + inner(grad(u), grad(v))*dx
+            x0 = inner(u, v) * dx + inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -87,7 +87,7 @@ class ElasticBlock(EllipticCoerciveProblem):
     def elasticity(self, u, v):
         lambda_1 = self.lambda_1
         lambda_2 = self.lambda_2
-        return 2.0*lambda_2*inner(sym(grad(u)), sym(grad(v))) + lambda_1*tr(sym(grad(u)))*tr(sym(grad(v)))
+        return 2.0 * lambda_2 * inner(sym(grad(u)), sym(grad(v))) + lambda_1 * tr(sym(grad(u))) * tr(sym(grad(v)))
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/elastic_block.xml")

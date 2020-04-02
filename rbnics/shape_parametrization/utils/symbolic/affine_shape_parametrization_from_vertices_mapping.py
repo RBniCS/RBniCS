@@ -35,19 +35,19 @@ def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
     rhs = zeros(dim + dim**2, 1)
     for (offset, (reference_vertex, deformed_vertex)) in enumerate(vertices_mapping_symbolic.items()):
         for i in range(dim):
-            rhs[offset*dim + i] = deformed_vertex[i]
-            lhs[offset*dim + i, i] = 1
+            rhs[offset * dim + i] = deformed_vertex[i]
+            lhs[offset * dim + i, i] = 1
             for j in range(dim):
-                lhs[offset*dim + i, (i + 1)*dim + j] = reference_vertex[j]
-    solution = Inverse(lhs)*rhs
+                lhs[offset * dim + i, (i + 1) * dim + j] = reference_vertex[j]
+    solution = Inverse(lhs) * rhs
     b = zeros(dim, 1)
     for i in range(dim):
         b[i] = solution[i]
     A = zeros(dim, dim)
     for i in range(dim):
         for j in range(dim):
-            A[i, j] = solution[dim + i*dim + j]
+            A[i, j] = solution[dim + i * dim + j]
     # Convert into an expression
     x = sympy_symbolic_coordinates(dim, MatrixListSymbol)
-    x_o = A*x + b
+    x_o = A * x + b
     return tuple([str(x_o[i]).replace(", 0]", "]") for i in range(dim)])

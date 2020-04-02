@@ -20,7 +20,7 @@ def compute_theta_for_stability_factor(compute_theta):
     @overload(EllipticCoerciveProblem, str, module=module)
     def _compute_theta_for_stability_factor_impl(self_, term):
         if term == "stability_factor_left_hand_matrix":
-            return tuple(0.5*t for t in compute_theta(self_, "a"))
+            return tuple(0.5 * t for t in compute_theta(self_, "a"))
         else:
             return compute_theta(self_, term)
 

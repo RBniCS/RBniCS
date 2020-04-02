@@ -80,7 +80,7 @@ def custom_DirichletBC_mul_by_scalar(self, other):
     if isinstance(other, Number):
         args = list()
         args.append(self.function_space())
-        args.append(Constant(other)*self.value())
+        args.append(Constant(other) * self.value())
         args.extend(self._domain)
         return DirichletBC(*args, **self._kwargs)
     else:

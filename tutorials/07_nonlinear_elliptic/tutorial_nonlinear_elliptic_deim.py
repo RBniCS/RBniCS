@@ -60,23 +60,23 @@ class NonlinearElliptic(NonlinearEllipticProblem):
         dx = self.dx
         if term == "a":
             du = self.du
-            a0 = inner(grad(du), grad(v))*dx
+            a0 = inner(grad(du), grad(v)) * dx
             return (a0,)
         elif term == "c":
             u = self.u
             mu = self.mu
-            c0 = (exp(mu[1]*u) - 1)/mu[1]*v*dx
+            c0 = (exp(mu[1] * u) - 1) / mu[1] * v * dx
             return (c0,)
         elif term == "f":
             f = self.f
-            f0 = f*v*dx
+            f0 = f * v * dx
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1)]
             return (bc0,)
         elif term == "inner_product":
             du = self.du
-            x0 = inner(grad(du), grad(v))*dx
+            x0 = inner(grad(du), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

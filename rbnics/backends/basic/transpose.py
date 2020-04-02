@@ -400,7 +400,7 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
             @overload(backend.ParametrizedTensorFactory, )
             def __mul__(self, other):
                 delayed_transpose = DelayedTranspose(self.basis_functions_matrix)
-                return delayed_transpose*other
+                return delayed_transpose * other
 
     return _BasisFunctionsMatrix_Transpose
 
@@ -540,7 +540,7 @@ def TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping,
             output = online_backend.OnlineMatrix(dim, dim)
             for i in range(dim):
                 for j in range(dim):
-                    output[i, j] = self._transpose(self.tensors_list[i])*other_tensors_list[j]
+                    output[i, j] = self._transpose(self.tensors_list[i]) * other_tensors_list[j]
             logger.log(DEBUG, "End T^T S")
             return output
 

@@ -125,7 +125,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         B = self.operator["stability_factor_right_hand_matrix"][0]
 
         if self.dirichlet_bc is not None:
-            dirichlet_bcs_sum = sum(product((0., )*len(self.dirichlet_bc), self.dirichlet_bc))
+            dirichlet_bcs_sum = sum(product((0., ) * len(self.dirichlet_bc), self.dirichlet_bc))
             eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B, dirichlet_bcs_sum)
         else:
             eigensolver = EigenSolver(self.truth_problem.stability_factor_V, A, B)

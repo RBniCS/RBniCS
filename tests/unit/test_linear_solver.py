@@ -25,24 +25,24 @@ def _test_linear_solver_sparse(callback_type):
     from rbnics.backends.dolfin import LinearSolver
 
     # Create mesh and define function space
-    mesh = IntervalMesh(132, 0, 2*pi)
+    mesh = IntervalMesh(132, 0, 2 * pi)
     V = FunctionSpace(mesh, "Lagrange", 1)
 
-    # Define Dirichlet boundary (x = 0 or x = 2*pi)
+    # Define Dirichlet boundary (x = 0 or x = 2 * pi)
     def boundary(x):
-        return x[0] < 0 + DOLFIN_EPS or x[0] > 2*pi - 10*DOLFIN_EPS
+        return x[0] < 0 + DOLFIN_EPS or x[0] > 2 * pi - 10 * DOLFIN_EPS
 
     # Define exact solution
-    exact_solution_expression = Expression("x[0] + sin(2*x[0])", element=V.ufl_element())
+    exact_solution_expression = Expression("x[0] + sin(2 * x[0])", element=V.ufl_element())
     exact_solution = project(exact_solution_expression, V)
 
     # Define variational problem
     u = TrialFunction(V)
     v = TestFunction(V)
-    g = Expression("4*sin(2*x[0])", element=V.ufl_element())
-    a = inner(grad(u), grad(v))*dx
-    f = g*v*dx
-    x = inner(u, v)*dx
+    g = Expression("4 * sin(2 * x[0])", element=V.ufl_element())
+    a = inner(grad(u), grad(v)) * dx
+    f = g * v * dx
+    x = inner(u, v) * dx
 
     # Assemble inner product matrix
     X = assemble(x)
@@ -93,7 +93,7 @@ def _test_linear_solver_sparse(callback_type):
     error.vector().add_local(+ solution.vector().get_local())
     error.vector().add_local(- exact_solution.vector().get_local())
     error.vector().apply("")
-    error_norm = error.vector().inner(X*error.vector())
+    error_norm = error.vector().inner(X * error.vector())
     print("Sparse error (" + callback_type + "):", error_norm)
     assert isclose(error_norm, 0., atol=1.e-5)
     return (error_norm, V, a, f, X, exact_solution)
@@ -105,7 +105,7 @@ def _test_linear_solver_dense(V, a, f, X, exact_solution):
     # Define boundary condition
     x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
-    dof_2pi = x_to_dof[2*pi]
+    dof_2pi = x_to_dof[2 * pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)
     max_dof_0_2pi = max(dof_0, dof_2pi)
 
@@ -130,9 +130,9 @@ def _test_linear_solver_dense(V, a, f, X, exact_solution):
 
         def bc_eval(self):
             if min_dof_0_2pi == dof_0:
-                return (0., 2*pi)
+                return (0., 2 * pi)
             else:
-                return (2*pi, 0.)
+                return (2 * pi, 0.)
 
         # Define custom monitor to plot the solution
         def monitor(self, solution):

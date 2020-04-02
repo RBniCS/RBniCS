@@ -16,7 +16,7 @@ Vector.Type = Type
 
 # pybind11 wrappers do not implement __neg__ unary operator
 def custom__neg__(self):
-    return -1.*self
+    return -1. * self
 setattr(GenericVector, "__neg__", custom__neg__)
 
 # Preserve generator attribute in algebraic operators, as required by DEIM

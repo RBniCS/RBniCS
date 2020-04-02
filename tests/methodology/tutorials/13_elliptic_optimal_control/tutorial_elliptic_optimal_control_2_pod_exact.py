@@ -41,7 +41,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
     def compute_theta(self, term):
         mu = self.mu
         if term in ("a", "a*"):
-            theta_a0 = 1.0/mu[0]
+            theta_a0 = 1.0 / mu[0]
             theta_a1 = 1.0
             return (theta_a0, theta_a1)
         elif term in ("c", "c*"):
@@ -61,7 +61,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             theta_g1 = mu[2]
             return (theta_g0, theta_g1)
         elif term == "h":
-            theta_h0 = 0.24*mu[1]**2 + 0.52*mu[2]**2
+            theta_h0 = 0.24 * mu[1]**2 + 0.52 * mu[2]**2
             return (theta_h0,)
         elif term == "dirichlet_bc_y":
             theta_bc0 = 1.
@@ -76,44 +76,44 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             y = self.y
             q = self.q
             vel = self.vel
-            a0 = inner(grad(y), grad(q))*dx
-            a1 = vel*y.dx(0)*q*dx
+            a0 = inner(grad(y), grad(q)) * dx
+            a1 = vel * y.dx(0) * q * dx
             return (a0, a1)
         elif term == "a*":
             z = self.z
             p = self.p
             vel = self.vel
-            as0 = inner(grad(z), grad(p))*dx
-            as1 = - vel*p.dx(0)*z*dx
+            as0 = inner(grad(z), grad(p)) * dx
+            as1 = - vel * p.dx(0) * z * dx
             return (as0, as1)
         elif term == "c":
             u = self.u
             q = self.q
-            c0 = u*q*dx
+            c0 = u * q * dx
             return (c0,)
         elif term == "c*":
             v = self.v
             p = self.p
-            cs0 = v*p*dx
+            cs0 = v * p * dx
             return (cs0,)
         elif term == "m":
             y = self.y
             z = self.z
-            m0 = y*z*dx(1) + y*z*dx(2)
+            m0 = y * z * dx(1) + y * z * dx(2)
             return (m0,)
         elif term == "n":
             u = self.u
             v = self.v
-            n0 = u*v*dx
+            n0 = u * v * dx
             return (n0,)
         elif term == "f":
             q = self.q
-            f0 = Constant(0.0)*q*dx
+            f0 = Constant(0.0) * q * dx
             return (f0,)
         elif term == "g":
             z = self.z
-            g0 = z*dx(1)
-            g1 = z*dx(2)
+            g0 = z * dx(1)
+            g1 = z * dx(2)
             return (g0, g1)
         elif term == "h":
             h0 = 1.0
@@ -127,17 +127,17 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
         elif term == "inner_product_y":
             y = self.y
             z = self.z
-            x0 = inner(grad(y), grad(z))*dx
+            x0 = inner(grad(y), grad(z)) * dx
             return (x0,)
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = u*v*dx
+            x0 = u * v * dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
             q = self.q
-            x0 = inner(grad(p), grad(q))*dx
+            x0 = inner(grad(p), grad(q)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

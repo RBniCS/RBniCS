@@ -360,19 +360,19 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                 if integral not in integral_to_coefficients:
                     logger.log(DEBUG, "\t Adding form for integrand " + str(integral.integrand())
                                + " to unchanged forms")
-                    self._form_unchanged.append(integral.integrand()*measure)
+                    self._form_unchanged.append(integral.integrand() * measure)
                 else:
                     logger.log(DEBUG, "\t Preparing form with placeholders for integrand "
                                + str(integral.integrand()))
                     self._placeholders.append(list()) # of Constants
                     placeholders_dict = dict()
                     for c in integral_to_coefficients[integral]:
-                        self._placeholders[-1].append(Constant(self._NaN*ones(c.ufl_shape)))
+                        self._placeholders[-1].append(Constant(self._NaN * ones(c.ufl_shape)))
                         placeholders_dict[c] = self._placeholders[-1][-1]
                         logger.log(DEBUG, "\t\t " + str(placeholders_dict[c]) + " is the placeholder for " + str(c))
                     replacer = _SeparatedParametrizedForm_Replacer(placeholders_dict)
                     new_integrand = apply_transformer(integral.integrand(), replacer)
-                    self._form_with_placeholders.append(new_integrand*measure)
+                    self._form_with_placeholders.append(new_integrand * measure)
 
             logger.log(DEBUG, "3. Assert that there are no parametrized expressions left")
             for form in self._form_with_placeholders:

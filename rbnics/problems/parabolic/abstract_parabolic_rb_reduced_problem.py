@@ -31,11 +31,11 @@ def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedCla
             # Compute error bound
             error_bound_over_time = TimeSeries(eps2_over_time)
             for (k, t) in enumerate(eps2_over_time.stored_times()):
-                if not isclose(t, self.t0, self.dt/2.):
+                if not isclose(t, self.t0, self.dt / 2.):
                     eps2 = eps2_over_time[k]
                     assert eps2 >= 0. or isclose(eps2, 0.)
                     assert beta >= 0.
-                    error_bound_over_time.append(sqrt(abs(eps2)/beta))
+                    error_bound_over_time.append(sqrt(abs(eps2) / beta))
                 else:
                     initial_error_estimate_squared = self.get_initial_error_estimate_squared()
                     assert initial_error_estimate_squared >= 0. or isclose(initial_error_estimate_squared, 0.)
@@ -60,7 +60,7 @@ def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedCla
             residual_norm_squared_over_time = TimeSeries(self._solution_over_time)
             assert len(self._solution_over_time) == len(self._solution_dot_over_time)
             for (k, t) in enumerate(self._solution_over_time.stored_times()):
-                if not isclose(t, self.t0, self.dt/2.):
+                if not isclose(t, self.t0, self.dt / 2.):
                     # Set current time
                     self.set_time(t)
                     # Set current solution and solution_dot

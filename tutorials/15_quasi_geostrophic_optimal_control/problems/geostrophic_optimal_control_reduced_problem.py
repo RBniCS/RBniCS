@@ -47,10 +47,10 @@ def GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProbl
                     assembled_operator[term] = sum(product(self.compute_theta(term), self.operator[term]))
                 else:
                     raise ValueError("Invalid value for order of term " + term)
-            self._output = (0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution)
-                            + 0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution)
-                            - transpose(assembled_operator["g"])*self._solution
-                            + 0.5*assembled_operator["h"])
+            self._output = (0.5 * (transpose(self._solution) * assembled_operator["m"] * self._solution)
+                            + 0.5 * (transpose(self._solution) * assembled_operator["n"] * self._solution)
+                            - transpose(assembled_operator["g"]) * self._solution
+                            + 0.5 * assembled_operator["h"])
 
         def _online_size_from_kwargs(self, N, **kwargs):
             if N is None:

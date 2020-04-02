@@ -33,4 +33,4 @@ class EllipticProblem(EllipticProblem_Base):
 
     # Perform a truth evaluation of the output
     def _compute_output(self):
-        self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"]))
+        self._output = transpose(self._solution) * sum(product(self.compute_theta("s"), self.operator["s"]))

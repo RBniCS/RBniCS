@@ -97,7 +97,7 @@ class StokesProblem(StokesProblem_Base):
         assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
-        assembled_operator_rhs = assembled_operator_bt*solution
+        assembled_operator_rhs = assembled_operator_bt * solution
         if self.dirichlet_bc["s"] is not None:
             assembled_dirichlet_bc = sum(product(self.compute_theta("dirichlet_bc_s"), self.dirichlet_bc["s"]))
         else:

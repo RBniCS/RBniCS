@@ -241,7 +241,7 @@ class SCMApproximation(ParametrizedProblem):
             # Compute the cost function for fixed omega
             obj = 0.
             for q in range(Q):
-                obj += upper_bound_vector[q]*current_theta[q]
+                obj += upper_bound_vector[q] * current_theta[q]
 
             if stability_factor_upper_bound is None or obj < stability_factor_upper_bound:
                 stability_factor_upper_bound = obj

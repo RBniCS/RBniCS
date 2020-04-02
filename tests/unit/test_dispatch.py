@@ -384,7 +384,7 @@ def test_function_custom_module():
 
     @dispatch(float, module=module)
     def f(arg):
-        return 2.*arg
+        return 2. * arg
     assert inspect.isfunction(f)
     assert isinstance(module.f, Dispatcher)
 
@@ -409,7 +409,7 @@ def test_function_current_module():
 
     @dispatch(float)
     def f(arg):
-        return 2.*arg
+        return 2. * arg
     assert isinstance(f, Dispatcher)
 
     @dispatch(str)
@@ -439,7 +439,7 @@ def test_dispatch_twice_function():
     try:
         @dispatch(int)
         def g(arg):
-            return 10*arg
+            return 10 * arg
     except AmbiguousSignatureError:
         pass # this has failed has expected
     else:
@@ -455,13 +455,13 @@ def test_dispatch_twice_function_automatic_resolution():
 
     @dispatch((int, float))
     def g(arg):
-        return 2*arg
+        return 2 * arg
     assert g(1) == 2
     assert g(1.) == 1.
 
     @dispatch(int)
     def g(arg):
-        return 3*arg
+        return 3 * arg
     assert g(1) == 3
     assert g(1.) == 1.
 
@@ -477,7 +477,7 @@ def test_dispatch_replace_function():
 
     @dispatch(int, module=module, replaces=g_int_1)
     def g(arg):
-        return 2*arg
+        return 2 * arg
     g_int_2 = g
     assert inspect.isfunction(g_int_2)
     assert module.g(1) == 2
@@ -485,7 +485,7 @@ def test_dispatch_replace_function():
     try:
         @dispatch(int, module=module, replaces=g_int_1)
         def g(arg):
-            return 3*arg
+            return 3 * arg
     except AssertionError:
         pass # this has failed has expected
     else:
@@ -493,14 +493,14 @@ def test_dispatch_replace_function():
 
     @dispatch(int, module=module, replaces=g_int_2)
     def g(arg):
-        return 4*arg
+        return 4 * arg
     g_int_4 = g
     assert inspect.isfunction(g_int_4)
     assert module.g(1) == 4
 
     @dispatch(int, module=module, replaces=g_int_4, replaces_if=lambda arg: arg % 2 == 0)
     def g(arg):
-        return 5*arg
+        return 5 * arg
     g_int_5 = g
     assert inspect.isfunction(g_int_5)
     assert module.g(1) == 4
@@ -520,7 +520,7 @@ def test_class_custom_module():
     @dispatch(float, module=module)
     class A(object):
         def __init__(self, arg):
-            self.arg = 2.*arg
+            self.arg = 2. * arg
     assert inspect.isclass(A)
     assert isinstance(module.A, Dispatcher)
 
@@ -544,19 +544,19 @@ def test_methods_2():
 
         @dispatch(int)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
         @dispatch(float)
         def __mul__(self, other):
-            return 2.*self.arg*other
+            return 2. * self.arg * other
 
         @dispatch()
         def __mul__(self, other: str):
             return other[0] + "*" + str(self.arg)
 
-    assert B(1)*2 == 2
-    assert B(1)*2. == 4.
-    assert B(1)*"test" == "t*1"
+    assert B(1) * 2 == 2
+    assert B(1) * 2. == 4.
+    assert B(1) * "test" == "t*1"
 
 # Test class with list inputs
 def test_disable_list():
@@ -588,11 +588,11 @@ def test_enabled_list_of_multiple():
 
         @dispatch(list_of((float, int)))
         def __init__(self, arg):
-            self.arg = 2*arg[0]
+            self.arg = 2 * arg[0]
 
         @dispatch(list_of((float, str)))
         def __init__(self, arg):
-            self.arg = 3*arg[0]
+            self.arg = 3 * arg[0]
 
     assert E([1.]).arg == 1. and isinstance(E([1., 2.]).arg, float)
     assert E(["a"]).arg == "aaa"
@@ -612,11 +612,11 @@ def test_enabled_list_of_multiple_ambiguous():
 
         @dispatch(list_of((float, int)))
         def __init__(self, arg):
-            self.arg = 2*arg[0]
+            self.arg = 2 * arg[0]
 
         @dispatch(list_of((float, int, str)))
         def __init__(self, arg):
-            self.arg = 3*arg[0]
+            self.arg = 3 * arg[0]
 
     try:
         # Ambiguity checking is delayed to the first time the method is evaluated
@@ -637,15 +637,15 @@ def test_enabled_list_of_multiple_ambiguous():
 
         @dispatch(list_of(int))
         def __init__(self, arg):
-            self.arg = 4*arg[0]
+            self.arg = 4 * arg[0]
 
         @dispatch(list_of((float, int)))
         def __init__(self, arg):
-            self.arg = 2*arg[0]
+            self.arg = 2 * arg[0]
 
         @dispatch(list_of((float, int, str)))
         def __init__(self, arg):
-            self.arg = 3*arg[0]
+            self.arg = 3 * arg[0]
 
     assert F([1.]).arg == 1. and isinstance(F([1., 2.]).arg, float)
     assert F(["a"]).arg == "aaa"
@@ -670,7 +670,7 @@ def test_dispatch_twice_class():
         @dispatch(int, module=module)
         class G(object):
             def __init__(self, arg):
-                self.arg = 10*arg
+                self.arg = 10 * arg
     except AmbiguousSignatureError:
         pass # this has failed has expected
     else:
@@ -690,7 +690,7 @@ def test_dispatch_replace_class():
     @dispatch(int, module=module, replaces=G_int_1)
     class G(object):
         def __init__(self, arg):
-            self.arg = 2*arg
+            self.arg = 2 * arg
     G_int_2 = G
     assert inspect.isclass(G_int_2)
     assert module.G(1).arg == 2
@@ -699,7 +699,7 @@ def test_dispatch_replace_class():
         @dispatch(int, module=module, replaces=G_int_1)
         class G(object):
             def __init__(self, arg):
-                self.arg = 3*arg
+                self.arg = 3 * arg
     except AssertionError:
         pass # this has failed has expected
     else:
@@ -708,7 +708,7 @@ def test_dispatch_replace_class():
     @dispatch(int, module=module, replaces=G_int_2)
     class G(object):
         def __init__(self, arg):
-            self.arg = 4*arg
+            self.arg = 4 * arg
     G_int_4 = G
     assert inspect.isclass(G_int_4)
     assert module.G(1).arg == 4
@@ -716,7 +716,7 @@ def test_dispatch_replace_class():
     @dispatch(int, module=module, replaces=G_int_4, replaces_if=lambda arg: arg % 2 == 0)
     class G(object):
         def __init__(self, arg):
-            self.arg = 5*arg
+            self.arg = 5 * arg
     G_int_5 = G
     assert inspect.isclass(G_int_5)
     assert module.G(1).arg == 4
@@ -732,7 +732,7 @@ def test_dispatch_twice_method():
 
             @dispatch(int)
             def __mul__(self, other):
-                return 10*other
+                return 10 * other
     except AmbiguousSignatureError:
         pass # this has failed has expected
     else:
@@ -982,23 +982,23 @@ def test_override():
 
         @dispatch(int)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
         @dispatch(float)
         def __mul__(self, other):
-            return 2.*self.arg*other
+            return 2. * self.arg * other
 
     class C(B):
         @dispatch(str)
         def __mul__(self, other):
-            return 3*self.arg*other
+            return 3 * self.arg * other
 
-    assert B(1)*2 == 2
-    assert B(1)*2. == 4.
-    assert raises(UnavailableSignatureError, lambda: B(1)*"test")
-    assert C(1)*2 == 2
-    assert C(1)*2. == 4.
-    assert C(1)*"test" == "testtesttest"
+    assert B(1) * 2 == 2
+    assert B(1) * 2. == 4.
+    assert raises(UnavailableSignatureError, lambda: B(1) * "test")
+    assert C(1) * 2 == 2
+    assert C(1) * 2. == 4.
+    assert C(1) * "test" == "testtesttest"
 
 # Test class with override from parent class (when parent and child have a method with the same signature)
 def test_override_2():
@@ -1008,26 +1008,26 @@ def test_override_2():
 
         @dispatch(int)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
         @dispatch(float)
         def __mul__(self, other):
-            return 2.*self.arg*other
+            return 2. * self.arg * other
     class C(B):
         @dispatch(str)
         def __mul__(self, other):
-            return 3*self.arg*other
+            return 3 * self.arg * other
 
         @dispatch(int)
         def __mul__(self, other):
-            return 4.*self.arg*int(other)
+            return 4. * self.arg * int(other)
 
-    assert B(1)*2 == 2
-    assert B(1)*2. == 4.
-    assert raises(UnavailableSignatureError, lambda: B(1)*"test")
-    assert C(1)*2 == 8 # and not 2
-    assert C(1)*2. == 4.
-    assert C(1)*"test" == "testtesttest"
+    assert B(1) * 2 == 2
+    assert B(1) * 2. == 4.
+    assert raises(UnavailableSignatureError, lambda: B(1) * "test")
+    assert C(1) * 2 == 8 # and not 2
+    assert C(1) * 2. == 4.
+    assert C(1) * "test" == "testtesttest"
 
 # Test class with override from parent class (when parent class had a non dispatched method)
 def test_override_3():
@@ -1036,16 +1036,16 @@ def test_override_3():
             self.arg = arg
 
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
     class C(B):
         @dispatch(int)
         def __mul__(self, other):
-            return 2.*self.arg*int(other)
+            return 2. * self.arg * int(other)
 
-    assert B(1)*2 == 2
-    assert B(1)*2. == 2.
-    assert C(1)*2 == 4 # and not 2
-    assert C(1)*2. == 2.
+    assert B(1) * 2 == 2
+    assert B(1) * 2. == 2.
+    assert C(1) * 2 == 4 # and not 2
+    assert C(1) * 2. == 2.
 
 # Test class with overrides with two levels of inheritance
 def test_override_4():
@@ -1055,27 +1055,27 @@ def test_override_4():
 
         @dispatch(int)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
     class C(B):
         @dispatch(float)
         def __mul__(self, other):
-            return 2.*self.arg*other
+            return 2. * self.arg * other
 
     class D(C):
         @dispatch(str)
         def __mul__(self, other):
-            return 3*self.arg*other
+            return 3 * self.arg * other
 
-    assert B(1)*2 == 2
-    assert raises(UnavailableSignatureError, lambda: B(1)*2.)
-    assert raises(UnavailableSignatureError, lambda: B(1)*"test")
-    assert C(1)*2 == 2
-    assert C(1)*2. == 4.
-    assert raises(UnavailableSignatureError, lambda: C(1)*"test")
-    assert D(1)*2 == 2
-    assert D(1)*2. == 4.
-    assert D(1)*"test" == "testtesttest"
+    assert B(1) * 2 == 2
+    assert raises(UnavailableSignatureError, lambda: B(1) * 2.)
+    assert raises(UnavailableSignatureError, lambda: B(1) * "test")
+    assert C(1) * 2 == 2
+    assert C(1) * 2. == 4.
+    assert raises(UnavailableSignatureError, lambda: C(1) * "test")
+    assert D(1) * 2 == 2
+    assert D(1) * 2. == 4.
+    assert D(1) * "test" == "testtesttest"
 
 # Test class with lambda inputs
 def test_method_lambda_function():
@@ -1089,19 +1089,19 @@ def test_method_lambda_function():
 
         @dispatch(lambda cls: cls.Type1)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
         @dispatch(lambda cls: cls.Type2)
         def __mul__(self, other):
-            return 2.*self.arg*other
+            return 2. * self.arg * other
 
         @dispatch(lambda cls: cls.Type3)
         def __mul__(self, other):
             return other[0] + "*" + str(self.arg)
 
-    assert F(1)*2 == 2
-    assert F(1)*2. == 4.
-    assert F(1)*"test" == "t*1"
+    assert F(1) * 2 == 2
+    assert F(1) * 2. == 4.
+    assert F(1) * "test" == "t*1"
 
 # Test class with lambda inputs, changing by mistake the underlying type
 def test_method_lambda_function_change():
@@ -1113,12 +1113,12 @@ def test_method_lambda_function_change():
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
-    assert F(3)*2 == 6 and isinstance(F(3)*2, int)
-    F.Type = float                                            # this has no effect because
-    assert raises(UnavailableSignatureError, lambda: F(3)*2.) # the Type has been already processed,
-    assert F(3)*2 == 6 and isinstance(F(3)*2, int)            # so the internal signature is unchanged
+    assert F(3) * 2 == 6 and isinstance(F(3) * 2, int)
+    F.Type = float                                              # this has no effect because
+    assert raises(UnavailableSignatureError, lambda: F(3) * 2.) # the Type has been already processed,
+    assert F(3) * 2 == 6 and isinstance(F(3) * 2, int)          # so the internal signature is unchanged
 
 # Test class with lambda inputs and inheritance which does not override a method,
 # but changes the return value of the lambda function
@@ -1131,7 +1131,7 @@ def test_method_lambda_function_no_overrides():
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
     class G(F):
         Type = float
@@ -1139,13 +1139,13 @@ def test_method_lambda_function_no_overrides():
     class H(F):
         Type = str
 
-    assert F(1)*2 == 2
-    assert raises(UnavailableSignatureError, lambda: G(1)*2)
-    assert G(2)*2. == 4.
-    assert raises(UnavailableSignatureError, lambda: G(3)*"test")
-    assert raises(UnavailableSignatureError, lambda: H(1)*2)
-    assert raises(UnavailableSignatureError, lambda: H(2)*2.)
-    assert H(3)*"test" == "testtesttest"
+    assert F(1) * 2 == 2
+    assert raises(UnavailableSignatureError, lambda: G(1) * 2)
+    assert G(2) * 2. == 4.
+    assert raises(UnavailableSignatureError, lambda: G(3) * "test")
+    assert raises(UnavailableSignatureError, lambda: H(1) * 2)
+    assert raises(UnavailableSignatureError, lambda: H(2) * 2.)
+    assert H(3) * "test" == "testtesttest"
 
 # Test class with lambda inputs and overrides of a non-dispatched parent method
 def test_method_lambda_function_overrides_non_dispatched_parent_method():
@@ -1154,28 +1154,28 @@ def test_method_lambda_function_overrides_non_dispatched_parent_method():
             self.arg = arg
 
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
     class B(A):
         Type = int
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return 2*self.arg*other
+            return 2 * self.arg * other
 
     class C(A):
         Type = object
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return 2*self.arg*other
+            return 2 * self.arg * other
 
-    assert A(1)*2 == 2
-    assert A(3)*"test" == "testtesttest"
-    assert B(1)*2 == 4
-    assert B(3)*"test" == "testtesttest"
-    assert C(1)*2 == 4
-    assert C(3)*"test" == "testtesttesttesttesttest"
+    assert A(1) * 2 == 2
+    assert A(3) * "test" == "testtesttest"
+    assert B(1) * 2 == 4
+    assert B(3) * "test" == "testtesttest"
+    assert C(1) * 2 == 4
+    assert C(3) * "test" == "testtesttesttesttesttest"
 
 # Test class with lambda inputs and overrides of a non-lambda parent dispatched method
 def test_method_lambda_function_overrides_non_lambda_parent_dispatched_method():
@@ -1185,17 +1185,17 @@ def test_method_lambda_function_overrides_non_lambda_parent_dispatched_method():
 
         @dispatch(int)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
     class B(A):
         Type = int
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return 2*self.arg*other
+            return 2 * self.arg * other
 
-    assert A(1)*2 == 2
-    assert B(1)*2 == 4
+    assert A(1) * 2 == 2
+    assert B(1) * 2 == 4
 
 # Test class with lambda inputs which is overriden by a non-lambda parent dispatched method
 def test_method_lambda_function_overriden_by_non_lambda_parent_dispatched_method():
@@ -1207,15 +1207,15 @@ def test_method_lambda_function_overriden_by_non_lambda_parent_dispatched_method
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
     class B(A):
         @dispatch(int)
         def __mul__(self, other):
-            return 2*self.arg*other
+            return 2 * self.arg * other
 
-    assert A(1)*2 == 2
-    assert B(1)*2 == 4
+    assert A(1) * 2 == 2
+    assert B(1) * 2 == 4
 
 # Test class with lambda inputs and overrides of a lambda parent dispatched method
 def test_method_lambda_function_overrides_lambda_parent_dispatched_method():
@@ -1227,17 +1227,17 @@ def test_method_lambda_function_overrides_lambda_parent_dispatched_method():
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
     class B(A):
         Type = int
 
         @dispatch(lambda cls: cls.Type)
         def __mul__(self, other):
-            return 2*self.arg*other
+            return 2 * self.arg * other
 
-    assert A(1)*2 == 2
-    assert B(1)*2 == 4
+    assert A(1) * 2 == 2
+    assert B(1) * 2 == 4
 
 # Test overload decorator
 def test_overload_decorator():
@@ -1249,19 +1249,19 @@ def test_overload_decorator():
 
         @overload(int)
         def __mul__(self, other):
-            return self.arg*other
+            return self.arg * other
 
         @overload
         def __mul__(self, other: float):
-            return 2.*self.arg*other
+            return 2. * self.arg * other
 
         @overload(lambda cls: cls.Type3)
         def __mul__(self, other):
             return other[0] + "*" + str(self.arg)
 
-    assert F(1)*2 == 2
-    assert F(1)*2. == 4.
-    assert F(1)*"test" == "t*1"
+    assert F(1) * 2 == 2
+    assert F(1) * 2. == 4.
+    assert F(1) * "test" == "t*1"
 
 # Test None arguments
 def test_None_arguments():

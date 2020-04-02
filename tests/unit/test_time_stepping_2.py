@@ -32,12 +32,12 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
     from rbnics.backends.dolfin import TimeStepping
 
     # Create mesh and define function space
-    mesh = IntervalMesh(132, 0, 2*pi)
+    mesh = IntervalMesh(132, 0, 2 * pi)
     V = FunctionSpace(mesh, "Lagrange", 1)
 
     # Define Dirichlet boundary (x = 0 or x = 2*pi)
     def boundary(x):
-        return x[0] < 0 + DOLFIN_EPS or x[0] > 2*pi - 10*DOLFIN_EPS
+        return x[0] < 0 + DOLFIN_EPS or x[0] > 2 * pi - 10 * DOLFIN_EPS
 
     # Define time step
     dt = 0.01
@@ -62,13 +62,14 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
     v = TestFunction(V)
     u = Function(V)
     u_dot = Function(V)
-    g = Expression("5./4.*sin(t+x[0])-3./4.*sin(3*(t+x[0]))+cos(t+x[0])", t=0., element=V.ufl_element())
-    r_u = inner((1+u**2)*grad(u), grad(v))*dx
+    g = Expression("5. / 4. * sin(t + x[0]) - 3. / 4. * sin(3 * (t + x[0])) + cos(t + x[0])", t=0.,
+                   element=V.ufl_element())
+    r_u = inner((1 + u**2) * grad(u), grad(v)) * dx
     j_u = derivative(r_u, u, du)
-    r_u_dot = inner(u_dot, v)*dx
+    r_u_dot = inner(u_dot, v) * dx
     j_u_dot = derivative(r_u_dot, u_dot, du_dot)
-    r = r_u_dot + r_u - g*v*dx
-    x = inner(du, v)*dx
+    r = r_u_dot + r_u - g * v * dx
+    x = inner(du, v) * dx
     def bc(t):
         exact_solution_expression.t = t
         return [DirichletBC(V, exact_solution_expression, boundary)]
@@ -92,7 +93,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
             g.t = t
             return callback(r)
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
-            return callback(Constant(solution_dot_coefficient)*j_u_dot + j_u)
+            return callback(Constant(solution_dot_coefficient) * j_u_dot + j_u)
 
         # Define boundary condition
         def bc_eval(self, t):
@@ -105,7 +106,7 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
 
         # Define custom monitor to plot the solution
         def monitor(self, t, solution, solution_dot):
-            assert isclose(round(t/monitor_dt), t/monitor_dt)
+            assert isclose(round(t / monitor_dt), t / monitor_dt)
             if matplotlib.get_backend() != "agg":
                 plt.subplot(1, 2, 1).clear()
                 plot(solution, title="u at t = " + str(t))
@@ -145,12 +146,12 @@ def _test_time_stepping_2_sparse(callback_type, integrator_type):
     error.vector().add_local(+ solution.vector().get_local())
     error.vector().add_local(- exact_solution.vector().get_local())
     error.vector().apply("")
-    error_norm = error.vector().inner(X*error.vector())
+    error_norm = error.vector().inner(X * error.vector())
     error_dot = Function(V)
     error_dot.vector().add_local(+ solution_dot.vector().get_local())
     error_dot.vector().add_local(- exact_solution_dot.vector().get_local())
     error_dot.vector().apply("")
-    error_dot_norm = error_dot.vector().inner(X*error_dot.vector())
+    error_dot_norm = error_dot.vector().inner(X * error_dot.vector())
     print("Sparse error (" + callback_type + ", " + integrator_type + "):", error_norm, error_dot_norm)
     assert isclose(error_norm, 0., atol=1.e-4)
     assert isclose(error_dot_norm, 0., atol=1.e-4)
@@ -165,7 +166,7 @@ def _test_time_stepping_2_dense(
 
     x_to_dof = dict(zip(V.tabulate_dof_coordinates().flatten(), V.dofmap().dofs()))
     dof_0 = x_to_dof[0.]
-    dof_2pi = x_to_dof[2*pi]
+    dof_2pi = x_to_dof[2 * pi]
     min_dof_0_2pi = min(dof_0, dof_2pi)
     max_dof_0_2pi = max(dof_0, dof_2pi)
 
@@ -188,7 +189,7 @@ def _test_time_stepping_2_dense(
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             self._solution_from_dense_to_sparse(solution, u)
             self._solution_from_dense_to_sparse(solution_dot, u_dot)
-            jacobian_array = assemble(Constant(solution_dot_coefficient)*j_u_dot + j_u).array()
+            jacobian_array = assemble(Constant(solution_dot_coefficient) * j_u_dot + j_u).array()
             jacobian_array[[0, 1, min_dof_0_2pi, max_dof_0_2pi], :] = jacobian_array[
                 [min_dof_0_2pi, max_dof_0_2pi, 0, 1], :]
             jacobian_array[:, [0, 1, min_dof_0_2pi, max_dof_0_2pi]] = jacobian_array[
@@ -213,7 +214,7 @@ def _test_time_stepping_2_dense(
 
         # Define custom monitor to plot the solution
         def monitor(self, t, solution, solution_dot):
-            assert isclose(round(t/monitor_dt), t/monitor_dt)
+            assert isclose(round(t / monitor_dt), t / monitor_dt)
             if matplotlib.get_backend() != "agg":
                 self._solution_from_dense_to_sparse(solution, u)
                 self._solution_from_dense_to_sparse(solution_dot, u_dot)

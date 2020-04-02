@@ -151,7 +151,7 @@ class EIMApproximation(ParametrizedProblem):
 
         # Compute the error (difference with the eim approximation)
         if N > 0:
-            error = self.snapshot - self.basis_functions[:N]*self._interpolation_coefficients
+            error = self.snapshot - self.basis_functions[:N] * self._interpolation_coefficients
         else:
             error = copy(self.snapshot) # need a copy because it will be rescaled
 
@@ -165,7 +165,7 @@ class EIMApproximation(ParametrizedProblem):
         (absolute_error, maximum_absolute_error, maximum_location) = self.compute_maximum_interpolation_error(N)
         (maximum_snapshot_value, _) = max(abs(self.snapshot))
         if maximum_snapshot_value != 0.:
-            return (absolute_error/maximum_snapshot_value, maximum_absolute_error/maximum_snapshot_value,
+            return (absolute_error / maximum_snapshot_value, maximum_absolute_error / maximum_snapshot_value,
                     maximum_location)
         else:
             if maximum_absolute_error == 0.:

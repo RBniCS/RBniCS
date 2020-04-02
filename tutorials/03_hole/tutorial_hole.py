@@ -46,14 +46,14 @@ class Hole(EllipticCoerciveProblem):
         dx = self.dx
         ds = self.ds
         if term == "a":
-            a0 = inner(grad(u), grad(v))*dx
-            a1 = inner(u, v)*ds(5) + inner(u, v)*ds(6) + inner(u, v)*ds(7) + inner(u, v)*ds(8)
+            a0 = inner(grad(u), grad(v)) * dx
+            a1 = inner(u, v) * ds(5) + inner(u, v) * ds(6) + inner(u, v) * ds(7) + inner(u, v) * ds(8)
             return (a0, a1)
         elif term == "f":
-            f0 = v*ds(1) + v*ds(2) + v*ds(3) + v*ds(4)
+            f0 = v * ds(1) + v * ds(2) + v * ds(3) + v * ds(4)
             return (f0, )
         elif term == "inner_product":
-            x0 = u*v*dx + inner(grad(u), grad(v))*dx
+            x0 = u * v * dx + inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

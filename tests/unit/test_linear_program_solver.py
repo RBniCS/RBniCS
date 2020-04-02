@@ -24,7 +24,7 @@ def test_linear_program_solver():
     c = Vector(2)
     A = Matrix(2, 2)
     b = Vector(2)
-    bounds = [None]*2
+    bounds = [None] * 2
 
     c[0], c[1] = 0.5, 1.
     A[0, 0], A[0, 1] = 1., 1.

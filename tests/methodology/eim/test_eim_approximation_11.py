@@ -45,11 +45,11 @@ def test_eim_approximation_11(expression_type, basis_generation):
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (1., ))
-            self.f = (1-x[0])*cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))
+            self.f = (1 - x[0]) * cos(3 * pi * mu[0] * (1 + x[0])) * exp(- mu[0] * (1 + x[0]))
             # Inner product
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
-            self.inner_product = assemble(f*g*dx)
+            self.inner_product = assemble(f * g * dx)
 
         def name(self):
             return "MockProblem_11_" + expression_type + "_" + basis_generation
@@ -130,7 +130,7 @@ def test_eim_approximation_11(expression_type, basis_generation):
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             f = self.truth_problem.solve()
-            f_N = transpose(self.basis_functions)*self.truth_problem.inner_product*f
+            f_N = transpose(self.basis_functions) * self.truth_problem.inner_product * f
             # Return the reduced solution
             self._solution = OnlineFunction(f_N)
             delattr(self, "_is_solving")
@@ -149,14 +149,14 @@ def test_eim_approximation_11(expression_type, basis_generation):
                     basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(self.V)
-                form = truth_problem._solution*v*dx
+                form = truth_problem._solution * v * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(self.V)
                 v = TestFunction(self.V)
-                form = truth_problem._solution*u*v*dx
+                form = truth_problem._solution * u * v * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)

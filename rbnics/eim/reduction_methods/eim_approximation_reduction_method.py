@@ -191,7 +191,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     # Update basis (greedy version)
     def update_basis_greedy(self, error, maximum_error):
         if abs(maximum_error) > 0.:
-            self.EIM_approximation.basis_functions.enrich(error/maximum_error)
+            self.EIM_approximation.basis_functions.enrich(error / maximum_error)
         else:
             # Trivial case, greedy will stop at the first iteration
             assert self.EIM_approximation.N == 0
@@ -270,7 +270,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         self.greedy_errors.append(error_max)
         self.greedy_errors.save(self.folder["post_processing"], "error_max")
         if abs(self.greedy_errors[0]) > 0.:
-            return (abs(error_max), abs(error_max/self.greedy_errors[0]))
+            return (abs(error_max), abs(error_max / self.greedy_errors[0]))
         else:
             # Trivial case, greedy should stop after one iteration after having store a zero basis function
             assert len(self.greedy_errors) in (1, 2)
@@ -410,7 +410,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
                 EIM_timer.start()
                 self.EIM_approximation.solve(n)
                 elapsed_EIM = EIM_timer.stop()
-                speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate/elapsed_EIM
+                speedup_analysis_table["speedup", n, mu_index] = elapsed_evaluate / elapsed_EIM
 
         # Print
         print("")

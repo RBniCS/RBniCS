@@ -76,30 +76,30 @@ class NavierStokes(NavierStokesProblem):
         if term == "a":
             u = self.du
             v = self.v
-            a0 = inner(grad(u) + transpose(grad(u)), grad(v))*dx
+            a0 = inner(grad(u) + transpose(grad(u)), grad(v)) * dx
             return (a0,)
         elif term == "b":
             u = self.du
             q = self.q
-            b0 = - q*div(u)*dx
+            b0 = - q * div(u) * dx
             return (b0,)
         elif term == "bt":
             p = self.dp
             v = self.v
-            bt0 = - p*div(v)*dx
+            bt0 = - p * div(v) * dx
             return (bt0,)
         elif term == "c":
             u = self.u
             v = self.v
-            c0 = inner(grad(u)*u, v)*dx
+            c0 = inner(grad(u) * u, v) * dx
             return (c0,)
         elif term == "f":
             v = self.v
-            f0 = inner(self.f, v)*dx
+            f0 = inner(self.f, v) * dx
             return (f0,)
         elif term == "g":
             q = self.q
-            g0 = self.g*q*dx
+            g0 = self.g * q * dx
             return (g0,)
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), self.inlet, self.boundaries, 1),
@@ -108,12 +108,12 @@ class NavierStokes(NavierStokesProblem):
         elif term == "inner_product_u":
             u = self.du
             v = self.v
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.dp
             q = self.q
-            x0 = inner(p, q)*dx
+            x0 = inner(p, q) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

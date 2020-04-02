@@ -45,15 +45,15 @@ class Geostrophic(GeostrophicProblem):
         if term == "a":
             psi = self.psi
             q = self.q
-            a1 = inner(psi.dx(0), p)*dx
-            a2 = inner(q, p)*dx
-            a3 = inner(grad(q), grad(p))*dx
-            a4 = inner(q, phi)*dx
-            a5 = inner(grad(psi), grad(phi))*dx
-            return (a1, a2, a3, a4, a5,)
+            a1 = inner(psi.dx(0), p) * dx
+            a2 = inner(q, p) * dx
+            a3 = inner(grad(q), grad(p)) * dx
+            a4 = inner(q, phi) * dx
+            a5 = inner(grad(psi), grad(phi)) * dx
+            return (a1, a2, a3, a4, a5)
         elif term == "f":
             f = self.f
-            f0 = inner(f, p)*dx
+            f0 = inner(f, p) * dx
             return (f0,)
         elif term == "dirichlet_bc_psi":
             bc0 = [DirichletBC(W.sub(0), Constant(0.0), boundaries, idx) for idx in [1, 2, 3, 4]]
@@ -64,12 +64,12 @@ class Geostrophic(GeostrophicProblem):
         elif term == "inner_product_psi":
             psi = self.psi
             phi = self.phi
-            x0 = inner(grad(phi), grad(psi))*dx
+            x0 = inner(grad(phi), grad(psi)) * dx
             return (x0,)
         elif term == "inner_product_q":
             q = self.q
             p = self.p
-            x0 = inner(grad(p), grad(q))*dx
+            x0 = inner(grad(p), grad(q)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -99,7 +99,7 @@ pod_galerkin_method.initialize_training_set(100, sampling=LogUniformDistribution
 reduced_geostrophic_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
-online_mu = (1e-4, (7e4/1e6)**3)
+online_mu = (1e-4, (7e4 / 1e6)**3)
 reduced_geostrophic_problem.set_mu(online_mu)
 reduced_geostrophic_problem.solve()
 reduced_geostrophic_problem.export_solution(filename="online_solution")

@@ -51,10 +51,10 @@ def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_
                 else:
                     raise ValueError("Invalid value for order of term " + term)
             self._output = (
-                0.5*(transpose(self._solution)*assembled_operator["m"]*self._solution) +
-                0.5*(transpose(self._solution)*assembled_operator["n"]*self._solution) -
-                transpose(assembled_operator["g"])*self._solution +
-                0.5*assembled_operator["h"]
+                0.5 * (transpose(self._solution) * assembled_operator["m"] * self._solution)
+                + 0.5 * (transpose(self._solution) * assembled_operator["n"] * self._solution)
+                - transpose(assembled_operator["g"]) * self._solution
+                + 0.5 * assembled_operator["h"]
             )
 
         # If a value of N was provided, make sure to double it when dealing with y and p, due to

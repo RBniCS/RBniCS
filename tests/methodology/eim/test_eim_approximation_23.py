@@ -44,17 +44,17 @@ def test_eim_approximation_23(expression_type, basis_generation):
             if expression_type == "Function":
                 # Call Parent constructor
                 EIMApproximation.__init__(
-                    self, mock_problem, ParametrizedExpressionFactory(f*g), folder_prefix, basis_generation)
+                    self, mock_problem, ParametrizedExpressionFactory(f * g), folder_prefix, basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(V)
-                form = f*g*v*dx
+                form = f * g * v * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(V)
                 v = TestFunction(V)
-                form = f*g*u*v*dx
+                form = f * g * u * v * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)

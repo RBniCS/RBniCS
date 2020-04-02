@@ -61,25 +61,25 @@ class WeightedThermalBlock(EllipticCoerciveCompliantProblem):
         dx = self.dx
         if term == "a":
             u = self.u
-            a0 = inner(grad(u), grad(v))*dx(1)
-            a1 = inner(grad(u), grad(v))*dx(2)
-            a2 = inner(grad(u), grad(v))*dx(3)
-            a3 = inner(grad(u), grad(v))*dx(4)
-            a4 = inner(grad(u), grad(v))*dx(5)
-            a5 = inner(grad(u), grad(v))*dx(6)
-            a6 = inner(grad(u), grad(v))*dx(7)
-            a7 = inner(grad(u), grad(v))*dx(8)
-            a8 = inner(grad(u), grad(v))*dx(9)
+            a0 = inner(grad(u), grad(v)) * dx(1)
+            a1 = inner(grad(u), grad(v)) * dx(2)
+            a2 = inner(grad(u), grad(v)) * dx(3)
+            a3 = inner(grad(u), grad(v)) * dx(4)
+            a4 = inner(grad(u), grad(v)) * dx(5)
+            a5 = inner(grad(u), grad(v)) * dx(6)
+            a6 = inner(grad(u), grad(v)) * dx(7)
+            a7 = inner(grad(u), grad(v)) * dx(8)
+            a8 = inner(grad(u), grad(v)) * dx(9)
             return (a0, a1, a2, a3, a4, a5, a6, a7, a8)
         elif term == "f":
-            f0 = v*dx
+            f0 = v * dx
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, i) for i in range(1, 7)]
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

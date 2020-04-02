@@ -40,7 +40,7 @@ class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
         # Define inner product for POD
         f = TrialFunction(space)
         g = TestFunction(space)
-        inner_product = assemble(inner(f, g)*dx)
+        inner_product = assemble(inner(f, g) * dx)
         # Call Parent
         ParametrizedExpressionFactory_Base.__init__(self, expression, space, inner_product)
 

@@ -48,7 +48,7 @@ class DelayedLinearSolver(object):
             if len(addend._args) == 2:
                 operators.append(addend._args[1])
             elif len(addend._args) == 3:
-                operators.append(addend._args[1]*addend._args[2])
+                operators.append(addend._args[1] * addend._args[2])
             else:
                 raise ValueError("Invalid addend")
         thetas = tuple(thetas)

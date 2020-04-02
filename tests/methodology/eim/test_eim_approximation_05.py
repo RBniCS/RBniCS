@@ -52,7 +52,7 @@ def test_eim_approximation_05(expression_type, basis_generation):
             if expression_type == "Vector":
                 vq = TestFunction(V)
                 (v, q) = split(vq)
-                form = f1*v[0]*dx + f2*v[1]*dx + f3*q*dx
+                form = f1 * v[0] * dx + f2 * v[1] * dx + f3 * q * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
@@ -61,7 +61,7 @@ def test_eim_approximation_05(expression_type, basis_generation):
                 vq = TestFunction(V)
                 (u, p) = split(up)
                 (v, q) = split(vq)
-                form = f1*inner(grad(u), grad(v))*dx + f2*p*div(v)*dx + f3*q*div(u)*dx
+                form = f1 * inner(grad(u), grad(v)) * dx + f2 * p * div(v) * dx + f3 * q * div(u) * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, mock_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)

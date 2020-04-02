@@ -92,7 +92,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                         assert term in kwarg_DEIM, "Please provide a value for term " + str(term)
                         assert isinstance(kwarg_DEIM[term], (int, tuple))
                         if isinstance(kwarg_DEIM[term], int):
-                            kwarg_DEIM[term] = [kwarg_DEIM[term]]*len(self.DEIM_reductions[term])
+                            kwarg_DEIM[term] = [kwarg_DEIM[term]] * len(self.DEIM_reductions[term])
                         else:
                             assert max(self.DEIM_reductions[term].keys()) == len(kwarg_DEIM[term]) - 1
                         for (q, DEIM_reductions_term_q) in self.DEIM_reductions[term].items():

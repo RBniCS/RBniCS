@@ -128,7 +128,7 @@ def ParametrizedTensorFactory(backend, wrapping):
 
         @overload(backend.Function.Type())
         def __mul__(self, other):
-            form_mul = self._form*other
+            form_mul = self._form * other
             output = _ParametrizedTensorFactory.__new__(type(self), form_mul)
             output.__init__(form_mul)
             # Set corresponding problem
@@ -151,11 +151,11 @@ def ParametrizedTensorFactory(backend, wrapping):
 
         @overload(Number)
         def __mul__(self, other):
-            return other*self
+            return other * self
 
         @overload(Number)
         def __rmul__(self, other):
-            form_mul = other*self._form
+            form_mul = other * self._form
             output = _ParametrizedTensorFactory.__new__(type(self), form_mul)
             output.__init__(form_mul)
             # Set corresponding problem
@@ -170,7 +170,7 @@ def ParametrizedTensorFactory(backend, wrapping):
             return output
 
         def __neg__(self):
-            return -1.*self
+            return -1. * self
 
         @staticmethod
         def _hash_name(string):

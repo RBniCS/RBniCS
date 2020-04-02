@@ -61,7 +61,7 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
                     # Print some additional information on the consistency of the reduced basis
                     print("absolute error for current mu =", self.reduced_problem.compute_error())
                     print("absolute (weighted) error estimator for current mu =",
-                          weight(self.truth_problem.mu)*self.reduced_problem.estimate_error())
+                          weight(self.truth_problem.mu) * self.reduced_problem.estimate_error())
                     print("absolute non-weighted error estimator for current mu =",
                           self.reduced_problem.estimate_error())
 
@@ -70,7 +70,7 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
                     self.reduced_problem.set_mu(mu)
                     self.reduced_problem.solve()
                     error_estimator = self.reduced_problem.estimate_error()
-                    weighted_error_estimator = weight(mu)*error_estimator
+                    weighted_error_estimator = weight(mu) * error_estimator
                     logger.log(DEBUG, "(Weighted) error estimator for mu = " + str(mu) + " is "
                                + str(weighted_error_estimator))
                     logger.log(DEBUG, "Non-weighted error estimator for mu = " + str(mu) + " is "

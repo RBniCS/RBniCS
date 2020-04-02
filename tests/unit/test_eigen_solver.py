@@ -43,8 +43,8 @@ def _test_eigen_solver_sparse(callback_type):
     (v, q) = split(vq)
     up = TrialFunction(W)
     (u, p) = split(up)
-    lhs = inner(grad(u), grad(v))*dx - div(v)*p*dx - div(u)*q*dx
-    rhs = - inner(p, q)*dx
+    lhs = inner(grad(u), grad(v)) * dx - div(v) * p * dx - div(u) * q * dx
+    rhs = - inner(p, q) * dx
 
     # Define boundary condition
     bc = [DirichletBC(W.sub(0), Constant((0., 0.)), boundaries, 1)]

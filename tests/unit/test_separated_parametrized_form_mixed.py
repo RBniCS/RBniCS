@@ -82,8 +82,8 @@ skip_in_parallel = pytest.mark.skipif(MPI.COMM_WORLD.size > 1, reason="Numbering
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="1")
 def test_separated_parametrized_forms_mixed_1():
-    a1 = (inner(expr3*grad(u), grad(v))*dx + inner(grad(u)*expr2, v)*dx + expr1*inner(u, v)*dx
-          - p*tr(expr4*grad(v))*dx - expr1*q*div(u)*dx - expr2[0]*p*q*dx)
+    a1 = (inner(expr3 * grad(u), grad(v)) * dx + inner(grad(u) * expr2, v) * dx + expr1 * inner(u, v) * dx
+          - p * tr(expr4 * grad(v)) * dx - expr1 * q * div(u) * dx - expr2[0] * p * q * dx)
     a1_sep = SeparatedParametrizedForm(a1)
     test_logger.log(DEBUG, "*** ###              FORM 1             ### ***")
     test_logger.log(DEBUG, "This is a basic mixed parametrized form, with all parametrized coefficients")
@@ -170,8 +170,8 @@ def test_separated_parametrized_forms_mixed_1():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="2", depends=["1"])
 def test_separated_parametrized_forms_mixed_2():
-    a2 = (inner(expr3*expr4*grad(u), grad(v))*dx + inner(grad(u)*expr2, v)*dx + expr1*inner(u, v)*dx
-          - p*tr(expr4*grad(v))*dx - expr1*q*div(u)*dx - expr2[0]*p*q*dx)
+    a2 = (inner(expr3 * expr4 * grad(u), grad(v)) * dx + inner(grad(u) * expr2, v) * dx + expr1 * inner(u, v) * dx
+          - p * tr(expr4 * grad(v)) * dx - expr1 * q * div(u) * dx - expr2[0] * p * q * dx)
     a2_sep = SeparatedParametrizedForm(a2)
     test_logger.log(DEBUG, "*** ###              FORM 2             ### ***")
     test_logger.log(DEBUG, "In this case the diffusivity tensor is given by the product of two expressions")
@@ -259,8 +259,8 @@ def test_separated_parametrized_forms_mixed_2():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="3", depends=["2"])
 def test_separated_parametrized_forms_mixed_3():
-    a3 = (inner(det(expr3)*(expr4 + expr3*expr3)*expr1*grad(u), grad(v))*dx + inner(grad(u)*expr2, v)*dx
-          + expr1*inner(u, v)*dx - p*tr(expr4*grad(v))*dx - expr1*q*div(u)*dx - expr2[0]*p*q*dx)
+    a3 = (inner(det(expr3) * (expr4 + expr3 * expr3) * expr1 * grad(u), grad(v)) * dx + inner(grad(u) * expr2, v) * dx
+          + expr1 * inner(u, v) * dx - p * tr(expr4 * grad(v)) * dx - expr1 * q * div(u) * dx - expr2[0] * p * q * dx)
     a3_sep = SeparatedParametrizedForm(a3)
     test_logger.log(DEBUG, "*** ###              FORM 3             ### ***")
     test_logger.log(DEBUG, "We try now with a more complex expression of for each coefficient")
@@ -394,8 +394,8 @@ def test_separated_parametrized_forms_mixed_3():
 @pytest.mark.dependency(name="4", depends=["3"])
 def test_separated_parametrized_forms_mixed_4():
     h = CellDiameter(mesh)
-    a4 = (inner(expr3*h*grad(u), grad(v))*dx + inner(grad(u)*expr2*h, v)*dx + expr1*h*inner(u, v)*dx
-          - p*tr(expr4*h*grad(v))*dx - expr1*h*q*div(u)*dx - expr2[0]*h*p*q*dx)
+    a4 = (inner(expr3 * h * grad(u), grad(v)) * dx + inner(grad(u) * expr2 * h, v) * dx + expr1 * h * inner(u, v) * dx
+          - p * tr(expr4 * h * grad(v)) * dx - expr1 * h * q * div(u) * dx - expr2[0] * h * p * q * dx)
     a4_sep = SeparatedParametrizedForm(a4)
     test_logger.log(DEBUG, "*** ###              FORM 4             ### ***")
     test_logger.log(DEBUG, "We add a term depending on the mesh size. The extracted coefficients may retain"
@@ -485,8 +485,9 @@ def test_separated_parametrized_forms_mixed_4():
 @pytest.mark.dependency(name="5", depends=["4"])
 def test_separated_parametrized_forms_mixed_5():
     h = CellDiameter(mesh)
-    a5 = (inner((expr3*h)*grad(u), grad(v))*dx + inner(grad(u)*(expr2*h), v)*dx + (expr1*h)*inner(u, v)*dx
-          - p*tr((expr4*h)*grad(v))*dx - (expr1*h)*q*div(u)*dx - (expr2[0]*h)*p*q*dx)
+    a5 = (inner((expr3 * h) * grad(u), grad(v)) * dx + inner(grad(u) * (expr2 * h), v) * dx
+          + (expr1 * h) * inner(u, v) * dx - p * tr((expr4 * h) * grad(v)) * dx - (expr1 * h) * q * div(u) * dx
+          - (expr2[0] * h) * p * q * dx)
     a5_sep = SeparatedParametrizedForm(a5)
     test_logger.log(DEBUG, "*** ###              FORM 5             ### ***")
     test_logger.log(DEBUG, "Starting from form 4, use parenthesis to make sure that the extracted coefficients"
@@ -575,8 +576,8 @@ def test_separated_parametrized_forms_mixed_5():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="6", depends=["5"])
 def test_separated_parametrized_forms_mixed_6():
-    a6 = (inner(expr7*grad(u), grad(v))*dx + inner(grad(u)*expr6, v)*dx + expr5*inner(u, v)*dx
-          - p*tr(expr7*grad(v))*dx - expr5*q*div(u)*dx - expr6[0]*p*q*dx)
+    a6 = (inner(expr7 * grad(u), grad(v)) * dx + inner(grad(u) * expr6, v) * dx + expr5 * inner(u, v) * dx
+          - p * tr(expr7 * grad(v)) * dx - expr5 * q * div(u) * dx - expr6[0] * p * q * dx)
     a6_sep = SeparatedParametrizedForm(a6)
     test_logger.log(DEBUG, "*** ###              FORM 6             ### ***")
     test_logger.log(DEBUG, "We change the coefficients to be non-parametrized. No (parametrized) coefficients"
@@ -622,8 +623,8 @@ def test_separated_parametrized_forms_mixed_6():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="7", depends=["6"])
 def test_separated_parametrized_forms_mixed_7():
-    a7 = (inner(expr7*(expr3*expr4)*grad(u), grad(v))*dx + inner(grad(u)*expr6, v)*dx + expr5*inner(u, v)*dx
-          - p*tr(expr7*grad(v))*dx - expr5*q*div(u)*dx - expr6[0]*p*q*dx)
+    a7 = (inner(expr7 * (expr3 * expr4) * grad(u), grad(v)) * dx + inner(grad(u) * expr6, v) * dx
+          + expr5 * inner(u, v) * dx - p * tr(expr7 * grad(v)) * dx - expr5 * q * div(u) * dx - expr6[0] * p * q * dx)
     a7_sep = SeparatedParametrizedForm(a7)
     test_logger.log(DEBUG, "*** ###              FORM 7             ### ***")
     test_logger.log(DEBUG, "A part of the diffusion coefficient is parametrized (the others are not). "
@@ -685,8 +686,8 @@ def test_separated_parametrized_forms_mixed_7():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="8", depends=["7"])
 def test_separated_parametrized_forms_mixed_8():
-    a8 = (inner(expr3*expr7*expr4*grad(u), grad(v))*dx + inner(grad(u)*expr6, v)*dx + expr5*inner(u, v)*dx
-          - p*tr(expr7*grad(v))*dx - expr5*q*div(u)*dx - expr6[0]*p*q*dx)
+    a8 = (inner(expr3 * expr7 * expr4 * grad(u), grad(v)) * dx + inner(grad(u) * expr6, v) * dx
+          + expr5 * inner(u, v) * dx - p * tr(expr7 * grad(v)) * dx - expr5 * q * div(u) * dx - expr6[0] * p * q * dx)
     a8_sep = SeparatedParametrizedForm(a8)
     test_logger.log(DEBUG, "*** ###              FORM 8             ### ***")
     test_logger.log(DEBUG, "This case is similar to form 7, but the order of the matrix multiplication is different."
@@ -749,8 +750,8 @@ def test_separated_parametrized_forms_mixed_8():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="9", depends=["8"])
 def test_separated_parametrized_forms_mixed_9():
-    a9 = (inner(expr9*(expr3*expr4)*grad(u), grad(v))*dx + inner(grad(u)*expr6, v)*dx + expr5*inner(u, v)*dx
-          - p*tr(expr7*grad(v))*dx - expr5*q*div(u)*dx - expr6[0]*p*q*dx)
+    a9 = (inner(expr9 * (expr3 * expr4) * grad(u), grad(v)) * dx + inner(grad(u) * expr6, v) * dx
+          + expr5 * inner(u, v) * dx - p * tr(expr7 * grad(v)) * dx - expr5 * q * div(u) * dx - expr6[0] * p * q * dx)
     a9_sep = SeparatedParametrizedForm(a9)
     test_logger.log(DEBUG, "*** ###              FORM 9             ### ***")
     test_logger.log(DEBUG, "This is similar to form 7, showing the trivial constants can be factored out")
@@ -811,8 +812,8 @@ def test_separated_parametrized_forms_mixed_9():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="10", depends=["9"])
 def test_separated_parametrized_forms_mixed_10():
-    a10 = (inner(expr3*expr9*expr4*grad(u), grad(v))*dx + inner(grad(u)*expr6, v)*dx + expr5*inner(u, v)*dx
-           - p*tr(expr7*grad(v))*dx - expr5*q*div(u)*dx - expr6[0]*p*q*dx)
+    a10 = (inner(expr3 * expr9 * expr4 * grad(u), grad(v)) * dx + inner(grad(u) * expr6, v) * dx
+           + expr5 * inner(u, v) * dx - p * tr(expr7 * grad(v)) * dx - expr5 * q * div(u) * dx - expr6[0] * p * q * dx)
     a10_sep = SeparatedParametrizedForm(a10)
     test_logger.log(DEBUG, "*** ###              FORM 10             ### ***")
     test_logger.log(DEBUG, "This is similar to form 8, showing a case where constants cannot be factored out")
@@ -873,8 +874,8 @@ def test_separated_parametrized_forms_mixed_10():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="11", depends=["10"])
 def test_separated_parametrized_forms_mixed_11():
-    a11 = (inner(expr12*grad(u), grad(v))*dx + inner(grad(u)*expr11, v)*dx + expr10*inner(u, v)*dx
-           - p*tr(expr12*grad(v))*dx - expr10*q*div(u)*dx - expr11[0]*p*q*dx)
+    a11 = (inner(expr12 * grad(u), grad(v)) * dx + inner(grad(u) * expr11, v) * dx + expr10 * inner(u, v) * dx
+           - p * tr(expr12 * grad(v)) * dx - expr10 * q * div(u) * dx - expr11[0] * p * q * dx)
     a11_sep = SeparatedParametrizedForm(a11)
     test_logger.log(DEBUG, "*** ###              FORM 11             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 1, but each term is multiplied by a Function,"
@@ -962,8 +963,8 @@ def test_separated_parametrized_forms_mixed_11():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="12", depends=["11"])
 def test_separated_parametrized_forms_mixed_12():
-    a12 = (expr13_split_0_split[0]*scalar_trial*scalar_test*dx
-           + expr13_split_0_split[1]*scalar_trial.dx(0)*scalar_test*dx)
+    a12 = (expr13_split_0_split[0] * scalar_trial * scalar_test * dx
+           + expr13_split_0_split[1] * scalar_trial.dx(0) * scalar_test * dx)
     a12_sep = SeparatedParametrizedForm(a12)
     test_logger.log(DEBUG, "*** ###              FORM 12             ### ***")
     test_logger.log(DEBUG, "Test usage of Indexed components of a Function (solution of a parametrized problem)"
@@ -1006,7 +1007,7 @@ def test_separated_parametrized_forms_mixed_12():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="13", depends=["12"])
 def test_separated_parametrized_forms_mixed_13():
-    a13 = inner(expr13_split[0], grad(scalar_trial))*scalar_test*dx
+    a13 = inner(expr13_split[0], grad(scalar_trial)) * scalar_test * dx
     a13_sep = SeparatedParametrizedForm(a13)
     test_logger.log(DEBUG, "*** ###              FORM 13             ### ***")
     test_logger.log(DEBUG, "Test usage of ListTensor components of a Function (solution of a parametrized problem)"
@@ -1042,8 +1043,8 @@ def test_separated_parametrized_forms_mixed_13():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="14", depends=["13"])
 def test_separated_parametrized_forms_mixed_14():
-    a14 = (inner(expr16*grad(u), grad(v))*dx + inner(grad(u)*expr15, v)*dx + expr14*inner(u, v)*dx
-           - p*tr(expr16*grad(v))*dx - expr14*q*div(u)*dx - expr15[0]*p*q*dx)
+    a14 = (inner(expr16 * grad(u), grad(v)) * dx + inner(grad(u) * expr15, v) * dx + expr14 * inner(u, v) * dx
+           - p * tr(expr16 * grad(v)) * dx - expr14 * q * div(u) * dx - expr15[0] * p * q * dx)
     a14_sep = SeparatedParametrizedForm(a14)
     test_logger.log(DEBUG, "*** ###              FORM 14             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 11, but each term is multiplied by a Function,"
@@ -1089,8 +1090,8 @@ def test_separated_parametrized_forms_mixed_14():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="15", depends=["14"])
 def test_separated_parametrized_forms_mixed_15():
-    a15 = (expr17_split_0_split[0]*scalar_trial*scalar_test*dx
-           + expr17_split_0_split[1]*scalar_trial.dx(0)*scalar_test*dx)
+    a15 = (expr17_split_0_split[0] * scalar_trial * scalar_test * dx
+           + expr17_split_0_split[1] * scalar_trial.dx(0) * scalar_test * dx)
     a15_sep = SeparatedParametrizedForm(a15)
     test_logger.log(DEBUG, "*** ###              FORM 15             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 12, except that Indexed is obtained using a Function"
@@ -1115,7 +1116,7 @@ def test_separated_parametrized_forms_mixed_15():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="16", depends=["15"])
 def test_separated_parametrized_forms_mixed_16():
-    a16 = inner(expr17_split[0], grad(scalar_trial))*scalar_test*dx
+    a16 = inner(expr17_split[0], grad(scalar_trial)) * scalar_test * dx
     a16_sep = SeparatedParametrizedForm(a16)
     test_logger.log(DEBUG, "*** ###              FORM 16             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 13, except that ListTensor is obtained using a Function"
@@ -1139,8 +1140,9 @@ def test_separated_parametrized_forms_mixed_16():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="17", depends=["16"])
 def test_separated_parametrized_forms_mixed_17():
-    a17 = (inner(grad(expr11)*grad(u), grad(v))*dx + inner(grad(u)*grad(expr10), v)*dx + expr10.dx(0)*inner(u, v)*dx
-           - p*tr(grad(expr11)*grad(v))*dx - div(expr11)*q*div(u)*dx - expr10.dx(1)*p*q*dx)
+    a17 = (inner(grad(expr11) * grad(u), grad(v)) * dx + inner(grad(u) * grad(expr10), v) * dx
+           + expr10.dx(0) * inner(u, v) * dx - p * tr(grad(expr11) * grad(v)) * dx - div(expr11) * q * div(u) * dx
+           - expr10.dx(1) * p * q * dx)
     a17_sep = SeparatedParametrizedForm(a17)
     test_logger.log(DEBUG, "*** ###              FORM 17             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 11, but each term is multiplied by the gradient/"
@@ -1228,8 +1230,8 @@ def test_separated_parametrized_forms_mixed_17():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="18", depends=["17"])
 def test_separated_parametrized_forms_mixed_18():
-    a18 = (inner(grad(expr13_split_0_split[0]), grad(scalar_trial))*scalar_test*dx
-           + expr13_split_0_split[1].dx(0)*scalar_trial.dx(0)*scalar_test*dx)
+    a18 = (inner(grad(expr13_split_0_split[0]), grad(scalar_trial)) * scalar_test * dx
+           + expr13_split_0_split[1].dx(0) * scalar_trial.dx(0) * scalar_test * dx)
     a18_sep = SeparatedParametrizedForm(a18)
     test_logger.log(DEBUG, "*** ###              FORM 18             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 12, but each term is multiplied by the gradient/"
@@ -1273,8 +1275,8 @@ def test_separated_parametrized_forms_mixed_18():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="19", depends=["18"])
 def test_separated_parametrized_forms_mixed_19():
-    a19 = (inner(grad(expr13_split[0])*grad(scalar_trial), grad(scalar_test))*dx
-           + inner(expr13_split[0].dx(0), grad(scalar_trial))*scalar_test*dx)
+    a19 = (inner(grad(expr13_split[0]) * grad(scalar_trial), grad(scalar_test)) * dx
+           + inner(expr13_split[0].dx(0), grad(scalar_trial)) * scalar_test * dx)
     a19_sep = SeparatedParametrizedForm(a19)
     test_logger.log(DEBUG, "*** ###              FORM 19             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 13, but each term is multiplied by the gradient/"
@@ -1322,8 +1324,9 @@ def test_separated_parametrized_forms_mixed_19():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="20", depends=["19"])
 def test_separated_parametrized_forms_mixed_20():
-    a20 = (inner(grad(expr15)*grad(u), grad(v))*dx + inner(grad(u)*grad(expr14), v)*dx + expr14.dx(0)*inner(u, v)*dx
-           - p*tr(grad(expr15)*grad(v))*dx - div(expr15)*q*div(u)*dx - expr14.dx(1)*p*q*dx)
+    a20 = (inner(grad(expr15) * grad(u), grad(v)) * dx + inner(grad(u) * grad(expr14), v) * dx
+           + expr14.dx(0) * inner(u, v) * dx - p * tr(grad(expr15) * grad(v)) * dx - div(expr15) * q * div(u) * dx
+           - expr14.dx(1) * p * q * dx)
     a20_sep = SeparatedParametrizedForm(a20)
     test_logger.log(DEBUG, "*** ###              FORM 20             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 14, but each term is multiplied by the gradient/"
@@ -1369,8 +1372,8 @@ def test_separated_parametrized_forms_mixed_20():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="21", depends=["20"])
 def test_separated_parametrized_forms_mixed_21():
-    a21 = (inner(grad(expr17_split_0_split[0]), grad(scalar_trial))*scalar_test*dx
-           + expr17_split_0_split[1].dx(0)*scalar_trial.dx(0)*scalar_test*dx)
+    a21 = (inner(grad(expr17_split_0_split[0]), grad(scalar_trial)) * scalar_test * dx
+           + expr17_split_0_split[1].dx(0) * scalar_trial.dx(0) * scalar_test * dx)
     a21_sep = SeparatedParametrizedForm(a21)
     test_logger.log(DEBUG, "*** ###              FORM 21             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 15, but each term is multiplied by the gradient/"
@@ -1396,8 +1399,8 @@ def test_separated_parametrized_forms_mixed_21():
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="22", depends=["21"])
 def test_separated_parametrized_forms_mixed_22():
-    a22 = (inner(grad(expr17_split[0])*grad(scalar_trial), grad(scalar_test))*dx
-           + inner(expr17_split[0].dx(0), grad(scalar_trial))*scalar_test*dx)
+    a22 = (inner(grad(expr17_split[0]) * grad(scalar_trial), grad(scalar_test)) * dx
+           + inner(expr17_split[0].dx(0), grad(scalar_trial)) * scalar_test * dx)
     a22_sep = SeparatedParametrizedForm(a22)
     test_logger.log(DEBUG, "*** ###              FORM 22             ### ***")
     test_logger.log(DEBUG, "This form is similar to form 16, but each term is multiplied by the gradient/"

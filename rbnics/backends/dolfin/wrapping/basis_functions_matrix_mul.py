@@ -21,7 +21,7 @@ def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matr
             i = 0
             for row_component_name in basis_functions_matrix._components_name:
                 for fun_i in basis_functions_matrix._components[row_component_name]:
-                    output_j.vector().add_local(fun_i.vector().get_local()*online_matrix[i, j])
+                    output_j.vector().add_local(fun_i.vector().get_local() * online_matrix[i, j])
                     i += 1
             output_j.vector().apply("add")
             output.enrich(output_j)
@@ -39,7 +39,7 @@ def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vect
         i = 0
         for component_name in basis_functions_matrix._components_name:
             for fun_i in basis_functions_matrix._components[component_name]:
-                output.vector().add_local(fun_i.vector().get_local()*online_vector[i])
+                output.vector().add_local(fun_i.vector().get_local() * online_vector[i])
                 i += 1
         output.vector().apply("add")
         return output

@@ -28,7 +28,7 @@ def EllipticReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
         # Perform an online evaluation of the output
         def _compute_output(self, N):
-            self._output = transpose(self._solution)*sum(product(self.compute_theta("s"), self.operator["s"][:N]))
+            self._output = transpose(self._solution) * sum(product(self.compute_theta("s"), self.operator["s"][:N]))
 
     # return value (a class) for the decorator
     return EllipticReducedProblem_Class

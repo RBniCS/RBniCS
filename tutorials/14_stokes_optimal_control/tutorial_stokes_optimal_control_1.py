@@ -47,7 +47,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
     def compute_theta(self, term):
         mu = self.mu
         if term in ("a", "a*"):
-            theta_a0 = self.nu*1.0
+            theta_a0 = self.nu * 1.0
             return (theta_a0,)
         elif term in ("b", "b*", "bt", "bt*"):
             theta_b0 = 1.0
@@ -59,7 +59,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             theta_m0 = 1.0
             return (theta_m0,)
         elif term == "n":
-            theta_n0 = self.alpha*1.0
+            theta_n0 = self.alpha * 1.0
             return (theta_n0,)
         elif term == "f":
             theta_f0 = - mu[1]
@@ -86,69 +86,69 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         if term == "a":
             v = self.v
             phi = self.phi
-            a0 = inner(grad(v), grad(phi))*dx
+            a0 = inner(grad(v), grad(phi)) * dx
             return (a0,)
         elif term == "a*":
             psi = self.psi
             w = self.w
-            as0 = inner(grad(w), grad(psi))*dx
+            as0 = inner(grad(w), grad(psi)) * dx
             return (as0,)
         elif term == "b":
             xi = self.xi
             v = self.v
-            b0 = -xi*div(v)*dx
+            b0 = - xi * div(v) * dx
             return (b0,)
         elif term == "bt":
             p = self.p
             phi = self.phi
-            bt0 = -p*div(phi)*dx
+            bt0 = - p * div(phi) * dx
             return (bt0,)
         elif term == "b*":
             pi = self.pi
             w = self.w
-            bs0 = -pi*div(w)*dx
+            bs0 = - pi * div(w) * dx
             return (bs0,)
         elif term == "bt*":
             q = self.q
             psi = self.psi
-            bts0 = -q*div(psi)*dx
+            bts0 = - q * div(psi) * dx
             return (bts0,)
         elif term == "c":
             u = self.u
             phi = self.phi
-            c0 = inner(u, phi)*dx
+            c0 = inner(u, phi) * dx
             return (c0,)
         elif term == "c*":
             tau = self.tau
             w = self.w
-            cs0 = inner(tau, w)*dx
+            cs0 = inner(tau, w) * dx
             return (cs0,)
         elif term == "m":
             v = self.v
             psi = self.psi
-            m0 = v[0]*psi[0]*dx
+            m0 = v[0] * psi[0] * dx
             return (m0,)
         elif term == "n":
             u = self.u
             tau = self.tau
-            n0 = inner(u, tau)*dx
+            n0 = inner(u, tau) * dx
             return (n0,)
         elif term == "f":
             phi = self.phi
-            f0 = phi[1]*dx
+            f0 = phi[1] * dx
             return (f0,)
         elif term == "g":
             psi = self.psi
             vx_d = self.vx_d
-            g0 = vx_d*psi[0]*dx
+            g0 = vx_d * psi[0] * dx
             return (g0,)
         elif term == "l":
             xi = self.xi
-            l0 = Constant(0.0)*xi*dx
+            l0 = Constant(0.0) * xi * dx
             return (l0,)
         elif term == "h":
             vx_d = self.vx_d
-            h0 = vx_d*vx_d*dx(domain=mesh)
+            h0 = vx_d * vx_d * dx(domain=mesh)
             return (h0,)
         elif term == "dirichlet_bc_v":
             bc0 = [DirichletBC(self.V.sub("v").sub(0), self.vx_d, self.boundaries, 1),
@@ -160,27 +160,27 @@ class StokesOptimalControl(StokesOptimalControlProblem):
         elif term == "inner_product_v":
             v = self.v
             psi = self.psi
-            x0 = inner(grad(v), grad(psi))*dx
+            x0 = inner(grad(v), grad(psi)) * dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
             pi = self.pi
-            x0 = p*pi*dx
+            x0 = p * pi * dx
             return (x0,)
         elif term == "inner_product_u":
             u = self.u
             tau = self.tau
-            x0 = inner(u, tau)*dx
+            x0 = inner(u, tau) * dx
             return (x0,)
         elif term == "inner_product_w":
             w = self.w
             phi = self.phi
-            x0 = inner(grad(w), grad(phi))*dx
+            x0 = inner(grad(w), grad(phi)) * dx
             return (x0,)
         elif term == "inner_product_q":
             q = self.q
             xi = self.xi
-            x0 = q*xi*dx
+            x0 = q * xi * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

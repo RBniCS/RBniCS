@@ -22,7 +22,7 @@ class TimeSeries(AbstractTimeSeries):
             time_interval, time_step_size = args
             self._time_interval = time_interval
             self._time_step_size = time_step_size
-        self._times = arange(self._time_interval[0], self._time_interval[1] + self._time_step_size/2.,
+        self._times = arange(self._time_interval[0], self._time_interval[1] + self._time_step_size / 2.,
                              self._time_step_size).tolist()
         self._list = list()
 
@@ -41,15 +41,15 @@ class TimeSeries(AbstractTimeSeries):
         if key.start is None:
             time_interval_0 = self._time_interval[0]
         else:
-            time_interval_0 = self._time_interval[0] + key.start*self._time_step_size
+            time_interval_0 = self._time_interval[0] + key.start * self._time_step_size
         if key.step is None:
             time_step_size = self._time_step_size
         else:
-            time_step_size = key.step*self._time_step_size
+            time_step_size = key.step * self._time_step_size
         if key.stop is None:
             time_interval_1 = self._time_interval[1]
         else:
-            time_interval_1 = self._time_interval[0] + (key.stop - 1)*self._time_step_size
+            time_interval_1 = self._time_interval[0] + (key.stop - 1) * self._time_step_size
         output = TimeSeries((time_interval_0, time_interval_1), time_step_size)
         output.extend(self._list[key])
         return output
@@ -57,8 +57,8 @@ class TimeSeries(AbstractTimeSeries):
     def at(self, time):
         assert time >= self._time_interval[0]
         assert time <= self._time_interval[1]
-        index = int(round(time/self._time_step_size))
-        assert isclose(index*self._time_step_size, time), (
+        index = int(round(time / self._time_step_size))
+        assert isclose(index * self._time_step_size, time), (
             "Requested time should be a multiple of discretization time step size")
         return self._list[index]
 

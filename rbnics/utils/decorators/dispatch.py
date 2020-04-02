@@ -288,7 +288,7 @@ class MethodDispatcher(Dispatcher):
                             lambda_funcs[parent_lambda_key_i] = parent_lambda_func_i
                 elif ismethod(parent_func) and not hasattr(parent_func, "__isabstractmethod__"):
                     add_to_standard_funcs = True
-                    parent_signature = (len(inspect.signature(parent_func).parameters) - 1)*(object, )
+                    parent_signature = (len(inspect.signature(parent_func).parameters) - 1) * (object, )
                     parent_standard_key = (parent_signature, parent_signature)
                     for standard_key in standard_funcs.keys():
                         if parent_standard_key == standard_funcs:
@@ -780,7 +780,7 @@ def remove_trailing_None(inputs):
 def powerset(types):
     if not isinstance(types, (list, tuple)):
         types = (types, )
-    return itertools.chain.from_iterable(itertools.combinations(types, r) for r in range(1, len(types)+1))
+    return itertools.chain.from_iterable(itertools.combinations(types, r) for r in range(1, len(types) + 1))
 
 # == Helper function to determine if function is a lambda function == #
 def islambda(arg):

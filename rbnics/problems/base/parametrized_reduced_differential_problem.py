@@ -183,7 +183,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             assert len(self.inner_product) == 1
             all_inner_products = (self.inner_product[0], )
         all_inner_products = OnlineAffineExpansionStorage(all_inner_products)
-        all_inner_products_thetas = (1.,)*len(all_inner_products)
+        all_inner_products_thetas = (1., ) * len(all_inner_products)
         return sum(product(all_inner_products_thetas, all_inner_products))
 
     def _combine_all_projection_inner_products(self):
@@ -199,7 +199,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             assert len(self.projection_inner_product) == 1
             all_projection_inner_products = (self.projection_inner_product[0], )
         all_projection_inner_products = OnlineAffineExpansionStorage(all_projection_inner_products)
-        all_projection_inner_products_thetas = (1.,)*len(all_projection_inner_products)
+        all_projection_inner_products_thetas = (1., ) * len(all_projection_inner_products)
         return sum(product(all_projection_inner_products_thetas, all_projection_inner_products))
 
     def _init_basis_functions(self, current_stage="online"):
@@ -297,12 +297,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             all_dirichlet_bcs_thetas = dict()
             for component in self.components:
                 if self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]:
-                    all_dirichlet_bcs_thetas[component] = (0,)*len(self.compute_theta("dirichlet_bc_" + component))
+                    all_dirichlet_bcs_thetas[component] = (0, ) * len(self.compute_theta("dirichlet_bc_" + component))
             if len(all_dirichlet_bcs_thetas) == 0:
                 all_dirichlet_bcs_thetas = None
         else:
             if self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous:
-                all_dirichlet_bcs_thetas = (0,)*len(self.compute_theta("dirichlet_bc"))
+                all_dirichlet_bcs_thetas = (0, ) * len(self.compute_theta("dirichlet_bc"))
             else:
                 all_dirichlet_bcs_thetas = None
         return all_dirichlet_bcs_thetas
@@ -488,7 +488,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Compute the error on the solution
         if len(components) > 0:
             N = self._solution.N
-            reduced_solution = self.basis_functions[:N]*self._solution
+            reduced_solution = self.basis_functions[:N] * self._solution
             truth_solution = self.truth_problem._solution
             error_function = truth_solution - reduced_solution
             for component in components:
@@ -624,7 +624,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         else: # Compute the relative error on the output
             truth_output = abs(self.truth_problem._output)
             if truth_output != 0.:
-                return absolute_error_output/truth_output
+                return absolute_error_output / truth_output
             else:
                 if absolute_error_output == 0.:
                     return 0.
@@ -644,11 +644,11 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if solution is None:
             solution = self._solution
         N = solution.N
-        self.truth_problem.export_solution(folder, filename, self.basis_functions[:N]*solution, component, suffix)
+        self.truth_problem.export_solution(folder, filename, self.basis_functions[:N] * solution, component, suffix)
 
     def export_error(self, folder=None, filename=None, component=None, suffix=None, **kwargs):
         self.truth_problem.solve(**kwargs)
-        reduced_solution = self.basis_functions[:self._solution.N]*self._solution
+        reduced_solution = self.basis_functions[:self._solution.N] * self._solution
         truth_solution = self.truth_problem._solution
         error_function = truth_solution - reduced_solution
         self.truth_problem.export_solution(folder, filename, error_function, component, suffix)

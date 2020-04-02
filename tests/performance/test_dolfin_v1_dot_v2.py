@@ -30,11 +30,11 @@ class Data(object):
         return v1.inner(v2)
 
     def evaluate_backend(self, v1, v2):
-        return transpose(v1)*v2
+        return transpose(v1) * v2
 
     def assert_backend(self, v1, v2, result_backend):
         result_builtin = self.evaluate_builtin(v1, v2)
-        relative_error = (result_builtin - result_backend)/result_builtin
+        relative_error = (result_builtin - result_backend) / result_builtin
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(1, 9)])

@@ -275,7 +275,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                                 if term == dirichlet_bc_string.format(c=component):
                                     theta_bc = standard_compute_theta(term)
                                     if self_.t == 0.:
-                                        return (0.,)*len(theta_bc)
+                                        return (0., ) * len(theta_bc)
                                     else:
                                         return theta_bc
                                 else:

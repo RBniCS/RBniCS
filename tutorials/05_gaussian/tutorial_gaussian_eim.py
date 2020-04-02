@@ -48,11 +48,11 @@ class Gaussian(EllipticCoerciveProblem):
         dx = self.dx
         if term == "a":
             u = self.u
-            a0 = inner(grad(u), grad(v))*dx
+            a0 = inner(grad(u), grad(v)) * dx
             return (a0,)
         elif term == "f":
             f = self.f
-            f0 = f*v*dx
+            f0 = f * v * dx
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(0.0), self.boundaries, 1),
@@ -61,7 +61,7 @@ class Gaussian(EllipticCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

@@ -21,4 +21,4 @@ class EllipticCoerciveCompliantProblem(EllipticCoerciveProblem):
 
     # Perform a truth evaluation of the compliant output
     def _compute_output(self):
-        self._output = transpose(self._solution)*sum(product(self.compute_theta("f"), self.operator["f"]))
+        self._output = transpose(self._solution) * sum(product(self.compute_theta("f"), self.operator["f"]))

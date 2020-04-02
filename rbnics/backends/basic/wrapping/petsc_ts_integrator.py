@@ -124,7 +124,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
         def solve(self):
             # Assert consistency of final time and time step size
             t0, dt, T = self.ts.getTime(), self.ts.getTimeStep(), self.ts.getMaxTime()
-            final_time_consistency = (T - t0)/dt
+            final_time_consistency = (T - t0) / dt
             assert isclose(round(final_time_consistency), final_time_consistency), (
                 "Final time should be occuring after an integer number of time steps")
             # Init monitor
@@ -169,19 +169,19 @@ def BasicPETScTSIntegrator(backend, wrapping):
                 self.t0, self.dt, self.T = self.ts.getTime(), self.ts.getTimeStep(), self.ts.getMaxTime()
                 if self.monitor_t0 is None:
                     self.monitor_t0 = self.t0
-                monitor_t0_consistency = (self.monitor_t0 - self.t0)/self.dt
+                monitor_t0_consistency = (self.monitor_t0 - self.t0) / self.dt
                 assert isclose(round(monitor_t0_consistency), monitor_t0_consistency), (
                     "Monitor initial time should be occuring after an integer number of time steps")
                 self.monitor_t = self.monitor_t0
-                self.monitor_eps = 0.1*self.dt
+                self.monitor_eps = 0.1 * self.dt
                 if self.monitor_dt is None:
                     self.monitor_dt = self.dt
-                monitor_dt_consistency = self.monitor_dt/self.dt
+                monitor_dt_consistency = self.monitor_dt / self.dt
                 assert isclose(round(monitor_dt_consistency), monitor_dt_consistency), (
                     "Monitor time step size should be a multiple of the time step size")
                 assert self.monitor_T is None
                 self.monitor_T = self.T
-                monitor_T_consistency = (self.monitor_T - self.t0)/self.dt
+                monitor_T_consistency = (self.monitor_T - self.t0) / self.dt
                 assert isclose(round(monitor_T_consistency), monitor_T_consistency), (
                     "Monitor initial time should be occuring after an integer number of time steps")
 
@@ -256,7 +256,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                         "This case should only happen when TS steps over final time")
                     assert t + current_dt <= self.ts.getTime()
                     bak_monitor_eps = self.monitor_eps
-                    self.monitor_eps = 2*current_dt # disable assert inside self._evaluate_solution
+                    self.monitor_eps = 2 * current_dt # disable assert inside self._evaluate_solution
                     self._evaluate_solution(t + current_dt, result)
                     self.monitor_eps = bak_monitor_eps
                     self._evaluate_solution(t, self.monitor_solution_prev)

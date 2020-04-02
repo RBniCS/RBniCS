@@ -43,12 +43,12 @@ def test_eim_approximation_14(expression_type, basis_generation):
             # Parametrized function to be interpolated
             x = SpatialCoordinate(V.mesh())
             mu = SymbolicParameters(self, V, (1., ))
-            self.f00 = (1-x[0])*cos(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))
-            self.f01 = (1-x[0])*sin(3*pi*mu[0]*(1+x[0]))*exp(-mu[0]*(1+x[0]))
+            self.f00 = (1 - x[0]) * cos(3 * pi * mu[0] * (1 + x[0])) * exp(- mu[0] * (1 + x[0]))
+            self.f01 = (1 - x[0]) * sin(3 * pi * mu[0] * (1 + x[0])) * exp(- mu[0] * (1 + x[0]))
             # Inner product
             f = TrialFunction(self.V)
             g = TestFunction(self.V)
-            self.inner_product = assemble(inner(f, g)*dx)
+            self.inner_product = assemble(inner(f, g) * dx)
             # Collapsed vector and space
             self.V0 = V.sub(0).collapse()
             self.V00 = V.sub(0).sub(0).collapse()
@@ -114,14 +114,14 @@ def test_eim_approximation_14(expression_type, basis_generation):
                     self, truth_problem, ParametrizedExpressionFactory(f0), folder_prefix, basis_generation)
             elif expression_type == "Vector":
                 v = TestFunction(self.V)
-                form = f0[0]*v*dx + f0[1]*v.dx(0)*dx
+                form = f0[0] * v * dx + f0[1] * v.dx(0) * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
             elif expression_type == "Matrix":
                 u = TrialFunction(self.V)
                 v = TestFunction(self.V)
-                form = f0[0]*u*v*dx + f0[1]*u.dx(0)*v*dx
+                form = f0[0] * u * v * dx + f0[1] * u.dx(0) * v * dx
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)

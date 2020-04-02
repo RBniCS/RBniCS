@@ -40,7 +40,7 @@ class CompositeDistribution(Distribution):
                 components = self.distribution_to_components[distribution]
                 components_to_sub_set[tuple(components)] = distribution.sample(sub_box, n)
         # Prepare a list that will store the set [mu_1, ... mu_n] ...
-        set_as_list = [[None]*len(box) for _ in range(n)]
+        set_as_list = [[None] * len(box) for _ in range(n)]
         for (components, sub_set) in components_to_sub_set.items():
             assert len(sub_set) == n
             for (index, sub_mu) in enumerate(sub_set):

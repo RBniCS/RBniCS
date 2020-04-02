@@ -20,7 +20,7 @@ class RewriteQuotientsReplacer(MultiFunction):
         # and not
         #   coefficient1 = expr1
         #   coefficient2 = expr2
-        return n*(1./d)
+        return n * (1. / d)
 
 def rewrite_quotients(form):
     # TODO support forms in the complex field. This is currently needed otherwise conj(a/b) does not get rewritten.

@@ -45,11 +45,11 @@ class AdvectionDominated(EllipticCoerciveProblem):
             theta_a2 = sin(mu[0])
             if self.stabilized:
                 delta = self.delta
-                theta_a3 = - delta*10**(- mu[1])*cos(mu[0])
-                theta_a4 = - delta*10**(- mu[1])*sin(mu[0])
-                theta_a5 = delta*cos(mu[0])**2
-                theta_a6 = delta*cos(mu[0])*sin(mu[0])
-                theta_a7 = delta*sin(mu[0])**2
+                theta_a3 = - delta * 10**(- mu[1]) * cos(mu[0])
+                theta_a4 = - delta * 10**(- mu[1]) * sin(mu[0])
+                theta_a5 = delta * cos(mu[0])**2
+                theta_a6 = delta * cos(mu[0]) * sin(mu[0])
+                theta_a7 = delta * sin(mu[0])**2
             else:
                 theta_a3 = 0.0
                 theta_a4 = 0.0
@@ -61,8 +61,8 @@ class AdvectionDominated(EllipticCoerciveProblem):
             theta_f0 = 1.0
             if self.stabilized:
                 delta = self.delta
-                theta_f1 = delta*cos(mu[0])
-                theta_f2 = delta*sin(mu[0])
+                theta_f1 = delta * cos(mu[0])
+                theta_f2 = delta * sin(mu[0])
             else:
                 theta_f1 = 0.0
                 theta_f2 = 0.0
@@ -80,21 +80,21 @@ class AdvectionDominated(EllipticCoerciveProblem):
         if term == "a":
             u = self.u
             h = self.h
-            a0 = inner(grad(u), grad(v))*dx
-            a1 = u.dx(0)*v*dx
-            a2 = u.dx(1)*v*dx
-            a3 = inner(div(grad(u)), h*v.dx(0))*dx
-            a4 = inner(div(grad(u)), h*v.dx(1))*dx
-            a5 = h*u.dx(0)*v.dx(0)*dx
-            a6 = h*u.dx(0)*v.dx(1)*dx + h*u.dx(1)*v.dx(0)*dx
-            a7 = h*u.dx(1)*v.dx(1)*dx
+            a0 = inner(grad(u), grad(v)) * dx
+            a1 = u.dx(0) * v * dx
+            a2 = u.dx(1) * v * dx
+            a3 = inner(div(grad(u)), h * v.dx(0)) * dx
+            a4 = inner(div(grad(u)), h * v.dx(1)) * dx
+            a5 = h * u.dx(0) * v.dx(0) * dx
+            a6 = h * u.dx(0) * v.dx(1) * dx + h * u.dx(1) * v.dx(0) * dx
+            a7 = h * u.dx(1) * v.dx(1) * dx
             return (a0, a1, a2, a3, a4, a5, a6, a7)
         elif term == "f":
             f = self.f
             h = self.h
-            f0 = f*v*dx
-            f1 = f*h*v.dx(0)*dx
-            f2 = f*h*v.dx(1)*dx
+            f0 = f * v * dx
+            f1 = f * h * v.dx(0) * dx
+            f2 = f * h * v.dx(1) * dx
             return (f0, f1, f2)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, self.bc1, self.boundaries, 1),
@@ -102,7 +102,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             u = self.u
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")

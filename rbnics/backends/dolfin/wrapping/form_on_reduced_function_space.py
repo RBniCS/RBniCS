@@ -406,7 +406,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         online_backend.online_assign(solution_from, reduced_problem._solution)
                     else:
                         online_backend.online_assign(solution_from, reduced_problem._solution_over_time.at(t))
-                    solution_from = reduced_basis_functions[:solution_from_N]*solution_from
+                    solution_from = reduced_basis_functions[:solution_from_N] * solution_from
                     backend.assign(solution_to, solution_from)
             # Assign to reduced_mesh_solution_dot
             if reduced_problem in reduced_problem_to_reduced_mesh_solution_dot:
@@ -424,7 +424,7 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
                         online_backend.online_assign(solution_dot_from, reduced_problem._solution_dot)
                     else:
                         online_backend.online_assign(solution_dot_from, reduced_problem._solution_dot_over_time.at(t))
-                    solution_dot_from = reduced_basis_functions[:solution_dot_from_N]*solution_dot_from
+                    solution_dot_from = reduced_basis_functions[:solution_dot_from_N] * solution_dot_from
                     backend.assign(solution_dot_to, solution_dot_from)
 
         # Assemble and return

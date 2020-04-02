@@ -23,7 +23,7 @@ class EllipticCoerciveCompliantRBReducedProblem(EllipticCoerciveCompliantRBReduc
         beta = self.truth_problem.get_stability_factor_lower_bound()
         assert eps2 >= 0. or isclose(eps2, 0.)
         assert beta >= 0.
-        return sqrt(abs(eps2)/beta)
+        return sqrt(abs(eps2) / beta)
 
     # Return an error bound for the current compliant output
     def estimate_error_output(self):

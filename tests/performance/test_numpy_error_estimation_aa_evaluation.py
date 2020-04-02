@@ -45,15 +45,15 @@ class Data(object):
         return einsum("n,i,ijnm,j,m", u, theta, aa_product_legacy, theta, v, optimize=True)
 
     def evaluate_backend(self, theta, aa_product, aa_product_legacy, u, v):
-        return transpose(u)*sum(product(theta, aa_product, theta))*v
+        return transpose(u) * sum(product(theta, aa_product, theta)) * v
 
     def assert_backend(self, theta, aa_product, aa_product_legacy, u, v, result_backend):
         result_builtin = self.evaluate_builtin(theta, aa_product, aa_product_legacy, u, v)
-        relative_error = abs(result_builtin - result_backend)/abs(result_builtin)
+        relative_error = abs(result_builtin - result_backend) / abs(result_builtin)
         assert isclose(relative_error, 0., atol=1e-10)
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
-@pytest.mark.parametrize("Q", [2 + 4*j for j in range(1, 3)])
+@pytest.mark.parametrize("Q", [2 + 4 * j for j in range(1, 3)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
 def test_numpy_error_estimation_aa_evaluation(N, Q, test_type, benchmark):
     data = Data(N, Q)

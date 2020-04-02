@@ -55,25 +55,25 @@ class Stokes(StokesProblem):
         if term == "a":
             u = self.u
             v = self.v
-            a0 = inner(grad(u), grad(v))*dx
+            a0 = inner(grad(u), grad(v)) * dx
             return (a0,)
         elif term == "b":
             u = self.u
             q = self.q
-            b0 = - q*div(u)*dx
+            b0 = - q * div(u) * dx
             return (b0,)
         elif term == "bt":
             p = self.p
             v = self.v
-            bt0 = - p*div(v)*dx
+            bt0 = - p * div(v) * dx
             return (bt0,)
         elif term == "f":
             v = self.v
-            f0 = inner(self.f, v)*dx
+            f0 = inner(self.f, v) * dx
             return (f0,)
         elif term == "g":
             q = self.q
-            g0 = self.g*q*dx
+            g0 = self.g * q * dx
             return (g0,)
         elif term == "dirichlet_bc_u":
             bc0 = [DirichletBC(self.V.sub(0), Constant((0.0, 0.0)), self.boundaries, 3)]
@@ -81,12 +81,12 @@ class Stokes(StokesProblem):
         elif term == "inner_product_u":
             u = self.u
             v = self.v
-            x0 = inner(grad(u), grad(v))*dx
+            x0 = inner(grad(u), grad(v)) * dx
             return (x0,)
         elif term == "inner_product_p":
             p = self.p
             q = self.q
-            x0 = inner(p, q)*dx
+            x0 = inner(p, q) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -140,11 +140,11 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
         if term == "a":
             c = self.c
             vel = self.vel
-            a0 = inner(grad(c), grad(d))*dx
-            a1 = inner(vel, grad(c))*d*dx
+            a0 = inner(grad(c), grad(d)) * dx
+            a1 = inner(vel, grad(c)) * d * dx
             return (a0, a1)
         elif term == "f":
-            f0 = self.f*d*dx
+            f0 = self.f * d * dx
             return (f0,)
         elif term == "dirichlet_bc":
             bc0 = [DirichletBC(self.V, Constant(1.0), self.boundaries, 1),
@@ -152,7 +152,7 @@ class AdvectionDiffusion(EllipticCoerciveProblem):
             return (bc0,)
         elif term == "inner_product":
             c = self.c
-            x0 = inner(grad(c), grad(d))*dx
+            x0 = inner(grad(c), grad(d)) * dx
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
@@ -176,7 +176,7 @@ mu_range = [
     (0.5, 1.5),
     (0.5, 1.5),
     (0.5, 1.5),
-    (0., pi/6.)
+    (0., pi / 6.)
 ]
 stokes_problem.set_mu_range(mu_range)
 
@@ -189,7 +189,7 @@ stokes_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDepende
 reduced_stokes_problem = stokes_pod_galerkin_method.offline()
 
 # 6a. Perform an online solve
-online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi/6.)
+online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi / 6.)
 reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
 reduced_stokes_problem.export_solution(filename="online_solution")

@@ -40,9 +40,9 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             transpose = backend.transpose
 
             if inner_product is not None:
-                correlation = transpose(snapshots_matrix)*inner_product*snapshots_matrix
+                correlation = transpose(snapshots_matrix) * inner_product * snapshots_matrix
             else:
-                correlation = transpose(snapshots_matrix)*snapshots_matrix
+                correlation = transpose(snapshots_matrix) * snapshots_matrix
 
             basis_functions = BasisContainerType(self.space, *self.args)
 
@@ -66,7 +66,8 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             retained_energy = compute_retained_energy([abs(e) for e in self.eigenvalues])
             assert len(self.retained_energy) == 0
             if total_energy > 0.:
-                self.retained_energy.extend([retained_energy_i/total_energy for retained_energy_i in retained_energy])
+                self.retained_energy.extend([retained_energy_i / total_energy
+                                             for retained_energy_i in retained_energy])
             else:
                 self.retained_energy.extend([1. for _ in range(Neigs)]) # trivial case, all snapshots are zero
 
@@ -74,11 +75,11 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
             for N in range(Nmax):
                 (eigvector, _) = eigensolver.get_eigenvector(N)
                 eigenvectors.append(eigvector)
-                b = self.snapshots_matrix*eigvector
+                b = self.snapshots_matrix * eigvector
                 if inner_product is not None:
-                    norm_b = sqrt(transpose(b)*inner_product*b)
+                    norm_b = sqrt(transpose(b) * inner_product * b)
                 else:
-                    norm_b = sqrt(transpose(b)*b)
+                    norm_b = sqrt(transpose(b) * b)
                 if norm_b != 0.:
                     b /= norm_b
                 basis_functions.enrich(b)

@@ -450,7 +450,7 @@ def map_functionspaces_between_mesh_and_submesh(functionspace_on_mesh, mesh, fun
             # Map from mesh to submesh
             for (i, submesh_dof) in enumerate(submesh_cell_dofs):
                 distance, mesh_index = distances[i], mesh_indices[i]
-                assert distance < mesh_cell.h()*1e-5
+                assert distance < mesh_cell.h() * 1e-5
                 mesh_dof = mesh_cell_dofs[mesh_index]
                 if mesh_dof not in mesh_dofs_to_submesh_dofs:
                     mesh_dofs_to_submesh_dofs[mesh_dof] = submesh_dof

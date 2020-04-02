@@ -26,7 +26,7 @@ setattr(Form, "__rmul__", custom__rmul__)
 
 def custom__truediv__(self, other):
     if isinstance(other, Number):
-        return self.__rmul__(Constant(1./other))
+        return self.__rmul__(Constant(1. / other))
     else:
         return NotImplemented
 setattr(Form, "__truediv__", custom__truediv__)

@@ -28,22 +28,22 @@ class Data(object):
         return (Z, uN)
 
     def evaluate_builtin(self, Z, uN):
-        result_builtin = uN[0]*Z[0].vector()
+        result_builtin = uN[0] * Z[0].vector()
         for i in range(1, self.N):
-            result_builtin.add_local(uN[i]*Z[i].vector().get_local())
+            result_builtin.add_local(uN[i] * Z[i].vector().get_local())
         result_builtin.apply("add")
         return result_builtin
 
     def evaluate_backend(self, Z, uN):
-        return (Z*uN).vector()
+        return (Z * uN).vector()
 
     def assert_backend(self, Z, uN, result_backend):
         result_builtin = self.evaluate_builtin(Z, uN)
-        relative_error = (result_builtin - result_backend).norm("l2")/result_builtin.norm("l2")
+        relative_error = (result_builtin - result_backend).norm("l2") / result_builtin.norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
-@pytest.mark.parametrize("N", [10 + 4*j for j in range(1, 4)])
+@pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin", "__mul__"])
 def test_dolfin_Z_uN(Th, N, test_type, benchmark):
     data = Data(Th, N)
