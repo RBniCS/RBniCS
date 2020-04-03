@@ -14,7 +14,7 @@ def Function(Vector):
                 self._v = Vector(arg)
             elif isinstance(arg, Vector.Type()):
                 self._v = arg
-            else: # impossible to arrive here anyway, thanks to the assert
+            else:  # impossible to arrive here anyway, thanks to the assert
                 raise TypeError("Invalid arguments in Function")
 
         def vector(self):

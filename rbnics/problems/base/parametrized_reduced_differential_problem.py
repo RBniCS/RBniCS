@@ -50,7 +50,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         self.terms_order = truth_problem.terms_order
         self.components = truth_problem.components
         # Number of terms in the affine expansion
-        self.Q = dict() # from string to integer
+        self.Q = dict()  # from string to integer
         # Reduced order operators
         self.OperatorExpansionStorage = OnlineAffineExpansionStorage
         # operator: from string to OperatorExpansionStorage
@@ -106,7 +106,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         Initialize data structures required for the online phase. Internal method.
         """
         for term in self.terms:
-            if term not in self.operator: # init was not called already
+            if term not in self.operator:  # init was not called already
                 self.Q[term] = self.truth_problem.Q[term]
                 self.operator[term] = self.OperatorExpansionStorage(self.Q[term])
         assert current_stage in ("online", "offline")
@@ -114,7 +114,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             for term in self.terms:
                 self.assemble_operator(term, "online")
         elif current_stage == "offline":
-            pass # Nothing else to be done
+            pass  # Nothing else to be done
         else:
             raise ValueError("Invalid stage in _init_operators().")
 
@@ -126,7 +126,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if current_stage == "online":
             n_components = len(self.components)
             # Inner products
-            if self.inner_product is None: # init was not called already
+            if self.inner_product is None:  # init was not called already
                 if n_components > 1:
                     inner_product_string = "inner_product_{c}"
                     self.inner_product = dict()
@@ -138,7 +138,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.assemble_operator("inner_product", "online")
                 self._combined_inner_product = self._combine_all_inner_products()
             # Projection inner product
-            if self.projection_inner_product is None: # init was not called already
+            if self.projection_inner_product is None:  # init was not called already
                 if n_components > 1:
                     projection_inner_product_string = "projection_inner_product_{c}"
                     self.projection_inner_product = dict()
@@ -152,7 +152,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         elif current_stage == "offline":
             n_components = len(self.components)
             # Inner products
-            if self.inner_product is None: # init was not called already
+            if self.inner_product is None:  # init was not called already
                 if n_components > 1:
                     self.inner_product = dict()
                     for component in self.components:
@@ -160,7 +160,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 else:
                     self.inner_product = OnlineAffineExpansionStorage(1)
             # Projection inner product
-            if self.projection_inner_product is None: # init was not called already
+            if self.projection_inner_product is None:  # init was not called already
                 if n_components > 1:
                     self.projection_inner_product = dict()
                     for component in self.components:
@@ -208,7 +208,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         """
         assert current_stage in ("online", "offline")
         # Initialize basis functions mappings
-        if self.basis_functions is None: # avoid re-initializing basis functions matrix multiple times
+        if self.basis_functions is None:  # avoid re-initializing basis functions matrix multiple times
             self.basis_functions = BasisFunctionsMatrix(self.truth_problem.V)
             self.basis_functions.init(self.components)
         # Get number of components
@@ -228,12 +228,12 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                 return self.basis_functions
         # Detect how many theta terms are related to boundary conditions
         assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
-        if self.dirichlet_bc is None: # init was not called already
+        if self.dirichlet_bc is None:  # init was not called already
             dirichlet_bc = dict()
             for component in self.components:
                 try:
                     theta_bc = self.compute_theta(dirichlet_bc_string.format(c=component))
-                except ValueError: # there were no Dirichlet BCs to be imposed by lifting
+                except ValueError:  # there were no Dirichlet BCs to be imposed by lifting
                     dirichlet_bc[component] = False
                 else:
                     dirichlet_bc[component] = True
@@ -319,7 +319,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         N += self.N_bc
         self._latest_solve_kwargs = kwargs
         self._solution = OnlineFunction(N)
-        if N == 0: # trivial case
+        if N == 0:  # trivial case
             return self._solution
         try:
             assign(self._solution, self._solution_cache[self.mu, N, kwargs])
@@ -327,7 +327,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         except KeyError:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
-            self._solve(N, **kwargs) # will also add to cache
+            self._solve(N, **kwargs)  # will also add to cache
             delattr(self, "_is_solving")
         return self._solution
 
@@ -405,7 +405,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         except KeyError:
             try:
                 self._compute_output(N)
-            except ValueError: # raised by compute_theta if output computation is optional
+            except ValueError:  # raised by compute_theta if output computation is optional
                 self._output = NotImplemented
             self._output_cache[self.mu, N, kwargs] = self._output
         return self._output
@@ -593,7 +593,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         if self._output is NotImplemented:
             assert self.truth_problem._output is NotImplemented
             return NotImplemented
-        else: # Compute the error on the output
+        else:  # Compute the error on the output
             reduced_output = self._output
             truth_output = self.truth_problem._output
             error_output = abs(truth_output - reduced_output)
@@ -621,7 +621,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
             assert self.truth_problem._output is NotImplemented
             assert absolute_error_output is NotImplemented
             return NotImplemented
-        else: # Compute the relative error on the output
+        else:  # Compute the relative error on the output
             truth_output = abs(self.truth_problem._output)
             if truth_output != 0.:
                 return absolute_error_output / truth_output
@@ -674,7 +674,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         :param current_stage: online or offline stage.
         """
         assert current_stage in ("online", "offline")
-        if current_stage == "online": # load from file
+        if current_stage == "online":  # load from file
             # Note that it would not be needed to return the loaded operator in
             # init(), since it has been already modified in-place. We do this, however,
             # because we want this interface to be compatible with the one in
@@ -745,7 +745,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.inner_product[component]
                 else:
-                    assert len(self.components) == 1 # single component case
+                    assert len(self.components) == 1  # single component case
                     assert len(self.inner_product) == 1
                     # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.inner_product) == 1
@@ -768,7 +768,7 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
                     self.projection_inner_product[component].save(self.folder["reduced_operators"], term)
                     return self.projection_inner_product[component]
                 else:
-                    assert len(self.components) == 1 # single component case
+                    assert len(self.components) == 1  # single component case
                     assert len(self.projection_inner_product) == 1
                     # the affine expansion storage contains only the inner product matrix
                     assert len(self.truth_problem.projection_inner_product) == 1

@@ -158,14 +158,14 @@ def test_pull_back_to_reference_domain_hole(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("2 - 2 * mu[0] + mu[0] * x[0] + (2 - 2 * mu[0]) * x[1]", "2 - 2 * mu[1] + (2 - mu[1]) * x[1]"), # subdomain 1
-        ("2 * mu[0]- 2 + x[0] + (mu[0] - 1) * x[1]", "2 - 2 * mu[1] + (2 - mu[1]) * x[1]"), # subdomain 2
-        ("2 - 2 * mu[0] + (2 - mu[0]) * x[0]", "2 - 2 * mu[1] + (2- 2 * mu[1]) * x[0] + mu[1] * x[1]"), # subdomain 3
-        ("2 - 2 * mu[0] + (2 - mu[0]) * x[0]", "2 * mu[1] - 2 + (mu[1] - 1) * x[0] + x[1]"), # subdomain 4
-        ("2 * mu[0] - 2 + (2 - mu[0]) * x[0]", "2 - 2 * mu[1] + (2 * mu[1]- 2) * x[0] + mu[1] * x[1]"), # subdomain 5
-        ("2 * mu[0] - 2 + (2 - mu[0]) * x[0]", "2 * mu[1] - 2 + (1 - mu[1]) * x[0] + x[1]"), # subdomain 6
-        ("2 - 2 * mu[0] + mu[0] * x[0] + (2 * mu[0] - 2) * x[1]", "2 * mu[1] - 2 + (2 - mu[1]) * x[1]"), # subdomain 7
-        ("2 * mu[0] - 2 + x[0] + (1 - mu[0]) * x[1]", "2 * mu[1] - 2 + (2 - mu[1]) * x[1]") # subdomain 8
+        ("2 - 2 * mu[0] + mu[0] * x[0] + (2 - 2 * mu[0]) * x[1]", "2 - 2 * mu[1] + (2 - mu[1]) * x[1]"),  # subdomain 1
+        ("2 * mu[0]- 2 + x[0] + (mu[0] - 1) * x[1]", "2 - 2 * mu[1] + (2 - mu[1]) * x[1]"),  # subdomain 2
+        ("2 - 2 * mu[0] + (2 - mu[0]) * x[0]", "2 - 2 * mu[1] + (2- 2 * mu[1]) * x[0] + mu[1] * x[1]"),  # subdomain 3
+        ("2 - 2 * mu[0] + (2 - mu[0]) * x[0]", "2 * mu[1] - 2 + (mu[1] - 1) * x[0] + x[1]"),  # subdomain 4
+        ("2 * mu[0] - 2 + (2 - mu[0]) * x[0]", "2 - 2 * mu[1] + (2 * mu[1]- 2) * x[0] + mu[1] * x[1]"),  # subdomain 5
+        ("2 * mu[0] - 2 + (2 - mu[0]) * x[0]", "2 * mu[1] - 2 + (1 - mu[1]) * x[0] + x[1]"),  # subdomain 6
+        ("2 - 2 * mu[0] + mu[0] * x[0] + (2 * mu[0] - 2) * x[1]", "2 * mu[1] - 2 + (2 - mu[1]) * x[1]"),  # subdomain 7
+        ("2 * mu[0] - 2 + x[0] + (1 - mu[0]) * x[1]", "2 * mu[1] - 2 + (2 - mu[1]) * x[1]")  # subdomain 8
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -238,10 +238,10 @@ def test_pull_back_to_reference_domain_hole(
                 return (theta_a0, theta_a1, theta_a2, theta_a3, theta_a4, theta_a5, theta_a6, theta_a7, theta_a8,
                         theta_a9, theta_a10, theta_a11, theta_a12)
             elif term == "f":
-                theta_f0 = mu[0] # boundary 1
-                theta_f1 = mu[1] # boundary 2
-                theta_f2 = mu[0] # boundary 3
-                theta_f3 = mu[1] # boundary 4
+                theta_f0 = mu[0]  # boundary 1
+                theta_f1 = mu[1]  # boundary 2
+                theta_f2 = mu[0]  # boundary 3
+                theta_f3 = mu[1]  # boundary 4
                 # Return
                 return (theta_f0, theta_f1, theta_f2, theta_f3)
             else:
@@ -274,10 +274,10 @@ def test_pull_back_to_reference_domain_hole(
                 # Return
                 return (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)
             elif term == "f":
-                f0 = v * ds(1) # boundary 1
-                f1 = v * ds(2) # boundary 2
-                f2 = v * ds(3) # boundary 3
-                f3 = v * ds(4) # boundary 4
+                f0 = v * ds(1)  # boundary 1
+                f1 = v * ds(2)  # boundary 2
+                f2 = v * ds(3)  # boundary 3
+                f3 = v * ds(4)  # boundary 4
                 # Return
                 return (f0, f1, f2, f3)
             else:
@@ -348,25 +348,25 @@ def test_pull_back_to_reference_domain_hole_rotation(
         ("-2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2)"
          + "+ x[1] * (-sqrt(2.0) * sin(mu[0]) / 2 - 3 * sqrt(2.0) * cos(mu[0]) / 2 + 2) + 2",
          "-2 * sqrt(2.0) * sin(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 - sqrt(2.0) * cos(mu[0]) / 2)"
-         + "+ x[1] * (-3 * sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2 + 2) + 2"), # subdomain 1
+         + "+ x[1] * (-3 * sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2 + 2) + 2"),  # subdomain 1
         ("2 * sqrt(2.0) * sin(mu[0]) + x[0] + x[1] * (sqrt(2.0) * sin(mu[0]) - 1) - 2",
-         "-2 * sqrt(2.0) * cos(mu[0]) + x[1] * (-sqrt(2.0) * cos(mu[0]) + 2) + 2"), # subdomain 2
+         "-2 * sqrt(2.0) * cos(mu[0]) + x[1] * (-sqrt(2.0) * cos(mu[0]) + 2) + 2"),  # subdomain 2
         ("-2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0])/2 - 3 * sqrt(2.0) * cos(mu[0]) / 2 + 2)"
          + "+ x[1] * (-sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2) + 2",
          "-2 * sqrt(2.0) * sin(mu[0]) + x[0] * (-3 * sqrt(2.0) * sin(mu[0]) / 2 - sqrt(2.0) * cos(mu[0]) / 2 + 2)"
-         + "+ x[1] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2) + 2"), # subdomain 3
+         + "+ x[1] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2) + 2"),  # subdomain 3
         ("-2 * sqrt(2.0) * sin(mu[0]) + x[0] * (-sqrt(2.0) * sin(mu[0]) + 2) + 2",
-         "2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * cos(mu[0]) - 1) + x[1] - 2"), # subdomain 4
+         "2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * cos(mu[0]) - 1) + x[1] - 2"),  # subdomain 4
         ("2 * sqrt(2.0) * sin(mu[0]) + x[0] * (-3 * sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2 + 2)"
          + "+ x[1] * (-sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2) - 2",
          "-2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 + 3 * sqrt(2.0) * cos(mu[0]) / 2 - 2)"
-         + "+ x[1] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2) + 2"), # subdomain 5
+         + "+ x[1] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2) + 2"),  # subdomain 5
         ("2 * sqrt(2.0) * cos(mu[0]) + x[0] * (-sqrt(2.0) * cos(mu[0]) + 2) - 2",
-         "2 * sqrt(2.0) * sin(mu[0]) + x[0] * (-sqrt(2.0) * sin(mu[0]) + 1) + x[1] - 2"), # subdomain 6
+         "2 * sqrt(2.0) * sin(mu[0]) + x[0] * (-sqrt(2.0) * sin(mu[0]) + 1) + x[1] - 2"),  # subdomain 6
         ("-2 * sqrt(2.0) * sin(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2)"
          + "+ x[1] * (3 * sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2 - 2) + 2",
          "2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 - sqrt(2.0) * cos(mu[0]) / 2)"
-         + "+ x[1] * (sqrt(2.0) * sin(mu[0]) / 2 - 3 * sqrt(2.0) * cos(mu[0]) / 2 + 2) - 2"), # subdomain 7
+         + "+ x[1] * (sqrt(2.0) * sin(mu[0]) / 2 - 3 * sqrt(2.0) * cos(mu[0]) / 2 + 2) - 2"),  # subdomain 7
         ("2 * sqrt(2.0) * cos(mu[0]) + x[0] + x[1] * (-sqrt(2.0) * cos(mu[0]) + 1) - 2",
          "2 * sqrt(2.0) * sin(mu[0]) + x[1] * (-sqrt(2.0) * sin(mu[0]) + 2) - 2")  # subdomain 8
     ]
@@ -569,7 +569,7 @@ def test_pull_back_to_reference_domain_hole_rotation(
             cppcode, element=kwargs["element"])), ),
         (lambda problem, cppcode, **kwargs: PushForwardToDeformedDomain(problem, ParametrizedExpression(
             problem, cppcode, **kwargs)), )
-    ], [ # is_affine:
+    ], [  # is_affine:
         True,
         False,
         True,
@@ -586,8 +586,8 @@ def test_pull_back_to_reference_domain_graetz(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("x[0]", "x[1]"), # subdomain 1
-        ("mu[0] * (x[0] - 1) + 1", "x[1]") # subdomain 2
+        ("x[0]", "x[1]"),  # subdomain 1
+        ("mu[0] * (x[0] - 1) + 1", "x[1]")  # subdomain 2
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -785,7 +785,7 @@ def test_pull_back_to_reference_domain_nonlinear_elliptic(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("mu[2] * x[0]", "mu[3] * x[1]") # subdomain 1
+        ("mu[2] * x[0]", "mu[3] * x[1]")  # subdomain 1
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -944,8 +944,8 @@ def test_pull_back_to_reference_domain_advection_dominated(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("x[0]", "x[1]"), # subdomain 1
-        ("mu[0] * (x[0] - 1) + 1", "x[1]") # subdomain 2
+        ("x[0]", "x[1]"),  # subdomain 1
+        ("mu[0] * (x[0] - 1) + 1", "x[1]")  # subdomain 2
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -1101,15 +1101,15 @@ def test_pull_back_to_reference_domain_stokes(
     # Define shape parametrization
     shape_parametrization_expression = [
         ("mu[4] * x[0] + mu[1] - mu[4]",
-         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"), # subdomain 1
+         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"),  # subdomain 1
         ("mu[4] * x[0] + mu[1] - mu[4]",
-         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"), # subdomain 2
-        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"), # subdomain 3
-        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"), # subdomain 4
-        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"), # subdomain 5
-        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"), # subdomain 6
-        ("mu[1] * x[0]", "mu[2] * x[1]"), # subdomain 7
-        ("mu[1] * x[0]", "mu[2] * x[1]"), # subdomain 8
+         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"),  # subdomain 2
+        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"),  # subdomain 3
+        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"),  # subdomain 4
+        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"),  # subdomain 5
+        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"),  # subdomain 6
+        ("mu[1] * x[0]", "mu[2] * x[1]"),  # subdomain 7
+        ("mu[1] * x[0]", "mu[2] * x[1]"),  # subdomain 8
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -1347,7 +1347,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("mu[0] * x[0]", "x[1]"), # subdomain 1
+        ("mu[0] * x[0]", "x[1]"),  # subdomain 1
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -1549,8 +1549,8 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("x[0]", "x[1]"), # subdomain 1
-        ("mu[0] * (x[0] - 1) + 1", "x[1]"), # subdomain 2
+        ("x[0]", "x[1]"),  # subdomain 1
+        ("mu[0] * (x[0] - 1) + 1", "x[1]"),  # subdomain 2
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -1807,7 +1807,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("x[0]", "mu[0] * x[1]") # subdomain 1
+        ("x[0]", "mu[0] * x[1]")  # subdomain 1
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -2115,15 +2115,15 @@ def test_pull_back_to_reference_domain_stokes_coupled(
     # Define shape parametrization
     shape_parametrization_expression = [
         ("mu[4] * x[0] + mu[1] - mu[4]",
-         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"), # subdomain 1
+         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"),  # subdomain 1
         ("mu[4] * x[0] + mu[1] - mu[4]",
-         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"), # subdomain 2
-        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"), # subdomain 3
-        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"), # subdomain 4
-        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"), # subdomain 5
-        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"), # subdomain 6
-        ("mu[1] * x[0]", "mu[2] * x[1]"), # subdomain 7
-        ("mu[1] * x[0]", "mu[2] * x[1]"), # subdomain 8
+         "mu[4] * tan(mu[5]) * x[0] + mu[0] * x[1] + mu[2] - mu[4] * tan(mu[5]) - mu[0]"),  # subdomain 2
+        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"),  # subdomain 3
+        ("mu[1] * x[0]", "mu[3] * x[1] + mu[2] + mu[0] - 2 * mu[3]"),  # subdomain 4
+        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"),  # subdomain 5
+        ("mu[1] * x[0]", "mu[0] * x[1] + mu[2] - mu[0]"),  # subdomain 6
+        ("mu[1] * x[0]", "mu[2] * x[1]"),  # subdomain 7
+        ("mu[1] * x[0]", "mu[2] * x[1]"),  # subdomain 8
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -2321,8 +2321,8 @@ def test_pull_back_to_reference_domain_navier_stokes(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("x[0]", "x[1]"), # subdomain 1
-        ("x[0]", "mu[1] / 2. * x[1] + (2. - mu[1])") # subdomain 2
+        ("x[0]", "x[1]"),  # subdomain 1
+        ("x[0]", "mu[1] / 2. * x[1] + (2. - mu[1])")  # subdomain 2
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 
@@ -2545,7 +2545,7 @@ def test_pull_back_to_reference_domain_stokes_unsteady(
 
     # Define shape parametrization
     shape_parametrization_expression = [
-        ("mu[0] * x[0]", "x[1]"), # subdomain 1
+        ("mu[0] * x[0]", "x[1]"),  # subdomain 1
     ]
     shape_parametrization_expression = shape_parametrization_preprocessing(shape_parametrization_expression)
 

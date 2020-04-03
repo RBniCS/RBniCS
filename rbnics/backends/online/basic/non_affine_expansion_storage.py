@@ -30,7 +30,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         self._shape = shape
         self._type = "empty"
         self._content = dict()
-        self._precomputed_slices = Cache() # from tuple to NonAffineExpansionStorage
+        self._precomputed_slices = Cache()  # from tuple to NonAffineExpansionStorage
         assert len(shape) in (1, 2)
         if len(shape) == 1:
             self._smallest_key = 0
@@ -122,7 +122,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             raise ValueError("Invalid type")
 
     def load(self, directory, filename):
-        if self._type != "empty": # avoid loading multiple times
+        if self._type != "empty":  # avoid loading multiple times
             if self._type in ("basis_functions_matrix", "functions_list"):
                 delayed_functions = self._content[self._type]
                 it = NonAffineExpansionStorageContent_Iterator(
@@ -272,7 +272,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         assert self._type in ("error_estimation_operators_11", "error_estimation_operators_21",
                               "error_estimation_operators_22", "operators")
         if self._type == "error_estimation_operators_11":
-            pass # nothing to be done (scalar content)
+            pass  # nothing to be done (scalar content)
         elif self._type == "error_estimation_operators_21":
             assert "delayed_functions" in self._content
             assert len(self._content["delayed_functions"]) == 2
@@ -298,7 +298,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             assert "basis_functions_shape" in self._content
 
             if len(self._content["basis_functions"]) == 0:
-                pass # nothing to be done (scalar content)
+                pass  # nothing to be done (scalar content)
             elif len(self._content["basis_functions"]) == 1:
                 slice_ = slice_to_array(
                     self._content["basis_functions_shape"], empty_slice,
@@ -585,7 +585,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
             # this assumes that __getitem__ is not random acces but called for increasing key
             self._content.pop("truth_operators_as_expansion_storage", None)
             self._content["truth_operators"] = NonAffineExpansionStorageContent_Base(self._shape, dtype=object)
-            self._content["basis_functions"] = list() # will stay empty
+            self._content["basis_functions"] = list()  # will stay empty
             self._content.pop("basis_functions_shape", None)
         # Store
         if isinstance(item, Number):
@@ -644,7 +644,7 @@ class DelayedTransposeShape(object):
             assert isinstance(
                 basis_functions_i, (AbstractBasisFunctionsMatrix, DelayedBasisFunctionsMatrix, DelayedLinearSolver))
             if isinstance(basis_functions_i, (AbstractBasisFunctionsMatrix, DelayedBasisFunctionsMatrix)):
-                assert not found_delayed_linear_solver # delayed functions should come after basis functions
+                assert not found_delayed_linear_solver  # delayed functions should come after basis functions
                 component_name_to_basis_component_index.append(
                     basis_functions_i._component_name_to_basis_component_index)
                 component_name_to_basis_component_length.append(

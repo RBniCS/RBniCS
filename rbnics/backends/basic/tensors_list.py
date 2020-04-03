@@ -16,8 +16,8 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             self.space = space
             self.empty_tensor = empty_tensor
             self.mpi_comm = wrapping.get_mpi_comm(space)
-            self._list = list() # of tensors
-            self._precomputed_slices = Cache() # from tuple to TensorsList
+            self._list = list()  # of tensors
+            self._precomputed_slices = Cache()  # from tuple to TensorsList
 
         def enrich(self, tensors):
             # Append to storage
@@ -53,7 +53,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
             parallel_io(save_Nmax_task, self.mpi_comm)
 
         def load(self, directory, filename):
-            if len(self._list) > 0: # avoid loading multiple times
+            if len(self._list) > 0:  # avoid loading multiple times
                 return False
             Nmax = self._load_Nmax(directory, filename)
             for index in range(Nmax):
@@ -79,7 +79,7 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
         def __getitem__(self, key):
             return self._list[key]
 
-        @overload(slice) # e.g. key = :N, return the first N tensors
+        @overload(slice)  # e.g. key = :N, return the first N tensors
         def __getitem__(self, key):
             if key.start is not None:
                 start = key.start

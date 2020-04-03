@@ -24,24 +24,24 @@ mesh = UnitSquareMesh(10, 10)
 
 V = VectorFunctionSpace(mesh, "Lagrange", 2)
 
-expr1 = Expression("x[0]", mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_5
-expr2 = Expression(("x[0]", "x[1]"), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_6
-expr3 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_7
-expr4 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_8
-expr5 = Expression("x[0]", degree=1, cell=mesh.ufl_cell()) # f_9
-expr6 = Expression(("x[0]", "x[1]"), degree=1, cell=mesh.ufl_cell()) # f_10
-expr7 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), degree=1, cell=mesh.ufl_cell()) # f_11
-expr8 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), degree=1, cell=mesh.ufl_cell()) # f_12
-expr9 = Constant(((1, 2), (3, 4))) # f_13
+expr1 = Expression("x[0]", mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_5
+expr2 = Expression(("x[0]", "x[1]"), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_6
+expr3 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_7
+expr4 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_8
+expr5 = Expression("x[0]", degree=1, cell=mesh.ufl_cell())  # f_9
+expr6 = Expression(("x[0]", "x[1]"), degree=1, cell=mesh.ufl_cell())  # f_10
+expr7 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), degree=1, cell=mesh.ufl_cell())  # f_11
+expr8 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), degree=1, cell=mesh.ufl_cell())  # f_12
+expr9 = Constant(((1, 2), (3, 4)))  # f_13
 
 scalar_V = FunctionSpace(mesh, "Lagrange", 3)
 tensor_V = TensorFunctionSpace(mesh, "Lagrange", 1)
-expr10 = Function(scalar_V) # f_18
-expr11 = Function(V) # f_21
-expr12 = Function(tensor_V) # f_24
-expr13 = Function(scalar_V) # f_27
-expr14 = Function(V) # f_30
-expr15 = Function(tensor_V) # f_33
+expr10 = Function(scalar_V)  # f_18
+expr11 = Function(V)  # f_21
+expr12 = Function(tensor_V)  # f_24
+expr13 = Function(scalar_V)  # f_27
+expr14 = Function(V)  # f_30
+expr15 = Function(tensor_V)  # f_33
 
 class Problem(object):
     def __init__(self, name):

@@ -18,7 +18,7 @@ class DelayedBasisFunctionsMatrix(object):
         self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict()
         self._component_name_to_basis_component_length = OnlineSizeDict()
         self._enrich_memory = Cache()
-        self._precomputed_slices = Cache() # from tuple to FunctionsList
+        self._precomputed_slices = Cache()  # from tuple to FunctionsList
 
     def init(self, components_name):
         # Patch DelayedFunctionsList.enrich() to update internal attributes
@@ -90,7 +90,7 @@ class DelayedBasisFunctionsMatrix(object):
             precomputed_slice_key_stop = tuple(precomputed_slice_key_stop)
         self._precomputed_slices[precomputed_slice_key_start, precomputed_slice_key_stop] = self
 
-    @overload(slice) # e.g. key = :N, return the first N functions
+    @overload(slice)  # e.g. key = :N, return the first N functions
     def __getitem__(self, key):
         assert key.step is None
         return self._precompute_slice(key.start, key.stop)

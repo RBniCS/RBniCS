@@ -12,9 +12,9 @@ class LinearlyDependentUniformDistribution(Distribution):
         self.aux_box = [(0.5, 1.5), (0.5, 1.5), (0, pi / 6.)]
 
     def sample(self, _, n):
-        set_ = list() # of tuples
+        set_ = list()  # of tuples
         for i in range(n):
-            aux_mu = list() # of numbers
+            aux_mu = list()  # of numbers
             for aux_box_p in self.aux_box:
                 aux_mu.append(random.uniform(aux_box_p[0], aux_box_p[1]))
             mu = (2 - aux_mu[0], aux_mu[1], aux_mu[0], aux_mu[0], 2 - aux_mu[1], aux_mu[2])

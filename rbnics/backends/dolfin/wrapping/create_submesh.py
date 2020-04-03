@@ -271,17 +271,17 @@ def create_submesh(mesh, markers):
         "facet": lambda entity: submesh_facets_local_to_global_indices[entity.index()],
         "cell": lambda entity: entity.global_index()
     }
-    for entity_type in ["vertex", "facet", "cell"]: # do not use .keys() because the order is important
+    for entity_type in ["vertex", "facet", "cell"]:  # do not use .keys() because the order is important
         dim = shared_entities_dimensions[entity_type]
         class_ = shared_entities_class[entity_type]
         iterator = shared_entities_iterator[entity_type]
         submesh_global_index_getter = shared_entities_submesh_global_index_getter[entity_type]
         # Get shared entities from mesh. A subset of these will end being shared entities also the submesh
         # (thanks to the fact that we do not redistribute cells from one processor to another)
-        if mpi_comm.size > 1: # some entities may not be initialized in serial, since they are not needed
+        if mpi_comm.size > 1:  # some entities may not be initialized in serial, since they are not needed
             assert mesh.topology().have_shared_entities(dim), (
                 "Mesh shared entities have not been initialized for dimension " + str(dim))
-        if mesh.topology().have_shared_entities(dim): # always true in parallel (when really needed)
+        if mesh.topology().have_shared_entities(dim):  # always true in parallel (when really needed)
             # However, it may happen that an entity which has been selected is not shared anymore because only one of
             # the sharing processes has it in the submesh. For instance, consider the case
             # of two cells across the interface (located on a facet f) between two processors. It may happen that
@@ -299,7 +299,7 @@ def create_submesh(mesh, markers):
                 submesh_local_entities_global_index.append(global_entity_index)
                 submesh_local_entities_global_to_local_index[global_entity_index] = local_entity_index
             # ... then gather all global indices from all processors
-            gathered__submesh_local_entities_global_index = list() # over processor id
+            gathered__submesh_local_entities_global_index = list()  # over processor id
             for r in range(mpi_comm.size):
                 gathered__submesh_local_entities_global_index.append(
                     mpi_comm.bcast(submesh_local_entities_global_index, root=r))
@@ -312,11 +312,11 @@ def create_submesh(mesh, markers):
                     submesh_shared_entities__global[global_entity_index].append(r)
             # ... and finally popuplate shared entities dict, which is the same as the dict above except that
             # the current processor rank is removed and a local indexing is used
-            submesh_shared_entities = dict() # from local index to list of integers
+            submesh_shared_entities = dict()  # from local index to list of integers
             for (global_entity_index, processors) in submesh_shared_entities__global.items():
                 if (
                     mpi_comm.rank in processors  # only local entities
-                    and len(processors) > 1 # it was still shared after submesh extraction
+                    and len(processors) > 1  # it was still shared after submesh extraction
                 ):
                     other_processors_list = list(processors)
                     other_processors_list.remove(mpi_comm.rank)
@@ -386,7 +386,7 @@ def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
             for submesh_facet in facets(submesh):
                 submesh_subdomain.array()[submesh_facet.index()] = mesh_subdomain.array()[
                     submesh.submesh_to_mesh_facet_local_indices[submesh_facet.index()]]
-        else: # impossible to arrive here anyway, thanks to the assert
+        else:  # impossible to arrive here anyway, thanks to the assert
             raise TypeError("Invalid arguments in convert_meshfunctions_to_submesh.")
         meshfunctions_on_submesh.append(submesh_subdomain)
     return meshfunctions_on_submesh

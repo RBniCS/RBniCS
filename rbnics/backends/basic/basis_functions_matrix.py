@@ -19,15 +19,15 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             else:
                 self.space = space
             self.mpi_comm = wrapping.get_mpi_comm(space)
-            self._components = dict() # of FunctionsList
-            self._precomputed_sub_components = Cache() # from tuple to FunctionsList
-            self._precomputed_slices = Cache() # from tuple to FunctionsList
-            self._components_name = list() # filled in by init
-            self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict() # filled in by init
+            self._components = dict()  # of FunctionsList
+            self._precomputed_sub_components = Cache()  # from tuple to FunctionsList
+            self._precomputed_slices = Cache()  # from tuple to FunctionsList
+            self._components_name = list()  # filled in by init
+            self._component_name_to_basis_component_index = ComponentNameToBasisComponentIndexDict()  # filled by init
             self._component_name_to_basis_component_length = OnlineSizeDict()
 
         def init(self, components_name):
-            if self._components_name != components_name: # Do nothing if it was already initialized with the same dicts
+            if self._components_name != components_name:  # Do nothing if it was already initialized with the same dicts
                 # Store components name
                 self._components_name = components_name
                 # Initialize components FunctionsList
@@ -238,7 +238,7 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
         def __getitem__(self, key):
             return self._precompute_sub_components(key)
 
-        @overload(slice) # e.g. key = :N, return the first N functions
+        @overload(slice)  # e.g. key = :N, return the first N functions
         def __getitem__(self, key):
             assert key.step is None
             return self._precompute_slice(key.start, key.stop)

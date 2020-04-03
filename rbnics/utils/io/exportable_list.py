@@ -42,7 +42,7 @@ class ExportableList(object):
     # Returns True if it was possible to import the list.
     # Raises an error if it was not possible to import the list.
     def load(self, directory, filename):
-        if self._list: # avoid loading multiple times
+        if self._list:  # avoid loading multiple times
             return False
         if self._FileIO.exists_file(directory, filename):
             self._list = self._FileIO.load_file(directory, filename)

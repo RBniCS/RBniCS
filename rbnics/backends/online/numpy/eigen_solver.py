@@ -27,7 +27,7 @@ class EigenSolver(AbstractEigenSolver):
         self.parameters = dict()
         self.eigs = None
         self.eigv = None
-        assert bcs is None # the case bcs != None has not been implemented yet
+        assert bcs is None  # the case bcs != None has not been implemented yet
 
     def set_parameters(self, parameters):
         self.parameters.update(parameters)
@@ -41,10 +41,10 @@ class EigenSolver(AbstractEigenSolver):
 
         assert "spectrum" in self.parameters
         if self.parameters["spectrum"] == "largest real":
-            idx = eigs.argsort() # sort by increasing value
-            idx = idx[::-1] # reverse the order
+            idx = eigs.argsort()  # sort by increasing value
+            idx = idx[::-1]  # reverse the order
         elif self.parameters["spectrum"] == "smallest real":
-            idx = eigs.argsort() # sort by increasing value
+            idx = eigs.argsort()  # sort by increasing value
         else:
             return ValueError("Invalid spectrum parameter in EigenSolver")
 

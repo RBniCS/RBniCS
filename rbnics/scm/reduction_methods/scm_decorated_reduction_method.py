@@ -31,7 +31,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert "SCM" in kwargs
             Nmax_SCM = kwargs["SCM"]
             assert isinstance(Nmax_SCM, int)
-            self.SCM_reduction.set_Nmax(Nmax_SCM) # kwargs are not needed
+            self.SCM_reduction.set_Nmax(Nmax_SCM)  # kwargs are not needed
 
         # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
@@ -39,7 +39,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert "SCM" in kwargs
             tol_SCM = kwargs["SCM"]
             assert isinstance(tol_SCM, Number)
-            self.SCM_reduction.set_tolerance(tol_SCM) # kwargs are not needed
+            self.SCM_reduction.set_tolerance(tol_SCM)  # kwargs are not needed
 
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
@@ -49,7 +49,7 @@ def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             assert "SCM" in kwargs
             ntrain_SCM = kwargs["SCM"]
             import_successful_SCM = self.SCM_reduction.initialize_training_set(
-                ntrain_SCM, enable_import=True, sampling=sampling) # kwargs are not needed
+                ntrain_SCM, enable_import=True, sampling=sampling)  # kwargs are not needed
             # If an exception is raised we will fall back to exact evaluation,
             # and thus we cannot use a distributed training set
             self.training_set.serialize_maximum_computations()

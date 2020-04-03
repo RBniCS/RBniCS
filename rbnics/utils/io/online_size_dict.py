@@ -33,7 +33,7 @@ class OnlineSizeDict(OrderedDict):
                         del kwargs[component]
                 else:
                     assert isinstance(default, dict)
-                    N = OnlineSizeDict(default) # copy the default dict
+                    N = OnlineSizeDict(default)  # copy the default dict
             else:
                 assert isinstance(N, (int, OnlineSizeDict))
                 if isinstance(N, int):

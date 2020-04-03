@@ -20,13 +20,13 @@ class NonHierarchicalBasisFunctionsMatrix(object):
     def init(self, components_name):
         self._components_name = components_name
 
-    @overload(slice) # e.g. key = :N, return the first N functions
+    @overload(slice)  # e.g. key = :N, return the first N functions
     def __getitem__(self, key):
         N = self._convert_key(key)
         assert N in self._content
         return self._content[N]
 
-    @overload(slice, object) # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
+    @overload(slice, object)  # the second argument is object in order to handle FunctionsList's AdditionalFunctionType
     def __setitem__(self, key, item):
         N = self._convert_key(key)
         self._content[N] = item
@@ -55,7 +55,7 @@ class NonHierarchicalBasisFunctionsMatrix(object):
         parallel_io(save_Nmax_task)
 
     def load(self, directory, filename):
-        if len(self._content) > 0: # avoid loading multiple times
+        if len(self._content) > 0:  # avoid loading multiple times
             return False
         else:
             Nmax = self._load_Nmax(directory, filename)

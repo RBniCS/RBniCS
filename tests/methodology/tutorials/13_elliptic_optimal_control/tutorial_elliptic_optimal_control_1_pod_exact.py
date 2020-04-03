@@ -10,8 +10,8 @@ from rbnics import *
 @ExactParametrizedFunctions()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
-    ("x[0]", "x[1]"), # subdomain 1
-    ("mu[0]*(x[0] - 1) + 1", "x[1]"), # subdomain 2
+    ("x[0]", "x[1]"),  # subdomain 1
+    ("mu[0]*(x[0] - 1) + 1", "x[1]"),  # subdomain 2
 )
 class EllipticOptimalControl(EllipticOptimalControlProblem):
 

@@ -13,7 +13,7 @@ class DelayedFunctionsList(object):
     def __init__(self, space):
         self.space = space
         self._enrich_memory = list()
-        self._precomputed_slices = Cache() # from tuple to DelayedFunctionsList
+        self._precomputed_slices = Cache()  # from tuple to DelayedFunctionsList
 
     def enrich(self, function, component=None, weight=None, copy=True):
         assert component is None
@@ -39,7 +39,7 @@ class DelayedFunctionsList(object):
     def __getitem__(self, key):
         return self._enrich_memory[key]
 
-    @overload(slice) # e.g. key = :N, return the first N functions
+    @overload(slice)  # e.g. key = :N, return the first N functions
     def __getitem__(self, key):
         if key.start is not None:
             start = key.start
@@ -76,7 +76,7 @@ class DelayedFunctionsList(object):
             memory.save(directory, filename + "_" + str(index))
 
     def load(self, directory, filename):
-        if len(self._enrich_memory) > 0: # avoid loading multiple times
+        if len(self._enrich_memory) > 0:  # avoid loading multiple times
             return False
         else:
             assert LengthIO.exists_file(directory, filename + "_length")

@@ -10,7 +10,7 @@ def assemble_operator_for_derivative(jacobian_term_to_residual_term):
     def assemble_operator_for_derivative_decorator(assemble_operator):
         def assemble_operator_for_derivative_decorator_impl(self, term):
             residual_term = jacobian_term_to_residual_term.get(term)
-            if residual_term is None: # term was not a jacobian_term
+            if residual_term is None:  # term was not a jacobian_term
                 return assemble_operator(self, term)
             else:
                 trial = TrialFunction(self.V)

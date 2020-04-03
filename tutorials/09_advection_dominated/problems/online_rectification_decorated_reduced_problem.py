@@ -80,7 +80,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 # Call Parent
                 EllipticCoerciveReducedProblem_DerivedClass._init_inner_products(self, current_stage)
             elif current_stage == "offline_rectification_postprocessing":
-                pass # We do not call Parent method as there is no need to re-initialize offline inner products
+                pass  # We do not call Parent method as there is no need to re-initialize offline inner products
             else:
                 # Call Parent, which may eventually raise an error
                 EllipticCoerciveReducedProblem_DerivedClass._init_inner_products(self, current_stage)
@@ -90,7 +90,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                 # Call Parent
                 EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
             elif current_stage == "offline_rectification_postprocessing":
-                pass # We do not call Parent method as there is no need to re-initialize offline basis functions
+                pass  # We do not call Parent method as there is no need to re-initialize offline basis functions
             else:
                 # Call Parent, which may eventually raise an error
                 EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
@@ -123,7 +123,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
         def assemble_operator(self, term, current_stage="online"):
             if term == "projection_truth_snapshots":
                 assert current_stage in ("online", "offline_rectification_postprocessing")
-                if current_stage == "online": # load from file
+                if current_stage == "online":  # load from file
                     self.operator["projection_truth_snapshots"].load(
                         self.folder["reduced_operators"], "projection_truth_snapshots")
                     return self.operator["projection_truth_snapshots"]
@@ -157,7 +157,7 @@ def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_De
                     raise ValueError("Invalid stage in assemble_operator().")
             elif term == "projection_reduced_snapshots":
                 assert current_stage in ("online", "offline_rectification_postprocessing")
-                if current_stage == "online": # load from file
+                if current_stage == "online":  # load from file
                     self.operator["projection_reduced_snapshots"].load(
                         self.folder["reduced_operators"], "projection_reduced_snapshots")
                     return self.operator["projection_reduced_snapshots"]

@@ -51,8 +51,8 @@ def basic_tensor_load(backend, wrapping):
                 V_1__dof_map_reader_mapping = wrapping.build_dof_map_reader_mapping(V_1)
                 (V_0__dof_map_writer_mapping, V_1__dof_map_writer_mapping) = PickleIO.load_file(
                     directory, "." + form_name)
-                matrix_row_permutation = dict() # from row index at time of saving to current row index
-                matrix_col_permutation = dict() # from col index at time of saving to current col index
+                matrix_row_permutation = dict()  # from row index at time of saving to current row index
+                matrix_col_permutation = dict()  # from col index at time of saving to current col index
                 writer_mat = _matrix_load(directory, filename, mpi_comm)
                 writer_row_start, writer_row_end = writer_mat.getOwnershipRange()
                 for writer_row in range(writer_row_start, writer_row_end):
@@ -77,7 +77,7 @@ def basic_tensor_load(backend, wrapping):
                 V_0 = wrapping.form_argument_space(form, 0)
                 V_0__dof_map_reader_mapping = wrapping.build_dof_map_reader_mapping(V_0)
                 V_0__dof_map_writer_mapping = PickleIO.load_file(directory, "." + form_name)
-                vector_permutation = dict() # from index at time of saving to current index
+                vector_permutation = dict()  # from index at time of saving to current index
                 writer_vec = _vector_load(directory, filename, mpi_comm)
                 writer_row_start, writer_row_end = writer_vec.getOwnershipRange()
                 for writer_row in range(writer_row_start, writer_row_end):

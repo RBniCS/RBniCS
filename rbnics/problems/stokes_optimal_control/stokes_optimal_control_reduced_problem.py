@@ -85,7 +85,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
 
         # Internal method for error computation
         def _compute_error(self, **kwargs):
-            components = ["v", "p", "u", "w", "q"] # but not supremizers
+            components = ["v", "p", "u", "w", "q"]  # but not supremizers
             if "components" not in kwargs:
                 kwargs["components"] = components
             else:
@@ -94,7 +94,7 @@ def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_De
 
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error, **kwargs):
-            components = ["v", "p", "u", "w", "q"] # but not supremizers
+            components = ["v", "p", "u", "w", "q"]  # but not supremizers
             if "components" not in kwargs:
                 kwargs["components"] = components
             else:

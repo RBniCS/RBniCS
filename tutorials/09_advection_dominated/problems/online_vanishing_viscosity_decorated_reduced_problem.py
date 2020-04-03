@@ -105,13 +105,13 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
 
         def _init_basis_functions(self, current_stage="online"):
             if current_stage == "online":
-                if self.basis_functions is None: # avoid re-initializing basis functions matrix multiple times
+                if self.basis_functions is None:  # avoid re-initializing basis functions matrix multiple times
                     self.basis_functions = NonHierarchicalBasisFunctionsMatrix(self.truth_problem.V)
                 self.basis_functions.init(self.truth_problem.components)
                 basis_functions_loaded = self.basis_functions.load(self.folder["basis"], "basis")
                 if basis_functions_loaded:
                     self.N = len(self.basis_functions)
-                    self.N_bc = 0 # TODO handle inhomogeneous bcs
+                    self.N_bc = 0  # TODO handle inhomogeneous bcs
             elif current_stage == "offline":
                 EllipticCoerciveReducedProblem_DerivedClass._init_basis_functions(self, current_stage)
             elif current_stage == "offline_vanishing_viscosity_postprocessing":
@@ -148,7 +148,7 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
         def assemble_operator(self, term, current_stage="online"):
             if term == "vanishing_viscosity":
                 assert current_stage in ("online", "offline_vanishing_viscosity_postprocessing")
-                if current_stage == "online": # load from file
+                if current_stage == "online":  # load from file
                     self.operator["vanishing_viscosity"].load(
                         self.folder["reduced_operators"], "operator_vanishing_viscosity")
                     return self.operator["vanishing_viscosity"]

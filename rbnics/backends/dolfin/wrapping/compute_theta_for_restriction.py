@@ -8,7 +8,7 @@ def compute_theta_for_restriction(restricted_term_to_original_term):
     def compute_theta_for_restriction_decorator(compute_theta):
         def compute_theta_for_restriction_decorator_impl(self, term):
             original_term = restricted_term_to_original_term.get(term)
-            if original_term is None: # term was not a restricted term
+            if original_term is None:  # term was not a restricted term
                 return compute_theta(self, term)
             else:
                 assert term.endswith("_restricted")

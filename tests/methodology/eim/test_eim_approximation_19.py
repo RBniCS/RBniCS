@@ -96,7 +96,7 @@ def test_eim_approximation_19(expression_type, basis_generation):
 
         def offline(self):
             self.reduced_problem = MockReducedProblem(self.truth_problem)
-            if self.folder["basis"].create(): # basis folder was not available yet
+            if self.folder["basis"].create():  # basis folder was not available yet
                 for (index, mu) in enumerate(self.training_set):
                     self.truth_problem.set_mu(mu)
                     print("solving mock problem at mu =", self.truth_problem.mu)
@@ -169,7 +169,7 @@ def test_eim_approximation_19(expression_type, basis_generation):
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
-            else: # impossible to arrive here anyway thanks to the assert
+            else:  # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 
     # 1. Create the mesh for this test

@@ -88,7 +88,7 @@ class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinRe
     # Compute the error of the reduced order approximation with respect to the full order one
     # over the testing set
     def error_analysis(self, N_generator=None, filename=None, **kwargs):
-        components = ["v", "p", "u", "w", "q"] # but not supremizers
+        components = ["v", "p", "u", "w", "q"]  # but not supremizers
         kwargs["components"] = components
 
         StokesOptimalControlPODGalerkinReduction_Base.error_analysis(self, N_generator, filename, **kwargs)

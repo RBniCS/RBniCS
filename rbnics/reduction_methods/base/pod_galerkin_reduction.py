@@ -200,7 +200,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     N = self.reduced_problem.N
                     if isinstance(N, dict):
                         N = min(N.values())
-                    for n in range(1, N + 1): # n = 1, ... N
+                    for n in range(1, N + 1):  # n = 1, ... N
                         yield n
 
             if "components" in kwargs:
@@ -298,7 +298,7 @@ def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
                     N = self.reduced_problem.N
                     if isinstance(N, dict):
                         N = min(N.values())
-                    for n in range(1, N + 1): # n = 1, ... N
+                    for n in range(1, N + 1):  # n = 1, ... N
                         yield n
 
             def N_generator_items():

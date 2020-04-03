@@ -86,7 +86,7 @@ def _function_from_ufl_component_tensor(expression: Product, indices: tuple_of(I
     assert isinstance(factor_1, (Number, ScalarValue)) or isinstance(factor_2, (Number, ScalarValue))
     if isinstance(factor_1, (Number, ScalarValue)):
         factor_2 = as_tensor(factor_2, indices)
-    else: # isinstance(factor_2, (Number, ScalarValue))
+    else:  # isinstance(factor_2, (Number, ScalarValue))
         factor_1 = as_tensor(factor_1, indices)
     return _function_from_ufl_product(factor_1, factor_2)
 

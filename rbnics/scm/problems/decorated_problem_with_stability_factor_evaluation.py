@@ -19,7 +19,7 @@ def DecoratedProblemWithStabilityFactorEvaluation(ParametrizedDifferentialProble
             return minimum_eigenvalue
 
         def get_stability_factor_lower_bound(self):
-            if self.stability_factor_lower_bound_calculator is not None: # SCM case
+            if self.stability_factor_lower_bound_calculator is not None:  # SCM case
                 return self.stability_factor_lower_bound_calculator.get_stability_factor_lower_bound()
             else:
                 # ExactStabilityFactor case: note that we cannot simply call evaluate_stability_factor

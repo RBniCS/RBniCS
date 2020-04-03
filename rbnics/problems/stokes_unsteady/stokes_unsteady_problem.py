@@ -64,13 +64,13 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
 
         def export_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:
-                component = ["u", "p"] # but not "s"
+                component = ["u", "p"]  # but not "s"
             AbstractCFDUnsteadyProblem_Base.export_solution(
                 self, folder, filename, solution_over_time, component, suffix)
 
         def import_solution(self, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
             if component is None:
-                component = ["u", "p"] # but not "s"
+                component = ["u", "p"]  # but not "s"
             AbstractCFDUnsteadyProblem_Base.import_solution(
                 self, folder, filename, solution_over_time, component, suffix)
 

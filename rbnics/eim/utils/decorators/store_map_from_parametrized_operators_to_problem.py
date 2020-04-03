@@ -19,7 +19,7 @@ def StoreMapFromParametrizedOperatorsToProblem(ExactParametrizedFunctionsDecorat
 
             # Populate map from parametrized operators to (this) problem
             for (term, operator) in self.operator.items():
-                if operator is not None: # raised by assemble_operator if output computation is optional
+                if operator is not None:  # raised by assemble_operator if output computation is optional
                     for operator_q in operator:
                         add_to_map_from_parametrized_operator_to_problem(operator_q, self)
                         # this will also add non-parametrized assembled operator to the storage

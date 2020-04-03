@@ -29,7 +29,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Storage for DEIM reduction methods
-            self.DEIM_reductions = dict() # from term to dict of DEIMApproximationReductionMethod
+            self.DEIM_reductions = dict()  # from term to dict of DEIMApproximationReductionMethod
 
             # Preprocess each term in the affine expansions
             for (term, DEIM_approximations_term) in self.truth_problem.DEIM_approximations.items():
@@ -47,7 +47,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set Nmax of DEIM reductions
             def setter(DEIM_reduction, Nmax_DEIM):
-                DEIM_reduction.set_Nmax(max(DEIM_reduction.Nmax, Nmax_DEIM)) # kwargs are not needed
+                DEIM_reduction.set_Nmax(max(DEIM_reduction.Nmax, Nmax_DEIM))  # kwargs are not needed
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
 
         # OFFLINE: set tolerance (stopping criterion)
@@ -55,7 +55,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set tolerance of DEIM reductions
             def setter(DEIM_reduction, tol_DEIM):
-                DEIM_reduction.set_tolerance(max(DEIM_reduction.tol, tol_DEIM)) # kwargs are not needed
+                DEIM_reduction.set_tolerance(max(DEIM_reduction.tol, tol_DEIM))  # kwargs are not needed
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, Number, **kwargs)
 
         # OFFLINE: set the elements in the training set.
@@ -85,7 +85,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         def _propagate_setter_from_kwargs_to_DEIM_reductions(self, setter, Type, **kwargs):
             assert "DEIM" in kwargs
             kwarg_DEIM = kwargs["DEIM"]
-            return_value = True # will be either a bool or None
+            return_value = True  # will be either a bool or None
             if isinstance(kwarg_DEIM, dict):
                 for (term, DEIM_reductions_term) in self.DEIM_reductions.items():
                     if len(self.DEIM_reductions[term]) > 0:
@@ -105,7 +105,7 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                     for (_, DEIM_reduction_term_q) in DEIM_reductions_term.items():
                         current_return_value = setter(DEIM_reduction_term_q, kwarg_DEIM)
                         return_value = current_return_value and return_value
-            return return_value # an "and" with a None results in None, so this method returns only if necessary
+            return return_value  # an "and" with a None results in None, so this method returns only if necessary
 
         # Perform the offline phase of the reduced order model
         def offline(self):

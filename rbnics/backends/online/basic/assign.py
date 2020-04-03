@@ -47,7 +47,7 @@ def assign(backend):
                     object_to.vector().N = N
                     object_to.vector()[:] = object_from.vector()
                     self._preserve_vector_attributes(object_to.vector(), object_from.vector())
-                else: # isinstance(object_from.vector().N, int) and isinstance(object_to.vector().N, int):
+                else:  # isinstance(object_from.vector().N, int) and isinstance(object_to.vector().N, int):
                     assert object_to.vector().N == object_from.vector().N
                     object_to.vector()[:] = object_from.vector()
                     self._preserve_vector_attributes(object_to.vector(), object_from.vector())
@@ -94,7 +94,7 @@ def assign(backend):
                             <= set(object_from._component_name_to_basis_component_index.keys()))
                     assert (object_to._component_name_to_basis_component_length.items()
                             <= object_from._component_name_to_basis_component_length.items())
-                else: # is superset
+                else:  # is superset
                     assert (set(object_to._component_name_to_basis_component_index.keys())
                             >= set(object_from._component_name_to_basis_component_index.keys()))
                     assert (object_to._component_name_to_basis_component_length.items()

@@ -11,7 +11,7 @@ from rbnics.utils.decorators.backend_for import _cache as backends_cache
 
 def AbstractBackend(Class):
     assert inspect.isclass(Class)
-    assert hasattr(Class, "__abstractmethods__") # this means that ABCMeta was used as metaclass, see PEP 3119
+    assert hasattr(Class, "__abstractmethods__")  # this means that ABCMeta was used as metaclass, see PEP 3119
 
     assert not hasattr(backends_cache, Class.__name__)
     setattr(backends_cache, Class.__name__, Class)

@@ -30,7 +30,7 @@ class CompositeDistribution(Distribution):
             if isinstance(distribution, EquispacedDistribution):
                 sub_box = distribution_to_sub_box[distribution]
                 sub_set = distribution.sample(sub_box, n)
-                n = len(sub_set) # may be greater or equal than the one originally provided
+                n = len(sub_set)  # may be greater or equal than the one originally provided
                 components = self.distribution_to_components[distribution]
                 components_to_sub_set[tuple(components)] = sub_set
         assert len(components_to_sub_set) in (0, 1)

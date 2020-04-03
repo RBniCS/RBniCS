@@ -77,10 +77,10 @@ def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix)
     output = BasisFunctionsMatrix(space)
     output.init(components_name)
     for component_name in components_name:
-        operator_memory_over_basis_functions_index = None # list (over basis functions index) of list (over theta)
+        operator_memory_over_basis_functions_index = None  # list (over basis functions index) of list (over theta)
         for operator in operators:
             operator_memory = operator._enrich_memory[
-                component_name] # list (over basis functions index) for current theta
+                component_name]  # list (over basis functions index) for current theta
             if operator_memory_over_basis_functions_index is None:
                 operator_memory_over_basis_functions_index = [list() for _ in operator_memory]
             assert len(operator_memory_over_basis_functions_index) == len(operator_memory)

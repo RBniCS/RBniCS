@@ -47,7 +47,7 @@ def patch_benchmark_plugin(benchmark_plugin):
             setup = kwargs.pop("setup")
             teardown = kwargs.pop("teardown", _do_nothing)
 
-            assert len(kwargs) == 0 # no kwargs allowed, except setup and teardown
+            assert len(kwargs) == 0  # no kwargs allowed, except setup and teardown
 
             if not self.disabled:
                 # Choose how many time we must repeat the test, basing the timing on the setup + function + teardown
@@ -86,8 +86,8 @@ def patch_benchmark_plugin(benchmark_plugin):
                 teardown(*args, result)
 
         def _make_runner(self, setup, function_to_benchmark, teardown, args_, kwargs_):
-            assert len(args_) == 0   # arguments will be provided
-            assert len(kwargs_) == 0 # by the setup function
+            assert len(args_) == 0    # arguments will be provided
+            assert len(kwargs_) == 0  # by the setup function
 
             def runner(loops_range, timer=self._timer):
                 gc_enabled = gc.isenabled()
@@ -127,8 +127,8 @@ def patch_benchmark_plugin(benchmark_plugin):
         def display(self, tr):
             OriginalBenchmarkSession.display(self, tr)
             # Speedup/overhead computation
-            datetimes = list() # over runs
-            speedups_tmp = dict() # from (test name, test type, arguments) to list (over runs) of speedups
+            datetimes = list()  # over runs
+            speedups_tmp = dict()  # from (test name, test type, arguments) to list (over runs) of speedups
             for (idx, run) in enumerate(list(self.storage.load())[:-8:-1]):
                 datetimes.append(time.strftime(
                     "%Y-%m-%d %H:%M", time.localtime(time.mktime(

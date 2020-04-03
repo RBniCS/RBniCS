@@ -27,9 +27,9 @@ class SCMApproximation(ParametrizedProblem):
         self.truth_problem = truth_problem
 
         # Define additional storage for SCM
-        self.bounding_box_min = BoundingBoxSideList() # minimum values of the bounding box. Vector of size Q
-        self.bounding_box_max = BoundingBoxSideList() # maximum values of the bounding box. Vector of size Q
-        self.training_set = None # SCM algorithm needs the training set also in the online stage
+        self.bounding_box_min = BoundingBoxSideList()  # minimum values of the bounding box. Vector of size Q
+        self.bounding_box_max = BoundingBoxSideList()  # maximum values of the bounding box. Vector of size Q
+        self.training_set = None  # SCM algorithm needs the training set also in the online stage
         # greedy_selected_parameters: list storing the parameters selected during the training phase
         self.greedy_selected_parameters = GreedySelectedParametersList()
         # greedy_selected_parameters_complement: dict, over N, of list storing the complement of parameters
@@ -138,7 +138,7 @@ class SCMApproximation(ParametrizedProblem):
         M_p = min(N, len(self.training_set) - len(self.greedy_selected_parameters))
 
         # 1. Constrain the Q variables to be in the bounding box
-        bounds = list() # of Q pairs
+        bounds = list()  # of Q pairs
         for q in range(Q):
             assert self.bounding_box_min[q] <= self.bounding_box_max[q]
             bounds.append((self.bounding_box_min[q], self.bounding_box_max[q]))

@@ -18,4 +18,4 @@ def CustomizeReducedProblemFor(Problem):
         return customizer
     return CustomizeReducedProblemFor_Decorator
 
-_cache = Cache() # from Problem to decorator
+_cache = Cache()  # from Problem to decorator

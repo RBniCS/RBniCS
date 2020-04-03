@@ -19,9 +19,9 @@ class ParametrizedProblem(object):
     def __init__(self, folder_prefix):
 
         # Current parameters value
-        self.mu = tuple() # tuple of real numbers
+        self.mu = tuple()  # tuple of real numbers
         # Parameter ranges
-        self.mu_range = list() # list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
+        self.mu_range = list()  # list of (min, max) pairs, such that len(self.mu) == len(self.mu_range)
         #
         self.folder_prefix = folder_prefix
         self.folder = Folders()

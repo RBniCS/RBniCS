@@ -76,10 +76,10 @@ class EIMApproximationReductionMethod(ReductionMethod):
         at_least_one_required_folder_created = required_folders.create()
         at_least_one_optional_folder_created = optional_folders.create()  # noqa: F841
         if not at_least_one_required_folder_created:
-            return False # offline construction should be skipped, since data are already available
+            return False  # offline construction should be skipped, since data are already available
         else:
             self.EIM_approximation.init("offline")
-            return True # offline construction should be carried out
+            return True  # offline construction should be carried out
 
     @snapshot_links_to_cache
     def _offline(self):
@@ -195,7 +195,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         else:
             # Trivial case, greedy will stop at the first iteration
             assert self.EIM_approximation.N == 0
-            self.EIM_approximation.basis_functions.enrich(error) # error is actually zero
+            self.EIM_approximation.basis_functions.enrich(error)  # error is actually zero
         self.EIM_approximation.basis_functions.save(self.EIM_approximation.folder["basis"], "basis")
         self.EIM_approximation.N += 1
 
@@ -238,7 +238,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         assert self.EIM_approximation.basis_generation == "Greedy"
 
         # Print some additional information on the consistency of the reduced basis
-        if self.EIM_approximation.N > 0: # skip during initialization
+        if self.EIM_approximation.N > 0:  # skip during initialization
             self.EIM_approximation.solve()
             self.EIM_approximation.snapshot = self.load_snapshot()
             error = (self.EIM_approximation.snapshot
@@ -248,7 +248,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
             (maximum_error_on_interpolation_locations, _) = max(abs(error_on_interpolation_locations))
             print("interpolation error for current mu =", abs(maximum_error))
             print("interpolation error on interpolation locations for current mu =",
-                  abs(maximum_error_on_interpolation_locations)) # for consistency check, should be zero
+                  abs(maximum_error_on_interpolation_locations))  # for consistency check, should be zero
 
         # Carry out the actual greedy search
         def solve_and_computer_error(mu):
@@ -289,7 +289,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     # Compute the error of the empirical interpolation approximation with respect to the
     # exact function over the testing set
     def error_analysis(self, N_generator=None, filename=None, **kwargs):
-        assert len(kwargs) == 0 # not used in this method
+        assert len(kwargs) == 0  # not used in this method
 
         self._init_error_analysis(**kwargs)
         self._error_analysis(N_generator, filename, **kwargs)
@@ -299,7 +299,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         if N_generator is None:
             def N_generator():
                 N = self.EIM_approximation.N
-                for n in range(1, N + 1): # n = 1, ... N
+                for n in range(1, N + 1):  # n = 1, ... N
                     yield n
 
         def N_generator_max():
@@ -348,7 +348,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
     # Compute the speedup of the empirical interpolation approximation with respect to the
     # exact function over the testing set
     def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
-        assert len(kwargs) == 0 # not used in this method
+        assert len(kwargs) == 0  # not used in this method
 
         self._init_speedup_analysis(**kwargs)
         self._speedup_analysis(N_generator, filename, **kwargs)
@@ -375,7 +375,7 @@ class EIMApproximationReductionMethod(ReductionMethod):
         if N_generator is None:
             def N_generator():
                 N = self.EIM_approximation.N
-                for n in range(1, N + 1): # n = 1, ... N
+                for n in range(1, N + 1):  # n = 1, ... N
                     yield n
 
         def N_generator_max():

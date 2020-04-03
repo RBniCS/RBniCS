@@ -48,7 +48,7 @@ def build_dof_map_reader_mapping(V, local_dofmap=None):
         return _dof_map_reader_mapping_cache[V]
 _dof_map_reader_mapping_cache = Cache()
 
-def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cell_dof in dolfin
+def _build_dof_map_writer_mapping(V, gathered_dofmap):  # was build_global_to_cell_dof in dolfin
     mpi_comm = V.mesh().mpi_comm()
 
     # Build global dof -> (global cell, local dof) map on root process
@@ -68,7 +68,7 @@ def _build_dof_map_writer_mapping(V, gathered_dofmap): # was build_global_to_cel
     global_dof_to_cell_dof = mpi_comm.bcast(global_dof_to_cell_dof, root=0)
     return global_dof_to_cell_dof
 
-def _build_dof_map_reader_mapping(V, gathered_dofmap): # was build_dof_map in dolfin
+def _build_dof_map_reader_mapping(V, gathered_dofmap):  # was build_dof_map in dolfin
     mesh = V.mesh()
     mpi_comm = mesh.mpi_comm()
 
@@ -94,7 +94,7 @@ def _get_local_dofmap(V):
     dofmap = V.dofmap()
     mpi_comm = mesh.mpi_comm()
 
-    local_dofmap = list() # of integers
+    local_dofmap = list()  # of integers
 
     # Check that local-to-global cell numbering is available
     assert mesh.topology().have_global_indices(mesh.topology().dim())

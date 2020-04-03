@@ -24,29 +24,29 @@ mesh = UnitSquareMesh(10, 10)
 
 V = FunctionSpace(mesh, "Lagrange", 2)
 
-expr1 = Expression("x[0]", mu_0=0., element=V.ufl_element()) # f_5
-expr2 = Expression("x[1]", mu_0=0., element=V.ufl_element()) # f_6
-expr3 = Expression("x[0]", mu_0=0., element=V.ufl_element()) # f_7
-expr4 = Expression("x[1]", mu_0=0., element=V.ufl_element()) # f_8
-expr5 = Expression(("x[0]", "x[1]"), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_9
-expr6 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_10
-expr7 = Expression("x[0]", element=V.ufl_element()) # f_11
-expr8 = Expression("x[1]", element=V.ufl_element()) # f_12
-expr9 = Expression("x[0]", element=V.ufl_element()) # f_13
-expr10 = Constant(5) # f_14
-expr11 = Constant(((1, 2), (3, 4))) # f_15
+expr1 = Expression("x[0]", mu_0=0., element=V.ufl_element())  # f_5
+expr2 = Expression("x[1]", mu_0=0., element=V.ufl_element())  # f_6
+expr3 = Expression("x[0]", mu_0=0., element=V.ufl_element())  # f_7
+expr4 = Expression("x[1]", mu_0=0., element=V.ufl_element())  # f_8
+expr5 = Expression(("x[0]", "x[1]"), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_9
+expr6 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_10
+expr7 = Expression("x[0]", element=V.ufl_element())  # f_11
+expr8 = Expression("x[1]", element=V.ufl_element())  # f_12
+expr9 = Expression("x[0]", element=V.ufl_element())  # f_13
+expr10 = Constant(5)  # f_14
+expr11 = Constant(((1, 2), (3, 4)))  # f_15
 
 vector_V = VectorFunctionSpace(mesh, "Lagrange", 3)
 tensor_V = TensorFunctionSpace(mesh, "Lagrange", 1)
 
-expr12 = Function(V) # f_20
-expr13 = Function(vector_V) # f_23
+expr12 = Function(V)  # f_20
+expr13 = Function(vector_V)  # f_23
 expr13_split = split(expr13)
-expr14 = Function(tensor_V) # f_26
-expr15 = Function(V) # f_29
-expr16 = Function(vector_V) # f_32
+expr14 = Function(tensor_V)  # f_26
+expr15 = Function(V)  # f_29
+expr16 = Function(vector_V)  # f_32
 expr16_split = split(expr16)
-expr17 = Function(tensor_V) # f_35
+expr17 = Function(tensor_V)  # f_35
 
 class Problem(object):
     def __init__(self, name):

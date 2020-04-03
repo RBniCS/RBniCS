@@ -11,8 +11,8 @@ from mshr import *
 domain = Rectangle(Point(0.0, 0.0), Point(1.0, 1.0))
 subdomain1 = Rectangle(Point(0.0, 0.0), Point(0.5, 1.0))
 subdomain2 = Rectangle(Point(0.5, 0.0), Point(1.0, 1.0))
-domain.set_subdomain(1, subdomain1) # add some fake subdomains to make sure that the mesh is split
-domain.set_subdomain(2, subdomain2) # at x[0] = 0.5, since we will pin the pressure there
+domain.set_subdomain(1, subdomain1)  # add some fake subdomains to make sure that the mesh is split
+domain.set_subdomain(2, subdomain2)  # at x[0] = 0.5, since we will pin the pressure there
 mesh = generate_mesh(domain, 27)
 
 # Create subdomains

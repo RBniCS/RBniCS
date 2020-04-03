@@ -18,7 +18,7 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
     @sync_setters("reduced_problem", "set_mu_range", "mu_range")
     def __init__(self, reduced_problem, spectrum, eigensolver_parameters, folder_prefix):
         # Call the parent initialization
-        ParametrizedProblem.__init__(self, folder_prefix) # this class does not export anything
+        ParametrizedProblem.__init__(self, folder_prefix)  # this class does not export anything
         self.reduced_problem = reduced_problem
 
         # Matrices/vectors resulting from the truth discretization
@@ -33,7 +33,7 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
 
         # Solution
         self._eigenvalue = 0.
-        self._eigenvector = None # OnlineFunction
+        self._eigenvector = None  # OnlineFunction
         # I/O
         def _eigenvalue_cache_key_generator(*args, **kwargs):
             return args
@@ -91,8 +91,8 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
         eigensolver.set_parameters(eigensolver_parameters)
         eigensolver.solve(1)
 
-        r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
-        r_vector, c_vector = eigensolver.get_eigenvector(0) # real and complex part of the eigenvectors
+        r, c = eigensolver.get_eigenvalue(0)  # real and complex part of the eigenvalue
+        r_vector, c_vector = eigensolver.get_eigenvector(0)  # real and complex part of the eigenvectors
 
         assert isclose(c, 0.), "The required eigenvalue is not real"
 

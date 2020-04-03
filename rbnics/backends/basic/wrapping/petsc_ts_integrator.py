@@ -45,7 +45,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                     ksp.getPC().setType("lu")
                     if value == "default":
                         value = wrapping.get_default_linear_solver()
-                    if hasattr(ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                    if hasattr(ksp.getPC(), "setFactorSolverType"):  # PETSc >= 3.9
                         ksp.getPC().setFactorSolverType(value)
                     else:
                         ksp.getPC().setFactorSolverPackage(value)
@@ -92,7 +92,7 @@ def BasicPETScTSIntegrator(backend, wrapping):
                             ksp.getPC().setType("lu")
                             if value == "default":
                                 value = wrapping.get_default_linear_solver()
-                            if hasattr(ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                            if hasattr(ksp.getPC(), "setFactorSolverType"):  # PETSc >= 3.9
                                 ksp.getPC().setFactorSolverType(value_snes)
                             else:
                                 ksp.getPC().setFactorSolverPackage(value_snes)
@@ -230,8 +230,8 @@ def BasicPETScTSIntegrator(backend, wrapping):
         def _evaluate_solution(self, t, result):
             assert t >= self.t0 or isclose(t, self.t0, atol=self.monitor_eps)
             assert t <= self.T or isclose(t, self.T, atol=self.monitor_eps)
-            if isclose(t, self.t0, atol=self.monitor_eps): # t = t0
-                pass # assuming that result already contains the initial solution
+            if isclose(t, self.t0, atol=self.monitor_eps):  # t = t0
+                pass  # assuming that result already contains the initial solution
             else:
                 result_petsc = wrapping.to_petsc4py(result)
                 self.ts.interpolate(t, result_petsc)
@@ -241,22 +241,22 @@ def BasicPETScTSIntegrator(backend, wrapping):
         def _evaluate_solution_dot(self, t, result):
             assert t >= self.t0 or isclose(t, self.t0, atol=self.monitor_eps)
             assert t <= self.T or isclose(t, self.T, atol=self.monitor_eps)
-            if isclose(t, self.t0, atol=self.monitor_eps): # t = t0
-                pass # assuming that result already contains the initial solution
+            if isclose(t, self.t0, atol=self.monitor_eps):  # t = t0
+                pass  # assuming that result already contains the initial solution
             else:
                 # There is no equivalent TSInterpolate for solution dot, so we approximate it
                 # by a first order time discretization
-                current_dt = self.ts.getTimeStep() # might be different from self.dt with adaptivity
-                current_dt *= 0.5 # make sure to be in the latest time interval
-                if t - current_dt >= self.ts.getTime() - self.ts.getTimeStep(): # use backward finite difference
+                current_dt = self.ts.getTimeStep()  # might be different from self.dt with adaptivity
+                current_dt *= 0.5  # make sure to be in the latest time interval
+                if t - current_dt >= self.ts.getTime() - self.ts.getTimeStep():  # use backward finite difference
                     self._evaluate_solution(t, result)
                     self._evaluate_solution(t - current_dt, self.monitor_solution_prev)
-                else: # use forward finite difference
+                else:  # use forward finite difference
                     assert isclose(t, self.T, atol=self.monitor_eps), (
                         "This case should only happen when TS steps over final time")
                     assert t + current_dt <= self.ts.getTime()
                     bak_monitor_eps = self.monitor_eps
-                    self.monitor_eps = 2 * current_dt # disable assert inside self._evaluate_solution
+                    self.monitor_eps = 2 * current_dt  # disable assert inside self._evaluate_solution
                     self._evaluate_solution(t + current_dt, result)
                     self.monitor_eps = bak_monitor_eps
                     self._evaluate_solution(t, self.monitor_solution_prev)

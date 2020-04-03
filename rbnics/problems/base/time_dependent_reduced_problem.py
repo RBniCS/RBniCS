@@ -52,11 +52,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # Q_ic: integer (for problems with one component) or dict of integers (for problem with several components)
             self.Q_ic = None
             # Time derivative of the solution, at the current time
-            self._solution_dot = None # OnlineFunction
+            self._solution_dot = None  # OnlineFunction
             # Solution and output over time
-            self._solution_over_time = None # TimeSeries of Functions
-            self._solution_dot_over_time = None # TimeSeries of Functions
-            self._output_over_time = None # TimeSeries of numbers
+            self._solution_over_time = None  # TimeSeries of Functions
+            self._solution_dot_over_time = None  # TimeSeries of Functions
+            self._output_over_time = None  # TimeSeries of numbers
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
                 assert len(args) == 2
@@ -124,14 +124,14 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             # (self.initial_condition is None) == (self.initial_condition_is_homogeneous is None)
             # because self.initial_condition may still be None after initialization, if there
             # were no initial condition at all and the problem had only one component
-            if self.initial_condition_is_homogeneous is None: # init was not called already
+            if self.initial_condition_is_homogeneous is None:  # init was not called already
                 initial_condition = dict()
                 initial_condition_is_homogeneous = dict()
                 Q_ic = dict()
                 for component in self.components:
                     try:
                         theta_ic = self.compute_theta(initial_condition_string.format(c=component))
-                    except ValueError: # there were no initial condition to be imposed by lifting
+                    except ValueError:  # there were no initial condition to be imposed by lifting
                         initial_condition[component] = None
                         initial_condition_is_homogeneous[component] = True
                         Q_ic[component] = 0
@@ -154,7 +154,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
                         if not initial_condition_is_homogeneous[component]:
                             self.assemble_operator(initial_condition_string.format(c=component), "online")
                 elif current_stage == "offline":
-                    pass # Nothing else to be done
+                    pass  # Nothing else to be done
                 else:
                     raise ValueError("Invalid stage in _init_initial_condition().")
 
@@ -196,7 +196,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             assert current_stage in ("online", "offline")
             if term.startswith("initial_condition"):
                 component = term.replace("initial_condition", "").replace("_", "")
-                if current_stage == "online": # load from file
+                if current_stage == "online":  # load from file
                     if component != "":
                         initial_condition = self.initial_condition[component]
                     else:
@@ -240,7 +240,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_over_time.clear()
             self._solution_dot = OnlineFunction(N)
             self._solution_dot_over_time.clear()
-            if N == 0: # trivial case
+            if N == 0:  # trivial case
                 self._solution_over_time.extend([self._solution for _ in self._solution_over_time.expected_times()])
                 self._solution_dot_over_time.extend([
                     self._solution_dot for _ in self._solution_dot_over_time.expected_times()])
@@ -337,7 +337,7 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             except KeyError:
                 try:
                     self._compute_output(N)
-                except ValueError: # raised by compute_theta if output computation is optional
+                except ValueError:  # raised by compute_theta if output computation is optional
                     self._output_over_time.clear()
                     self._output_over_time.extend([NotImplemented] * len(self._solution_over_time))
                     self._output = NotImplemented

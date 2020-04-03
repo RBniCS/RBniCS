@@ -208,8 +208,8 @@ def test_reduced_mesh_load_elliptic_function(mesh, load_tempdir):
 
 def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
-    dofs = [d[0] for d in reduced_mesh.get_dofs_list()] # convert from 1-tuple to int
-    reduced_dofs = [d[0] for d in reduced_mesh.get_reduced_dofs_list()] # convert from 1-tuple to int
+    dofs = [d[0] for d in reduced_mesh.get_dofs_list()]  # convert from 1-tuple to int
+    reduced_dofs = [d[0] for d in reduced_mesh.get_reduced_dofs_list()]  # convert from 1-tuple to int
 
     mesh_dim = V.mesh().geometry().dim()
     assert mesh_dim in (1, 2)

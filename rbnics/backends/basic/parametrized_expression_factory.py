@@ -29,7 +29,7 @@ def ParametrizedExpressionFactory(backend, wrapping):
         def create_interpolation_locations_container(self):
             # Populate auxiliary_problems_and_components
             visited = set()
-            auxiliary_problems_and_components = set() # of (problem, component)
+            auxiliary_problems_and_components = set()  # of (problem, component)
             for node in wrapping.expression_iterator(self._expression):
                 if node in visited:
                     continue

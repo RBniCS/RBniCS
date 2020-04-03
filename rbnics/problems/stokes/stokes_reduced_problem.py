@@ -21,7 +21,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
         def __init__(self, truth_problem, **kwargs):
             StokesReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Auxiliary storage for solution of reduced order supremizer problem (if requested through solve_supremizer)
-            self._supremizer = None # OnlineFunction
+            self._supremizer = None  # OnlineFunction
             # I/O
             def _supremizer_cache_key_generator(*args, **kwargs):
                 assert len(args) == 2
@@ -62,7 +62,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 return bcs
 
         def solve_supremizer(self, solution):
-            N_us = OnlineSizeDict(solution.N) # create a copy
+            N_us = OnlineSizeDict(solution.N)  # create a copy
             del N_us["p"]
             kwargs = self._latest_solve_kwargs
             self._supremizer = OnlineFunction(N_us)
@@ -104,7 +104,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
         # Internal method for error computation
         def _compute_error(self, **kwargs):
-            components = ["u", "p"] # but not "s"
+            components = ["u", "p"]  # but not "s"
             if "components" not in kwargs:
                 kwargs["components"] = components
             else:
@@ -113,7 +113,7 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error, **kwargs):
-            components = ["u", "p"] # but not "s"
+            components = ["u", "p"]  # but not "s"
             if "components" not in kwargs:
                 kwargs["components"] = components
             else:

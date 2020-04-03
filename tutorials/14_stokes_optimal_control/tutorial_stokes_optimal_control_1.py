@@ -9,7 +9,7 @@ from rbnics import *
 
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
-    ("x[0]", "mu[0]*x[1]"), # subdomain 1
+    ("x[0]", "mu[0]*x[1]"),  # subdomain 1
 )
 class StokesOptimalControl(StokesOptimalControlProblem):
 

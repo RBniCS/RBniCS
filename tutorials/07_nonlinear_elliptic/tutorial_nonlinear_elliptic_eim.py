@@ -66,7 +66,7 @@ class NonlinearElliptic(NonlinearEllipticProblem):
             mu = self.mu
             c0 = (exp(mu[1] * u) - 1) / mu[1] * v * dx
             return (c0,)
-        elif term == "dc": # preferred over derivative() computation which does not cancel out trivial mu[1] factors
+        elif term == "dc":  # preferred over derivative() computation which does not cancel out trivial mu[1] factors
             du = self.du
             u = self.u
             mu = self.mu

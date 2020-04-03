@@ -163,7 +163,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
             :return: max error estimator and the respective parameter.
             """
 
-            if self.reduced_problem.N > 0: # skip during initialization
+            if self.reduced_problem.N > 0:  # skip during initialization
                 # Print some additional information on the consistency of the reduced basis
                 print("absolute error for current mu =", self.reduced_problem.compute_error())
                 print("absolute error estimator for current mu =", self.reduced_problem.estimate_error())
@@ -200,7 +200,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     N = self.reduced_problem.N
                     if isinstance(N, dict):
                         N = min(N.values())
-                    for n in range(1, N + 1): # n = 1, ... N
+                    for n in range(1, N + 1):  # n = 1, ... N
                         yield n
 
             if "components" in kwargs:
@@ -417,7 +417,7 @@ def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
                     N = self.reduced_problem.N
                     if isinstance(N, dict):
                         N = min(N.values())
-                    for n in range(1, N + 1): # n = 1, ... N
+                    for n in range(1, N + 1):  # n = 1, ... N
                         yield n
 
             def N_generator_items():

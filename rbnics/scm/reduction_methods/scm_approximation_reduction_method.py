@@ -67,10 +67,10 @@ class SCMApproximationReductionMethod(ReductionMethod):
         at_least_one_required_folder_created = required_folders.create()
         at_least_one_optional_folder_created = optional_folders.create()  # noqa: F841
         if not at_least_one_required_folder_created:
-            return False # offline construction should be skipped, since data are already available
+            return False  # offline construction should be skipped, since data are already available
         else:
             self.SCM_approximation.init("offline")
-            return True # offline construction should be carried out
+            return True  # offline construction should be carried out
 
     def _offline(self):
         print(TextBox("SCM offline phase begins", fill="="))
@@ -180,10 +180,10 @@ class SCMApproximationReductionMethod(ReductionMethod):
             stability_factor_upper_bound = self.SCM_approximation.get_stability_factor_upper_bound()
             ratio = stability_factor_lower_bound / stability_factor_upper_bound
 
-            if ratio < 0. and not isclose(ratio, 0.): # if ratio << 0
+            if ratio < 0. and not isclose(ratio, 0.):  # if ratio << 0
                 print("SCM warning at mu = " + str(mu)
                       + ": stability factor lower bound = " + str(stability_factor_lower_bound) + " < 0")
-            if ratio > 1. and not isclose(ratio, 1.): # if ratio >> 1
+            if ratio > 1. and not isclose(ratio, 1.):  # if ratio >> 1
                 print("SCM warning at mu = " + str(mu)
                       + ": stability factor lower bound = " + str(stability_factor_lower_bound)
                       + " > stability factor upper bound = " + str(stability_factor_upper_bound))
@@ -205,7 +205,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # Compute the error of the scm approximation with respect to the
     # exact stability factor over the testing set
     def error_analysis(self, N_generator=None, filename=None, **kwargs):
-        assert len(kwargs) == 0 # not used in this method
+        assert len(kwargs) == 0  # not used in this method
 
         self._init_error_analysis(**kwargs)
         self._error_analysis(N_generator, filename, **kwargs)
@@ -215,7 +215,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         if N_generator is None:
             def N_generator():
                 N = self.SCM_approximation.N
-                for n in range(1, N + 1): # n = 1, ... N
+                for n in range(1, N + 1):  # n = 1, ... N
                     yield n
 
         def N_generator_max():
@@ -273,7 +273,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
     # Compute the speedup of the scm approximation with respect to the
     # exact stability factor over the testing set
     def speedup_analysis(self, N_generator=None, filename=None, **kwargs):
-        assert len(kwargs) == 0 # not used in this method
+        assert len(kwargs) == 0  # not used in this method
 
         self._init_speedup_analysis(**kwargs)
         self._speedup_analysis(N_generator, filename, **kwargs)
@@ -292,7 +292,7 @@ class SCMApproximationReductionMethod(ReductionMethod):
         if N_generator is None:
             def N_generator():
                 N = self.SCM_approximation.N
-                for n in range(1, N + 1): # n = 1, ... N
+                for n in range(1, N + 1):  # n = 1, ... N
                     yield n
 
         def N_generator_max():

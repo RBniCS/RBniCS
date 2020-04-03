@@ -22,9 +22,9 @@ def custom_DirichletBC__init__(self, *args, **kwargs):
         _function_space = args[0]
         _value = args[1]
         if not isinstance(_value, Function):
-            if len(_function_space.component()) == 0: # FunctionSpace
+            if len(_function_space.component()) == 0:  # FunctionSpace
                 _value = project(_value, _function_space)
-            else: # subspace of a FunctionSpace
+            else:  # subspace of a FunctionSpace
                 _value = project(_value, _function_space.collapse())
         _domain = args[2:]
         _kwargs = kwargs

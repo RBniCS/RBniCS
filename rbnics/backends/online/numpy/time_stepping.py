@@ -89,7 +89,7 @@ class _ScipyImplicitEuler(object):
         self.solution = solution
         self.solution_dot = solution_dot
         self.solution_previous = function_copy(solution)
-        self.zero = Function(solution.vector().N) # equal to zero
+        self.zero = Function(solution.vector().N)  # equal to zero
         self.bc_eval = bc_eval
         self.jacobian_eval = jacobian_eval
         self.set_time = set_time

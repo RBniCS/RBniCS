@@ -49,7 +49,7 @@ def _get_local_dof_to_component_map(V, component=None, dof_component_map=None, r
         collapsed_dofs = collapse_dofmap(V.dofmap(), V.mesh())
         component[0] += 1
         for collapsed_dof in collapsed_dofs:
-            if not recursive: # space with only one component, do not print it
+            if not recursive:  # space with only one component, do not print it
                 dof_component_map[collapsed_dof] = -1
             else:
                 dof_component_map[collapsed_dof] = component[0]

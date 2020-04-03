@@ -36,7 +36,7 @@ class ParametrizedTensorFactory(ParametrizedTensorFactory_Base):
     def __init__(self, form):
         # Preprocess form
         form = expand_derivatives(form)
-        form = remove_complex_nodes(form) # TODO support forms in the complex field
+        form = remove_complex_nodes(form)  # TODO support forms in the complex field
         # Extract spaces from forms
         len_spaces = len(form.arguments())
         assert len_spaces in (0, 1, 2)

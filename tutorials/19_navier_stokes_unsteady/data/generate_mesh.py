@@ -45,7 +45,7 @@ class AllBoundary(SubDomain):
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)
-circle_ID = 4 # this will mark all the boundary, but it will be overwritten later
+circle_ID = 4  # this will mark all the boundary, but it will be overwritten later
 circle = AllBoundary()
 circle.mark(boundaries, circle_ID)
 walls_ID = 1

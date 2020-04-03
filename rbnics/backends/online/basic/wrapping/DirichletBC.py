@@ -59,7 +59,7 @@ def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
 class _DirichletBC_DictOfThetaType(object):
     def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):
         self.bcs = bcs
-        bcs_base_index = dict() # from component name to first index
+        bcs_base_index = dict()  # from component name to first index
         current_bcs_base_index = 0
         for (component_name, basis_component_index) in component_name_to_basis_component_index.items():
             bcs_base_index[component_name] = current_bcs_base_index

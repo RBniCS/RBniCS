@@ -71,7 +71,7 @@ class EigenSolver(AbstractEigenSolver):
         self._is = PETSc.IS().createGeneral(unconstrained_local_dofs, comm)
 
     def _set_operators(self, A, B):
-        if hasattr(self, "_is"): # there were Dirichlet BCs
+        if hasattr(self, "_is"):  # there were Dirichlet BCs
             (self.A, self.condensed_A) = self._condense_matrix(A)
             if B is not None:
                 (self.B, self.condensed_B) = self._condense_matrix(B)
@@ -170,7 +170,7 @@ class EigenSolver(AbstractEigenSolver):
         self.A.init_vector(imag_vector, 0)
 
         # Condense input vectors
-        if hasattr(self, "_is"): # there were Dirichlet BCs
+        if hasattr(self, "_is"):  # there were Dirichlet BCs
             condensed_real_vector = PETScVector(real_vector.vec().getSubVector(self._is))
             condensed_imag_vector = PETScVector(imag_vector.vec().getSubVector(self._is))
         else:
@@ -178,7 +178,7 @@ class EigenSolver(AbstractEigenSolver):
             condensed_imag_vector = imag_vector
 
         # Get eigenpairs
-        if dolfin_version.startswith("2018.1"): # TODO remove when 2018.2.0 is released
+        if dolfin_version.startswith("2018.1"):  # TODO remove when 2018.2.0 is released
             # Helper functions
             cpp_code = """
                 #include <pybind11/pybind11.h>
@@ -209,7 +209,7 @@ class EigenSolver(AbstractEigenSolver):
             self.eigen_solver.get_eigenpair(condensed_real_vector, condensed_imag_vector, i)
 
         # Restore input vectors
-        if hasattr(self, "_is"): # there were Dirichlet BCs
+        if hasattr(self, "_is"):  # there were Dirichlet BCs
             real_vector.vec().restoreSubVector(self._is, condensed_real_vector.vec())
             imag_vector.vec().restoreSubVector(self._is, condensed_imag_vector.vec())
 

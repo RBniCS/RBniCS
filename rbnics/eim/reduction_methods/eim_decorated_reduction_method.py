@@ -27,7 +27,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             # Call the parent initialization
             DifferentialProblemReductionMethod_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Storage for EIM reduction methods
-            self.EIM_reductions = dict() # from coefficients to _EIMReductionMethod
+            self.EIM_reductions = dict()  # from coefficients to _EIMReductionMethod
 
             # Preprocess each term in the affine expansions
             for (coeff, EIM_approximation_coeff) in self.truth_problem.EIM_approximations.items():
@@ -43,7 +43,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
             # Set Nmax of EIM reductions
             def setter(EIM_reduction, Nmax_EIM):
-                EIM_reduction.set_Nmax(max(EIM_reduction.Nmax, Nmax_EIM)) # kwargs are not needed
+                EIM_reduction.set_Nmax(max(EIM_reduction.Nmax, Nmax_EIM))  # kwargs are not needed
             self._propagate_setter_from_kwargs_to_EIM_reductions(setter, int, **kwargs)
 
         # OFFLINE: set maximum reduced space dimension (stopping criterion)
@@ -51,7 +51,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
             # Set tolerance of EIM reductions
             def setter(EIM_reduction, tol_EIM):
-                EIM_reduction.set_tolerance(max(EIM_reduction.tol, tol_EIM)) # kwargs are not needed
+                EIM_reduction.set_tolerance(max(EIM_reduction.tol, tol_EIM))  # kwargs are not needed
             self._propagate_setter_from_kwargs_to_EIM_reductions(setter, Number, **kwargs)
 
         # OFFLINE: set the elements in the training set.
@@ -81,7 +81,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
         def _propagate_setter_from_kwargs_to_EIM_reductions(self, setter, Type, **kwargs):
             assert "EIM" in kwargs
             kwarg_EIM = kwargs["EIM"]
-            return_value = True # will be either a bool or None
+            return_value = True  # will be either a bool or None
             if isinstance(kwarg_EIM, dict):
                 for term in self.truth_problem.separated_forms:
                     if sum([len(form.coefficients) for form in self.truth_problem.separated_forms[term]]) > 0:
@@ -103,7 +103,7 @@ def EIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass)
                 for (coeff, EIM_reduction_coeff) in self.EIM_reductions.items():
                     current_return_value = setter(EIM_reduction_coeff, kwarg_EIM)
                     return_value = current_return_value and return_value
-            return return_value # an "and" with a None results in None, so this method returns only if necessary
+            return return_value  # an "and" with a None results in None, so this method returns only if necessary
 
         # Perform the offline phase of the reduced order model
         def offline(self):

@@ -103,7 +103,7 @@ def test_eigen_solver():
     assert isclose(sqrt_r_sparse_tensor_callbacks, sqrt_r_exact)
     (sqrt_r_sparse_form_callbacks, _, _) = _test_eigen_solver_sparse("form callbacks")
     assert isclose(sqrt_r_sparse_form_callbacks, sqrt_r_exact)
-    if sparse_LHS.mpi_comm().size == 1: # dense solver is not partitioned
+    if sparse_LHS.mpi_comm().size == 1:  # dense solver is not partitioned
         (sqrt_r_dense, _, _) = _test_eigen_solver_dense(sparse_LHS, sparse_RHS)
         assert isclose(sqrt_r_dense, sqrt_r_exact)
         # Compute the error

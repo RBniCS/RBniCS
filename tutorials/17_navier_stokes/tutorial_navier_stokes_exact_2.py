@@ -11,8 +11,8 @@ from rbnics import *
 @ExactParametrizedFunctions()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
-    ("x[0]", "x[1]"), # subdomain 1
-    ("x[0]", "mu[1]/2.*x[1] + (2. - mu[1])"), # subdomain 2
+    ("x[0]", "x[1]"),  # subdomain 1
+    ("x[0]", "mu[1]/2.*x[1] + (2. - mu[1])"),  # subdomain 2
 )
 class NavierStokes(NavierStokesProblem):
 

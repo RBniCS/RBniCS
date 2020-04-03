@@ -29,7 +29,7 @@ def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDiff
             # Call the parent initialization
             ParametrizedReducedDifferentialProblem_DerivedClass.__init__(self, truth_problem, **kwargs)
             # Additional basis functions matrix required by stability factor computations
-            self.stability_factor_basis_functions = None # BasisFunctionsMatrix
+            self.stability_factor_basis_functions = None  # BasisFunctionsMatrix
             # Stability factor eigen problem
             self.stability_factor_calculator = ParametrizedStabilityFactorReducedEigenProblem(
                 self, "smallest", self._eigen_solver_parameters["stability_factor"],
@@ -86,7 +86,7 @@ def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDiff
                 self._eigen_solver_parameters["stability_factor"]["problem_type"] = "gen_non_hermitian"
 
             def _init_stability_factor_basis_functions(self, current_stage="online"):
-                self.stability_factor_basis_functions = self.basis_functions # TODO
+                self.stability_factor_basis_functions = self.basis_functions  # TODO
 
             def evaluate_stability_factor(self, N=None, **kwargs):
                 beta_squared = (

@@ -302,7 +302,7 @@ def test_time_stepping_2():
     (error_sparse_form_callbacks_bdf, _, _, _, _, _, _, _, _, _, _, _, _, _, _) = _test_time_stepping_2_sparse(
         "form callbacks", "bdf")
     assert isclose(error_sparse_tensor_callbacks_bdf, error_sparse_form_callbacks_bdf).all()
-    if V.mesh().mpi_comm().size == 1: # dense solver is not partitioned
+    if V.mesh().mpi_comm().size == 1:  # dense solver is not partitioned
         error_dense_beuler = _test_time_stepping_2_dense(
             "beuler", V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
             exact_solution_expression, exact_solution, exact_solution_dot)

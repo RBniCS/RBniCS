@@ -18,4 +18,4 @@ def CustomizeReductionMethodFor(Problem):
         return customizer
     return CustomizeReductionMethodFor_Decorator
 
-_cache = Cache() # from Problem to decorator
+_cache = Cache()  # from Problem to decorator

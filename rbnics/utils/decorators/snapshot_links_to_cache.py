@@ -17,9 +17,9 @@ def snapshot_links_to_cache(offline_method):
             if str(folder) == str(snapshots_folder):
                 assert (hasattr(truth_problem, "_cache_file_from_kwargs")
                         or hasattr(truth_problem, "_cache_file"))
-                if hasattr(truth_problem, "_cache_file_from_kwargs"): # differential problem
+                if hasattr(truth_problem, "_cache_file_from_kwargs"):  # differential problem
                     cache_filename = truth_problem._cache_file_from_kwargs(**truth_problem._latest_solve_kwargs)
-                elif hasattr(truth_problem, "_cache_file"): # EIM
+                elif hasattr(truth_problem, "_cache_file"):  # EIM
                     cache_filename = truth_problem._cache_file()
                 else:
                     raise AttributeError("Invalid cache file attribute.")
@@ -55,9 +55,9 @@ def snapshot_links_to_cache(offline_method):
     def patched_offline_method(self_):
         # Patch truth_problem's export_solution
         assert hasattr(self_, "truth_problem") or hasattr(self_, "EIM_approximation")
-        if hasattr(self_, "truth_problem"): # differential problem
+        if hasattr(self_, "truth_problem"):  # differential problem
             truth_problem = self_.truth_problem
-        elif hasattr(self_, "EIM_approximation"): # EIM
+        elif hasattr(self_, "EIM_approximation"):  # EIM
             truth_problem = self_.EIM_approximation
         else:
             raise AttributeError("Invalid truth problem attribute.")

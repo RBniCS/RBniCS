@@ -69,7 +69,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                 self.retained_energy.extend([retained_energy_i / total_energy
                                              for retained_energy_i in retained_energy])
             else:
-                self.retained_energy.extend([1. for _ in range(Neigs)]) # trivial case, all snapshots are zero
+                self.retained_energy.extend([1. for _ in range(Neigs)])  # trivial case, all snapshots are zero
 
             eigenvectors = list()
             for N in range(Nmax):

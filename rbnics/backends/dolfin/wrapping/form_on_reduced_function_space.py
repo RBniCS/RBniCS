@@ -34,21 +34,21 @@ def basic_form_on_reduced_function_space(backend, wrapping, online_backend, onli
             visited = set()
             replacements = dict()
             truth_problems = list()
-            truth_problem_to_components = { # outer dict index over time derivative
+            truth_problem_to_components = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
             truth_problem_to_exact_truth_problem = dict()
             truth_problem_to_reduced_mesh_solution = dict()
             truth_problem_to_reduced_mesh_solution_dot = dict()
-            truth_problem_to_reduced_mesh_interpolator = { # outer dict index over time derivative
+            truth_problem_to_reduced_mesh_interpolator = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
-            reduced_problem_to_components = { # outer dict index over time derivative
+            reduced_problem_to_components = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
             reduced_problem_to_reduced_mesh_solution = dict()
             reduced_problem_to_reduced_mesh_solution_dot = dict()
-            reduced_problem_to_reduced_basis_functions = { # outer dict index over time derivative
+            reduced_problem_to_reduced_basis_functions = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
 

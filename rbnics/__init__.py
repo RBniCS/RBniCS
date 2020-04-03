@@ -89,5 +89,5 @@ def import_remaining_modules():
                     setattr(sys.modules[__name__], class_or_function_name, getattr(sys.modules[__name__ + "." + dir_],
                             class_or_function_name))
                     sys.modules[__name__].__all__.append(class_or_function_name)
-        break # prevent recursive exploration
+        break  # prevent recursive exploration
 import_remaining_modules()

@@ -8,7 +8,7 @@ from dolfin import *
 from mshr import *
 
 def generate_mesh1():
-    pass # Uses the same mesh as tutorial 04
+    pass  # Uses the same mesh as tutorial 04
 
 def generate_mesh2():
     # Create mesh

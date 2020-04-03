@@ -64,10 +64,10 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         at_least_one_required_folder_created = required_folders.create()
         at_least_one_optional_folder_created = optional_folders.create()  # noqa: F841
         if not at_least_one_required_folder_created:
-            return False # offline construction should be skipped, since data are already available
+            return False  # offline construction should be skipped, since data are already available
         else:
             self.reduced_problem.init("offline")
-            return True # offline construction should be carried out
+            return True  # offline construction should be carried out
 
     def postprocess_snapshot(self, snapshot, snapshot_index):
         """

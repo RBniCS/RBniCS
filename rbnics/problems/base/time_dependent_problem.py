@@ -40,9 +40,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             # Time derivative of the solution, at the current time
             self._solution_dot = Function(self.V)
             # Solution and output over time
-            self._solution_over_time = None # TimeSeries of Functions
-            self._solution_dot_over_time = None # TimeSeries of Functions
-            self._output_over_time = None # TimeSeries of numbers
+            self._solution_over_time = None  # TimeSeries of Functions
+            self._solution_dot_over_time = None  # TimeSeries of Functions
+            self._output_over_time = None  # TimeSeries of numbers
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
                 assert len(args) == 1
@@ -223,14 +223,14 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             # (self.initial_condition is None) == (self.initial_condition_is_homogeneous is None)
             # because self.initial_condition may still be None after initialization, if there
             # were no initial condition at all and the problem had only one component
-            if self.initial_condition_is_homogeneous is None: # init was not called already
+            if self.initial_condition_is_homogeneous is None:  # init was not called already
                 initial_condition = dict()
                 initial_condition_is_homogeneous = dict()
                 for component in self.components:
                     try:
                         operator_ic = AffineExpansionStorage(
                             self.assemble_operator(initial_condition_string.format(c=component)))
-                    except ValueError: # there were no initial condition: assume homogeneous one
+                    except ValueError:  # there were no initial condition: assume homogeneous one
                         initial_condition[component] = None
                         initial_condition_is_homogeneous[component] = True
                     else:
@@ -266,9 +266,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                         has_homogeneous_dirichlet_bc = self.dirichlet_bc_are_homogeneous
                         has_homogeneous_initial_condition = self.initial_condition_is_homogeneous
                         dirichlet_bc_string = "dirichlet_bc"
-                    if has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition: # case a)
+                    if has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition:  # case a)
                         pass
-                    elif not has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition: # case b)
+                    elif not has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition:  # case b)
                         def generate_modified_compute_theta(component):
                             standard_compute_theta = self.compute_theta
                             def modified_compute_theta(self_, term):
@@ -282,9 +282,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                                     return standard_compute_theta(term)
                             return modified_compute_theta
                         PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component)).patch()
-                    elif has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition: # case c)
+                    elif has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition:  # case c)
                         pass
-                    elif not has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition: # case d)
+                    elif not has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition:  # case d)
                         pass
                     else:
                         raise RuntimeError("Impossible to arrive here.")
@@ -422,7 +422,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             except KeyError:
                 try:
                     self._compute_output()
-                except ValueError: # raised by compute_theta if output computation is optional
+                except ValueError:  # raised by compute_theta if output computation is optional
                     self._output_over_time.clear()
                     self._output_over_time.extend([NotImplemented] * len(self._solution_over_time))
                     self._output = NotImplemented

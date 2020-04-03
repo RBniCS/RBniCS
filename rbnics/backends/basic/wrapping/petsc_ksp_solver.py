@@ -21,7 +21,7 @@ def BasicPETScKSPSolver(backend, wrapping):
                     self.ksp.getPC().setType("lu")
                     if value == "default":
                         value = wrapping.get_default_linear_solver()
-                    if hasattr(self.ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                    if hasattr(self.ksp.getPC(), "setFactorSolverType"):  # PETSc >= 3.9
                         self.ksp.getPC().setFactorSolverType(value)
                     else:
                         self.ksp.getPC().setFactorSolverPackage(value)

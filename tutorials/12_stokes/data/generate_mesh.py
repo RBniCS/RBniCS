@@ -10,12 +10,12 @@ from rbnics.backends.dolfin.wrapping import counterclockwise
 from rbnics.shape_parametrization.utils.symbolic import VerticesMappingIO
 
 # Geometrical parameters
-t = 1. # mu[0]
-D = 1. # mu[1]
-L = 1. # mu[2]
-S = 1. # mu[3]
-H = 1. # mu[4]
-theta = pi # mu[5]
+t = 1.  # mu[0]
+D = 1.  # mu[1]
+L = 1.  # mu[2]
+S = 1.  # mu[3]
+H = 1.  # mu[4]
+theta = pi  # mu[5]
 
 # Define domain
 rectangle_1 = Rectangle(Point(D, L), Point(D + H, L + t))
@@ -31,42 +31,42 @@ vertices_mappings = [
         ("1.0", "2.0"): ("mu[1]", "mu[2]+mu[0]"),
         ("1.0", "1.0"): ("mu[1]", "mu[2]"),
         ("2.0", "1.0"): ("mu[1]+mu[4]", "mu[2]+(mu[4]*tan(mu[5]))")
-    }, # subdomain 1
+    },  # subdomain 1
     {
         ("2.0", "1.0"): ("mu[1]+mu[4]", "mu[2]+(mu[4]*tan(mu[5]))"),
         ("2.0", "2.0"): ("mu[1]+mu[4]", "mu[2]+(mu[4]*tan(mu[5]))+mu[0]"),
         ("1.0", "2.0"): ("mu[1]", "mu[2]+mu[0]")
-    }, # subdomain 2
+    },  # subdomain 2
     {
         ("0.0", "3.0"): ("0.0", "mu[2]+ mu[3] +mu[0]"),
         ("0.0", "2.0"): ("0.0", "mu[2]+mu[0]"),
         ("1.0", "2.0"): ("mu[1]", "mu[2]+mu[0]")
-    }, # subdomain 3
+    },  # subdomain 3
     {
         ("1.0", "2.0"): ("mu[1]", "mu[2]+mu[0]"),
         ("1.0", "3.0"): ("mu[1]", "mu[2]+ mu[3] +mu[0]"),
         ("0.0", "3.0"): ("0.0", "mu[2]+ mu[3] +mu[0]")
-    }, # subdomain 4
+    },  # subdomain 4
     {
         ("0.0", "2.0"): ("0.0", "mu[2]+mu[0]"),
         ("0.0", "1.0"): ("0.0", "mu[2]"),
         ("1.0", "1.0"): ("mu[1]", "mu[2]")
-    }, # subdomain 5
+    },  # subdomain 5
     {
         ("1.0", "1.0"): ("mu[1]", "mu[2]"),
         ("1.0", "2.0"): ("mu[1]", "mu[2]+mu[0]"),
         ("0.0", "2.0"): ("0.0", "mu[2]+mu[0]")
-    }, # subdomain 6
+    },  # subdomain 6
     {
         ("0.0", "1.0"): ("0.0", "mu[2]"),
         ("0.0", "0.0"): ("0.0", "0.0"),
         ("1.0", "0.0"): ("mu[1]", "0.0")
-    }, # subdomain 7
+    },  # subdomain 7
     {
         ("1.0", "0.0"): ("mu[1]", "0.0"),
         ("1.0", "1.0"): ("mu[1]", "mu[2]"),
         ("0.0", "1.0"): ("0.0", "mu[2]")
-    } # subdomain 8
+    }  # subdomain 8
 ]
 
 # Create mesh

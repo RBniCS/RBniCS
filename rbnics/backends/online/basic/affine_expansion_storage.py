@@ -21,13 +21,13 @@ def AffineExpansionStorage(backend, wrapping):
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
         def __init__(self, arg1, arg2):
             self._content = None
-            self._precomputed_slices = Cache() # from tuple to AffineExpansionStorage
+            self._precomputed_slices = Cache()  # from tuple to AffineExpansionStorage
             self._smallest_key = None
             self._previous_key = None
             self._largest_key = None
             # Auxiliary storage for __getitem__ slicing
-            self._component_name_to_basis_component_index = None # will be filled in in __setitem__, if required
-            self._component_name_to_basis_component_length = None # will be filled in in __setitem__, if required
+            self._component_name_to_basis_component_index = None  # will be filled in in __setitem__, if required
+            self._component_name_to_basis_component_length = None  # will be filled in in __setitem__, if required
             # Initialize arguments from inputs
             self._init(arg1, arg2)
 
@@ -151,7 +151,7 @@ def AffineExpansionStorage(backend, wrapping):
                              "component_name_to_basis_component_length")
 
         def load(self, directory, filename):
-            if self._content is not None: # avoid loading multiple times
+            if self._content is not None:  # avoid loading multiple times
                 if self._content.size > 0:
                     it = AffineExpansionStorageContent_Iterator(
                         self._content, flags=["multi_index", "refs_ok"], op_flags=["readonly"])
@@ -367,7 +367,7 @@ def AffineExpansionStorage(backend, wrapping):
             return backend.Function(item.vector()[key])
 
         def __setitem__(self, key, item):
-            assert not isinstance(key, slice) # only able to set the element at position "key" in the storage
+            assert not isinstance(key, slice)  # only able to set the element at position "key" in the storage
             # Check that __getitem__ is not random acces but called for increasing key and store current key
             self._assert_setitem_order(key)
             self._update_previous_key(key)

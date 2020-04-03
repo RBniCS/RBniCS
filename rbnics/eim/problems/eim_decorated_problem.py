@@ -41,8 +41,8 @@ def EIMDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for EIM reduced problems
-                self.separated_forms = dict() # from terms to AffineExpansionSeparatedFormsStorage
-                self.EIM_approximations = dict() # from coefficients to EIMApproximation
+                self.separated_forms = dict()  # from terms to AffineExpansionSeparatedFormsStorage
+                self.EIM_approximations = dict()  # from coefficients to EIMApproximation
 
                 # Store value of N_EIM passed to solve
                 self._N_EIM = None
@@ -86,7 +86,7 @@ def EIMDecoratedProblem(
                 # instance is built. Thus, we will call this method in the reduction method instance
                 # constructor (having a safeguard in place to avoid repeated calls).
                 assert (len(self.separated_forms) == 0) == (len(self.EIM_approximations) == 0)
-                if len(self.EIM_approximations) == 0: # initialize EIM approximations only once
+                if len(self.EIM_approximations) == 0:  # initialize EIM approximations only once
                     # Temporarily replace float parameters with symbols, so that we can detect if operators
                     # are parametrized
                     self.attach_symbolic_parameters()
@@ -94,7 +94,7 @@ def EIMDecoratedProblem(
                     for term in self.terms:
                         try:
                             forms = self.assemble_operator(term)
-                        except ValueError: # possibily raised e.g. because output computation is optional
+                        except ValueError:  # possibily raised e.g. because output computation is optional
                             pass
                         else:
                             Q = len(forms)

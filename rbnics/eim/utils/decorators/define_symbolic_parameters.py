@@ -7,7 +7,7 @@
 from rbnics.utils.decorators import PreserveClassName
 
 def DefineSymbolicParameters(ParametrizedDifferentialProblem_DerivedClass):
-    from rbnics.backends import SymbolicParameters # cannot import at global scope
+    from rbnics.backends import SymbolicParameters  # cannot import at global scope
 
     if not hasattr(ParametrizedDifferentialProblem_DerivedClass, "attach_symbolic_parameters"):
         @PreserveClassName

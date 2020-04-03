@@ -63,7 +63,7 @@ class SolutionFileXML(SolutionFile_Base):
 
     def write(self, function, name, index):
         assert index in (self._last_index, self._last_index + 1)
-        if index == self._last_index + 1: # writing out solutions after time stepping
+        if index == self._last_index + 1:  # writing out solutions after time stepping
             self._update_function_container(function)
             self._visualization_file << self._function_container
             restart_file = XMLFile(self._full_filename + "_" + str(index) + ".xml")
@@ -127,7 +127,7 @@ class SolutionFileXDMF(SolutionFile_Base):
             from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
             self._update_function_container(function)
             bak_log_level = get_log_level()
-            set_log_level(int(LogLevel.WARNING) + 1) # disable xdmf logs
+            set_log_level(int(LogLevel.WARNING) + 1)  # disable xdmf logs
             if self.append_attribute:
                 self._restart_file.write_checkpoint(self._function_container, name, time, append=True)
             else:
@@ -141,7 +141,7 @@ class SolutionFileXDMF(SolutionFile_Base):
             time = float(index)
             self._restart_file.read_checkpoint(function, name, index)
             self._update_function_container(function)
-            self._visualization_file.write(self._function_container, time) # because there is no append option available
+            self._visualization_file.write(self._function_container, time)  # because no append option is available
         else:
             raise OSError
 

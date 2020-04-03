@@ -14,7 +14,7 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
     def assemble_operator_for_restriction_decorator(assemble_operator):
         def assemble_operator_for_restriction_decorator_impl(self, term):
             original_term = restricted_term_to_original_term.get(term)
-            if original_term is None: # term was not a original term
+            if original_term is None:  # term was not a original term
                 return assemble_operator(self, term)
             else:
                 assert (term.endswith("_restricted") or term.startswith("inner_product_")

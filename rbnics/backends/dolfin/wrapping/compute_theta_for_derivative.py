@@ -8,7 +8,7 @@ def compute_theta_for_derivative(jacobian_term_to_residual_term):
     def compute_theta_for_derivative_decorator(compute_theta):
         def compute_theta_for_derivative_decorator_impl(self, term):
             residual_term = jacobian_term_to_residual_term.get(term)
-            if residual_term is None: # term was not a jacobian_term
+            if residual_term is None:  # term was not a jacobian_term
                 return compute_theta(self, term)
             else:
                 return compute_theta(self, residual_term)

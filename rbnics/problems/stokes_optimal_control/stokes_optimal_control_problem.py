@@ -148,7 +148,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         return self._supremizer["s"]
 
     def _solve_state_supremizer(self, solution):
-        assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+        assert len(self.inner_product["s"]) == 1  # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
         assembled_operator_rhs = assembled_operator_bt * solution
@@ -176,7 +176,7 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
         return self._supremizer["r"]
 
     def _solve_adjoint_supremizer(self, solution):
-        assert len(self.inner_product["r"]) == 1 # the affine expansion storage contains only the inner product matrix
+        assert len(self.inner_product["r"]) == 1  # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["r"][0]
         assembled_operator_btstar = sum(product(self.compute_theta("bt*_restricted"), self.operator["bt*_restricted"]))
         assembled_operator_rhs = assembled_operator_btstar * solution
@@ -231,13 +231,13 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
 
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
-            component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
+            component = ["v", "p", "u", "w", "q"]  # but not "s" and "r"
         StokesOptimalControlProblem_Base.export_solution(
             self, folder, filename, solution=solution, component=component, suffix=suffix)
 
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
-            component = ["v", "p", "u", "w", "q"] # but not "s" and "r"
+            component = ["v", "p", "u", "w", "q"]  # but not "s" and "r"
         StokesOptimalControlProblem_Base.import_solution(
             self, folder, filename, solution=solution, component=component, suffix=suffix)
 

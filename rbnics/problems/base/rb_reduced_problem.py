@@ -30,18 +30,18 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             # $$ ONLINE DATA STRUCTURES $$ #
             # Residual terms
             self.RieszExpansionStorage = OnlineAffineExpansionStorage
-            self.riesz = dict() # from string to RieszExpansionStorage
+            self.riesz = dict()  # from string to RieszExpansionStorage
             self.riesz_terms = list()
             self.ErrorEstimationOperatorExpansionStorage = OnlineAffineExpansionStorage
-            self.error_estimation_operator = dict() # from string to ErrorEstimationOperatorExpansionStorage
-            self.error_estimation_terms = list() # of tuple
+            self.error_estimation_operator = dict()  # from string to ErrorEstimationOperatorExpansionStorage
+            self.error_estimation_terms = list()  # of tuple
 
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Residual terms
             self._riesz_solve_storage = Function(self.truth_problem.V)
-            self._riesz_solve_inner_product = None # setup by init()
-            self._riesz_solve_homogeneous_dirichlet_bc = None # setup by init()
-            self._error_estimation_inner_product = None # setup by init()
+            self._riesz_solve_inner_product = None  # setup by init()
+            self._riesz_solve_homogeneous_dirichlet_bc = None  # setup by init()
+            self._error_estimation_inner_product = None  # setup by init()
             # I/O
             self.folder["error_estimation"] = os.path.join(self.folder_prefix, "error_estimation")
 
@@ -64,14 +64,14 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             Initialize data structures related to error estimation.
             """
             # Initialize inner product for Riesz solve
-            if self._riesz_solve_inner_product is None: # init was not called already
+            if self._riesz_solve_inner_product is None:  # init was not called already
                 self._riesz_solve_inner_product = self.truth_problem._combined_inner_product
             # Setup homogeneous Dirichlet BCs for Riesz solve, if any (no check if init was already called
             # because this variable can actually be None)
             self._riesz_solve_homogeneous_dirichlet_bc = self.truth_problem._combined_and_homogenized_dirichlet_bc
             # Initialize Riesz representation
             for term in self.riesz_terms:
-                if term not in self.riesz: # init was not called already
+                if term not in self.riesz:  # init was not called already
                     self.riesz[term] = self.RieszExpansionStorage(self.Q[term])
                     for q in range(self.Q[term]):
                         assert self.terms_order[term] in (1, 2)
@@ -79,19 +79,19 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                             riesz_term_q = BasisFunctionsMatrix(self.truth_problem.V)
                             riesz_term_q.init(self.components)
                         else:
-                            riesz_term_q = FunctionsList(self.truth_problem.V) # will be of size 1
+                            riesz_term_q = FunctionsList(self.truth_problem.V)  # will be of size 1
                         self.riesz[term][q] = riesz_term_q
             assert current_stage in ("online", "offline")
             if current_stage == "online":
                 for term in self.riesz_terms:
                     self.riesz[term].load(self.folder["error_estimation"], "riesz_" + term)
             elif current_stage == "offline":
-                pass # Nothing else to be done
+                pass  # Nothing else to be done
             else:
                 raise ValueError("Invalid stage in _init_error_estimation_operators().")
             # Initialize inner product for Riesz products. This is the same as the inner product for Riesz solves
             # but setting to zero rows & columns associated to boundary conditions
-            if self._error_estimation_inner_product is None: # init was not called already
+            if self._error_estimation_inner_product is None:  # init was not called already
                 if self._riesz_solve_homogeneous_dirichlet_bc is not None:
                     self._error_estimation_inner_product = (
                         self._riesz_solve_inner_product & ~self._riesz_solve_homogeneous_dirichlet_bc)
@@ -99,7 +99,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     self._error_estimation_inner_product = self._riesz_solve_inner_product
             # Initialize error estimation operators
             for term in self.error_estimation_terms:
-                if term not in self.error_estimation_operator: # init was not called already
+                if term not in self.error_estimation_operator:  # init was not called already
                     self.error_estimation_operator[term] = self.ErrorEstimationOperatorExpansionStorage(
                         self.Q[term[0]], self.Q[term[1]])
             assert current_stage in ("online", "offline")
@@ -107,7 +107,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                 for term in self.error_estimation_terms:
                     self.assemble_error_estimation_operators(term, "online")
             elif current_stage == "offline":
-                pass # Nothing else to be done
+                pass  # Nothing else to be done
             else:
                 raise ValueError("Invalid stage in _init_error_estimation_operators().")
 
@@ -153,13 +153,13 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
                     assert len(lengths) == 1
                     length = lengths.pop()
                     assert length in (0, 1)
-                    if length == 0: # this part does not depend on N, so we compute it only once
+                    if length == 0:  # this part does not depend on N, so we compute it only once
                         # Compute the Riesz representation of terms that do not depend on the solution
                         self.compute_riesz_representation(term, current_stage)
                         # Compute the (term, term) Riesz representors product
                         if (term, term) in self.error_estimation_terms:
                             self.assemble_error_estimation_operators((term, term), current_stage)
-                else: # self.terms_order[term] > 1:
+                else:  # self.terms_order[term] > 1:
                     self.compute_riesz_representation(term, current_stage)
 
             # Update the (term1, term2) Riesz representors product with the new basis function
@@ -224,7 +224,7 @@ def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             assert current_stage in ("online", "offline")
             assert isinstance(term, tuple)
             assert len(term) == 2
-            if current_stage == "online": # load from file
+            if current_stage == "online":  # load from file
                 self.error_estimation_operator[term].load(
                     self.folder["error_estimation"], "error_estimation_operator_" + term[0] + "_" + term[1])
                 return self.error_estimation_operator[term]

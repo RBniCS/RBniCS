@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-import operator # to find closest parameters
+import operator  # to find closest parameters
 from math import sqrt
 from mpi4py.MPI import COMM_WORLD
 from numpy import zeros as array
@@ -14,7 +14,7 @@ from rbnics.utils.decorators import overload
 from rbnics.utils.io import ExportableList
 from rbnics.utils.mpi import parallel_io as parallel_generate, parallel_max
 
-class ParameterSpaceSubset(ExportableList): # equivalent to a list of tuples
+class ParameterSpaceSubset(ExportableList):  # equivalent to a list of tuples
     def __init__(self):
         ExportableList.__init__(self, "text")
         self.mpi_comm = COMM_WORLD

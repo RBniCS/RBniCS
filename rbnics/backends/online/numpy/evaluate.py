@@ -23,7 +23,7 @@ from rbnics.utils.decorators import backend_for, tuple_of
 # online_backend = ModuleWrapper(OnlineFunction=Function, OnlineMatrix=Matrix, OnlineVector=Vector)
 # online_wrapping = ModuleWrapper()
 # evaluate_base = basic_evaluate(backend, wrapping, online_backend, online_wrapping)
-evaluate_base = None # TODO
+evaluate_base = None  # TODO
 
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), (tuple_of(int), tuple_of(tuple_of(int)), None)))

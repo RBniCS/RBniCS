@@ -18,11 +18,11 @@ class PerformanceTable(object):
     _preprocessor_setitem = dict()
 
     def __init__(self, testing_set):
-        self._columns = dict() # string to Content matrix
-        self._columns_operations = dict() # string to tuple
-        self._columns_not_implemented = dict() # string to bool
-        self._rows_not_implemented = dict() # string to dict of bool
-        self._groups = dict() # string to list
+        self._columns = dict()  # string to Content matrix
+        self._columns_operations = dict()  # string to tuple
+        self._columns_not_implemented = dict()  # string to bool
+        self._rows_not_implemented = dict()  # string to dict of bool
+        self._groups = dict()  # string to list
         self._group_names_sorted = list()
         self._len_testing_set = len(testing_set)
         self._Nmin = 1
@@ -39,12 +39,12 @@ class PerformanceTable(object):
         assert self._Nmax >= self._Nmin
         assert column_name not in self._columns and column_name not in self._columns_operations
         self._columns[column_name] = Content((self._Nmax - self._Nmin + 1, self._len_testing_set))
-        self._columns_not_implemented[column_name] = None # will be set to a bool
+        self._columns_not_implemented[column_name] = None  # will be set to a bool
         self._rows_not_implemented[column_name] = {
-            n: None for n in range(self._Nmax - self._Nmin + 1)} # will be set to a bool
+            n: None for n in range(self._Nmax - self._Nmin + 1)}  # will be set to a bool
         if group_name not in self._groups:
             self._groups[group_name] = list()
-            self._group_names_sorted.append(group_name) # preserve the ordering provided by the user
+            self._group_names_sorted.append(group_name)  # preserve the ordering provided by the user
         self._groups[group_name].append(column_name)
         if isinstance(operations, str):
             self._columns_operations[column_name] = (operations,)
@@ -121,10 +121,10 @@ class PerformanceTable(object):
             if len(columns) == 0:
                 continue
             # Storage for print
-            table_index = list() # of strings
-            table_header = dict() # from string to string
-            table_content = dict() # from string to Content array
-            column_size = dict() # from string to int
+            table_index = list()  # of strings
+            table_header = dict()  # from string to string
+            table_content = dict()  # from string to Content array
+            column_size = dict()  # from string to int
             # First column should be the reduced space dimension
             table_index.append("N")
             table_header["N"] = "N"
@@ -153,7 +153,7 @@ class PerformanceTable(object):
                                 current_table_content = min(self._columns[column][n - self._Nmin, :])
                             elif operation == "mean":
                                 data = self._columns[column][n - self._Nmin, :]
-                                if not data.any(): # all zeros
+                                if not data.any():  # all zeros
                                     current_table_content = 0.
                                 else:
                                     data[data == 0.] = sys.float_info.epsilon
@@ -201,7 +201,7 @@ class PerformanceTable(object):
                         current_line.append(table_content[t][n - self._Nmin])
                     output += formatter.format(*current_line, **column_size) + "\n"
             output += "\n"
-        return output[:-2] # remove the last two newlines
+        return output[:-2]  # remove the last two newlines
 
     def save(self, directory, filename):
         full_directory = Folders.Folder(os.path.join(str(directory), filename))

@@ -30,7 +30,7 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
             "stability_factor_right_hand_matrix": None
             # AffineExpansionStorage, even though it will contain only one matrix
         }
-        self.dirichlet_bc = None # AffineExpansionStorage
+        self.dirichlet_bc = None  # AffineExpansionStorage
         self.spectrum = spectrum
         self.eigensolver_parameters = eigensolver_parameters
 
@@ -82,19 +82,19 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
             else:
                 self.operator["stability_factor_left_hand_matrix"] = AffineExpansionStorage(
                     (self.truth_problem.operator["stability_factor_left_hand_matrix"][self.expansion_index], ))
-        if self.operator["stability_factor_right_hand_matrix"] is None: # init was not called already
+        if self.operator["stability_factor_right_hand_matrix"] is None:  # init was not called already
             self.operator["stability_factor_right_hand_matrix"] = self.truth_problem.operator[
                 "stability_factor_right_hand_matrix"]
             assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
 
         # Store Dirichlet boundary conditions
-        if self.dirichlet_bc is None: # init was not called already (or raised a trivial error)
+        if self.dirichlet_bc is None:  # init was not called already (or raised a trivial error)
             try:
                 self.dirichlet_bc = AffineExpansionStorage(self.truth_problem.assemble_operator(
                     "stability_factor_dirichlet_bc"))
                 # need to call assemble_operator because this special bc is not stored among the ones
                 # in self.truth_problem.dirichlet_bc
-            except ValueError: # there were no Dirichlet BCs
+            except ValueError:  # there were no Dirichlet BCs
                 self.dirichlet_bc = None
 
         # Also make sure to create folder for cache
@@ -136,8 +136,8 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         eigensolver.set_parameters(eigensolver_parameters)
         eigensolver.solve(1)
 
-        r, c = eigensolver.get_eigenvalue(0) # real and complex part of the eigenvalue
-        r_vector, c_vector = eigensolver.get_eigenvector(0) # real and complex part of the eigenvectors
+        r, c = eigensolver.get_eigenvalue(0)  # real and complex part of the eigenvalue
+        r_vector, c_vector = eigensolver.get_eigenvector(0)  # real and complex part of the eigenvectors
 
         assert isclose(c, 0.), "The required eigenvalue is not real"
 

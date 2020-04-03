@@ -26,7 +26,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
             # Compress first time trajectory (for each mu) and then parameter dependence
             # at the end of the offline stage, or carry out only one compression at the
             # end of the offline stage
-            self.nested_POD = False # by default only one compression
+            self.nested_POD = False  # by default only one compression
             # POD_time_trajectory: ProperOrthogonalDecomposition (for problems with one component)
             # or dict of ProperOrthogonalDecomposition (for problem with several components)
             self.POD_time_trajectory = None

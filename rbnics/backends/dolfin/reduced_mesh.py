@@ -111,50 +111,50 @@ def BasicReducedMesh(backend, wrapping):
                 key_as_int = None
 
             # Prepare storage for an helper dof to cell dict
-            self.dof_to_cells = tuple() # of size len(V)
+            self.dof_to_cells = tuple()  # of size len(V)
             # ... which is not initialized in the constructor to avoid wasting time online
             # ... since it is only needed offline in the append() method
 
             # Cell functions to mark cells (on the full mesh)
-            self.reduced_mesh_markers = dict() # from N to MeshFunction
+            self.reduced_mesh_markers = dict()  # from N to MeshFunction
             # ... which again is not initialized here for performance reasons
 
             # DOFs list (of the full mesh) that need to be added at each N
-            self.reduced_mesh_dofs_list = list() # list (of size N) of tuple (of size len(V)) of dofs
+            self.reduced_mesh_dofs_list = list()  # list (of size N) of tuple (of size len(V)) of dofs
             if copy_from is not None:
                 self.reduced_mesh_dofs_list.extend(copy_from.reduced_mesh_dofs_list[key_as_slice])
             # Prepare storage for helper mapping needed for I/O
-            self.reduced_mesh_dofs_list__dof_map_writer_mapping = tuple() # of size len(V)
-            self.reduced_mesh_dofs_list__dof_map_reader_mapping = tuple() # of size len(V)
+            self.reduced_mesh_dofs_list__dof_map_writer_mapping = tuple()  # of size len(V)
+            self.reduced_mesh_dofs_list__dof_map_reader_mapping = tuple()  # of size len(V)
             # ... which will be initialized as needed in the save and load methods
 
             # Reduced meshes, for all N
-            self.reduced_mesh = dict() # from N to Mesh
+            self.reduced_mesh = dict()  # from N to Mesh
             if copy_from is not None:
                 self.reduced_mesh[key_as_int] = copy_from.reduced_mesh[key_as_int]
 
             # Reduced subdomain data, for all N
-            self.reduced_subdomain_data = dict() # from N to dict from mesh MeshFunction to reduced_mesh MeshFunction
+            self.reduced_subdomain_data = dict()  # from N to dict from mesh MeshFunction to reduced_mesh MeshFunction
             if copy_from is not None:
                 self.reduced_subdomain_data[key_as_int] = copy_from.reduced_subdomain_data[key_as_int]
 
             # Reduced function spaces, for all N
-            self.reduced_function_spaces = dict() # from N to tuple (of size len(V)) of FunctionSpace
+            self.reduced_function_spaces = dict()  # from N to tuple (of size len(V)) of FunctionSpace
             if copy_from is not None:
                 self.reduced_function_spaces[key_as_int] = copy_from.reduced_function_spaces[key_as_int]
 
             # DOFs list (of the reduced mesh) that need to be added at each N
-            self.reduced_mesh_reduced_dofs_list = dict() # from N to list of tuple (of size len(V)) of dofs
+            self.reduced_mesh_reduced_dofs_list = dict()  # from N to list of tuple (of size len(V)) of dofs
             if copy_from is not None:
                 self.reduced_mesh_reduced_dofs_list[key_as_int] = copy_from.reduced_mesh_reduced_dofs_list[key_as_int]
             # Prepare storage for helper mapping needed for I/O
-            self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = dict() # from N to tuple (of size len(V))
-            self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = dict() # from N to tuple (of size len(V))
+            self.reduced_mesh_reduced_dofs_list__dof_map_writer_mapping = dict()  # from N to tuple (of size len(V))
+            self.reduced_mesh_reduced_dofs_list__dof_map_reader_mapping = dict()  # from N to tuple (of size len(V))
             # ... which will be initialized as needed in the save and load methods
 
             # == The following members are related to auxiliary basis functions for nonlinear terms. == #
             # Spaces for auxiliary basis functions
-            self._auxiliary_reduced_function_space = dict() # from (problem, component) to dict from N to FunctionSpace
+            self._auxiliary_reduced_function_space = dict()  # from (problem, component) to dict from N to FunctionSpace
             if copy_from is not None:
                 self._auxiliary_reduced_function_space = copy_from._auxiliary_reduced_function_space
             else:
@@ -172,8 +172,8 @@ def BasicReducedMesh(backend, wrapping):
                         self._auxiliary_dofs_to_reduced_dofs[key] = dict()
             # Auxiliary basis functions, as dict from (problem, component) to dict from N to BasisFunctionsMatrix
             self._auxiliary_basis_functions_matrix = dict()
-            self._auxiliary_basis_functions_matrix_save_patched = dict() # from problem to bool
-            self._auxiliary_basis_functions_matrix_load_patched = dict() # from problem to bool
+            self._auxiliary_basis_functions_matrix_save_patched = dict()  # from problem to bool
+            self._auxiliary_basis_functions_matrix_load_patched = dict()  # from problem to bool
             if copy_from is not None:
                 self._auxiliary_basis_functions_matrix = copy_from._auxiliary_basis_functions_matrix
                 self._auxiliary_basis_functions_matrix_save_patched = (
@@ -187,7 +187,7 @@ def BasicReducedMesh(backend, wrapping):
                         self._auxiliary_basis_functions_matrix_save_patched[key] = False
                         self._auxiliary_basis_functions_matrix_load_patched[key] = False
             # Auxiliary function interpolator
-            self._auxiliary_function_interpolator = dict() # from (problem, component) to dict from N to function
+            self._auxiliary_function_interpolator = dict()  # from (problem, component) to dict from N to function
             if copy_from is not None:
                 self._auxiliary_function_interpolator = copy_from._auxiliary_function_interpolator
             else:
@@ -195,10 +195,10 @@ def BasicReducedMesh(backend, wrapping):
                     for key in auxiliary_problems_and_components:
                         self._auxiliary_function_interpolator[key] = dict()
             # Prepare storage for helper mapping needed for I/O
-            self._auxiliary_dofs__dof_map_writer_mapping = dict() # from problem
-            self._auxiliary_dofs__dof_map_reader_mapping = dict() # from problem
-            self._auxiliary_reduced_dofs__dof_map_writer_mapping = dict() # from (problem, component) to dict from N
-            self._auxiliary_reduced_dofs__dof_map_reader_mapping = dict() # from (problem, component) to dict from N
+            self._auxiliary_dofs__dof_map_writer_mapping = dict()  # from problem
+            self._auxiliary_dofs__dof_map_reader_mapping = dict()  # from problem
+            self._auxiliary_reduced_dofs__dof_map_writer_mapping = dict()  # from (problem, component) to dict from N
+            self._auxiliary_reduced_dofs__dof_map_reader_mapping = dict()  # from (problem, component) to dict from N
             # ... which will be initialized as needed in the save and load methods
 
         def append(self, global_dofs):
@@ -239,7 +239,7 @@ def BasicReducedMesh(backend, wrapping):
                 self.reduced_subdomain_data[N] = None
             # Store the FunctionSpace V on the reduced mesh, as well as the map between DOFs on V and reduced_V
             reduced_function_spaces = list()
-            dofs__to__reduced_dofs = list() # of size len(V)
+            dofs__to__reduced_dofs = list()  # of size len(V)
             for (component, V_component) in enumerate(self.V):
                 reduced_function_space_component = wrapping.convert_functionspace_to_submesh(
                     V_component, reduced_mesh, self._get_reduced_function_space_type(V_component))
@@ -274,7 +274,7 @@ def BasicReducedMesh(backend, wrapping):
         def _init_for_append_if_needed(self):
             # Initialize dof to cells map only the first time
             if len(self.dof_to_cells) == 0:
-                self.dof_to_cells = list() # of size len(V)
+                self.dof_to_cells = list()  # of size len(V)
                 for (component, V_component) in enumerate(self.V):
                     dof_to_cells = self._compute_dof_to_cells(V_component)
                     # Debugging
@@ -305,7 +305,7 @@ def BasicReducedMesh(backend, wrapping):
                         if is_training_finished(auxiliary_problem):
                             self._update_auxiliary_basis_functions_matrix(auxiliary_problem, component)
                         else:
-                            pass # will be computed when training is finished (see _save_auxiliary)
+                            pass  # will be computed when training is finished (see _save_auxiliary)
 
         @abstractmethod
         def _compute_dof_to_cells(self, V_component):
@@ -560,7 +560,7 @@ def BasicReducedMesh(backend, wrapping):
                 self._auxiliary_basis_functions_matrix_save_patched[key] = True
 
         def load(self, directory, filename):
-            if len(self.reduced_mesh) > 0: # avoid loading multiple times
+            if len(self.reduced_mesh) > 0:  # avoid loading multiple times
                 self._assert_dict_lengths()
                 return False
             else:
@@ -835,7 +835,7 @@ def BasicReducedMesh(backend, wrapping):
 
         def get_dofs_list(self, index=None):
             index = self._get_dict_index(index)
-            return self.reduced_mesh_dofs_list[:(index + 1)] # increment so that slice will go up to index included
+            return self.reduced_mesh_dofs_list[:(index + 1)]  # increment so that slice will go up to index included
 
         def get_reduced_dofs_list(self, index=None):
             index = self._get_dict_index(index)
@@ -889,7 +889,7 @@ ReducedMesh_Base = BasicReducedMesh(backend, wrapping)
 class ReducedMesh(ReducedMesh_Base):
     def _compute_dof_to_cells(self, V_component):
         assert isinstance(V_component, FunctionSpace)
-        dof_to_cells = dict() # from global dof to cell
+        dof_to_cells = dict()  # from global dof to cell
         for cell in cells(self.mesh):
             local_dofs = V_component.dofmap().cell_dofs(cell.index())
             for local_dof in local_dofs:
@@ -920,13 +920,13 @@ class ReducedMesh(ReducedMesh_Base):
             # (e.g., x subcomponent of the velocity field component of a (velocity, pressure) solution)
             # Since basis are constructed with respect to components (rather than subcomponents) we
             # use only the first entry in the tuple to detect the corresponding component name
-            assert all([isinstance(c, int) for c in components_tuple]) # there is no None and all entries are integer
+            assert all([isinstance(c, int) for c in components_tuple])  # there is no None and all entries are integer
         component_as_int = components_tuple[0]
-        if component_as_int is None: # all components
+        if component_as_int is None:  # all components
             # Initialize a basis function matrix for all components
             components_name = auxiliary_reduced_problem.basis_functions._components_name
         elif len(auxiliary_reduced_problem.basis_functions._components_name
-                 ) == 1: # subcomponent of a problem with only one component
+                 ) == 1:  # subcomponent of a problem with only one component
             # Initialize a basis function matrix for all components
             components_name = auxiliary_reduced_problem.basis_functions._components_name
         else:

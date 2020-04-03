@@ -21,7 +21,7 @@ class Cache(object):
             self._export = None
             self._filename_generator = None
         else:
-            from rbnics.utils.config import config # cannot import at global scope
+            from rbnics.utils.config import config  # cannot import at global scope
             cache_options = config.get(self._config_section, "cache")
             assert isinstance(cache_options, set)
             if "RAM" in cache_options:
@@ -124,7 +124,7 @@ class Cache(object):
         del self._storage[storage_key]
 
     def _compute_storage_key(self, key):
-        from rbnics.utils.io import OnlineSizeDict # cannot import at global scope
+        from rbnics.utils.io import OnlineSizeDict  # cannot import at global scope
         if isinstance(key, tuple):
             if len(key) > 0 and isinstance(key[-1], dict) and not isinstance(key[-1], OnlineSizeDict):
                 kwargs = key[-1]

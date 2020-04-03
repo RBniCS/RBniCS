@@ -38,7 +38,7 @@ def _remove_mute_indices(node: Indexed):
     indices = node.ufl_operands[1].indices()
     is_fixed = isinstance(indices[0], FixedIndex)
     assert all([isinstance(index, FixedIndex) == is_fixed for index in indices])
-    is_mute = isinstance(indices[0], MuteIndex) # mute index for sum
+    is_mute = isinstance(indices[0], MuteIndex)  # mute index for sum
     assert all([isinstance(index, MuteIndex) == is_mute for index in indices])
     assert (is_fixed and not is_mute) or (not is_fixed and is_mute)
     if is_fixed:

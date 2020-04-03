@@ -27,7 +27,7 @@ def _abs(matrix: Matrix.Type()):
 def _abs(vector: Vector.Type()):
     abs_vector = numpy_abs(vector)
     i_max = argmax(abs_vector)
-    i_max = int(i_max) # numpy.intXX types are not subclasses of int, but can be converted to int
+    i_max = int(i_max)  # numpy.intXX types are not subclasses of int, but can be converted to int
     return AbsOutput(vector[i_max], (i_max, ))
 
 # Auxiliary class to signal to the max() function that it is dealing with an output of the abs() method

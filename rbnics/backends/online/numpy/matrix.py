@@ -21,7 +21,7 @@ _Matrix_Type_Base = BasicMatrix(backend, wrapping, MatrixBaseType)
 class _Matrix_Type(_Matrix_Type_Base):
     def __getitem__(self, key):
         if all([isinstance(key_i, int) for key_i in key]):
-            return float(_Matrix_Type_Base.__getitem__(self, key)) # convert from numpy numbers wrappers
+            return float(_Matrix_Type_Base.__getitem__(self, key))  # convert from numpy numbers wrappers
         else:
             return _Matrix_Type_Base.__getitem__(self, key)
 

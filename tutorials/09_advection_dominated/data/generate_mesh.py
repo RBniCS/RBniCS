@@ -11,8 +11,8 @@ from mshr import *
 domain = Rectangle(Point(0., 0.), Point(1., 1.))
 subdomain1 = Rectangle(Point(0.0, 0.0), Point(1.0, 0.25))
 subdomain2 = Rectangle(Point(0.0, 0.25), Point(1.0, 1.0))
-domain.set_subdomain(1, subdomain1) # add some fake subdomains to make sure that the mesh is split
-domain.set_subdomain(2, subdomain2) # at x[1] = 0.25, since boundary id changes at (0, 0.25)
+domain.set_subdomain(1, subdomain1)  # add some fake subdomains to make sure that the mesh is split
+domain.set_subdomain(2, subdomain2)  # at x[1] = 0.25, since boundary id changes at (0, 0.25)
 mesh = generate_mesh(domain, 50)
 
 # Create subdomains

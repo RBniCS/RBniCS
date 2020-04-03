@@ -70,7 +70,7 @@ class OnlineNonHierarchicalAffineExpansionStorage(object):
         affine_expansion_N.save(directory, filename + "_N=" + str(N))
 
     def load(self, directory, filename):
-        if len(self._content) > 0: # avoid loading multiple times
+        if len(self._content) > 0:  # avoid loading multiple times
             return False
         # Get full directory name
         full_directory = Folders.Folder(os.path.join(str(directory), filename))

@@ -38,7 +38,7 @@ def product(thetas, operators, thetas2=None):
 @overload
 def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
     # Detect BCs defined on the same boundary
-    combined = dict() # from (function space, boundary) to value
+    combined = dict()  # from (function space, boundary) to value
     for (op_index, op) in enumerate(operators):
         for bc in op:
             key = bc.identifier()

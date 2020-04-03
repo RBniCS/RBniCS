@@ -23,7 +23,7 @@ class AuxiliaryProblemForNonParametrizedFunction(object, metaclass=ABCMeta):
         pass
 
 def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping):
-    @cache # to skip preprocessing if node is queried multiple time
+    @cache  # to skip preprocessing if node is queried multiple time
     def _basic_get_auxiliary_problem_for_non_parametrized_function(node):
         assert isinstance(node, (Function, Indexed, ListTensor))
         preprocessed_node = _remove_mute_indices(node)

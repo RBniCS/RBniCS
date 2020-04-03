@@ -121,7 +121,7 @@ def test_eim_approximation_18(expression_type, basis_generation):
                 # Call Parent constructor
                 EIMApproximation.__init__(
                     self, truth_problem, ParametrizedTensorFactory(form), folder_prefix, basis_generation)
-            else: # impossible to arrive here anyway thanks to the assert
+            else:  # impossible to arrive here anyway thanks to the assert
                 raise AssertionError("Invalid expression_type")
 
     # 1. Create the mesh for this test

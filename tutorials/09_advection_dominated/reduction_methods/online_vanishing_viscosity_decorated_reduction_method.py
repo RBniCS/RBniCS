@@ -112,7 +112,7 @@ def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMe
             self.reduced_problem.OnlineSolveKwargs = OnlineSolveKwargsGenerator(
                 **self.reduced_problem._online_solve_default_kwargs)
 
-        def update_basis_matrix(self, snapshot): # same as Parent, except a different filename is used when saving
+        def update_basis_matrix(self, snapshot):  # same as Parent, except a different filename is used when saving
             assert len(self.truth_problem.components) == 1
             self.reduced_problem.basis_functions.enrich(snapshot)
             self.GS.apply(self.reduced_problem.basis_functions, self.reduced_problem.N_bc)

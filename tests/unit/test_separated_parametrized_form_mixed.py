@@ -28,29 +28,29 @@ element_1 = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
 element = MixedElement(element_0, element_1)
 V = FunctionSpace(mesh, element)
 
-expr1 = Expression("x[0]", mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_5
-expr2 = Expression(("x[0]", "x[1]"), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_6
-expr3 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_7
-expr4 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell()) # f_8
-expr5 = Expression("x[0]", degree=1, cell=mesh.ufl_cell()) # f_9
-expr6 = Expression(("x[0]", "x[1]"), degree=1, cell=mesh.ufl_cell()) # f_10
-expr7 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), degree=1, cell=mesh.ufl_cell()) # f_11
-expr8 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), degree=1, cell=mesh.ufl_cell()) # f_12
-expr9 = Constant(((1, 2), (3, 4))) # f_13
+expr1 = Expression("x[0]", mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_5
+expr2 = Expression(("x[0]", "x[1]"), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_6
+expr3 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_7
+expr4 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), mu_0=0., degree=1, cell=mesh.ufl_cell())  # f_8
+expr5 = Expression("x[0]", degree=1, cell=mesh.ufl_cell())  # f_9
+expr6 = Expression(("x[0]", "x[1]"), degree=1, cell=mesh.ufl_cell())  # f_10
+expr7 = Expression((("1*x[0]", "2*x[1]"), ("3*x[0]", "4*x[1]")), degree=1, cell=mesh.ufl_cell())  # f_11
+expr8 = Expression((("4*x[0]", "3*x[1]"), ("2*x[0]", "1*x[1]")), degree=1, cell=mesh.ufl_cell())  # f_12
+expr9 = Constant(((1, 2), (3, 4)))  # f_13
 
 scalar_V = FunctionSpace(mesh, "Lagrange", 2)
 vector_V = VectorFunctionSpace(mesh, "Lagrange", 3)
 tensor_V = TensorFunctionSpace(mesh, "Lagrange", 1)
-expr10 = Function(scalar_V) # f_20
-expr11 = Function(vector_V) # f_23
-expr12 = Function(tensor_V) # f_26
-expr13 = Function(V) # f_29
+expr10 = Function(scalar_V)  # f_20
+expr11 = Function(vector_V)  # f_23
+expr12 = Function(tensor_V)  # f_26
+expr13 = Function(V)  # f_29
 expr13_split = split(expr13)
 expr13_split_0_split = split(expr13_split[0])
-expr14 = Function(scalar_V) # f_32
-expr15 = Function(vector_V) # f_35
-expr16 = Function(tensor_V) # f_38
-expr17 = Function(V) # f_41
+expr14 = Function(scalar_V)  # f_32
+expr15 = Function(vector_V)  # f_35
+expr16 = Function(tensor_V)  # f_38
+expr17 = Function(V)  # f_41
 expr17_split = split(expr17)
 expr17_split_0_split = split(expr17_split[0])
 

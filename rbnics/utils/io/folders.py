@@ -8,7 +8,7 @@ import os
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import parallel_io
 
-class Folders(dict): # dict from string to string
+class Folders(dict):  # dict from string to string
 
     # Auxiliary class
     class Folder(object):
@@ -25,9 +25,9 @@ class Folders(dict): # dict from string to string
         # empty. Returs False otherwise.
         def create(self):
             def create_task():
-                if os.path.exists(self.name) and len(os.listdir(self.name)) == 0: # already created, but empty
+                if os.path.exists(self.name) and len(os.listdir(self.name)) == 0:  # already created, but empty
                     return True
-                if not os.path.exists(self.name): # to be created
+                if not os.path.exists(self.name):  # to be created
                     os.makedirs(self.name)
                     return True
                 return False

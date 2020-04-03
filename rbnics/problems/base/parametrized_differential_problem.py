@@ -39,7 +39,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self.terms_order = dict()
         self.components = list()
         # Number of terms in the affine expansion
-        self.Q = dict() # from string to integer
+        self.Q = dict()  # from string to integer
         # Matrices/vectors resulting from the truth discretization
         self.OperatorExpansionStorage = AffineExpansionStorage
         # operator: string to OperatorExpansionStorage
@@ -125,14 +125,14 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         # Assemble operators
         for term in self.terms:
-            if term not in self.operator: # init was not called already
+            if term not in self.operator:  # init was not called already
                 try:
                     self.operator[term] = self.OperatorExpansionStorage(self.assemble_operator(term))
-                except ValueError: # raised by assemble_operator if output computation is optional
+                except ValueError:  # raised by assemble_operator if output computation is optional
                     self.operator[term] = None
                     self.Q[term] = 0
                 else:
-                    if term not in self.Q: # init was not called already
+                    if term not in self.Q:  # init was not called already
                         self.Q[term] = len(self.operator[term])
 
     def _init_inner_products(self):
@@ -147,7 +147,7 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         else:
             inner_product_string = "inner_product"
         # Assemble inner products
-        if self.inner_product is None: # init was not called already
+        if self.inner_product is None:  # init was not called already
             inner_product = dict()
             for component in self.components:
                 inner_product[component] = AffineExpansionStorage(
@@ -159,13 +159,13 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             assert self._combined_inner_product is None
             self._combined_inner_product = self._combine_all_inner_products()
         # Assemble inner product to be used for projection
-        if self.projection_inner_product is None: # init was not called already
+        if self.projection_inner_product is None:  # init was not called already
             projection_inner_product = dict()
             for component in self.components:
                 try:
                     projection_inner_product[component] = AffineExpansionStorage(
                         self.assemble_operator("projection_" + inner_product_string.format(c=component)))
-                except ValueError: # no projection_inner_product specified, revert to inner_product
+                except ValueError:  # no projection_inner_product specified, revert to inner_product
                     projection_inner_product[component] = AffineExpansionStorage(
                         self.assemble_operator(inner_product_string.format(c=component)))
             if n_components == 1:
@@ -223,21 +223,21 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         # (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
         # because self.dirichlet_bc may still be None after initialization, if there
         # were no Dirichlet BCs at all and the problem had only one component
-        if self.dirichlet_bc_are_homogeneous is None: # init was not called already
+        if self.dirichlet_bc_are_homogeneous is None:  # init was not called already
             dirichlet_bc = dict()
             dirichlet_bc_are_homogeneous = dict()
             for component in self.components:
                 try:
                     operator_bc = AffineExpansionStorage(
                         self.assemble_operator(dirichlet_bc_string.format(c=component)))
-                except ValueError: # there were no Dirichlet BCs
+                except ValueError:  # there were no Dirichlet BCs
                     dirichlet_bc[component] = None
                     dirichlet_bc_are_homogeneous[component] = False
                 else:
                     dirichlet_bc[component] = operator_bc
                     try:
                         self.compute_theta(dirichlet_bc_string.format(c=component))
-                    except ValueError: # there were no theta functions
+                    except ValueError:  # there were no theta functions
                         # We provide in this case a shortcut for the case of homogeneous Dirichlet BCs,
                         # that do not require an additional lifting functions.
                         # The user needs to implement the dirichlet_bc case for assemble_operator,
@@ -289,12 +289,12 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         self._latest_solve_kwargs = kwargs
         try:
-            assign(self._solution, self._solution_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+            assign(self._solution, self._solution_cache[self.mu, kwargs])  # **kwargs is not supported by __getitem__
         except KeyError:
             assert not hasattr(self, "_is_solving")
             self._is_solving = True
             assign(self._solution, Function(self.V))
-            self._solve(**kwargs) # will also add to cache
+            self._solve(**kwargs)  # will also add to cache
             delattr(self, "_is_solving")
         return self._solution
 
@@ -352,11 +352,11 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         """
         kwargs = self._latest_solve_kwargs
         try:
-            self._output = self._output_cache[self.mu, kwargs] # **kwargs is not supported by __getitem__
+            self._output = self._output_cache[self.mu, kwargs]  # **kwargs is not supported by __getitem__
         except KeyError:
             try:
                 self._compute_output()
-            except ValueError: # raised by compute_theta if output computation is optional
+            except ValueError:  # raised by compute_theta if output computation is optional
                 self._output = NotImplemented
             self._output_cache[self.mu, kwargs] = self._output
         return self._output

@@ -74,7 +74,7 @@ def _generate_space(expression: Function.Type()):
 def _generate_space(expression: Operator):
     # Extract mesh from expression (from dolfin/fem/projection.py, _extract_function_space function)
     meshes = set([ufl_domain.ufl_cargo() for ufl_domain in extract_domains(expression)])
-    for t in traverse_unique_terminals(expression): # from ufl/domain.py, extract_domains
+    for t in traverse_unique_terminals(expression):  # from ufl/domain.py, extract_domains
         if hasattr(t, "_mesh"):
             meshes.add(t._mesh)
     assert len(meshes) == 1

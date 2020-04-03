@@ -41,15 +41,15 @@ def Vector(backend, wrapping, VectorBaseType):
         def __getitem__(self, key):
             if (
                 isinstance(key, slice)  # vector[:5]
-                or isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
+                or isinstance(key, (list, tuple))  # vector[[0, 1, 2, 3, 4]]
             ):
-                if isinstance(key, slice): # vector[:5]
+                if isinstance(key, slice):  # vector[:5]
                     output_content = self.content[
                         wrapping.Slicer(slice_to_array(
                             self, key, self._component_name_to_basis_component_length,
                             self._component_name_to_basis_component_index))]
                     output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
-                elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
+                elif isinstance(key, (list, tuple)):  # vector[[0, 1, 2, 3, 4]]
                     output_content = self.content[wrapping.Slicer(key)]
                     output_size = (len(key), )
                 # Prepare output
@@ -61,9 +61,9 @@ def Vector(backend, wrapping, VectorBaseType):
                 if self._component_name_to_basis_component_length is None:
                     output._component_name_to_basis_component_length = None
                 else:
-                    if isinstance(key, slice): # vector[:5]
+                    if isinstance(key, slice):  # vector[:5]
                         output._component_name_to_basis_component_length = output_size[0]
-                    elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
+                    elif isinstance(key, (list, tuple)):  # vector[[0, 1, 2, 3, 4]]
                         if len(self._component_name_to_basis_component_length) == 1:
                             for (component_name, _) in self._component_name_to_basis_component_length.items():
                                 break
@@ -75,7 +75,7 @@ def Vector(backend, wrapping, VectorBaseType):
                                 "Vector.__getitem__ with list or tuple input arguments has not been implemented yet"
                                 + " for the case of multiple components")
                 return output
-            elif isinstance(key, int): # vector[5]
+            elif isinstance(key, int):  # vector[5]
                 output = self.content[key]
                 assert isinstance(output, Number)
                 return output
@@ -85,18 +85,18 @@ def Vector(backend, wrapping, VectorBaseType):
         def __setitem__(self, key, value):
             if (
                 isinstance(key, slice)  # vector[:5]
-                or isinstance(key, (list, tuple)) # vector[[0, 1, 2, 3, 4]]
+                or isinstance(key, (list, tuple))  # vector[[0, 1, 2, 3, 4]]
             ):
-                if isinstance(key, slice): # vector[:5]
+                if isinstance(key, slice):  # vector[:5]
                     converted_key = wrapping.Slicer(
                         slice_to_array(self, key, self._component_name_to_basis_component_length,
                                        self._component_name_to_basis_component_index))
-                elif isinstance(key, (list, tuple)): # vector[[0, 1, 2, 3, 4]]
+                elif isinstance(key, (list, tuple)):  # vector[[0, 1, 2, 3, 4]]
                     converted_key = wrapping.Slicer(key)
                 if isinstance(value, type(self)):
                     value = value.content
                 self.content[converted_key] = value
-            elif isinstance(key, int): # vector[5]
+            elif isinstance(key, int):  # vector[5]
                 self.content[key] = value
             else:
                 raise TypeError("Unsupported key type in Vector.__setitem__")

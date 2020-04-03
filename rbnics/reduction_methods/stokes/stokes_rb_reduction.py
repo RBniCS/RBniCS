@@ -58,7 +58,7 @@ class StokesRBReduction(StokesRBReduction_Base):
     # Note that we cannot move this method to the parent class because error analysis is defined
     # by the RBReduction decorator
     def error_analysis(self, N_generator=None, filename=None, **kwargs):
-        components = ["u", "p"] # but not "s"
+        components = ["u", "p"]  # but not "s"
         kwargs["components"] = components
 
         StokesRBReduction_Base.error_analysis(self, N_generator, filename, **kwargs)

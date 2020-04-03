@@ -69,16 +69,16 @@ def Matrix(backend, wrapping, MatrixBaseType):
             key_is_tuple_of_tuples_or_lists = all([isinstance(key_i, (list, tuple)) for key_i in key])
             key_is_tuple_of_int = all([isinstance(key_i, int) for key_i in key])
             if (
-                key_is_tuple_of_slices # matrix[:5, :5]
-                or key_is_tuple_of_tuples_or_lists # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+                key_is_tuple_of_slices  # matrix[:5, :5]
+                or key_is_tuple_of_tuples_or_lists  # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
             ):
                 assert key_is_tuple_of_slices is not key_is_tuple_of_tuples_or_lists
-                if key_is_tuple_of_slices: # matrix[:5, :5]
+                if key_is_tuple_of_slices:  # matrix[:5, :5]
                     output_content = self.content[
                         wrapping.Slicer(*slice_to_array(self, key, self._component_name_to_basis_component_length,
                                                         self._component_name_to_basis_component_index))]
                     output_size = slice_to_size(self, key, self._component_name_to_basis_component_length)
-                elif key_is_tuple_of_tuples_or_lists: # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+                elif key_is_tuple_of_tuples_or_lists:  # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
                     output_content = self.content[wrapping.Slicer(*key)]
                     output_size = (len(key[0]), len(key[1]))
                 # Prepare output
@@ -93,9 +93,9 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 ):
                     output._component_name_to_basis_component_length = (None, None)
                 else:
-                    if key_is_tuple_of_slices: # matrix[:5, :5]
+                    if key_is_tuple_of_slices:  # matrix[:5, :5]
                         output._component_name_to_basis_component_length = tuple(output_size)
-                    elif key_is_tuple_of_tuples_or_lists: # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
+                    elif key_is_tuple_of_tuples_or_lists:  # matrix[[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]]
                         component_name_to_basis_component_length = [None, None]
                         for i in range(2):
                             if len(self._component_name_to_basis_component_length[i]) == 1:
@@ -111,7 +111,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                         output._component_name_to_basis_component_length = tuple(
                             component_name_to_basis_component_length)
                 return output
-            elif key_is_tuple_of_int: # matrix[5, 5]
+            elif key_is_tuple_of_int:  # matrix[5, 5]
                 output = self.content[key]
                 assert isinstance(output, Number)
                 return output
@@ -125,14 +125,14 @@ def Matrix(backend, wrapping, MatrixBaseType):
             key_is_tuple_of_slice_and_int = isinstance(key[0], slice) and isinstance(key[1], int)
             key_is_tuple_of_int_and_slice = isinstance(key[0], int) and isinstance(key[1], slice)
             key_is_tuple_of_int = all([isinstance(key_i, int) for key_i in key])
-            if key_is_tuple_of_slices: # matrix[:5, :5]
+            if key_is_tuple_of_slices:  # matrix[:5, :5]
                 converted_key = wrapping.Slicer(
                     *slice_to_array(self, key, self._component_name_to_basis_component_length,
                                     self._component_name_to_basis_component_index))
                 if isinstance(value, type(self)):
                     value = value.content
                 self.content[converted_key] = value
-            elif key_is_tuple_of_slice_and_int: # matrix[:5, 5]
+            elif key_is_tuple_of_slice_and_int:  # matrix[:5, 5]
                 converted_key_0 = wrapping.Slicer(
                     slice_to_array(self, key[0], self._component_name_to_basis_component_length[0],
                                    self._component_name_to_basis_component_index[0]))
@@ -140,7 +140,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 if isinstance(value, backend.Vector.Type()):
                     value = value.content
                 self.content[converted_key] = value
-            elif key_is_tuple_of_int_and_slice: # matrix[5, :5]
+            elif key_is_tuple_of_int_and_slice:  # matrix[5, :5]
                 converted_key_1 = wrapping.Slicer(
                     slice_to_array(self, key[1], self._component_name_to_basis_component_length[1],
                                    self._component_name_to_basis_component_index[1]))
@@ -148,7 +148,7 @@ def Matrix(backend, wrapping, MatrixBaseType):
                 if isinstance(value, backend.Vector.Type()):
                     value = value.content
                 self.content[converted_key] = value
-            elif key_is_tuple_of_int: # matrix[5, 5]
+            elif key_is_tuple_of_int:  # matrix[5, 5]
                 self.content[key] = value
             else:
                 raise TypeError("Unsupported key type in Matrix.__setitem__")

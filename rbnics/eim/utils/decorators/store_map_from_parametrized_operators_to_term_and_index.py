@@ -19,7 +19,7 @@ def StoreMapFromParametrizedOperatorsToTermAndIndex(ExactParametrizedFunctionsDe
 
             # Populate map from parametrized operators to (this) problem
             for (term, operator) in self.operator.items():
-                if operator is not None: # raised by assemble_operator if output computation is optional
+                if operator is not None:  # raised by assemble_operator if output computation is optional
                     for (q, operator_q) in enumerate(operator):
                         add_to_map_from_parametrized_operator_to_term_and_index(operator_q, term, q)
 

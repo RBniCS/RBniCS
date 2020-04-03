@@ -129,7 +129,7 @@ def test_competing_ambiguous_try():
     try:
         f(C(), C())
     except AmbiguousSignatureError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("This test should have raised an AmbiguousSignatureError")
 
@@ -179,7 +179,7 @@ def test_dispatch_method__list_of():
         pass
 
     assert f.dispatch(list_of(int)) is rev
-    assert f.dispatch(MyList) is None # MyList is considered by list_of() as an independent type
+    assert f.dispatch(MyList) is None  # MyList is considered by list_of() as an independent type
     assert f.dispatch(int, int) is add
 
 # Add back the same version of test_source from test_dispatcher, which is incompatible with exec()
@@ -441,7 +441,7 @@ def test_dispatch_twice_function():
         def g(arg):
             return 10 * arg
     except AmbiguousSignatureError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("Duplicate @dispatch() should have failed")
 
@@ -487,7 +487,7 @@ def test_dispatch_replace_function():
         def g(arg):
             return 3 * arg
     except AssertionError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("Incorrect replacing in @dispatch() should have failed")
 
@@ -625,7 +625,7 @@ def test_enabled_list_of_multiple_ambiguous():
         # the ambiguity for list_of(int) cannot be solved as both the second and third
         # method could be used for that.
     except AmbiguousSignatureError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("This test should have failed due to list_of(int) ambiguity")
 
@@ -672,7 +672,7 @@ def test_dispatch_twice_class():
             def __init__(self, arg):
                 self.arg = 10 * arg
     except AmbiguousSignatureError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("Duplicate @dispatch() should have failed")
 
@@ -701,7 +701,7 @@ def test_dispatch_replace_class():
             def __init__(self, arg):
                 self.arg = 3 * arg
     except AssertionError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("Incorrect replacing in @dispatch() should have failed")
 
@@ -734,7 +734,7 @@ def test_dispatch_twice_method():
             def __mul__(self, other):
                 return 10 * other
     except AmbiguousSignatureError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("Duplicate @dispatch() should have failed")
 
@@ -1025,7 +1025,7 @@ def test_override_2():
     assert B(1) * 2 == 2
     assert B(1) * 2. == 4.
     assert raises(UnavailableSignatureError, lambda: B(1) * "test")
-    assert C(1) * 2 == 8 # and not 2
+    assert C(1) * 2 == 8  # and not 2
     assert C(1) * 2. == 4.
     assert C(1) * "test" == "testtesttest"
 
@@ -1044,7 +1044,7 @@ def test_override_3():
 
     assert B(1) * 2 == 2
     assert B(1) * 2. == 2.
-    assert C(1) * 2 == 4 # and not 2
+    assert C(1) * 2 == 4  # and not 2
     assert C(1) * 2. == 2.
 
 # Test class with overrides with two levels of inheritance
@@ -1116,9 +1116,9 @@ def test_method_lambda_function_change():
             return self.arg * other
 
     assert F(3) * 2 == 6 and isinstance(F(3) * 2, int)
-    F.Type = float                                              # this has no effect because
-    assert raises(UnavailableSignatureError, lambda: F(3) * 2.) # the Type has been already processed,
-    assert F(3) * 2 == 6 and isinstance(F(3) * 2, int)          # so the internal signature is unchanged
+    F.Type = float                                               # this has no effect because
+    assert raises(UnavailableSignatureError, lambda: F(3) * 2.)  # the Type has been already processed,
+    assert F(3) * 2 == 6 and isinstance(F(3) * 2, int)           # so the internal signature is unchanged
 
 # Test class with lambda inputs and inheritance which does not override a method,
 # but changes the return value of the lambda function
@@ -1295,7 +1295,7 @@ def test_wrong_number_of_arguments():
         def f(a):
             return a
     except AssertionError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("This test should have failed due to wrong number of arguments")
 
@@ -1304,7 +1304,7 @@ def test_wrong_number_of_arguments():
         def f(a, b):
             return a + b
     except AssertionError:
-        pass # this has failed has expected
+        pass  # this has failed has expected
     else:
         raise RuntimeError("This test should have failed due to wrong number of arguments")
 

@@ -49,7 +49,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             return function
         else:
             if extended_or_restricted_function is None:
-                output = Function(V) # zero by default
+                output = Function(V)  # zero by default
             else:
                 output = extended_or_restricted_function
                 assert output.function_space() == V
@@ -64,7 +64,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # (i.e. extended to zero on pressure DOFs) when defining basis functions for enriched velocity space
         assert copy is True, "It is not possible to extend functions without copying the vector"
         if extended_or_restricted_function is None:
-            extended_function = Function(V) # zero by default
+            extended_function = Function(V)  # zero by default
         else:
             extended_function = extended_or_restricted_function
             assert extended_function.function_space() == V
@@ -81,7 +81,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
         # interested in storing snapshots of y or p components because of an aggregrated approach
         assert copy is True, "It is not possible to restrict functions without copying the vector"
         if extended_or_restricted_function is None:
-            restricted_function = Function(V) # zero by default
+            restricted_function = Function(V)  # zero by default
         else:
             restricted_function = extended_or_restricted_function
             assert restricted_function.function_space() == V
@@ -92,7 +92,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             restricted_function.vector()[:] *= weight
         return restricted_function
 
-def _function_spaces_eq(V, W, index_V, index_W): # V == W
+def _function_spaces_eq(V, W, index_V, index_W):  # V == W
     V = _sub_from_tuple(V, index_V)
     W = _sub_from_tuple(W, index_W)
     # V.sub(component) == W does not work properly
@@ -100,7 +100,7 @@ def _function_spaces_eq(V, W, index_V, index_W): # V == W
     assert V.ufl_domain() == W.ufl_domain()
     return V.ufl_element() == W.ufl_element()
 
-def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
+def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W):  # V < W
     assert V.ufl_domain() == W.ufl_domain()
     assert len(W_to_V_mapping) == 0
     V_sub_elements = _get_sub_elements(V, index_V)
@@ -114,7 +114,7 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
                 W_to_V_mapping[index_W] = index_V
                 W_sub_elements_used[index_W] = True
                 break
-        else: # for loop was not broken
+        else:  # for loop was not broken
             # There is an element in V which cannot be mapped to W, thus
             # V is larger than W
             should_return_False = True
@@ -124,7 +124,7 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
     if should_return_False:
         return False
 
-    assert len(W_to_V_mapping) == len(V_sub_elements) # all elements were found
+    assert len(W_to_V_mapping) == len(V_sub_elements)  # all elements were found
 
     # Avoid ambiguity that may arise if there were sub elements of W that were not used but had
     # the same element type of used elements
@@ -138,7 +138,7 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W): # V < W
 
     return True
 
-def _function_spaces_gt(V, W, V_to_W_mapping, index_V, index_W): # V > W
+def _function_spaces_gt(V, W, V_to_W_mapping, index_V, index_W):  # V > W
     return _function_spaces_lt(W, V, V_to_W_mapping, index_W, index_V)
 
 def _get_sub_elements(V, index_V):

@@ -20,9 +20,9 @@ class MeshMotion(AbstractMeshMotion):
         self.subdomains = subdomains
         self.reference_coordinates = self.mesh.coordinates().copy()
         self.deformation_V = VectorFunctionSpace(self.mesh, "Lagrange", 1)
-        self.subdomain_id_to_deformation_dofs = dict() # from int to list
+        self.subdomain_id_to_deformation_dofs = dict()  # from int to list
         for cell in cells(self.mesh):
-            subdomain_id = int(self.subdomains[cell]) - 1 # tuple start from 0, while subdomains from 1
+            subdomain_id = int(self.subdomains[cell]) - 1  # tuple start from 0, while subdomains from 1
             if subdomain_id not in self.subdomain_id_to_deformation_dofs:
                 self.subdomain_id_to_deformation_dofs[subdomain_id] = list()
             dofs = self.deformation_V.dofmap().cell_dofs(cell.index())
@@ -52,7 +52,7 @@ class MeshMotion(AbstractMeshMotion):
         self.displacement_expression = list()
 
     def init(self, problem):
-        if len(self.displacement_expression) == 0: # avoid initialize multiple times
+        if len(self.displacement_expression) == 0:  # avoid initialize multiple times
             # Preprocess the shape parametrization expression to convert it in the displacement expression
             # This cannot be done during __init__ because at construction time the number
             # of parameters is still unknown

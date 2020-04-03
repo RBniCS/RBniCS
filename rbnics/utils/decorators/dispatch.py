@@ -15,7 +15,7 @@ from multipledispatch.dispatcher import Dispatcher as OriginalDispatcher
 # == Signature to string == #
 def str_signature(sig):
     str_sig = ", ".join(c.__name__ if isinstance(c, type) else str(c) for c in sig)
-    if not bool(str_sig): # empty string
+    if not bool(str_sig):  # empty string
         return "None"
     else:
         return str_sig
@@ -178,7 +178,7 @@ class Dispatcher(OriginalDispatcher):
 
     @property
     def __doc__(self):
-        return OriginalDispatcher.__doc__.fget(self) # properties are not inherited
+        return OriginalDispatcher.__doc__.fget(self)  # properties are not inherited
 
 
 # == Customize MethodDispatcher == #
@@ -206,7 +206,7 @@ class MethodDispatcher_Wrapper(object):
                 raise AmbiguousSignatureError(self.name, self.lambda_funcs.keys(), {(types, types)})
 
             self.lambda_funcs[types] = func
-        else: # no lambda functions
+        else:  # no lambda functions
             try:
                 validate_types(types, allow_lambda=False)
             except AssertionError:
@@ -318,9 +318,9 @@ class MethodDispatcher(Dispatcher):
             pass
 
     def __call__(self, *args, **kwargs):
-        if self.obj is not None: # called as instance.method(...)
+        if self.obj is not None:  # called as instance.method(...)
             obj = self.obj
-        else: # called as Class.method(instance, ...)
+        else:  # called as Class.method(instance, ...)
             obj = args[0]
             args = args[1:]
         func = self._get_func(*args)
@@ -328,7 +328,7 @@ class MethodDispatcher(Dispatcher):
 
     @property
     def __doc__(self):
-        return Dispatcher.__doc__.fget(self) # properties are not inherited
+        return Dispatcher.__doc__.fget(self)  # properties are not inherited
 
 # == Customize @dispatch == #
 def dispatch(*types, **kwargs):
@@ -347,23 +347,23 @@ def dispatch(*types, **kwargs):
 
         nonlocal types
         if len(types) == 0:
-            assert is_method or not is_class # is method or function
+            assert is_method or not is_class  # is method or function
             signature = inspect.signature(func_or_class)
             annotations = tuple(param_value.annotation
                                 for (param_name, param_value) in signature.parameters.items()
                                 if param_value.kind in (
                                     inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
             if is_method:
-                annotations = annotations[1:] # throw self away
+                annotations = annotations[1:]  # throw self away
             assert all(ann is not inspect.Parameter.empty for ann in annotations)
             types = annotations
-        if is_method or not is_class: # is method or function
+        if is_method or not is_class:  # is method or function
             signature = inspect.signature(func_or_class)
             assert len(types) == (
                 len(tuple(param_name for (param_name, param_value) in signature.parameters.items()
                           if param_value.kind in (
                               inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)))
-                - (1 if is_method else 0) # throw self away
+                - (1 if is_method else 0)  # throw self away
             )
 
         if is_method:
@@ -376,10 +376,10 @@ def dispatch(*types, **kwargs):
             dispatcher = frame.f_locals.get(name, MethodDispatcher_Wrapper(name))
             dispatcher.add(types, func_or_class)
             return dispatcher
-        else: # is function or class
+        else:  # is function or class
             if is_class:
                 assert module_kwarg is not None
-                assert module_kwarg is not module # otherwise module.name is not a class anymore but a function
+                assert module_kwarg is not module  # otherwise module.name is not a class anymore but a function
                 module = module_kwarg
             else:
                 if module_kwarg is None:
@@ -602,7 +602,7 @@ def get_type(input_):
         or (type_input_ in (array, ) and input_.dtype == object)
     ):
         subtypes = get_types(input_)
-        subtypes = tuple(set(subtypes)) # remove repeated types
+        subtypes = tuple(set(subtypes))  # remove repeated types
         if len(subtypes) == 1:
             subtypes = subtypes[0]
         if isinstance(input_, array):
@@ -615,13 +615,13 @@ def get_type(input_):
             return tuple_of(subtypes)
         else:
             raise TypeError("Invalid type in get_types()")
-    elif type_input_ in (dict, ): # more strict than isinstance(input_, (dict, ))
+    elif type_input_ in (dict, ):  # more strict than isinstance(input_, (dict, ))
         subtypes_from = get_types(tuple(input_.keys()))
-        subtypes_from = tuple(set(subtypes_from)) # remove repeated types
+        subtypes_from = tuple(set(subtypes_from))  # remove repeated types
         if len(subtypes_from) == 1:
             subtypes_from = subtypes_from[0]
         subtypes_to = get_types(tuple(input_.values()))
-        subtypes_to = tuple(set(subtypes_to)) # remove repeated types
+        subtypes_to = tuple(set(subtypes_to))  # remove repeated types
         if len(subtypes_to) == 1:
             subtypes_to = subtypes_to[0]
         return dict_of(subtypes_from, subtypes_to)

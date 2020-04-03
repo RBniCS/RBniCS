@@ -13,8 +13,8 @@ class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):
         AbstractSeparatedParametrizedForm.__init__(self, form)
         self._form = form
-        self._coefficients = list() # empty
-        self._form_unchanged = list() # will contain a single number
+        self._coefficients = list()  # empty
+        self._form_unchanged = list()  # will contain a single number
         self._form_unchanged.append(form)
 
     def separate(self):

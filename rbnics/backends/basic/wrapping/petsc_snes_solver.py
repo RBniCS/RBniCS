@@ -34,7 +34,7 @@ def BasicPETScSNESSolver(backend, wrapping):
                     ksp.getPC().setType("lu")
                     if value == "default":
                         value = wrapping.get_default_linear_solver()
-                    if hasattr(ksp.getPC(), "setFactorSolverType"): # PETSc >= 3.9
+                    if hasattr(ksp.getPC(), "setFactorSolverType"):  # PETSc >= 3.9
                         ksp.getPC().setFactorSolverType(value)
                     else:
                         ksp.getPC().setFactorSolverPackage(value)

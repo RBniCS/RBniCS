@@ -46,7 +46,7 @@ class Config(object):
         for dir_ in dirs:
             if dir_ in sys.modules:
                 required_backends.add(dir_)
-        break # prevent recursive exploration
+        break  # prevent recursive exploration
     defaults["backends"]["required backends"] = required_backends
     del required_backends
 
@@ -67,9 +67,9 @@ class Config(object):
         config_files_list = list()
         config_files_list.append(os.path.join(self.rbnics_directory, ".rbnicsrc"))
         if directory is None:
-            if hasattr(sys.modules["__main__"], "__file__") and "pytest" not in sys.modules: # from script
+            if hasattr(sys.modules["__main__"], "__file__") and "pytest" not in sys.modules:  # from script
                 main_directory = os.path.dirname(os.path.realpath(sys.modules["__main__"].__file__))
-            else: # interactive or pytest
+            else:  # interactive or pytest
                 main_directory = os.getcwd()
         else:
             main_directory = directory
@@ -115,7 +115,7 @@ class Config(object):
         assert value.issubset(default)
         value_str = ", ".join(str(v) for v in sorted(value))
         if len(value) < 2:
-            value_str += "," # to differentiate between str and a set with one element
+            value_str += ","  # to differentiate between str and a set with one element
         return value_str
 
     def _value_from_parser(self, section, option, value):

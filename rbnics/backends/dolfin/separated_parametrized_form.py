@@ -31,13 +31,13 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             form = expand_derivatives(form)
             form = expand_sum_product(form)
             form = rewrite_quotients(form)
-            form = remove_complex_nodes(form) # TODO support forms in the complex field
+            form = remove_complex_nodes(form)  # TODO support forms in the complex field
             self._form = form
-            self._coefficients = list() # of list of ParametrizedExpression
-            self._placeholders = list() # of list of Constants
-            self._placeholder_names = list() # of list of string
-            self._form_with_placeholders = list() # of forms
-            self._form_unchanged = list() # of forms
+            self._coefficients = list()  # of list of ParametrizedExpression
+            self._placeholders = list()  # of list of Constants
+            self._placeholder_names = list()  # of list of string
+            self._form_with_placeholders = list()  # of forms
+            self._form_unchanged = list()  # of forms
             # Internal usage
             self._NaN = float("NaN")
             # Strict mode when
@@ -77,7 +77,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
             integral_to_coefficients = dict()
             for integral in self._form.integrals():
                 logger.log(DEBUG, "\t Currently on integrand " + str(integral.integrand()))
-                self._coefficients.append(list()) # of ParametrizedExpression
+                self._coefficients.append(list())  # of ParametrizedExpression
                 for e in iter_expressions(integral):
                     logger.log(DEBUG, "\t\t Expression " + str(e))
                     pre_traversal_e = [n for n in pre_traversal(e)]
@@ -100,7 +100,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                     logger.log(DEBUG, "\t\t Node " + str(n)
                                                + " is skipped because it contains an Argument")
                                     break
-                            else: # not broken
+                            else:  # not broken
                                 logger.log(DEBUG, "\t\t Node " + str(n)
                                            + " and its descendants are being analyzed for non-parametrized check")
                                 # Make sure to skip all descendants of this node in the outer loop
@@ -152,7 +152,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                                + " causes the non-parametrized check to break because"
                                                                + " it contains a non-parametrized function")
                                                     break
-                                                elif self._strict: # solutions are not allowed, break
+                                                elif self._strict:  # solutions are not allowed, break
                                                     if wrapping.is_problem_solution(t):
                                                         (_, component,
                                                          solution) = wrapping.solution_identify_component(t)
@@ -225,11 +225,11 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                            + " has not passed the non-parametrized because"
                                                            + " it is not a parametrized expression or a solution")
                                 # Evaluate candidates
-                                if len(all_candidates) == 0: # the whole expression was actually non-parametrized
+                                if len(all_candidates) == 0:  # the whole expression was actually non-parametrized
                                     logger.log(DEBUG, "\t\t Node " + str(n) + " is skipped because"
                                                + " it is a non-parametrized coefficient")
                                     continue
-                                elif len(all_candidates) == 1: # the whole expression was actually parametrized
+                                elif len(all_candidates) == 1:  # the whole expression was actually parametrized
                                     logger.log(DEBUG, "\t\t Node " + str(n) + " will be accepted because"
                                                + " it is a non-parametrized coefficient")
                                     pass
@@ -263,7 +263,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                            + str(candidate) + " as an Indexed expression"
                                                            + " with fixed indices, resulting in a candidate "
                                                            + str(candidate) + " of type " + str(type(candidate)))
-                                                return candidate # no further preprocessing needed
+                                                return candidate  # no further preprocessing needed
                                             else:
                                                 logger.log(DEBUG, "\t\t\t Preprocessed descendant node "
                                                            + str(candidate) + " as an Indexed expression"
@@ -323,7 +323,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                                                                + " with fixed indices,"
                                                                + " resulting in a candidate " + str(candidate)
                                                                + " of type " + str(type(candidate)))
-                                                    return candidate # no further preprocessing needed
+                                                    return candidate  # no further preprocessing needed
                                         else:
                                             logger.log(DEBUG, "\t\t\t No preprocessing required for descendant node "
                                                        + str(candidate) + " as a coefficient of type "
@@ -338,9 +338,9 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                         else:
                             logger.log(DEBUG, "\t\t Node " + str(n) + " to be skipped because"
                                        + " it is a descendant of a coefficient which has already been detected")
-                if len(self._coefficients[-1]) == 0: # then there were no coefficients to extract
+                if len(self._coefficients[-1]) == 0:  # then there were no coefficients to extract
                     logger.log(DEBUG, "\t There were no coefficients to extract")
-                    self._coefficients.pop() # remove the (empty) element that was added to possibly store coefficients
+                    self._coefficients.pop()  # remove the (empty) element that was added to possibly store coefficients
                 else:
                     logger.log(DEBUG, "\t Extracted coefficients are:")
                     for c in self._coefficients[-1]:
@@ -364,7 +364,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
                 else:
                     logger.log(DEBUG, "\t Preparing form with placeholders for integrand "
                                + str(integral.integrand()))
-                    self._placeholders.append(list()) # of Constants
+                    self._placeholders.append(list())  # of Constants
                     placeholders_dict = dict()
                     for c in integral_to_coefficients[integral]:
                         self._placeholders[-1].append(Constant(self._NaN * ones(c.ufl_shape)))
@@ -389,7 +389,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
 
             logger.log(DEBUG, "4. Prepare coefficients hash codes")
             for addend in self._coefficients:
-                self._placeholder_names.append(list()) # of string
+                self._placeholder_names.append(list())  # of string
                 for factor in addend:
                     self._placeholder_names[-1].append(wrapping.expression_name(factor))
 

@@ -87,14 +87,15 @@ class StokesProblem(StokesProblem_Base):
     def solve_supremizer(self, solution):
         kwargs = self._latest_solve_kwargs
         try:
-            assign(self._supremizer, self._supremizer_cache[self.mu, kwargs]) # **kwargs is not supported by __getitem__
+            # **kwargs is not supported by __getitem__
+            assign(self._supremizer, self._supremizer_cache[self.mu, kwargs])
         except KeyError:
             self._solve_supremizer(solution)
             self._supremizer_cache[self.mu, kwargs] = copy(self._supremizer)
         return self._supremizer
 
     def _solve_supremizer(self, solution):
-        assert len(self.inner_product["s"]) == 1 # the affine expansion storage contains only the inner product matrix
+        assert len(self.inner_product["s"]) == 1  # the affine expansion storage contains only the inner product matrix
         assembled_operator_lhs = self.inner_product["s"][0]
         assembled_operator_bt = sum(product(self.compute_theta("bt_restricted"), self.operator["bt_restricted"]))
         assembled_operator_rhs = assembled_operator_bt * solution
@@ -144,13 +145,13 @@ class StokesProblem(StokesProblem_Base):
     # Export solution to file
     def export_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
-            component = ["u", "p"] # but not "s"
+            component = ["u", "p"]  # but not "s"
         StokesProblem_Base.export_solution(
             self, folder, filename, solution=solution, component=component, suffix=suffix)
 
     def import_solution(self, folder=None, filename=None, solution=None, component=None, suffix=None):
         if component is None:
-            component = ["u", "p"] # but not "s"
+            component = ["u", "p"]  # but not "s"
         StokesProblem_Base.import_solution(
             self, folder, filename, solution=solution, component=component, suffix=suffix)
 

@@ -40,8 +40,8 @@ def DEIMDecoratedProblem(
                 # Call the parent initialization
                 ParametrizedDifferentialProblem_DerivedClass.__init__(self, V, **kwargs)
                 # Storage for DEIM reduced problems
-                self.DEIM_approximations = dict() # from term to dict of DEIMApproximation
-                self.non_DEIM_forms = dict() # from term to dict of forms
+                self.DEIM_approximations = dict()  # from term to dict of DEIMApproximation
+                self.non_DEIM_forms = dict()  # from term to dict of forms
 
                 # Store value of N_DEIM passed to solve
                 self._N_DEIM = None
@@ -85,7 +85,7 @@ def DEIMDecoratedProblem(
                 # instance is built. Thus, we will call this method in the reduction method instance
                 # constructor (having a safeguard in place to avoid repeated calls).
                 assert (len(self.DEIM_approximations) == 0) == (len(self.non_DEIM_forms) == 0)
-                if len(self.DEIM_approximations) == 0: # initialize DEIM approximations only once
+                if len(self.DEIM_approximations) == 0:  # initialize DEIM approximations only once
                     # Temporarily replace float parameters with symbols, so that we can detect if operators
                     # are parametrized
                     self.attach_symbolic_parameters()
@@ -93,7 +93,7 @@ def DEIMDecoratedProblem(
                     for term in self.terms:
                         try:
                             forms = self.assemble_operator(term)
-                        except ValueError: # possibily raised e.g. because output computation is optional
+                        except ValueError:  # possibily raised e.g. because output computation is optional
                             pass
                         else:
                             self.DEIM_approximations[term] = dict()

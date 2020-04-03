@@ -28,7 +28,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
         if expression_name not in reduced_problem_to_truth_solution_cache:
             visited = set()
             truth_problems = list()
-            truth_problem_to_components = { # outer dict index over time derivative
+            truth_problem_to_components = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
             truth_problem_to_exact_truth_problem = dict()
@@ -36,7 +36,7 @@ def basic_expression_on_truth_mesh(backend, wrapping):
             truth_problem_to_truth_solution_copy = dict()
             truth_problem_to_truth_solution_dot = dict()
             truth_problem_to_truth_solution_dot_copy = dict()
-            reduced_problem_to_components = { # outer dict index over time derivative
+            reduced_problem_to_components = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
             reduced_problem_to_truth_solution = dict()

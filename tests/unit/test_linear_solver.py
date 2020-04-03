@@ -171,7 +171,7 @@ def test_linear_solver():
     (error_sparse_tensor_callbacks, V, a, f, X, exact_solution) = _test_linear_solver_sparse("tensor callbacks")
     (error_sparse_form_callbacks, _, _, _, _, _) = _test_linear_solver_sparse("form callbacks")
     assert isclose(error_sparse_tensor_callbacks, error_sparse_form_callbacks)
-    if V.mesh().mpi_comm().size == 1: # dense solver is not partitioned
+    if V.mesh().mpi_comm().size == 1:  # dense solver is not partitioned
         error_dense = _test_linear_solver_dense(V, a, f, X, exact_solution)
         assert isclose(error_dense, error_sparse_tensor_callbacks)
         assert isclose(error_dense, error_sparse_form_callbacks)

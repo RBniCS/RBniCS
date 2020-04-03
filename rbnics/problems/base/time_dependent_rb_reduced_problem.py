@@ -40,7 +40,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                             self.assemble_error_estimation_operators(
                                 ("initial_condition_" + component, "initial_condition_" + component), "online")
                         elif current_stage == "offline":
-                            pass # Nothing else to be done
+                            pass  # Nothing else to be done
                         else:
                             raise ValueError("Invalid stage in _init_error_estimation_operators().")
                 if len(initial_condition_product) > 0:
@@ -52,7 +52,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                     if current_stage == "online":
                         self.assemble_error_estimation_operators(("initial_condition", "initial_condition"), "online")
                     elif current_stage == "offline":
-                        pass # Nothing else to be done
+                        pass  # Nothing else to be done
                     else:
                         raise ValueError("Invalid stage in _init_error_estimation_operators().")
 
@@ -79,7 +79,7 @@ def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_Derived
                 component0 = term[0].replace("initial_condition", "").replace("_", "")
                 component1 = term[1].replace("initial_condition", "").replace("_", "")
                 assert current_stage in ("online", "offline")
-                if current_stage == "online": # load from file
+                if current_stage == "online":  # load from file
                     assert (component0 != "") == (component1 != "")
                     if component0 != "":
                         assert component0 in self.components

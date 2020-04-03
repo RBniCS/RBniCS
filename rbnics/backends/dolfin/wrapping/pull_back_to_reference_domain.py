@@ -33,7 +33,7 @@ from rbnics.backends.dolfin.wrapping.assemble_operator_for_stability_factor impo
 from rbnics.backends.dolfin.wrapping.compute_theta_for_stability_factor import compute_theta_for_stability_factor
 from rbnics.backends.dolfin.wrapping.expand_sum_product import expand_sum_product
 from rbnics.backends.dolfin.wrapping.form_description import form_description
-import rbnics.backends.dolfin.wrapping.form_mul # enable form multiplication and division  # noqa: F401
+import rbnics.backends.dolfin.wrapping.form_mul  # enable form multiplication and division  # noqa: F401
 from rbnics.backends.dolfin.wrapping.parametrized_expression import ParametrizedExpression
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 from rbnics.eim.utils.decorators import DefineSymbolicParameters
@@ -677,10 +677,10 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 initialized_terms = list()
                 for term in terms_except_stability_factor_blacklist:
                     assert (term in self._pulled_back_operators) is (term in self._pulled_back_theta_factors)
-                    if term not in self._pulled_back_operators: # initialize only once
+                    if term not in self._pulled_back_operators:  # initialize only once
                         try:
                             forms = ParametrizedDifferentialProblem_DerivedClass.assemble_operator(self, term)
-                        except ValueError: # raised by assemble_operator if output computation is optional
+                        except ValueError:  # raised by assemble_operator if output computation is optional
                             pass
                         else:
                             # skip trivial case associated to scalar outputs
@@ -861,7 +861,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 facet_id_to_subdomain_ids = defaultdict(set)
                 subdomain_id_to_facet_ids = defaultdict(set)
                 for f in facets(mesh):
-                    if boundaries[f] > 0: # skip unmarked facets
+                    if boundaries[f] > 0:  # skip unmarked facets
                         for c in cells(f):
                             facet_id_to_subdomain_ids[boundaries[f]].add(subdomains[c])
                             subdomain_id_to_facet_ids[subdomains[c]].add(boundaries[f])
@@ -902,7 +902,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 # Loop over local part of the mesh
                 facet_id_to_normal_directions = defaultdict(set)
                 for f in facets(mesh):
-                    if boundaries[f] > 0: # skip unmarked facets
+                    if boundaries[f] > 0:  # skip unmarked facets
                         if f.exterior():
                             facet_id_to_normal_directions[boundaries[f]].add(
                                 tuple([f.normal()[d] for d in range(dim)]))
@@ -951,8 +951,8 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                                     operand_1 = node.ufl_operands[1]
                                     if is_space_dependent_coefficient(operand_0, operand_1):
                                         return False
-                            elif (isinstance(node, BaseExpression) # expressions with multiple components
-                                  and node.ufl_shape == ()):   # are visited by Indexed
+                            elif (isinstance(node, BaseExpression)  # expressions with multiple components
+                                  and node.ufl_shape == ()):        # are visited by Indexed
                                 if is_space_dependent_coefficient(node):
                                     return False
                 # The pulled back form is not affine if it contains a boundary integral on a non-straight boundary,
@@ -1024,7 +1024,7 @@ def PullBackFormsToReferenceDomainDecoratedProblem(**decorator_kwargs):
                 locals = dict()
                 # ... add parameters
                 for (p, mu_p) in enumerate(self.mu):
-                    assert isinstance(mu_p, Expression) # because UFL symbolic parameters were attached
+                    assert isinstance(mu_p, Expression)  # because UFL symbolic parameters were attached
                     locals[str(mu_p)] = symbols("mu[" + str(p) + "]")
                     locals["mu[" + str(p) + "]"] = locals[str(mu_p)]
                 # ... add shape parametrization jacobians to locals
@@ -1136,7 +1136,7 @@ class ComputeAffineParameterDependentThetaFactorReplacer(Transformer):
             contains_placeholder = False
         assert ops[1] in self.contains_placeholder
         assert not self.contains_placeholder[ops[1]]
-        replaced_ops.append(e.ufl_operands[1]) # e.ufl_operands contains the former value of ops[1] before replacement
+        replaced_ops.append(e.ufl_operands[1])  # e.ufl_operands contains the former value of ops[1] before replacement
         replaced_e = e._ufl_expr_reconstruct_(*replaced_ops)
         self.contains_placeholder[replaced_e] = contains_placeholder
         return replaced_e
@@ -1233,7 +1233,7 @@ def collect_common_forms_theta_factors(postprocessed_pulled_back_forms, postproc
     for collected_form in collected_with_respect_to_theta_ordered.values():
         if collected_form in collected_with_respect_to_form:
             collected_with_respect_to_form_ordered[collected_form] = collected_with_respect_to_form[collected_form]
-        else: # it may happen that factors get multiplied by a number during collection
+        else:  # it may happen that factors get multiplied by a number during collection
             ratios = tuple(simplify(collected_form / collected_with_respect_to_form_key)
                            for collected_with_respect_to_form_key in collected_with_respect_to_form.keys())
             is_numeric_ratio = tuple(isinstance(r, Number) for r in ratios)

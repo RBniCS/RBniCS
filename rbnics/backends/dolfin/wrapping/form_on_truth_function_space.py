@@ -28,7 +28,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
         if form_name not in reduced_problem_to_truth_solution_cache:
             visited = set()
             truth_problems = list()
-            truth_problem_to_components = { # outer dict index over time derivative
+            truth_problem_to_components = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
             truth_problem_to_exact_truth_problem = dict()
@@ -36,7 +36,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
             truth_problem_to_truth_solution_copy = dict()
             truth_problem_to_truth_solution_dot = dict()
             truth_problem_to_truth_solution_dot_copy = dict()
-            reduced_problem_to_components = { # outer dict index over time derivative
+            reduced_problem_to_components = {  # outer dict index over time derivative
                 0: dict(),
                 1: dict()}
             reduced_problem_to_truth_solution = dict()
@@ -354,7 +354,7 @@ def basic_form_on_truth_function_space(backend, wrapping):
         # Assemble
         assembled_form = wrapping.assemble(form, tensor)
         if not isinstance(assembled_form, Number):
-            assembled_form.generator = form_wrapper # for I/O
+            assembled_form.generator = form_wrapper  # for I/O
             form_rank = assembled_form.rank()
         else:
             form_rank = 0

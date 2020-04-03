@@ -42,8 +42,8 @@ def basic_tensor_save(backend, wrapping):
             V_1 = wrapping.form_argument_space(form, 1)
             V_0__dof_map_writer_mapping = wrapping.build_dof_map_writer_mapping(V_0)
             V_1__dof_map_writer_mapping = wrapping.build_dof_map_writer_mapping(V_1)
-            matrix_row_mapping = dict() # from processor dependent row indices to processor independent tuple
-            matrix_col_mapping = dict() # from processor dependent col indices to processor independent tuple
+            matrix_row_mapping = dict()  # from processor dependent row indices to processor independent tuple
+            matrix_col_mapping = dict()  # from processor dependent col indices to processor independent tuple
             mat = wrapping.to_petsc4py(tensor)
             row_start, row_end = mat.getOwnershipRange()
             for row in range(row_start, row_end):
@@ -62,7 +62,7 @@ def basic_tensor_save(backend, wrapping):
         if not PickleIO.exists_file(directory, "." + form_name):
             V_0 = wrapping.form_argument_space(form, 0)
             V_0__dof_map_writer_mapping = wrapping.build_dof_map_writer_mapping(V_0)
-            vector_mapping = dict() # from processor dependent indices to processor independent tuple
+            vector_mapping = dict()  # from processor dependent indices to processor independent tuple
             vec = wrapping.to_petsc4py(tensor)
             row_start, row_end = vec.getOwnershipRange()
             for row in range(row_start, row_end):

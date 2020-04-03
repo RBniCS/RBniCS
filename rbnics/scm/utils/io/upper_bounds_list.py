@@ -46,7 +46,7 @@ class UpperBoundsList(list):
             online_export(item, full_directory, "item_" + str(index))
 
     def load(self, directory, filename):
-        if len(self._list) > 0: # avoid loading multiple times
+        if len(self._list) > 0:  # avoid loading multiple times
             return False
         else:
             # Get full directory name

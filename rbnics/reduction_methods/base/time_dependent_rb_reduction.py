@@ -28,7 +28,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
 
             # $$ OFFLINE DATA STRUCTURES $$ #
             # Choose among two versions of POD-Greedy
-            self.POD_greedy_basis_extension = None # "orthogonal" or "POD"
+            self.POD_greedy_basis_extension = None  # "orthogonal" or "POD"
             #   orthogonal ~> Haasdonk, Ohlberger; ESAIM: M2AN, 2008
             #   POD ~>  Nguyen, Rozza, Patera; Calcolo, 2009
             # Declare POD objects for basis computation using POD-Greedy
@@ -260,7 +260,7 @@ def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
         # Choose the next parameter in the offline stage in a greedy fashion
         def _greedy(self):
 
-            if self.reduced_problem.N > 0: # skip during initialization
+            if self.reduced_problem.N > 0:  # skip during initialization
                 # Print some additional information related to the current value of the parameter
                 error_over_time = self.reduced_problem.compute_error()
                 error_squared_over_time = [v**2 for v in error_over_time]

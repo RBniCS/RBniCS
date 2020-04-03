@@ -43,7 +43,7 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
             # Call Parent method
             EllipticCoerciveReductionMethod_DerivedClass._offline(self)
 
-    if hasattr(EllipticCoerciveReductionMethod_DerivedClass, "greedy"): # RB reduction
+    if hasattr(EllipticCoerciveReductionMethod_DerivedClass, "greedy"):  # RB reduction
         @PreserveClassName
         class WeightedUncertaintyQuantificationDecoratedReductionMethod_Class(
                 WeightedUncertaintyQuantificationDecoratedReductionMethod_Class_Base):
@@ -57,7 +57,7 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
                 def weight(mu):
                     return sqrt(self.training_set_density[mu])
 
-                if self.reduced_problem.N > 0: # skip during initialization
+                if self.reduced_problem.N > 0:  # skip during initialization
                     # Print some additional information on the consistency of the reduced basis
                     print("absolute error for current mu =", self.reduced_problem.compute_error())
                     print("absolute (weighted) error estimator for current mu =",
@@ -79,7 +79,7 @@ def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveRe
 
                 print("find next mu")
                 return self.training_set.max(solve_and_estimate_error)
-    else: # POD reduction
+    else:  # POD reduction
         @PreserveClassName
         class WeightedUncertaintyQuantificationDecoratedReductionMethod_Class(
                 WeightedUncertaintyQuantificationDecoratedReductionMethod_Class_Base):

@@ -71,7 +71,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
 
     # Initialize expression
     expression = Expression(parametrized_expression_code, *args, **kwargs)
-    expression._mu = mu # to avoid repeated assignments
+    expression._mu = mu  # to avoid repeated assignments
 
     # Store mesh
     expression._mesh = mesh
@@ -95,7 +95,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
             "set_mu" in _original_setters
                 and
             truth_problem in _original_setters["set_mu"]
-        ): # truth_problem.set_mu was already patched by the decorator @sync_setters
+        ):  # truth_problem.set_mu was already patched by the decorator @sync_setters
             standard_set_mu = _original_setters["set_mu"][truth_problem]
             overridden_set_mu = generate_overridden_set_mu(standard_set_mu)
             _original_setters["set_mu"][truth_problem] = types.MethodType(overridden_set_mu, truth_problem)
@@ -138,7 +138,7 @@ def ParametrizedExpression(truth_problem, parametrized_expression_code=None, *ar
                 "set_time" in _original_setters
                     and
                 truth_problem in _original_setters["set_time"]
-            ): # truth_problem.set_time was already patched by the decorator @sync_setters
+            ):  # truth_problem.set_time was already patched by the decorator @sync_setters
                 standard_set_time = _original_setters["set_time"][truth_problem]
                 overridden_set_time = generate_overridden_set_time(standard_set_time)
                 _original_setters["set_time"][truth_problem] = types.MethodType(overridden_set_time, truth_problem)

@@ -38,7 +38,7 @@ class EIMApproximation(ParametrizedProblem):
         # Interpolation matrix
         self.interpolation_matrix = OnlineAffineExpansionStorage(1)
         # Solution
-        self._interpolation_coefficients = None # OnlineFunction
+        self._interpolation_coefficients = None  # OnlineFunction
 
         # $$ OFFLINE DATA STRUCTURES $$ #
         self.snapshot = parametrized_expression.create_empty_snapshot()
@@ -129,7 +129,7 @@ class EIMApproximation(ParametrizedProblem):
                 solver = OnlineLinearSolver(lhs, self._interpolation_coefficients, rhs)
                 solver.solve()
         else:
-            self._interpolation_coefficients = None # OnlineFunction
+            self._interpolation_coefficients = None  # OnlineFunction
 
     # Call online_solve and then convert the result of online solve from OnlineVector to a tuple
     def compute_interpolated_theta(self, N=None):
@@ -153,7 +153,7 @@ class EIMApproximation(ParametrizedProblem):
         if N > 0:
             error = self.snapshot - self.basis_functions[:N] * self._interpolation_coefficients
         else:
-            error = copy(self.snapshot) # need a copy because it will be rescaled
+            error = copy(self.snapshot)  # need a copy because it will be rescaled
 
         # Get the location of the maximum error
         (maximum_error, maximum_location) = max(abs(error))
