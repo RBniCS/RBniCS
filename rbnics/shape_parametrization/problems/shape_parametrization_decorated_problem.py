@@ -7,6 +7,7 @@
 from rbnics.backends import MeshMotion
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
+
 def ShapeParametrizationDecoratedProblem(*shape_parametrization_expression, **decorator_kwargs):
     from rbnics.shape_parametrization.problems.shape_parametrization import ShapeParametrization
 

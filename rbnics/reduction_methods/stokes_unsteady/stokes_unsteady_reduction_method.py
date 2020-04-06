@@ -7,6 +7,7 @@
 from rbnics.backends import TimeSeries
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 
+
 def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
 
     class AbstractCFDUnsteadyReductionMethod_Class(AbstractCFDUnsteadyReductionMethod_Base):
@@ -42,6 +43,7 @@ def AbstractCFDUnsteadyReductionMethod(AbstractCFDUnsteadyReductionMethod_Base):
 
     # return value (a class) for the decorator
     return AbstractCFDUnsteadyReductionMethod_Class
+
 
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.

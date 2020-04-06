@@ -8,6 +8,7 @@ from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_reduction_method i
     AbstractCFDUnsteadyReductionMethod)
 from rbnics.reduction_methods.base import NonlinearTimeDependentReductionMethod
 
+
 # Base class containing the interface of a projection based ROM
 # for saddle point problems.
 def NavierStokesUnsteadyReductionMethod(NavierStokesReductionMethod_DerivedClass):

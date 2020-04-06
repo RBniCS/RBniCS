@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class TimeStepping(object, metaclass=ABCMeta):
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
@@ -18,6 +19,7 @@ class TimeStepping(object, metaclass=ABCMeta):
     @abstractmethod
     def solve(self):
         pass
+
 
 class TimeDependentProblemWrapper(object, metaclass=ABCMeta):
     def set_time(self, t):

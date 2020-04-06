@@ -14,6 +14,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 EllipticCoerciveCompliantPODGalerkinReducedProblem_Base = EllipticCoerciveCompliantReducedProblem(
     EllipticCoercivePODGalerkinReducedProblem)
 
+
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive compliant problems.
 @ReducedProblemFor(EllipticCoerciveCompliantProblem, EllipticPODGalerkinReduction)

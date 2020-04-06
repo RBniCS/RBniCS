@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
+
 def OnlineVanishingViscosityDecoratedProblem(viscosity, N_threshold_min, N_threshold_max, **decorator_kwargs):
     from .online_vanishing_viscosity import OnlineVanishingViscosity
 

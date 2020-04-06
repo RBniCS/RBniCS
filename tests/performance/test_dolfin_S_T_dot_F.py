@@ -17,6 +17,7 @@ from test_utils import RandomDolfinFunction
 transpose = None
 all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}
 
+
 class Data(object):
     def __init__(self, Th, N):
         self.N = N
@@ -46,6 +47,7 @@ class Data(object):
         result_builtin = self.evaluate_builtin(S, F)
         relative_error = norm(result_builtin - result_backend) / norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
+
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])

@@ -7,6 +7,7 @@
 from rbnics.backends.common.time_series import TimeSeries
 from rbnics.utils.decorators import backend_for
 
+
 @backend_for("common", inputs=(TimeSeries, ))
 def copy(time_series):
     from rbnics.backends import copy

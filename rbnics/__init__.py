@@ -4,7 +4,12 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-# Set empty __all__ variable to be possibly extended by backends
+# Import system libraries
+import os
+import sys
+import importlib
+
+# Set empty __all__ variable to be possibly extended by backends (implicitly imported below)
 __all__ = []
 
 # Process configuration files first
@@ -72,22 +77,17 @@ __all__ += [
 ]
 
 # Import remaining modules
-import os
-import sys
-import importlib
-def import_remaining_modules():
-    rbnics_directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    already_imported = ["backends", "eim", "problems", "__pycache__", "reduction_methods", "sampling", "scm",
-                        "shape_parametrization", "utils"]
-    for root, dirs, files in os.walk(os.path.join(rbnics_directory)):
-        for dir_ in dirs:
-            if dir_ not in already_imported and not dir_.startswith("."):
-                importlib.import_module(__name__ + "." + dir_)
-                already_imported.append(dir_)
-                for class_or_function_name in sys.modules[__name__ + "." + dir_].__all__:
-                    assert not hasattr(sys.modules[__name__], class_or_function_name)
-                    setattr(sys.modules[__name__], class_or_function_name, getattr(sys.modules[__name__ + "." + dir_],
-                            class_or_function_name))
-                    sys.modules[__name__].__all__.append(class_or_function_name)
-        break  # prevent recursive exploration
-import_remaining_modules()
+rbnics_directory = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+already_imported = ["backends", "eim", "problems", "__pycache__", "reduction_methods", "sampling", "scm",
+                    "shape_parametrization", "utils"]
+for root, dirs, files in os.walk(os.path.join(rbnics_directory)):
+    for dir_ in dirs:
+        if dir_ not in already_imported and not dir_.startswith("."):
+            importlib.import_module(__name__ + "." + dir_)
+            already_imported.append(dir_)
+            for class_or_function_name in sys.modules[__name__ + "." + dir_].__all__:
+                assert not hasattr(sys.modules[__name__], class_or_function_name)
+                setattr(sys.modules[__name__], class_or_function_name, getattr(sys.modules[__name__ + "." + dir_],
+                        class_or_function_name))
+                sys.modules[__name__].__all__.append(class_or_function_name)
+    break  # prevent recursive exploration

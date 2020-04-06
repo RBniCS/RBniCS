@@ -15,6 +15,7 @@ from rbnics.reduction_methods.parabolic import ParabolicPODGalerkinReduction
 ParabolicCoercivePODGalerkinReducedProblem_Base = AbstractParabolicPODGalerkinReducedProblem(
     ParabolicCoerciveReducedProblem(EllipticCoercivePODGalerkinReducedProblem))
 
+
 # Base class containing the interface of a projection based ROM
 # for parabolic coercive problems.
 @ReducedProblemFor(ParabolicCoerciveProblem, ParabolicPODGalerkinReduction)

@@ -11,6 +11,7 @@ from rbnics.utils.io import ExportableList, TextBox
 from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineVanishingViscosity
 
+
 @ReductionMethodDecoratorFor(OnlineVanishingViscosity)
 def OnlineVanishingViscosityDecoratedReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
 

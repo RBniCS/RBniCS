@@ -12,6 +12,7 @@ from rbnics.eim.utils.decorators import (StoreMapFromBasisFunctionsToReducedProb
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @ReducedProblemDecoratorFor(ExactParametrizedFunctions)
 def ExactParametrizedFunctionsDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

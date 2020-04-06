@@ -10,6 +10,7 @@ from rbnics.backends import product, sum
 
 NonlinearEllipticProblem_Base = NonlinearProblem(EllipticProblem)
 
+
 class NonlinearEllipticProblem(NonlinearEllipticProblem_Base):
 
     # Default initialization of members

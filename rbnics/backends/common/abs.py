@@ -8,6 +8,7 @@ from numbers import Number
 from rbnics.utils.decorators import backend_for
 python_abs = abs
 
+
 @backend_for("common", inputs=(Number, ))
 def abs(arg):
     return python_abs(arg)

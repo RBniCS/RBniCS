@@ -6,6 +6,7 @@
 
 from rbnics.problems.parabolic.abstract_parabolic_reduced_problem import AbstractParabolicReducedProblem
 
+
 # Base class containing the interface of a projection based ROM
 # for parabolic problems.
 def ParabolicReducedProblem(EllipticReducedProblem_DerivedClass):

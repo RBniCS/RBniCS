@@ -7,6 +7,7 @@
 from rbnics.problems.base import LinearReducedProblem
 from rbnics.backends import product, sum, transpose
 
+
 def StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
     StokesOptimalControlReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)

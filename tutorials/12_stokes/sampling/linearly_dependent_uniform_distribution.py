@@ -7,6 +7,7 @@
 from numpy import pi, random
 from rbnics.sampling.distributions.distribution import Distribution
 
+
 class LinearlyDependentUniformDistribution(Distribution):
     def __init__(self):
         self.aux_box = [(0.5, 1.5), (0.5, 1.5), (0, pi / 6.)]

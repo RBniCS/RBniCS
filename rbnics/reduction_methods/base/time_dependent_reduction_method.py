@@ -9,6 +9,7 @@ from rbnics.backends import assign, TimeSeries
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @RequiredBaseDecorators(None)
 def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 
@@ -27,6 +28,7 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if "with_respect_to" in kwargs:
                 assert inspect.isfunction(kwargs["with_respect_to"])
                 other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+
                 def patched_truth_solve(self_, **kwargs_):
                     other_truth_problem.solve(**kwargs_)
                     assign(self.truth_problem._solution, other_truth_problem._solution)
@@ -60,12 +62,15 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 def disable_import_solution_method(
                         self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
                     raise OSError
+
                 self.disable_import_solution = PatchInstanceMethod(
                     other_truth_problem, "import_solution", disable_import_solution_method)
                 self.disable_import_solution.patch()
+
                 def disable_export_solution_method(
                         self_, folder=None, filename=None, solution_over_time=None, component=None, suffix=None):
                     pass
+
                 self.disable_export_solution = PatchInstanceMethod(
                     other_truth_problem, "export_solution", disable_export_solution_method)
                 self.disable_export_solution.patch()
@@ -74,6 +79,7 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
             if "with_respect_to" in kwargs:
                 assert inspect.isfunction(kwargs["with_respect_to"])
                 other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+
                 def patched_truth_compute_output(self_):
                     other_truth_problem.compute_output()
                     assign(self.truth_problem._output, other_truth_problem._output)
@@ -103,12 +109,15 @@ def TimeDependentReductionMethod(DifferentialProblemReductionMethod_DerivedClass
                 def disable_import_output_method(
                         self_, folder=None, filename=None, output_over_time=None, suffix=None):
                     raise OSError
+
                 self.disable_import_output = PatchInstanceMethod(
                     other_truth_problem, "import_output", disable_import_output_method)
                 self.disable_import_output.patch()
+
                 def disable_export_output_method(
                         self_, folder=None, filename=None, output_over_time=None, suffix=None):
                     pass
+
                 self.disable_export_output = PatchInstanceMethod(
                     other_truth_problem, "export_output", disable_export_output_method)
                 self.disable_export_output.patch()

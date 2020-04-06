@@ -10,6 +10,7 @@ import configparser
 from rbnics.utils.decorators import overload, set_of
 from rbnics.utils.mpi import parallel_io
 
+
 class Config(object):
     rbnics_directory = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
 
@@ -145,6 +146,7 @@ class Config(object):
     def __eq__(self, other):
         return (self._config_as_parser == other._config_as_parser
                 and self._config_as_dict == other._config_as_dict)
+
 
 config = Config()
 config.read()

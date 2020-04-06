@@ -17,6 +17,7 @@ backend = ModuleWrapper(AffineExpansionStorage, Function, Matrix, NonAffineExpan
 wrapping = ModuleWrapper(DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
 (product_base, ProductOutput) = basic_product(backend, wrapping)
 
+
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
 @backend_for("numpy", inputs=(ThetaType, (AffineExpansionStorage, NonAffineExpansionStorage), ThetaType + (None,)))

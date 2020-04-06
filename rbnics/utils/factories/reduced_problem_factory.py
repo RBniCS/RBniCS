@@ -11,6 +11,7 @@ from rbnics.utils.decorators.reduced_problem_decorator_for import _cache as redu
 
 logger = getLogger("rbnics/utils/factories/reduced_problem_factory.py")
 
+
 # Factory to generate a reduced problem corresponding to a given reduction method and truth problem
 def ReducedProblemFactory(truth_problem, reduction_method, **kwargs):
 

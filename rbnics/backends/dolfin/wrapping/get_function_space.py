@@ -6,6 +6,7 @@
 
 from dolfin import Function
 
+
 def get_function_space(function):
     assert isinstance(function, Function)
     return function.function_space()

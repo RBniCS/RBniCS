@@ -15,6 +15,7 @@ Computation of the inf-sup constant
 of a Stokes problem on a square
 """
 
+
 # ~~~ Sparse case ~~~ #
 def _test_eigen_solver_sparse(callback_type):
     from rbnics.backends.dolfin import EigenSolver
@@ -73,6 +74,7 @@ def _test_eigen_solver_sparse(callback_type):
     print("Sparse inf-sup constant: ", sqrt(r))
     return (sqrt(r), solver.condensed_A, solver.condensed_B)
 
+
 # ~~~ Dense case ~~~ #
 def _test_eigen_solver_dense(sparse_LHS, sparse_RHS):
     from rbnics.backends.online.numpy import EigenSolver, Matrix
@@ -95,6 +97,7 @@ def _test_eigen_solver_dense(sparse_LHS, sparse_RHS):
     assert r > 0., "r = " + str(r) + " is not positive"
     print("Dense inf-sup constant: ", sqrt(r))
     return (sqrt(r), LHS, RHS)
+
 
 # ~~~ Test function ~~~ #
 def test_eigen_solver():

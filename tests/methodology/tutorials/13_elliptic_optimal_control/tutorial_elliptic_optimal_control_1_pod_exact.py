@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @ExactParametrizedFunctions()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
@@ -145,6 +146,7 @@ class EllipticOptimalControl(EllipticOptimalControlProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/mesh1.xml")

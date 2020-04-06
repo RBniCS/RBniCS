@@ -13,6 +13,7 @@ from rbnics.utils.decorators import backend_for, list_of, ModuleWrapper
 backend = ModuleWrapper(Function, Matrix, Vector)
 assign_base = basic_assign(backend)
 
+
 @backend_for("numpy", inputs=((Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type()),
                               (Function.Type(), list_of(Function.Type()), Matrix.Type(), Vector.Type())))
 def assign(object_to, object_from):

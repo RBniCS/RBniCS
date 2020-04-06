@@ -14,6 +14,7 @@ from test_utils import RandomDolfinFunction
 transpose = None
 all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}
 
+
 class Data(object):
     def __init__(self, Th):
         mesh = UnitSquareMesh(Th, Th)
@@ -42,6 +43,7 @@ class Data(object):
         result_builtin = self.evaluate_builtin(v1, v2, A)
         relative_error = (result_builtin - result_backend) / result_builtin
         assert isclose(relative_error, 0., atol=1e-12)
+
 
 @pytest.mark.parametrize("Th", [2**i for i in range(1, 9)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))

@@ -8,6 +8,7 @@
 X = 0
 Y = 1
 
+
 def counterclockwise(triangle_vertices):
     """
     mshr utility function to reorder triangle vertices in counterclockwise order

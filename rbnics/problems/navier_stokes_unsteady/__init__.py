@@ -12,6 +12,7 @@ from rbnics.problems.navier_stokes_unsteady.navier_stokes_unsteady_problem impor
 from rbnics.problems.navier_stokes_unsteady.navier_stokes_unsteady_reduced_problem import (
     NavierStokesUnsteadyReducedProblem)
 
+
 __all__ = [
     "NavierStokesUnsteadyPODGalerkinReducedProblem",
     "NavierStokesUnsteadyProblem",

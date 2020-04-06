@@ -8,10 +8,12 @@ from math import sqrt
 from numpy import abs, cumsum as compute_retained_energy, isclose, sum as compute_total_energy
 from rbnics.utils.io import ExportableList
 
+
 # Class containing the implementation of the POD
 def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_wrapping,
                                       ParentProperOrthogonalDecomposition, SnapshotsContainerType,
                                       BasisContainerType):
+
     class _ProperOrthogonalDecompositionBase(ParentProperOrthogonalDecomposition):
 
         def __init__(self, space, inner_product, *args):

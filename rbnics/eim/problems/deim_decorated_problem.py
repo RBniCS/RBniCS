@@ -15,11 +15,13 @@ from rbnics.eim.utils.decorators import DefineSymbolicParameters
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def ExactDEIMAlgorithm(**kwargs):
     # Enable exact parametrized functions evaluation both offline and online
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     kwargs["stages"] = ("offline", "online")
     return ExactParametrizedFunctions(**kwargs)
+
 
 def DEIMDecoratedProblem(
     stages=("offline", "online"),

@@ -4,7 +4,9 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def TensorBasisList(TensorsList):
+
     class _TensorBasisList(TensorsList):
         pass
 

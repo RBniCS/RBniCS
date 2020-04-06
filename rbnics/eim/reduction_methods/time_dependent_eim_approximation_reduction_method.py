@@ -10,6 +10,7 @@ from rbnics.sampling.distributions import DiscreteDistribution, UniformDistribut
 from rbnics.eim.problems.time_dependent_eim_approximation import EnlargedMu
 from rbnics.eim.reduction_methods.eim_approximation_reduction_method import EIMApproximationReductionMethod
 
+
 class TimeDependentEIMApproximationReductionMethod(EIMApproximationReductionMethod):
 
     def __init__(self, EIM_approximation):

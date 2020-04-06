@@ -6,6 +6,7 @@
 
 from rbnics.utils.io import TextIO
 
+
 class VerticesMappingIO(object):
     # Save a variable to file
     @staticmethod

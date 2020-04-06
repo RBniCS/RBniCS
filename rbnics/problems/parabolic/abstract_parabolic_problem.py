@@ -7,6 +7,7 @@
 from rbnics.backends import product, sum
 from rbnics.problems.base import LinearTimeDependentProblem
 
+
 def AbstractParabolicProblem(EllipticProblem_DerivedClass):
     AbstractParabolicProblem_Base = LinearTimeDependentProblem(EllipticProblem_DerivedClass)
 

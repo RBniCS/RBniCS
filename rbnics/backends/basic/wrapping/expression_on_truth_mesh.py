@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def expression_on_truth_mesh(expression_wrapper, function=None):
     pass

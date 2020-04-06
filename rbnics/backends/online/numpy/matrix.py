@@ -11,12 +11,15 @@ from rbnics.backends.online.numpy.vector import Vector
 from rbnics.backends.online.numpy.wrapping import Slicer
 from rbnics.utils.decorators import backend_for, ModuleWrapper, OnlineSizeType
 
+
 def MatrixBaseType(M, N):
     return zeros((M, N))
+
 
 backend = ModuleWrapper(Function, Vector)
 wrapping = ModuleWrapper(Slicer=Slicer)
 _Matrix_Type_Base = BasicMatrix(backend, wrapping, MatrixBaseType)
+
 
 class _Matrix_Type(_Matrix_Type_Base):
     def __getitem__(self, key):
@@ -49,11 +52,15 @@ class _Matrix_Type(_Matrix_Type_Base):
     def __array__(self, dtype=None):
         return self.content.__array__(dtype)
 
+
 @backend_for("numpy", inputs=(OnlineSizeType, OnlineSizeType))
 def Matrix(M, N):
     return _Matrix_Type(M, N)
 
+
 # Attach a Type() function
 def Type():
     return _Matrix_Type
+
+
 Matrix.Type = Type

@@ -7,7 +7,9 @@
 from numbers import Number
 from rbnics.utils.decorators import dict_of, list_of, overload
 
+
 def SnapshotsMatrix(FunctionsList):
+
     class _SnapshotsMatrix(FunctionsList):
 
         @overload(FunctionsList, (None, str, dict_of(str, str)), (None, list_of(Number)), bool)

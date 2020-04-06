@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def sympy_symbolic_coordinates(dim, SymbolGenerator):
     return SymbolGenerator("x", dim, 1)

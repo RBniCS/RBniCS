@@ -13,6 +13,7 @@ from rbnics.scm.problems import ParametrizedStabilityFactorEigenProblem
 from rbnics.utils.io import (ErrorAnalysisTable, Folders, GreedyErrorEstimatorsList, SpeedupAnalysisTable,
                              TextBox, TextLine, Timer)
 
+
 # Empirical interpolation method for the interpolation of parametrized functions
 class SCMApproximationReductionMethod(ReductionMethod):
 

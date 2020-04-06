@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def get_function_subspace(function_space__or__function, component):
     pass

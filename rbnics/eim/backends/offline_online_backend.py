@@ -12,6 +12,7 @@ from rbnics.eim.backends.offline_online_riesz_solver import OfflineOnlineRieszSo
 from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
 from rbnics.utils.cache import cache
 
+
 @cache
 def OfflineOnlineBackend(problem_name):
     return types.SimpleNamespace(

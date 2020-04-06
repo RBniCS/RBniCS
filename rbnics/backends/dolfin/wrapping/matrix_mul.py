@@ -6,8 +6,10 @@
 
 from dolfin import as_backend_type, compile_cpp_code
 
+
 def matrix_mul_vector(matrix, vector):
     return matrix * vector
+
 
 cpp_code = """
     #include <pybind11/pybind11.h>
@@ -62,6 +64,7 @@ cpp_code = """
     }
 """
 _vectorized_matrix_inner_vectorized_matrix = compile_cpp_code(cpp_code).vectorized_matrix_inner_vectorized_matrix
+
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
     return _vectorized_matrix_inner_vectorized_matrix(as_backend_type(matrix), as_backend_type(other_matrix))

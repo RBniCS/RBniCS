@@ -25,6 +25,7 @@ from rbnics.utils.io import (Folders, TextIO as BasisFunctionsContentLengthIO, T
                              TextIO as DelayedFunctionsProblemNameIO, TextIO as DelayedFunctionsTypeIO,
                              TextIO as ErrorEstimationInnerProductIO, TextIO as TruthContentItemIO, TextIO as TypeIO)
 
+
 class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
     def __init__(self, *shape):
         self._shape = shape
@@ -634,6 +635,7 @@ class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         else:
             return DelayedTranspose(pre_post[0]) * op * pre_post[1]
 
+
 class DelayedTransposeShape(object):
     def __init__(self, basis_functions):
         assert len(basis_functions) in (0, 1, 2)
@@ -669,6 +671,7 @@ class DelayedTransposeShape(object):
     def __eq__(self, other):
         return (self._component_name_to_basis_component_index == other._component_name_to_basis_component_index
                 and self._component_name_to_basis_component_length == other._component_name_to_basis_component_length)
+
 
 class NumericForm(object):
     def __init__(self, value):

@@ -16,6 +16,7 @@ backend = ModuleWrapper(Function, transpose)
 wrapping = ModuleWrapper(gram_schmidt_projection_step)
 GramSchmidt_Base = BasicGramSchmidt(backend, wrapping)
 
+
 @BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
 class GramSchmidt(GramSchmidt_Base):
     pass

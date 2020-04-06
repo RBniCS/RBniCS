@@ -6,6 +6,7 @@
 
 from types import SimpleNamespace
 
+
 def ModuleWrapper(*args, **kwargs):
     for arg in args:
         assert arg.__name__ not in kwargs

@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ProblemDecoratorFor
 
+
 def OnlineRectificationDecoratedProblem(**decorator_kwargs):
     from .online_rectification import OnlineRectification
 

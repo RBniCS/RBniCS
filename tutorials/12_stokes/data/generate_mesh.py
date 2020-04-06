@@ -79,14 +79,17 @@ mesh = generate_mesh(domain, 50)
 # Create subdomains
 subdomains = MeshFunction("size_t", mesh, 2, mesh.domains())
 
+
 # Create boundaries
 class Inlet(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - D - H) < DOLFIN_EPS
 
+
 class Outlet(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1]) < DOLFIN_EPS
+
 
 class Walls(SubDomain):
     def inside(self, x, on_boundary):
@@ -96,6 +99,7 @@ class Walls(SubDomain):
             ((x[1] <= L or x[1] >= L + t) and abs(x[0] - D) < DOLFIN_EPS) or
             (x[0] >= D and (abs(x[1] - L) < DOLFIN_EPS or abs(x[1] - L - t) < DOLFIN_EPS))
         )
+
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)

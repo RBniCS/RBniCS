@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def get_mpi_comm(space):
     pass

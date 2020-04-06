@@ -17,19 +17,23 @@ from rbnics.backends.dolfin.wrapping.is_problem_solution import (
     _solution_split_to_component, _solution_split_to_solution)
 from rbnics.utils.decorators import overload
 
+
 def solution_identify_component(node):
     node = _remove_mute_indices(node)
     return _solution_identify_component(node)
+
 
 def _solution_identify_component(node):
     assert node in _solution_split_to_component
     assert node in _solution_split_to_solution
     return (node, _solution_split_to_component[node], _solution_split_to_solution[node])
 
+
 @overload
 def _remove_mute_indices(node: (Argument, BaseExpression, Constant, ConstantValue, Function, GeometricQuantity,
                                 IndexBase, MultiIndex, Operator)):
     return node
+
 
 @overload
 def _remove_mute_indices(node: Indexed):
@@ -47,6 +51,7 @@ def _remove_mute_indices(node: Indexed):
         return _remove_mute_indices(node.ufl_operands[0])
     else:
         raise TypeError("Invalid index")
+
 
 @overload
 def _remove_mute_indices(node: ListTensor):

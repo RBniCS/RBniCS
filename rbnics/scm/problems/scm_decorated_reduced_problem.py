@@ -9,6 +9,7 @@ from rbnics.scm.problems.decorated_reduced_problem_with_stability_factor_evaluat
 from rbnics.scm.problems.scm import SCM
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 
+
 @ReducedProblemDecoratorFor(SCM)
 def SCMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

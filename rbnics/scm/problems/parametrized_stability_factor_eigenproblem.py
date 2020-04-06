@@ -12,6 +12,7 @@ from rbnics.backends import AffineExpansionStorage, assign, copy, EigenSolver, e
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 
+
 class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
 
     # Default initialization of members
@@ -39,15 +40,20 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
         self._eigenvector = Function(truth_problem.stability_factor_V)
         # I/O
         self.folder["cache"] = os.path.join(folder_prefix, "cache")
+
         def _eigenvalue_cache_key_generator(*args, **kwargs):
             return args
+
         def _eigenvalue_cache_import(filename):
             self.import_eigenvalue(self.folder["cache"], filename)
             return self._eigenvalue
+
         def _eigenvalue_cache_export(filename):
             self.export_eigenvalue(self.folder["cache"], filename)
+
         def _eigenvalue_cache_filename_generator(*args, **kwargs):
             return self._cache_file(args)
+
         self._eigenvalue_cache = Cache(
             "problems",
             key_generator=_eigenvalue_cache_key_generator,
@@ -55,15 +61,20 @@ class ParametrizedStabilityFactorEigenProblem(ParametrizedProblem):
             export=_eigenvalue_cache_export,
             filename_generator=_eigenvalue_cache_filename_generator
         )
+
         def _eigenvector_cache_key_generator(*args, **kwargs):
             return args
+
         def _eigenvector_cache_import(filename):
             self.import_eigenvector(self.folder["cache"], filename)
             return self._eigenvector
+
         def _eigenvector_cache_export(filename):
             self.export_eigenvector(self.folder["cache"], filename)
+
         def _eigenvector_cache_filename_generator(*args, **kwargs):
             return self._cache_file(args)
+
         self._eigenvector_cache = Cache(
             "problems",
             key_generator=_eigenvector_cache_key_generator,

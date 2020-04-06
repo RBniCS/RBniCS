@@ -8,6 +8,7 @@ from mpi4py.MPI import MAX
 from rbnics.backends.dolfin.wrapping.get_global_dof_to_local_dof_map import get_global_dof_to_local_dof_map
 from rbnics.backends.dolfin.wrapping.get_local_dof_to_component_map import get_local_dof_to_component_map
 
+
 def get_global_dof_component(global_dof, V, global_to_local=None, local_dof_to_component=None):
     if global_to_local is None:
         global_to_local = get_global_dof_to_local_dof_map(V, V.dofmap())

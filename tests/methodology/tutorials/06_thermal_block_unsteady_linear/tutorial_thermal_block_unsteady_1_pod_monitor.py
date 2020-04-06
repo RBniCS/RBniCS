@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 class UnsteadyThermalBlock(ParabolicCoerciveProblem):
 
     # Default initialization of members
@@ -79,6 +80,7 @@ class UnsteadyThermalBlock(ParabolicCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")

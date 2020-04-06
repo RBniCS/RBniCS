@@ -4,12 +4,13 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-
 from rbnics.problems.base import LinearTimeDependentReducedProblem
 from rbnics.backends import product, sum
 
+
 def AbstractCFDUnsteadyReducedProblem(AbstractCFDUnsteadyReducedProblem_Base):
     return AbstractCFDUnsteadyReducedProblem_Base
+
 
 def StokesUnsteadyReducedProblem(StokesReducedProblem_DerivedClass):
 

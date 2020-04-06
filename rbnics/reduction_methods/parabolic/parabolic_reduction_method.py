@@ -6,6 +6,7 @@
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 
+
 # Base class containing the interface of a projection based ROM
 # for parabolic problems.
 def ParabolicReductionMethod(EllipticReductionMethod_DerivedClass):

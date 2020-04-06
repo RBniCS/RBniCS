@@ -8,6 +8,7 @@ from ufl.algorithms.map_integrands import map_integrand_dags
 from ufl.corealg.multifunction import MultiFunction
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 
+
 class RewriteQuotientsReplacer(MultiFunction):
     expr = MultiFunction.reuse_if_untouched
 
@@ -21,6 +22,7 @@ class RewriteQuotientsReplacer(MultiFunction):
         #   coefficient1 = expr1
         #   coefficient2 = expr2
         return n * (1. / d)
+
 
 def rewrite_quotients(form):
     # TODO support forms in the complex field. This is currently needed otherwise conj(a/b) does not get rewritten.

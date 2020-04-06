@@ -6,5 +6,6 @@
 
 from rbnics.utils.io.performance_table import PerformanceTable
 
+
 class ErrorAnalysisTable(PerformanceTable):
     pass

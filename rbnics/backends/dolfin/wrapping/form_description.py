@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def basic_form_description(backend, wrapping):
     def _basic_form_description(form):
         coefficients_repr = dict()
@@ -18,8 +19,10 @@ def basic_form_description(backend, wrapping):
         return coefficients_repr
     return _basic_form_description
 
+
 from rbnics.backends.dolfin.wrapping.expression_description import expression_description
 from rbnics.utils.decorators import ModuleWrapper
+
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(expression_description=expression_description)
 form_description = basic_form_description(backend, wrapping)

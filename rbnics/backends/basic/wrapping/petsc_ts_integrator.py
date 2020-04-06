@@ -7,7 +7,9 @@
 from numpy import arange, isclose
 from petsc4py import PETSc
 
+
 def BasicPETScTSIntegrator(backend, wrapping):
+
     class _BasicPETScTSIntegrator(object):
         def __init__(self, problem, solution, solution_dot):
             self.solution = solution
@@ -106,8 +108,10 @@ def BasicPETScTSIntegrator(backend, wrapping):
                             snes_tolerances[1] = value_snes
                         elif key_snes == "report":
                             snes.cancelMonitor()
+
                             def monitor(snes, it, fgnorm):
                                 print("  " + str(it) + " SNES Function norm " + "{:e}".format(fgnorm))
+
                             snes.setMonitor(monitor)
                         elif key_snes == "solution_tolerance":
                             snes_tolerances[2] = value_snes

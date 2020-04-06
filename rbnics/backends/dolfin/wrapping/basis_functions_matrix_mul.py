@@ -6,6 +6,7 @@
 
 from dolfin import Function, FunctionSpace
 
+
 def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matrix, BasisFunctionsMatrixType):
     space = basis_functions_matrix.space
     assert isinstance(space, FunctionSpace)
@@ -27,6 +28,7 @@ def basis_functions_matrix_mul_online_matrix(basis_functions_matrix, online_matr
             output.enrich(output_j)
             j += 1
     return output
+
 
 def basis_functions_matrix_mul_online_vector(basis_functions_matrix, online_vector):
     space = basis_functions_matrix.space

@@ -9,6 +9,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import TextIO as LengthIO
 
+
 class DelayedFunctionsList(object):
     def __init__(self, space):
         self.space = space

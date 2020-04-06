@@ -8,6 +8,7 @@ from ufl import transpose
 from dolfin import *
 from rbnics import *
 
+
 @ExactParametrizedFunctions()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
@@ -122,6 +123,7 @@ class NavierStokes(NavierStokesProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesProblem)
 def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
@@ -134,6 +136,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             })
 
     return ReducedNavierStokes
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/backward_facing_step.xml")

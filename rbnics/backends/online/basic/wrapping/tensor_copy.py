@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import overload
 
+
 def basic_tensor_copy(backend, wrapping):
     @overload
     def _basic_tensor_copy(tensor: backend.Matrix.Type()):

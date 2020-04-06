@@ -12,6 +12,7 @@ from rbnics.utils.cache import Cache, TimeSeriesCache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, StoreMapFromSolutionDotToProblem
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @RequiredBaseDecorators(None)
 def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
 
@@ -43,21 +44,26 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
             self._solution_over_time = None  # TimeSeries of Functions
             self._solution_dot_over_time = None  # TimeSeries of Functions
             self._output_over_time = None  # TimeSeries of numbers
+
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
                 assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
+
             def _solution_cache_import(filename):
                 solution_over_time = TimeSeries(self._solution_over_time)
                 self.import_solution(self.folder["cache"], filename, solution_over_time)
                 return solution_over_time
+
             def _solution_cache_export(filename, solution, suffix):
                 self.export_solution(self.folder["cache"], filename, solution, suffix=suffix)
+
             def _solution_cache_filename_generator(*args, **kwargs):
                 assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
+
             self._solution_over_time_cache = TimeSeriesCache(
                 "problems",
                 key_generator=_solution_cache_key_generator,
@@ -65,20 +71,25 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 export=_solution_cache_export,
                 filename_generator=_solution_cache_filename_generator
             )
+
             def _solution_dot_cache_key_generator(*args, **kwargs):
                 assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
+
             def _solution_dot_cache_import(filename):
                 solution_dot_over_time = TimeSeries(self._solution_dot_over_time)
                 self.import_solution(self.folder["cache"], filename + "_dot", solution_dot_over_time)
                 return solution_dot_over_time
+
             def _solution_dot_cache_export(filename, solution_dot, suffix):
                 self.export_solution(self.folder["cache"], filename + "_dot", solution_dot, suffix=suffix)
+
             def _solution_dot_cache_filename_generator(*args, **kwargs):
                 assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
+
             self._solution_dot_over_time_cache = TimeSeriesCache(
                 "problems",
                 key_generator=_solution_dot_cache_key_generator,
@@ -87,20 +98,25 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                 filename_generator=_solution_dot_cache_filename_generator
             )
             del self._solution_cache
+
             def _output_cache_key_generator(*args, **kwargs):
                 assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_key_from_kwargs(**kwargs)
+
             def _output_cache_import(filename):
                 output_over_time = list()
                 self.import_output(self.folder["cache"], filename, output_over_time)
                 return output_over_time
+
             def _output_cache_export(filename):
                 self.export_output(self.folder["cache"], filename)
+
             def _output_cache_filename_generator(*args, **kwargs):
                 assert len(args) == 1
                 assert args[0] == self.mu
                 return self._cache_file_from_kwargs(**kwargs)
+
             self._output_over_time_cache = Cache(
                 "problems",
                 key_generator=_output_cache_key_generator,
@@ -271,6 +287,7 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                     elif not has_homogeneous_dirichlet_bc and has_homogeneous_initial_condition:  # case b)
                         def generate_modified_compute_theta(component):
                             standard_compute_theta = self.compute_theta
+
                             def modified_compute_theta(self_, term):
                                 if term == dirichlet_bc_string.format(c=component):
                                     theta_bc = standard_compute_theta(term)
@@ -280,7 +297,9 @@ def TimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
                                         return theta_bc
                                 else:
                                     return standard_compute_theta(term)
+
                             return modified_compute_theta
+
                         PatchInstanceMethod(self, "compute_theta", generate_modified_compute_theta(component)).patch()
                     elif has_homogeneous_dirichlet_bc and not has_homogeneous_initial_condition:  # case c)
                         pass

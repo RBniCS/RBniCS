@@ -9,7 +9,11 @@ import sys
 import inspect
 
 # Initialize __all__ variable
-__all__ = list()
+__all__ = []
+
+# Process configuration files first
+from rbnics.utils.config import config
+
 
 # Helper function to set the online backend
 def set_online_backend(online_backend):
@@ -44,6 +48,6 @@ def set_online_backend(online_backend):
     # Also copy the online wrapping module, without prefixes
     sys.modules[__name__ + ".wrapping"] = sys.modules[__name__ + "." + online_backend].wrapping
 
-# Get the online backend name
-from rbnics.utils.config import config
+
+# Set online backend
 set_online_backend(config.get("backends", "online backend"))

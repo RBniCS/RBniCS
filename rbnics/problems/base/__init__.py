@@ -32,7 +32,6 @@ from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
 from rbnics.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
 
-
 __all__ = [
     "LinearPODGalerkinReducedProblem",
     "LinearProblem",

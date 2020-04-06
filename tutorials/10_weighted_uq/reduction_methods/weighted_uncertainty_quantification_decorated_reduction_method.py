@@ -12,6 +12,7 @@ from problems import WeightedUncertaintyQuantification
 logger = getLogger("tutorials/10_weighted_uq/reduction_methods"
                    + "/weighted_uncertainty_quantification_decorated_reduction_method.py")
 
+
 @ReductionMethodDecoratorFor(WeightedUncertaintyQuantification)
 def WeightedUncertaintyQuantificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
 

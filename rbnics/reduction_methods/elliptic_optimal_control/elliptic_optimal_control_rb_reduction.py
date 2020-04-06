@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearRBReduction
@@ -13,6 +12,7 @@ from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_
 
 EllipticOptimalControlRBReduction_Base = LinearRBReduction(
     EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod))
+
 
 @ReductionMethodFor(EllipticOptimalControlProblem, "ReducedBasis")
 class EllipticOptimalControlRBReduction(EllipticOptimalControlRBReduction_Base):

@@ -11,11 +11,14 @@ from rbnics.problems.stokes_unsteady.stokes_unsteady_problem import StokesUnstea
 from rbnics.problems.base import LinearTimeDependentPODGalerkinReducedProblem
 from rbnics.reduction_methods.stokes_unsteady import StokesUnsteadyPODGalerkinReduction
 
+
 def AbstractCFDUnsteadyPODGalerkinReducedProblem(AbstractCFDUnsteadyPODGalerkinReducedProblem_Base):
     return AbstractCFDUnsteadyPODGalerkinReducedProblem_Base
 
+
 StokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGalerkinReducedProblem(
     LinearTimeDependentPODGalerkinReducedProblem(StokesUnsteadyReducedProblem(StokesPODGalerkinReducedProblem)))
+
 
 @ReducedProblemFor(StokesUnsteadyProblem, StokesUnsteadyPODGalerkinReduction)
 class StokesUnsteadyPODGalerkinReducedProblem(StokesUnsteadyPODGalerkinReducedProblem_Base):

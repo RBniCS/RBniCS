@@ -13,6 +13,7 @@ from rbnics.reduction_methods.parabolic.parabolic_reduction_method import Parabo
 
 ParabolicRBReduction_Base = LinearTimeDependentRBReduction(ParabolicReductionMethod(EllipticRBReduction))
 
+
 # Base class containing the interface of a RB ROM
 # for parabolic problems
 @ReductionMethodFor(ParabolicProblem, "ReducedBasis")

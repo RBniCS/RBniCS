@@ -7,13 +7,16 @@
 from dolfin import Function, FunctionSpace
 from rbnics.utils.decorators import list_of, overload, tuple_of
 
+
 @overload
 def get_function_subspace(function: Function, component: (int, list_of(str), str, tuple_of(int))):
     return get_function_subspace(function.function_space(), component)
 
+
 @overload
 def get_function_subspace(function_space: FunctionSpace, component: (int, str)):
     return function_space.sub(component).collapse()
+
 
 @overload
 def get_function_subspace(function_space: FunctionSpace, component: list_of(str)):
@@ -25,6 +28,7 @@ def get_function_subspace(function_space: FunctionSpace, component: list_of(str)
     output._index_to_components.clear()
     output._index_to_components[None] = component
     return output
+
 
 @overload
 def get_function_subspace(function_space: FunctionSpace, component: tuple_of(int)):

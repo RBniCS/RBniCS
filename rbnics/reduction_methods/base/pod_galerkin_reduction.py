@@ -10,6 +10,7 @@ from rbnics.backends import ProperOrthogonalDecomposition
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, snapshot_links_to_cache
 from rbnics.utils.io import ErrorAnalysisTable, OnlineSizeDict, SpeedupAnalysisTable, TextBox, TextLine, Timer
 
+
 @RequiredBaseDecorators(None)
 def PODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
 

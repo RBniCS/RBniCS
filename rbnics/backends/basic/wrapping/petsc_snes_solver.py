@@ -6,7 +6,9 @@
 
 from petsc4py import PETSc
 
+
 def BasicPETScSNESSolver(backend, wrapping):
+
     class _BasicPETScSNESSolver(object):
         def __init__(self, problem, solution):
             self.problem = problem
@@ -49,8 +51,10 @@ def BasicPETScSNESSolver(backend, wrapping):
                 elif key == "report":
                     self._report = value
                     self.snes.cancelMonitor()
+
                     def monitor(snes, it, fgnorm):
                         print("  " + str(it) + " SNES Function norm " + "{:e}".format(fgnorm))
+
                     self.snes.setMonitor(monitor)
                 elif key == "solution_tolerance":
                     snes_tolerances[2] = value

@@ -8,6 +8,7 @@ from timeit import default_timer as python_timer
 from mpi4py import MPI
 from mpi4py.MPI import MAX, SUM
 
+
 class Timer(object):
     def __init__(self, mode):
         assert mode in ("serial", "parallel")

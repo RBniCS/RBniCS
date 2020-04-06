@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def EllipticCoerciveReducedProblem(EllipticReducedProblem_DerivedClass):
 
     EllipticCoerciveReducedProblem_Base = EllipticReducedProblem_DerivedClass

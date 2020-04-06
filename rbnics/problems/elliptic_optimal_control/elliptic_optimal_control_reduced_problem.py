@@ -4,9 +4,9 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-
 from rbnics.problems.base import LinearReducedProblem
 from rbnics.backends import product, sum, transpose
+
 
 def EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

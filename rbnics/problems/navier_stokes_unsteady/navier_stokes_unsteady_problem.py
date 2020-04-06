@@ -11,6 +11,7 @@ from rbnics.backends import product, sum
 
 NavierStokesUnsteadyProblem_Base = AbstractCFDUnsteadyProblem(NonlinearTimeDependentProblem(NavierStokesProblem))
 
+
 # Base class containing the definition of saddle point problems
 class NavierStokesUnsteadyProblem(NavierStokesUnsteadyProblem_Base):
     class ProblemSolver(NavierStokesUnsteadyProblem_Base.ProblemSolver):

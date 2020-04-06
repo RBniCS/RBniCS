@@ -7,6 +7,7 @@
 from rbnics.backends.abstract.tensors_list import TensorsList
 from rbnics.utils.decorators import AbstractBackend
 
+
 @AbstractBackend
 class TensorBasisList(TensorsList):
     pass

@@ -8,6 +8,7 @@ import os
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import parallel_io
 
+
 class Folders(dict):  # dict from string to string
 
     # Auxiliary class

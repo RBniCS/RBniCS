@@ -9,7 +9,6 @@ from rbnics.problems.stokes.stokes_problem import StokesProblem
 from rbnics.problems.stokes.stokes_rb_reduced_problem import StokesRBReducedProblem
 from rbnics.problems.stokes.stokes_reduced_problem import StokesReducedProblem
 
-
 __all__ = [
     "StokesPODGalerkinReducedProblem",
     "StokesProblem",

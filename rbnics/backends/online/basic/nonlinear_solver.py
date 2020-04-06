@@ -7,7 +7,9 @@
 from rbnics.backends.online.basic.wrapping import DirichletBC, preserve_solution_attributes
 from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
 
+
 def _NonlinearProblem(backend, wrapping):
+
     class _NonlinearProblem_Class(object):
         def __init__(self, residual_eval, solution, bcs, jacobian_eval):
             self.residual_eval_callback = residual_eval

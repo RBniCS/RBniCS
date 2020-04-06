@@ -8,6 +8,7 @@ from rbnics.backends.online.basic import sum as basic_sum
 from rbnics.backends.online.numpy.product import ProductOutput
 from rbnics.utils.decorators import backend_for
 
+
 # product function to assemble truth/reduced affine expansions. To be used in combination with product,
 # even though product actually carries out both the sum and the product!
 @backend_for("numpy", inputs=(ProductOutput, ))

@@ -6,6 +6,7 @@
 
 from rbnics.utils.io import OnlineSizeDict
 
+
 def preserve_solution_attributes(lhs, solution, rhs):
     # We should be solving a square system
     assert lhs.M == lhs.N

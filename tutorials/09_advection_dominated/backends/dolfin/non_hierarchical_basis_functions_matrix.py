@@ -10,6 +10,7 @@ from rbnics.backends.dolfin.wrapping import get_mpi_comm
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import parallel_io
 
+
 class NonHierarchicalBasisFunctionsMatrix(object):
     def __init__(self, V):
         self.V = V

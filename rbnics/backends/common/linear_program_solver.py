@@ -10,13 +10,19 @@ from numpy import eye, hstack, matrix as numpy_matrix, ndarray as numpy_vector, 
 from rbnics.backends.abstract import LinearProgramSolver as AbstractLinearProgramSolver
 from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
+
 # Helper classes for linear pogram
 def Matrix(m, n):
     return numpy_matrix(zeros((m, n)))
+
+
 def Vector(n):
     return zeros((n, ))
+
+
 class Error(RuntimeError):
     pass
+
 
 # Linear program solver
 @BackendFor("common", inputs=(numpy_vector, numpy_matrix, numpy_vector, list_of(tuple_of(Number))))

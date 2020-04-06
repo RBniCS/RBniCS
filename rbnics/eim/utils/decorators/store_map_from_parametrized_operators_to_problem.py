@@ -8,6 +8,7 @@ from rbnics.eim.utils.decorators.store_map_from_parametrized_expression_to_probl
     add_to_map_from_parametrized_expression_to_problem, get_problem_from_parametrized_expression)
 from rbnics.utils.decorators import PreserveClassName
 
+
 def StoreMapFromParametrizedOperatorsToProblem(ExactParametrizedFunctionsDecoratedProblem_DerivedClass):
 
     @PreserveClassName
@@ -27,8 +28,10 @@ def StoreMapFromParametrizedOperatorsToProblem(ExactParametrizedFunctionsDecorat
     # return value (a class) for the decorator
     return StoreMapFromParametrizedOperatorsToProblem_Class
 
+
 def add_to_map_from_parametrized_operator_to_problem(operator, problem):
     add_to_map_from_parametrized_expression_to_problem(operator, problem)
+
 
 def get_problem_from_parametrized_operator(operator):
     return get_problem_from_parametrized_expression(operator)

@@ -17,6 +17,7 @@ sum = None
 all_product = {"dolfin": dolfin_product, "factory": factory_product}
 all_sum = {"dolfin": dolfin_sum, "factory": factory_sum}
 
+
 class Data(object):
     def __init__(self, Th, Q):
         self.Q = Q
@@ -53,6 +54,7 @@ class Data(object):
         result_builtin = self.evaluate_builtin(theta, F)
         relative_error = (result_builtin - result_backend).norm("l2") / result_builtin.norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
+
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])

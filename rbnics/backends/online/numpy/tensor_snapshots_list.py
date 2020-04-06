@@ -11,6 +11,7 @@ from rbnics.utils.decorators import BackendFor
 
 TensorSnapshotsList_Base = BasicTensorSnapshotsList(TensorsList)
 
+
 @BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorSnapshotsList(TensorSnapshotsList_Base):
     pass

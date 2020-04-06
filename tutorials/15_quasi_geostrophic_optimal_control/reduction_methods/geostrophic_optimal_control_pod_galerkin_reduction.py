@@ -12,6 +12,7 @@ from .geostrophic_optimal_control_reduction_method import GeostrophicOptimalCont
 GeostrophicOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
     GeostrophicOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
+
 @ReductionMethodFor(GeostrophicOptimalControlProblem, "PODGalerkin")
 class GeostrophicOptimalControlPODGalerkinReduction(GeostrophicOptimalControlPODGalerkinReduction_Base):
 

@@ -6,6 +6,7 @@
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 
+
 def NavierStokesReductionMethod(StokesReductionMethod_DerivedClass):
 
     NavierStokesReductionMethod_Base = NonlinearReductionMethod(StokesReductionMethod_DerivedClass)

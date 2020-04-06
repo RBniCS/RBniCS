@@ -19,6 +19,7 @@ from ufl.log import error
 from ufl.tensors import ComponentTensor, ListTensor
 from dolfin import split
 
+
 def expression_replace(expression, replacements):
     replaced_expression = replace(expression, replacements)
     replaced_expression_domains = extract_domains(replaced_expression)
@@ -29,6 +30,7 @@ def expression_replace(expression, replacements):
     if len(expression_domains) == 1:
         assert replaced_expression_domains[0] is not expression_domains[0]
     return replaced_expression
+
 
 class Replacer(MultiFunction):
     def __init__(self, mapping):
@@ -95,6 +97,7 @@ class Replacer(MultiFunction):
 
     def coefficient_derivative(self, o):
         error("Derivatives should be applied before executing replace.")
+
 
 def replace(e, mapping):
     """Replace objects in expression.

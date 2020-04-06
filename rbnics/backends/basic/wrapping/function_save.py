@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def function_save(fun, directory, filename, suffix=None):
     pass

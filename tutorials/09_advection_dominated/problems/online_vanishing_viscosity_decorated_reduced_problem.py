@@ -12,6 +12,7 @@ from backends.dolfin import NonHierarchicalBasisFunctionsMatrix
 from backends.online import OnlineMatrix, OnlineNonHierarchicalAffineExpansionStorage, OnlineSolveKwargsGenerator
 from .online_vanishing_viscosity import OnlineVanishingViscosity
 
+
 @ReducedProblemDecoratorFor(OnlineVanishingViscosity)
 def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
 

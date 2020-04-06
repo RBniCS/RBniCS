@@ -7,6 +7,7 @@
 from collections import OrderedDict
 from rbnics.utils.decorators import dict_of, overload
 
+
 class OnlineSizeDict(OrderedDict):
     __slots__ = ()
 

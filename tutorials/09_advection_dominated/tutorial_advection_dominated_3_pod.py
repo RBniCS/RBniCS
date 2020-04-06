@@ -9,6 +9,7 @@ from rbnics import *
 from problems import *
 from reduction_methods import *
 
+
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("x[0]", "x[1]"),  # subdomain 1
@@ -103,6 +104,7 @@ class AdvectionDominated(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/graetz.xml")

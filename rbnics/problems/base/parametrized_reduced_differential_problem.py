@@ -16,6 +16,7 @@ from rbnics.utils.decorators import StoreMapFromProblemToReducedProblem, sync_se
 from rbnics.utils.io import OnlineSizeDict
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @StoreMapFromProblemToReducedProblem
 class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
     """
@@ -66,19 +67,23 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Solution: OnlineFunction
         self._solution = None
         self._output = 0.
+
         # I/O
         def _solution_cache_key_generator(*args, **kwargs):
             assert len(args) == 2
             assert args[0] == self.mu
             return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+
         self._solution_cache = Cache(
             "reduced problems",
             key_generator=_solution_cache_key_generator
         )
+
         def _output_cache_key_generator(*args, **kwargs):
             assert len(args) == 2
             assert args[0] == self.mu
             return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+
         self._output_cache = Cache(
             "reduced problems",
             key_generator=_output_cache_key_generator
@@ -216,16 +221,21 @@ class ParametrizedReducedDifferentialProblem(ParametrizedProblem, metaclass=ABCM
         # Get helper strings depending on the number of basis components
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
+
             def has_non_homogeneous_dirichlet_bc(component):
                 return self.dirichlet_bc[component] and not self.dirichlet_bc_are_homogeneous[component]
+
             def get_basis_functions(component):
                 return self.basis_functions[component]
         else:
             dirichlet_bc_string = "dirichlet_bc"
+
             def has_non_homogeneous_dirichlet_bc(component):
                 return self.dirichlet_bc and not self.dirichlet_bc_are_homogeneous
+
             def get_basis_functions(component):
                 return self.basis_functions
+
         # Detect how many theta terms are related to boundary conditions
         assert (self.dirichlet_bc is None) == (self.dirichlet_bc_are_homogeneous is None)
         if self.dirichlet_bc is None:  # init was not called already

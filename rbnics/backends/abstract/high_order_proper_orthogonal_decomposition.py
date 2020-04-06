@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 # Class containing the implementation of the POD
 @AbstractBackend
 class HighOrderProperOrthogonalDecomposition(object, metaclass=ABCMeta):

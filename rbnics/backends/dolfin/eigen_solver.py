@@ -15,6 +15,7 @@ from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletB
 from rbnics.backends.abstract import EigenSolver as AbstractEigenSolver
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
+
 @BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type(), ParametrizedTensorFactory),
                               (Form, Matrix.Type(), ParametrizedTensorFactory, None),
                               (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),

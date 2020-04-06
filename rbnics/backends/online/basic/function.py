@@ -6,7 +6,9 @@
 
 from numbers import Number
 
+
 def Function(Vector):
+
     class _Function_Type(object):
         def __init__(self, arg):
             assert isinstance(arg, (int, dict, Vector.Type()))

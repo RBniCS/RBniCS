@@ -7,6 +7,7 @@
 from scipy.stats import uniform
 from .weight import Weight
 
+
 class UniformWeight(Weight):
     def density(self, box, samples):
         samples_density = list()

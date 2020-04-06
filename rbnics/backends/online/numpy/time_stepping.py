@@ -21,6 +21,7 @@ from rbnics.backends.online.numpy.linear_solver import LinearSolver
 from rbnics.backends.online.numpy.nonlinear_solver import NonlinearSolver, NonlinearProblemWrapper
 from rbnics.utils.decorators import BackendFor
 
+
 @BackendFor("numpy", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type(), (Function.Type(), None)))
 class TimeStepping(AbstractTimeStepping):
     def __init__(self, problem_wrapper, solution, solution_dot, solution_dot_dot=None):
@@ -41,6 +42,7 @@ class TimeStepping(AbstractTimeStepping):
 
     def solve(self):
         self.solver.solve()
+
 
 class _TimeDependentProblem(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
@@ -83,6 +85,7 @@ class _TimeDependentProblem(object):
         else:
             raise ValueError("Invalid integrator type in _TimeDependentProblem_Base.create_solver().")
 
+
 class _ScipyImplicitEuler(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time, problem_type):
         self.residual_eval = residual_eval
@@ -97,6 +100,7 @@ class _ScipyImplicitEuler(object):
         # Setup solver
         if problem_type == "linear":
             self.minus_solution_previous_over_dt = function_copy(solution)
+
             class _LinearSolver(LinearSolver):
                 def __init__(self_, t):
                     self.set_time(t)
@@ -109,25 +113,33 @@ class _ScipyImplicitEuler(object):
 
             self.solver_generator = _LinearSolver
         elif problem_type == "nonlinear":
+
             class _NonlinearSolver(NonlinearSolver):
                 def __init__(self_, t):
+
                     class _NonlinearProblemWrapper(NonlinearProblemWrapper):
                         def __init__(self_):
                             self.set_time(t)
+
                         def _store_solution_and_solution_dot(self_, solution):
                             self.solution.vector()[:] = solution.vector()
                             self.solution_dot.vector()[:] = (
                                 solution.vector() - self.solution_previous.vector()) / self._time_step_size
+
                         def jacobian_eval(self_, solution):
                             self_._store_solution_and_solution_dot(solution)
                             return self.jacobian_eval(t, self.solution, self.solution_dot, 1. / self._time_step_size)
+
                         def residual_eval(self_, solution):
                             self_._store_solution_and_solution_dot(solution)
                             return self.residual_eval(t, self.solution, self.solution_dot)
+
                         def bc_eval(self_):
                             return self.bc_eval(t)
+
                         def monitor(self_, solution):
                             pass
+
                     NonlinearSolver.__init__(self_, _NonlinearProblemWrapper(), self.solution)
 
             self.solver_generator = _NonlinearSolver
@@ -225,7 +237,9 @@ class _ScipyImplicitEuler(object):
                 self._monitor(t, self.solution, self.solution_dot)
             self.solution_previous.vector()[:] = self.solution.vector()
 
+
 if has_IDA:
+
     class _AssimuloIDA(object):
         def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):
             self.residual_eval = residual_eval

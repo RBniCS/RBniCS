@@ -8,6 +8,7 @@ from dolfin import *
 from rbnics import *
 from utils import *
 
+
 @ExactParametrizedFunctions()
 class FitzHughNagumo(NonlinearParabolicProblem):
 
@@ -105,6 +106,7 @@ class FitzHughNagumo(NonlinearParabolicProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearParabolicProblem)
 def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
@@ -120,6 +122,7 @@ def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
             })
 
     return ReducedNonlinearParabolic
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/interval.xml")

@@ -10,7 +10,9 @@ from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParame
 from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload, ThetaType
 
+
 def product(backend, wrapping):
+
     class _Product(object):
         @overload(ThetaType, backend.AffineExpansionStorage, ThetaType + (None,))
         def __call__(self, thetas, operators, thetas2):

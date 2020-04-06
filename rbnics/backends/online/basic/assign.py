@@ -7,7 +7,9 @@
 from rbnics.utils.decorators import list_of, overload
 from rbnics.utils.io import OnlineSizeDict
 
+
 def assign(backend):
+
     class _Assign(object):
         @overload(backend.Function.Type(), backend.Function.Type())
         def __call__(self, object_to, object_from):

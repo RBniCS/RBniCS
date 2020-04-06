@@ -7,6 +7,7 @@
 from rbnics.problems.base import LinearReducedProblem
 from rbnics.backends import product, sum, transpose
 
+
 def EllipticReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
     EllipticReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)

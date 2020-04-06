@@ -4,8 +4,11 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def RequiredBaseDecorators(*BaseDecorators):
+
     def RequiredBaseDecorators_FunctionDecorator(Decorator):
+
         def RequiredBaseDecorators_ClassDecorator(Class):
             BaseClass = Class
             AlreadyAppliedBaseDecorators = list()

@@ -16,22 +16,27 @@ mesh = generate_mesh(domain, 20)
 subdomains = MeshFunction("size_t", mesh, mesh.topology().dim())
 subdomains.set_all(0)
 
+
 # Create boundaries
 class Left(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] + 1.) < DOLFIN_EPS
 
+
 class Right(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - 1.) < DOLFIN_EPS
+
 
 class Bottom(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] + 1.) < DOLFIN_EPS
 
+
 class Top(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[1] - 1.) < DOLFIN_EPS
+
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)

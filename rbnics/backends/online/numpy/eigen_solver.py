@@ -13,6 +13,7 @@ from rbnics.backends.online.numpy.matrix import Matrix
 from rbnics.backends.online.numpy.vector import Vector
 from rbnics.utils.decorators import BackendFor, DictOfThetaType, ThetaType
 
+
 @BackendFor("numpy", inputs=((AbstractFunctionsList, None), Matrix.Type(), (Matrix.Type(), None),
                              ThetaType + DictOfThetaType + (None,)))
 class EigenSolver(AbstractEigenSolver):

@@ -12,11 +12,14 @@ import dolfin  # otherwise the next import from rbnics would disable dolfin as a
 from rbnics.utils.test import (
     add_gold_options, disable_matplotlib, enable_matplotlib, process_gold_options, run_and_compare_to_gold)
 
+
 def pytest_addoption(parser):
     add_gold_options(parser, "RBniCS")
 
+
 def pytest_configure(config):
     process_gold_options(config)
+
 
 def pytest_collect_file(path, parent):
     """
@@ -25,12 +28,14 @@ def pytest_collect_file(path, parent):
     if path.ext == ".py" and path.basename.startswith("tutorial_"):
         return TutorialFile(path, parent)
 
+
 def pytest_pycollect_makemodule(path, parent):
     """
     Hook into py.test to avoid collecting twice tutorial files explicitly provided on the command lines
     """
     if path.ext == ".py" and path.basename.startswith("tutorial_"):
         return DoNothingFile(path, parent)
+
 
 class TutorialFile(pytest.File):
     """
@@ -39,6 +44,7 @@ class TutorialFile(pytest.File):
 
     def collect(self):
         yield TutorialItem(os.path.relpath(str(self.fspath), str(self.parent.fspath)), self)
+
 
 class TutorialItem(pytest.Item):
     """
@@ -57,6 +63,7 @@ class TutorialItem(pytest.Item):
 
     def reportinfo(self):
         return self.fspath, 0, self.name
+
 
 class DoNothingFile(pytest.File):
     """

@@ -17,6 +17,7 @@ wrapping = ModuleWrapper(function_load, function_save, tensor_load, tensor_save,
                          tensor_copy=tensor_copy)
 AffineExpansionStorage_Base = BasicAffineExpansionStorage(backend, wrapping)
 
+
 @BackendFor("numpy", inputs=((int, tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (int, None)))
 class AffineExpansionStorage(AffineExpansionStorage_Base):
     def __init__(self, arg1, arg2=None):

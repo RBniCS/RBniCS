@@ -8,6 +8,7 @@ from dolfin import *
 from rbnics import *
 from sampling import LinearlyDependentUniformDistribution
 
+
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
@@ -99,6 +100,7 @@ class Stokes(StokesProblem):
             return (x0, )
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/t_bypass.xml")

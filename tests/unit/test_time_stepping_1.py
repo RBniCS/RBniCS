@@ -26,6 +26,7 @@ Solve
 for g such that u = u_ex = sin(x+t)
 """
 
+
 # ~~~ Sparse case ~~~ #
 def _test_time_stepping_1_sparse(callback_type, integrator_type):
     from dolfin import Function
@@ -69,6 +70,7 @@ def _test_time_stepping_1_sparse(callback_type, integrator_type):
     j_u_dot = derivative(r_u_dot, u_dot, du_dot)
     r = r_u_dot + r_u - g * v * dx
     x = inner(du, v) * dx
+
     def bc(t):
         exact_solution_expression.t = t
         return [DirichletBC(V, exact_solution_expression, boundary)]
@@ -91,6 +93,7 @@ def _test_time_stepping_1_sparse(callback_type, integrator_type):
         def residual_eval(self, t, solution, solution_dot):
             g.t = t
             return callback(r)
+
         def jacobian_eval(self, t, solution, solution_dot, solution_dot_coefficient):
             return callback(Constant(solution_dot_coefficient) * j_u_dot + j_u)
 
@@ -152,6 +155,7 @@ def _test_time_stepping_1_sparse(callback_type, integrator_type):
     assert isclose(error_dot_norm, 0., atol=1.e-4)
     return ((error_norm, error_dot_norm), V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
             exact_solution_expression, exact_solution, exact_solution_dot)
+
 
 # ~~~ Dense case ~~~ #
 def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
@@ -269,6 +273,7 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
     assert isclose(error_norm, 0., atol=1.e-4)
     assert isclose(error_dot_norm, 0., atol=1.e-4)
     return (error_norm, error_dot_norm)
+
 
 # ~~~ Test function ~~~ #
 @pytest.mark.time_stepping

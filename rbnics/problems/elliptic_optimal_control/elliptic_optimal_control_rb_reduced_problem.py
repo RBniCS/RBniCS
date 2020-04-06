@@ -17,6 +17,7 @@ from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalCon
 EllipticOptimalControlRBReducedProblem_Base = LinearRBReducedProblem(
     EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlRBReduction)
 class EllipticOptimalControlRBReducedProblem(EllipticOptimalControlRBReducedProblem_Base):
 

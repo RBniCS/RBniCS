@@ -11,6 +11,7 @@ from reduction_methods import *
 from sampling.distributions import *
 from sampling.weights import *
 
+
 @WeightedUncertaintyQuantification()
 class WeightedThermalBlock(EllipticCoerciveProblem):
 
@@ -79,6 +80,7 @@ class WeightedThermalBlock(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")

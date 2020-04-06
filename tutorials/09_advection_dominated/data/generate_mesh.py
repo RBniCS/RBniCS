@@ -19,6 +19,7 @@ mesh = generate_mesh(domain, 50)
 subdomains = MeshFunction("size_t", mesh, 2)
 subdomains.set_all(0)
 
+
 # Create boundaries
 class Boundary1(SubDomain):
     def inside(self, x, on_boundary):
@@ -27,6 +28,7 @@ class Boundary1(SubDomain):
             or (abs(x[0] - 0.) < DOLFIN_EPS and x[1] <= 0.25)
         )
 
+
 class Boundary2(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (
@@ -34,6 +36,7 @@ class Boundary2(SubDomain):
             or abs(x[0] - 1.) < DOLFIN_EPS
             or (abs(x[0] - 0.) < DOLFIN_EPS and x[1] >= 0.25)
         )
+
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)

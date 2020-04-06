@@ -10,8 +10,11 @@ from rbnics.backends.dolfin.wrapping.expression_replace import replace
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC
 from rbnics.utils.decorators import overload
 
+
 def assemble_operator_for_restriction(restricted_term_to_original_term, test=None, trial=None):
+
     def assemble_operator_for_restriction_decorator(assemble_operator):
+
         def assemble_operator_for_restriction_decorator_impl(self, term):
             original_term = restricted_term_to_original_term.get(term)
             if original_term is None:  # term was not a original term
@@ -69,11 +72,14 @@ def assemble_operator_for_restriction(restricted_term_to_original_term, test=Non
                     return tuple(restricted_dirichlet_bcs)
 
         return assemble_operator_for_restriction_decorator_impl
+
     return assemble_operator_for_restriction_decorator
+
 
 @overload(FunctionSpace, (int, None))
 def _to_int(V, restrict_to):
     return restrict_to
+
 
 @overload(FunctionSpace, str)
 def _to_int(V, restrict_to):

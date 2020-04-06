@@ -6,7 +6,9 @@
 
 from rbnics.utils.decorators import overload, tuple_of
 
+
 def evaluate(backend):
+
     class _Evaluate(object):
         @overload(backend.Matrix.Type(), None)
         def __call__(self, matrix, at):
@@ -25,4 +27,5 @@ def evaluate(backend):
         def __call__(self, vector, at):
             assert len(at) == 1
             return vector
+
     return _Evaluate()

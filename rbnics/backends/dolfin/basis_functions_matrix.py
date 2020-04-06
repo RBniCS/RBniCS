@@ -22,6 +22,7 @@ online_backend = ModuleWrapper(OnlineFunction=OnlineFunction, OnlineMatrix=Onlin
 online_wrapping = ModuleWrapper(online_function_to_online_vector)
 BasisFunctionsMatrix_Base = BasicBasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping)
 
+
 @BackendFor("dolfin", inputs=(FunctionSpace, (list_of(str), str, None)))
 class BasisFunctionsMatrix(BasisFunctionsMatrix_Base):
     pass

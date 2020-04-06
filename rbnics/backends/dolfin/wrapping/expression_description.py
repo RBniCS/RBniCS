@@ -8,7 +8,9 @@ from dolfin import CompiledExpression, Constant, Expression
 from dolfin.function.expression import BaseExpression
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
+
 def basic_expression_description(backend, wrapping):
+
     def _basic_expression_description(expression):
         visited = set()
         coefficients_repr = dict()
@@ -68,7 +70,9 @@ def basic_expression_description(backend, wrapping):
             else:
                 visited.add(n)
         return coefficients_repr
+
     return _basic_expression_description
+
 
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
@@ -80,6 +84,7 @@ from rbnics.backends.dolfin.wrapping.solution_dot_identify_component import solu
 from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
 from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.utils.decorators import ModuleWrapper
+
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(
     expression_iterator, is_problem_solution, is_problem_solution_dot, is_problem_solution_type,

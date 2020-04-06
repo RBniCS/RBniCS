@@ -15,6 +15,7 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, overload
 
+
 @BackendFor("dolfin", inputs=((Form, Matrix.Type(), ParametrizedTensorFactory, LinearProblemWrapper),
                               Function.Type(), (Form, ParametrizedTensorFactory, Vector.Type(), None),
                               (list_of(DirichletBC), ProductOutputDirichletBC, dict_of(str, list_of(DirichletBC)),

@@ -6,6 +6,7 @@
 
 from rbnics.utils.io import NumpyIO
 
+
 def tensor_load(tensor, directory, filename):
     if NumpyIO.exists_file(directory, filename):
         loaded = NumpyIO.load_file(directory, filename)

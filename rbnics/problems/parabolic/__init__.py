@@ -19,7 +19,6 @@ from rbnics.problems.parabolic.parabolic_problem import ParabolicProblem
 from rbnics.problems.parabolic.parabolic_rb_reduced_problem import ParabolicRBReducedProblem
 from rbnics.problems.parabolic.parabolic_reduced_problem import ParabolicReducedProblem
 
-
 __all__ = [
     "AbstractParabolicPODGalerkinReducedProblem",
     "AbstractParabolicProblem",

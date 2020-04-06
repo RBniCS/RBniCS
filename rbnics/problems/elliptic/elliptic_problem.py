@@ -9,6 +9,7 @@ from rbnics.backends import product, sum, transpose
 
 EllipticProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
+
 # Base class containing the definition of elliptic problems
 class EllipticProblem(EllipticProblem_Base):
 

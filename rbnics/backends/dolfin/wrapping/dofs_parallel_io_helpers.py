@@ -16,6 +16,7 @@
 from dolfin import cells
 from rbnics.utils.cache import Cache
 
+
 def build_dof_map_writer_mapping(V, local_dofmap=None):
     try:
         return _dof_map_writer_mapping_cache[V]
@@ -36,7 +37,10 @@ def build_dof_map_writer_mapping(V, local_dofmap=None):
             dof_map_writer_mapping_storage[key] = extract_first_cell(value)
         _dof_map_writer_mapping_cache[V] = dof_map_writer_mapping_storage
         return _dof_map_writer_mapping_cache[V]
+
+
 _dof_map_writer_mapping_cache = Cache()
+
 
 def build_dof_map_reader_mapping(V, local_dofmap=None):
     try:
@@ -46,7 +50,10 @@ def build_dof_map_reader_mapping(V, local_dofmap=None):
             local_dofmap = _get_local_dofmap(V)
         _dof_map_reader_mapping_cache[V] = _build_dof_map_reader_mapping(V, local_dofmap)
         return _dof_map_reader_mapping_cache[V]
+
+
 _dof_map_reader_mapping_cache = Cache()
+
 
 def _build_dof_map_writer_mapping(V, gathered_dofmap):  # was build_global_to_cell_dof in dolfin
     mpi_comm = V.mesh().mpi_comm()
@@ -68,6 +75,7 @@ def _build_dof_map_writer_mapping(V, gathered_dofmap):  # was build_global_to_ce
     global_dof_to_cell_dof = mpi_comm.bcast(global_dof_to_cell_dof, root=0)
     return global_dof_to_cell_dof
 
+
 def _build_dof_map_reader_mapping(V, gathered_dofmap):  # was build_dof_map in dolfin
     mesh = V.mesh()
     mpi_comm = mesh.mpi_comm()
@@ -88,6 +96,7 @@ def _build_dof_map_reader_mapping(V, gathered_dofmap):  # was build_dof_map in d
                 i += 1
     dof_map = mpi_comm.bcast(dof_map, root=0)
     return dof_map
+
 
 def _get_local_dofmap(V):
     mesh = V.mesh()

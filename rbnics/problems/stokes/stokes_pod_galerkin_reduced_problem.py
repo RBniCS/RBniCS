@@ -13,6 +13,7 @@ from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 StokesPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
     StokesReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 @ReducedProblemFor(StokesProblem, StokesPODGalerkinReduction)
 class StokesPODGalerkinReducedProblem(StokesPODGalerkinReducedProblem_Base):
     pass

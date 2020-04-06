@@ -15,6 +15,7 @@ from rbnics.utils.io import GreedySelectedParametersList
 from rbnics.scm.utils.io import BoundingBoxSideList, UpperBoundsList
 from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import ParametrizedStabilityFactorEigenProblem
 
+
 class SCMApproximation(ParametrizedProblem):
 
     # Default initialization of members
@@ -47,21 +48,26 @@ class SCMApproximation(ParametrizedProblem):
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "reduced_cache")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
+
         def _stability_factor_cache_key_generator(*args, **kwargs):
             assert len(args) == 2
             assert args[0] == self.mu
             assert len(kwargs) == 0
             return self._cache_key(args[1])
+
         def _stability_factor_cache_filename_generator(*args, **kwargs):
             assert len(args) == 2
             assert args[0] == self.mu
             assert len(kwargs) == 0
             return self._cache_file(args[1])
+
         def _stability_factor_lower_bound_cache_import(filename):
             self.import_stability_factor_lower_bound(self.folder["cache"], filename)
             return self._stability_factor_lower_bound
+
         def _stability_factor_lower_bound_cache_export(filename):
             self.export_stability_factor_lower_bound(self.folder["cache"], filename)
+
         self._stability_factor_lower_bound_cache = Cache(
             "SCM",
             key_generator=_stability_factor_cache_key_generator,
@@ -69,11 +75,14 @@ class SCMApproximation(ParametrizedProblem):
             export=_stability_factor_lower_bound_cache_export,
             filename_generator=_stability_factor_cache_filename_generator
         )
+
         def _stability_factor_upper_bound_cache_import(filename):
             self.import_stability_factor_upper_bound(self.folder["cache"], filename)
             return self._stability_factor_upper_bound
+
         def _stability_factor_upper_bound_cache_export(filename):
             self.export_stability_factor_upper_bound(self.folder["cache"], filename)
+
         self._stability_factor_upper_bound_cache = Cache(
             "SCM",
             key_generator=_stability_factor_cache_key_generator,

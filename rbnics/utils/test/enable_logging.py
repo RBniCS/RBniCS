@@ -8,8 +8,10 @@ import sys
 import functools
 from logging import basicConfig, NOTSET
 
+
 def enable_logging(loggers_and_levels):
     basicConfig(stream=sys.stdout)
+
     def enable_logging_decorator(original_test):
         @functools.wraps(original_test)
         def decorated_test(*args, **kwargs):
@@ -19,4 +21,5 @@ def enable_logging(loggers_and_levels):
             for logger in loggers_and_levels.keys():
                 logger.setLevel(NOTSET)
         return decorated_test
+
     return enable_logging_decorator

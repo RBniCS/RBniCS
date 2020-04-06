@@ -6,6 +6,7 @@
 
 from mpi4py.MPI import COMM_WORLD, MAX
 
+
 # Get max in parallel
 def parallel_max(local_value_max, local_args=None, postprocessor=None, mpi_comm=None):
     if postprocessor is None:

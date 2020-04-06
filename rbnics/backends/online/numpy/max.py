@@ -7,6 +7,7 @@
 from rbnics.backends.online.numpy.abs import AbsOutput
 from rbnics.utils.decorators import backend_for
 
+
 # max function to compute the maximum absolute value of entries in EIM. To be used in combination with abs,
 # even though abs actually carries out both the max and the abs!
 @backend_for("numpy", inputs=(AbsOutput, ))

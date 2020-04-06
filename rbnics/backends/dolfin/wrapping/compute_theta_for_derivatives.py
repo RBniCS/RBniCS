@@ -8,6 +8,7 @@ import types
 from rbnics.backends.dolfin.wrapping.compute_theta_for_derivative import compute_theta_for_derivative
 from rbnics.utils.decorators import overload
 
+
 def compute_theta_for_derivatives(compute_theta):
     from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
     from rbnics.problems.navier_stokes import NavierStokesProblem

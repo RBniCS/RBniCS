@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def basic_function_copy(backend, wrapping):
     def _basic_function_copy(function):
         original_vector = function.vector()

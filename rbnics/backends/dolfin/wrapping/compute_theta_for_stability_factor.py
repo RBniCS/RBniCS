@@ -7,6 +7,7 @@
 import types
 from rbnics.utils.decorators import overload
 
+
 def compute_theta_for_stability_factor(compute_theta):
     from rbnics.problems.elliptic import EllipticCoerciveProblem
 

@@ -6,6 +6,7 @@
 
 from rbnics.utils.io import NumpyIO
 
+
 def function_save(fun, directory, filename, suffix=None):
     if suffix is not None:
         filename = filename + "." + str(suffix)

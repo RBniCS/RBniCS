@@ -6,6 +6,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class Weight(object, metaclass=ABCMeta):
     @abstractmethod
     def density(self, box, samples):

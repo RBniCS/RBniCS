@@ -12,6 +12,7 @@ from rbnics.reduction_methods.base.time_dependent_reduction_method import TimeDe
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 from rbnics.utils.io import ErrorAnalysisTable
 
+
 @RequiredBaseDecorators(PODGalerkinReduction, TimeDependentReductionMethod)
 def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
 

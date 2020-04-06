@@ -14,6 +14,7 @@ from rbnics.reduction_methods.stokes_optimal_control.stokes_optimal_control_redu
 StokesOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
     StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod))
 
+
 @ReductionMethodFor(StokesOptimalControlProblem, "PODGalerkin")
 class StokesOptimalControlPODGalerkinReduction(StokesOptimalControlPODGalerkinReduction_Base):
 

@@ -22,6 +22,7 @@ backend = ModuleWrapper()
 wrapping_for_wrapping = ModuleWrapper(function_copy, get_default_linear_solver, get_mpi_comm, to_petsc4py)
 PETScTSIntegrator = BasicPETScTSIntegrator(backend, wrapping_for_wrapping)
 
+
 @BackendFor("dolfin", inputs=(TimeDependentProblemWrapper, Function.Type(), Function.Type()))
 class TimeStepping(AbstractTimeStepping):
     def __init__(self, problem_wrapper, solution, solution_dot):
@@ -43,6 +44,7 @@ class TimeStepping(AbstractTimeStepping):
 
     def solve(self):
         self.solver.solve()
+
 
 class _TimeDependentProblem(object):
     def __init__(self, residual_eval, solution, solution_dot, bc_eval, jacobian_eval, set_time):

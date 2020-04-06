@@ -12,6 +12,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 
 EllipticCoerciveRBReducedProblem_Base = EllipticCoerciveReducedProblem(EllipticRBReducedProblem)
 
+
 @ReducedProblemFor(EllipticCoerciveProblem, EllipticRBReduction)
 class EllipticCoerciveRBReducedProblem(EllipticCoerciveRBReducedProblem_Base):
     pass

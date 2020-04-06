@@ -19,6 +19,7 @@ all_product = {"numpy": numpy_product, "online": online_product, "factory": fact
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
 all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory": factory_transpose}
 
+
 class Data(object):
     def __init__(self, N, Qa, Qf):
         self.N = N
@@ -113,6 +114,7 @@ class Data(object):
             abs(result_builtin_t - result_backend_t) / abs(result_builtin_t)
             for (result_builtin_t, result_backend_t) in zip(result_builtin, result_backend)]) / self.Ntrain
         assert isclose(relative_error, 0., atol=1e-10)
+
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
 @pytest.mark.parametrize("Qa", [2 + 4 * j for j in range(1, 3)])

@@ -11,6 +11,7 @@ from numpy import exp, isnan, log, max, mean, min, nan, zeros as Content
 from rbnics.utils.io.csv_io import CSVIO
 from rbnics.utils.io.folders import Folders
 
+
 class PerformanceTable(object):
 
     # Storage for class methods
@@ -230,7 +231,10 @@ class PerformanceTable(object):
 class CustomNotImplementedType(object):
     def __init__(self):
         pass
+
+
 CustomNotImplemented = CustomNotImplementedType()
+
 
 def is_not_implemented(value):
     if value is NotImplemented:
@@ -244,6 +248,7 @@ def is_not_implemented(value):
     else:
         return False
 
+
 class CustomNotImplementedAfterDivType(CustomNotImplementedType):
     def __init__(self):
         pass
@@ -256,4 +261,6 @@ class CustomNotImplementedAfterDivType(CustomNotImplementedType):
 
     def __itruediv__(self, other):
         return CustomNotImplemented
+
+
 CustomNotImplementedAfterDiv = CustomNotImplementedAfterDivType()

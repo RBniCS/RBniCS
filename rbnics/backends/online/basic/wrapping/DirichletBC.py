@@ -7,10 +7,12 @@
 from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
+
 # Implementation for empty bcs
 @overload(None, None, None)
 def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
     return _DirichletBC_Empty(bcs, component_name_to_basis_component_index, N)
+
 
 class _DirichletBC_Empty(object):
     def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):
@@ -25,10 +27,12 @@ class _DirichletBC_Empty(object):
     def apply_to_matrix(self, matrix):
         pass
 
+
 # Implementation for ThetaType
 @overload(ThetaType, None, None)
 def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
     return _DirichletBC_ThetaType(bcs, component_name_to_basis_component_index, N)
+
 
 class _DirichletBC_ThetaType(object):
     def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):
@@ -51,10 +55,12 @@ class _DirichletBC_ThetaType(object):
             matrix[i, :] = 0.
             matrix[i, i] = 1.
 
+
 # Implementation for DictOfThetaType
 @overload(DictOfThetaType, ComponentNameToBasisComponentIndexDict, OnlineSizeDict)
 def DirichletBC(bcs, component_name_to_basis_component_index=None, N=None):
     return _DirichletBC_DictOfThetaType(bcs, component_name_to_basis_component_index, N)
+
 
 class _DirichletBC_DictOfThetaType(object):
     def __init__(self, bcs, component_name_to_basis_component_index=None, N=None):

@@ -10,6 +10,7 @@ from rbnics.problems.base.rb_reduced_problem import RBReducedProblem
 from rbnics.problems.base.time_dependent_reduced_problem import TimeDependentReducedProblem
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(RBReducedProblem, TimeDependentReducedProblem)
 def TimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

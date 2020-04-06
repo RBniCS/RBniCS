@@ -7,6 +7,7 @@
 from rbnics.backends import product, sum, transpose
 from rbnics.problems.elliptic.elliptic_coercive_problem import EllipticCoerciveProblem
 
+
 # Base class containing the definition of elliptic coercive compliant problems
 class EllipticCoerciveCompliantProblem(EllipticCoerciveProblem):
 

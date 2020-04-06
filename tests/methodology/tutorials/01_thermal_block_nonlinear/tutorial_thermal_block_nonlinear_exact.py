@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @ExactParametrizedFunctions()
 class ThermalBlock(NonlinearEllipticProblem):
 
@@ -73,6 +74,7 @@ class ThermalBlock(NonlinearEllipticProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearEllipticProblem)
 def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
@@ -84,6 +86,7 @@ def CustomizeReducedNonlinearElliptic(ReducedNonlinearElliptic_Base):
             })
 
     return ReducedNonlinearElliptic
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")

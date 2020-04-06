@@ -20,6 +20,7 @@ bins = 50
 min = 0
 max = 1
 
+
 # Auxiliary functions
 def plot(p, box, set_, bins, generator=None, *args, **kwargs):
     sub_box_p = box[p]
@@ -39,12 +40,14 @@ def plot(p, box, set_, bins, generator=None, *args, **kwargs):
     hist_kwargs["alpha"] = 0.2
     ax.hist(sub_set_p, **hist_kwargs)
 
+
 class stats_equispaced(object):
     def __init__(self, *args, **kwargs):
         self.scale = kwargs["scale"]
 
     def pdf(self, x):
         return [1. / self.scale] * len(x)
+
 
 class stats_loguniform(object):
     def __init__(self, *args, **kwargs):
@@ -58,6 +61,7 @@ class stats_loguniform(object):
     def pdf(self, x):
         return [1. / (v * (self.log_max - self.log_min)) for v in x]
 
+
 # Default generator
 def test_sampling_default():
     parameter_space_subset = ParameterSpaceSubset()
@@ -65,6 +69,7 @@ def test_sampling_default():
     plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Uniform generator
 def test_sampling_uniform():
@@ -74,6 +79,7 @@ def test_sampling_uniform():
     plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
 
+
 # Composite uniform generator
 def test_sampling_composite_uniform():
     parameter_space_subset = ParameterSpaceSubset()
@@ -81,6 +87,7 @@ def test_sampling_composite_uniform():
     plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Equispaced generator
 def test_sampling_equispaced_generator():
@@ -90,6 +97,7 @@ def test_sampling_equispaced_generator():
     plot(1, box, parameter_space_subset, bins, stats_equispaced, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
 
+
 # Composite equispaced generator
 def test_sampling_composite_equispaced_generator():
     parameter_space_subset = ParameterSpaceSubset()
@@ -97,6 +105,7 @@ def test_sampling_composite_equispaced_generator():
     plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats_equispaced, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Log uniform generator
 def test_sampling_log_uniform_generator():
@@ -106,6 +115,7 @@ def test_sampling_log_uniform_generator():
     plot(1, box, parameter_space_subset, bins, stats_loguniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
 
+
 # Composite log uniform generator
 def test_sampling_composite_log_uniform_generator():
     parameter_space_subset = ParameterSpaceSubset()
@@ -113,6 +123,7 @@ def test_sampling_composite_log_uniform_generator():
     plot(0, box, parameter_space_subset, bins, stats_loguniform, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats_loguniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Beta generator
 def test_sampling_beta_generator():
@@ -122,6 +133,7 @@ def test_sampling_beta_generator():
     plot(1, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
 
+
 # Composite beta generator
 def test_sampling_composite_beta_generator():
     parameter_space_subset = ParameterSpaceSubset()
@@ -129,6 +141,7 @@ def test_sampling_composite_beta_generator():
     plot(0, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats.beta, a=5, b=1, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Composite equispaced and uniform generator
 def test_sampling_composite_equispaced_and_uniform():
@@ -138,6 +151,7 @@ def test_sampling_composite_equispaced_and_uniform():
     plot(1, box, parameter_space_subset, bins, stats.uniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
 
+
 # Composite uniform and equispaced generator
 def test_sampling_composite_uniform_and_equispaced():
     parameter_space_subset = ParameterSpaceSubset()
@@ -145,6 +159,7 @@ def test_sampling_composite_uniform_and_equispaced():
     plot(0, box, parameter_space_subset, bins, stats.uniform, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats_equispaced, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Composite equispaced and log uniform generator
 def test_sampling_composite_equispaced_and_log_uniform():
@@ -154,6 +169,7 @@ def test_sampling_composite_equispaced_and_log_uniform():
     plot(1, box, parameter_space_subset, bins, stats_loguniform, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
 
+
 # Composite equispaced and beta generator
 def test_sampling_composite_equispaced_and_beta():
     parameter_space_subset = ParameterSpaceSubset()
@@ -161,6 +177,7 @@ def test_sampling_composite_equispaced_and_beta():
     plot(0, box, parameter_space_subset, bins, stats_equispaced, loc=box[0][min], scale=box[0][max] - box[0][min])
     plot(1, box, parameter_space_subset, bins, stats.beta, a=2, b=5, loc=box[1][min], scale=box[1][max] - box[1][min])
     plt.show()
+
 
 # Composite loguniform and beta generator
 def test_sampling_composite_log_uniform_and_beta():

@@ -9,6 +9,7 @@ from rbnics.eim.problems.deim import DEIM
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @ReducedProblemDecoratorFor(DEIM)
 def DEIMDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

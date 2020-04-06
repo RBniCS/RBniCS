@@ -9,6 +9,7 @@ from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFo
 from backends.online import OnlineSolveKwargsGenerator
 from .online_stabilization import OnlineStabilization
 
+
 @ReducedProblemDecoratorFor(OnlineStabilization)
 def OnlineStabilizationDecoratedReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
 

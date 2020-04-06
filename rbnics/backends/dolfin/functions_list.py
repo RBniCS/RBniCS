@@ -16,11 +16,15 @@ from rbnics.backends.online import OnlineFunction, OnlineMatrix, OnlineVector
 from rbnics.backends.online.wrapping import function_to_vector as online_function_to_online_vector
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
 
+
 def AdditionalIsFunction(arg):
     return isinstance(arg, Operator)
+
+
 def ConvertAdditionalFunctionTypes(arg):
     assert isinstance(arg, Operator)
     return function_from_ufl_operators(arg)
+
 
 backend = ModuleWrapper(Function)
 wrapping = ModuleWrapper(function_extend_or_restrict, function_load, function_save, function_to_vector,
@@ -30,6 +34,7 @@ online_backend = ModuleWrapper(OnlineFunction=OnlineFunction, OnlineMatrix=Onlin
 online_wrapping = ModuleWrapper(online_function_to_online_vector)
 FunctionsList_Base = BasicFunctionsList(backend, wrapping, online_backend, online_wrapping,
                                         AdditionalIsFunction, ConvertAdditionalFunctionTypes)
+
 
 @BackendFor("dolfin", inputs=(FunctionSpace, (str, None)))
 class FunctionsList(FunctionsList_Base):

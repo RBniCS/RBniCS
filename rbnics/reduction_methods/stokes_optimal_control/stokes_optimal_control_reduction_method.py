@@ -7,6 +7,7 @@
 import os
 from rbnics.reduction_methods.base import LinearReductionMethod
 
+
 def StokesOptimalControlReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 
     StokesOptimalControlReductionMethod_Base = LinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass)

@@ -15,6 +15,7 @@ from test_utils import RandomDolfinFunction
 LinearSolver = None
 AllLinearSolver = {"dolfin": DolfinLinearSolver, "factory": FactoryLinearSolver}
 
+
 class Data(object):
     def __init__(self, Th, callback_type):
         # Create mesh and define function space
@@ -71,6 +72,7 @@ class Data(object):
         error.vector().apply("add")
         relative_error = error.vector().norm("l2") / result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
+
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 9)])
 @pytest.mark.parametrize("callback_type", ["form callbacks", "tensor callbacks"])

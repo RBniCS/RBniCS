@@ -9,6 +9,7 @@ from rbnics import *
 from problems import *
 from reduction_methods import *
 
+
 class Geostrophic(GeostrophicProblem):
     def __init__(self, W, **kwargs):
         GeostrophicProblem.__init__(self, W, **kwargs)
@@ -73,6 +74,7 @@ class Geostrophic(GeostrophicProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")

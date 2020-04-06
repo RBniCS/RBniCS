@@ -12,6 +12,7 @@ from math import ceil
 import matplotlib.pyplot as plt
 from rbnics.utils.io import Timer
 
+
 def patch_benchmark_plugin(benchmark_plugin):
     from pytest_benchmark.fixture import BenchmarkFixture as OriginalBenchmarkFixture
     from pytest_benchmark.session import BenchmarkSession as OriginalBenchmarkSession
@@ -50,15 +51,19 @@ def patch_benchmark_plugin(benchmark_plugin):
             assert len(kwargs) == 0  # no kwargs allowed, except setup and teardown
 
             if not self.disabled:
+
                 # Choose how many time we must repeat the test, basing the timing on the setup + function + teardown
                 def calibration_setup():
                     return ()
+
                 def calibration_function():
                     args = setup()
                     result = function_to_benchmark(*args)
                     teardown(*args, result)
+
                 def calibration_teardown(result):
                     pass
+
                 setup_function_teardown_runner = self._make_runner(
                     calibration_setup, calibration_function, calibration_teardown, (), {})
                 duration, iterations, loops_range = self._calibrate_timer(setup_function_teardown_runner)

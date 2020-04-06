@@ -8,6 +8,7 @@ from rbnics.reduction_methods.base.nonlinear_reduction_method import NonlinearRe
 from rbnics.reduction_methods.base.rb_reduction import RBReduction
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(NonlinearReductionMethod, RBReduction)
 def NonlinearRBReduction(DifferentialProblemReductionMethod_DerivedClass):
 

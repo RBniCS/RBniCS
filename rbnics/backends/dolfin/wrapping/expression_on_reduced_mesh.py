@@ -14,7 +14,9 @@ from rbnics.utils.io import OnlineSizeDict
 
 logger = getLogger("rbnics/backends/dolfin/expression_on_reduced_mesh.py")
 
+
 def basic_expression_on_reduced_mesh(backend, wrapping, online_backend, online_wrapping):
+
     def _basic_expression_on_reduced_mesh(expression_wrapper, at):
         expression = expression_wrapper._expression
         expression_name = expression_wrapper.name()

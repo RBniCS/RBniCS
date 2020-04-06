@@ -6,5 +6,6 @@
 
 from dolfin import assemble as dolfin_assemble
 
+
 def assemble(form, tensor=None):
     return dolfin_assemble(form, keep_diagonal=True, tensor=tensor)

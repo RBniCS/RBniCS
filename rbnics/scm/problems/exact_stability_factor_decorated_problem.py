@@ -10,6 +10,7 @@ from rbnics.scm.problems.parametrized_stability_factor_eigenproblem import Param
 from rbnics.scm.problems.decorated_problem_with_stability_factor_evaluation import (
     DecoratedProblemWithStabilityFactorEvaluation)
 
+
 def ExactStabilityFactorDecoratedProblem(
     **decorator_kwargs
 ):

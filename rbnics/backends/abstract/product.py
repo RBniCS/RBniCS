@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import abstract_backend
 
+
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum.
 @abstract_backend
 def product(thetas, operators, thetas2=None):

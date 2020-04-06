@@ -7,6 +7,7 @@
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from problems import OnlineStabilization
 
+
 @ReductionMethodDecoratorFor(OnlineStabilization)
 def OnlineStabilizationDecoratedReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
 

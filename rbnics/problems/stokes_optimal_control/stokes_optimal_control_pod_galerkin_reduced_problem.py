@@ -14,6 +14,7 @@ from rbnics.reduction_methods.stokes_optimal_control import StokesOptimalControl
 StokesOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
     StokesOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 @ReducedProblemFor(StokesOptimalControlProblem, StokesOptimalControlPODGalerkinReduction)
 class StokesOptimalControlPODGalerkinReducedProblem(StokesOptimalControlPODGalerkinReducedProblem_Base):
     pass

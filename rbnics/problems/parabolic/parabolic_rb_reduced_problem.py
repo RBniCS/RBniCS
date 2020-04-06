@@ -13,6 +13,7 @@ from rbnics.reduction_methods.parabolic import ParabolicRBReduction
 
 ParabolicRBReducedProblem_Base = AbstractParabolicRBReducedProblem(ParabolicReducedProblem(EllipticRBReducedProblem))
 
+
 # Base class containing the interface of a projection based ROM
 # for elliptic coercive problems.
 @ReducedProblemFor(ParabolicProblem, ParabolicRBReduction)

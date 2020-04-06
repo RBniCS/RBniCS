@@ -12,7 +12,9 @@ from rbnics.backends.dolfin.reduced_mesh import ReducedMesh
 from rbnics.utils.decorators import BackendFor, ModuleWrapper
 from rbnics.utils.io import Folders
 
+
 def BasicReducedVertices(backend, wrapping):
+
     class _BasicReducedVertices(AbstractReducedVertices):
         def __init__(self, V, auxiliary_problems_and_components=None, **kwargs):
             AbstractReducedVertices.__init__(self, V)
@@ -99,11 +101,14 @@ def BasicReducedVertices(backend, wrapping):
 
         def get_auxiliary_function_interpolator(self, auxiliary_problem, component, index=None):
             return self._reduced_mesh.get_auxiliary_function_interpolator(auxiliary_problem, component, index)
+
     return _BasicReducedVertices
+
 
 backend = ModuleWrapper(ReducedMesh)
 wrapping = ModuleWrapper()
 ReducedVertices_Base = BasicReducedVertices(backend, wrapping)
+
 
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class ReducedVertices(ReducedVertices_Base):

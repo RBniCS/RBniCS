@@ -9,6 +9,7 @@ from rbnics.backends.abstract import SymbolicParameters as AbstractSymbolicParam
 from rbnics.backends.dolfin.wrapping import ParametrizedConstant
 from rbnics.utils.decorators import BackendFor, ParametersType
 
+
 @BackendFor("dolfin", inputs=(object, FunctionSpace, ParametersType))
 class SymbolicParameters(AbstractSymbolicParameters, tuple):
     def __new__(cls, problem, V, mu):

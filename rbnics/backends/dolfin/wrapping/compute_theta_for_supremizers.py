@@ -8,6 +8,7 @@ import types
 from rbnics.backends.dolfin.wrapping.compute_theta_for_restriction import compute_theta_for_restriction
 from rbnics.utils.decorators import overload
 
+
 def compute_theta_for_supremizers(compute_theta):
     from rbnics.problems.stokes import StokesProblem
     from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem

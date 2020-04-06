@@ -14,6 +14,7 @@ from rbnics.reduction_methods.navier_stokes import NavierStokesPODGalerkinReduct
 NavierStokesPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(
     NavierStokesReducedProblem(StokesPODGalerkinReducedProblem))
 
+
 @ReducedProblemFor(NavierStokesProblem, NavierStokesPODGalerkinReduction)
 class NavierStokesPODGalerkinReducedProblem(NavierStokesPODGalerkinReducedProblem_Base):
     pass

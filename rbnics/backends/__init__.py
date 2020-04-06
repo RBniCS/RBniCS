@@ -8,7 +8,11 @@ import importlib
 import sys
 
 # Initialize __all__ variable
-__all__ = list()
+__all__ = []
+
+# Process configuration files first
+from rbnics.utils.config import config
+
 
 # Helper function to load required backends
 def load_backends(required_backends):
@@ -82,11 +86,13 @@ def load_backends(required_backends):
         if isinstance(getattr(backends_cache, dispatcher_name), Dispatcher):
             assert isinstance(dispatcher, Dispatcher)
 
-# Get the list of required backends
-from rbnics.utils.config import config
-load_backends(config.get("backends", "required backends"))
+    # Store some additional classes, defined in the abstract module, which are base classes but not backends,
+    # and thus have not been processed by @BackendFor and @backend_for decorators
+    for extra_class in ("LinearProblemWrapper", "NonlinearProblemWrapper", "TimeDependentProblemWrapper"):
+        assert not hasattr(sys.modules[__name__], extra_class)
+        setattr(sys.modules[__name__], extra_class, getattr(sys.modules[__name__ + ".abstract"], extra_class))
+        sys.modules[__name__].__all__.append(extra_class)
 
-# Store some additional classes, defined in the abstract module, which are base classes but not backends,
-# and thus have not been processed by @BackendFor and @backend_for decorators
-from rbnics.backends.abstract import LinearProblemWrapper, NonlinearProblemWrapper, TimeDependentProblemWrapper
-__all__ += ["LinearProblemWrapper", "NonlinearProblemWrapper", "TimeDependentProblemWrapper"]
+
+# Load required backends
+load_backends(config.get("backends", "required backends"))

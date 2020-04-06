@@ -12,6 +12,7 @@ import multipledispatch.conflict
 from multipledispatch.core import dispatch as original_dispatch, ismethod
 from multipledispatch.dispatcher import Dispatcher as OriginalDispatcher
 
+
 # == Signature to string == #
 def str_signature(sig):
     str_sig = ", ".join(c.__name__ if isinstance(c, type) else str(c) for c in sig)
@@ -19,6 +20,7 @@ def str_signature(sig):
         return "None"
     else:
         return str_sig
+
 
 # == Exception for unavailable signature == #
 class UnavailableSignatureError(NotImplementedError):
@@ -30,6 +32,7 @@ class UnavailableSignatureError(NotImplementedError):
         error_message += "Requested unavailable signature is:\n"
         error_message += "\t" + str_signature(unavailable_signature) + "\n"
         NotImplementedError.__init__(self, error_message)
+
 
 # == Exception for ambiguous signature == #
 class AmbiguousSignatureError(NotImplementedError):
@@ -45,6 +48,7 @@ class AmbiguousSignatureError(NotImplementedError):
                 + str_signature(ambiguous_signature_pair[1]) + "\n")
         NotImplementedError.__init__(self, error_message)
 
+
 def ambiguity_error(dispatcher, ambiguities):
     """
     Raise error when ambiguity is detected
@@ -57,6 +61,7 @@ def ambiguity_error(dispatcher, ambiguities):
     """
     raise AmbiguousSignatureError(dispatcher.name, dispatcher.funcs.keys(), ambiguities)
 
+
 # == Exception for invalid signature == #
 class InvalidSignatureError(TypeError):
     def __init__(self, name, invalid_signature):
@@ -65,6 +70,7 @@ class InvalidSignatureError(TypeError):
         error_message += "Invalid signature is:\n"
         error_message += "\t" + str_sig + "\n"
         TypeError.__init__(self, error_message)
+
 
 # == Customize Dispatcher == #
 class Dispatcher(OriginalDispatcher):
@@ -240,6 +246,7 @@ class MethodDispatcher_Wrapper(object):
         # Return
         return dispatcher
 
+
 class MethodDispatcher(Dispatcher):
     # extend slots with new private members
     __slots__ = ("__name__", "name", "funcs", "_ordering", "_cache", "doc", "signature_to_provided_signature",
@@ -330,6 +337,7 @@ class MethodDispatcher(Dispatcher):
     def __doc__(self):
         return Dispatcher.__doc__.fget(self)  # properties are not inherited
 
+
 # == Customize @dispatch == #
 def dispatch(*types, **kwargs):
     name = kwargs.get("name", None)
@@ -397,7 +405,10 @@ def dispatch(*types, **kwargs):
                 return dispatcher
             else:
                 return func_or_class
+
     return _
+
+
 dispatch.__doc__ = (
     original_dispatch.__doc__ +
     """
@@ -450,6 +461,7 @@ dispatch.__doc__ = (
                      module
     """)
 
+
 # == Define an @overload to be used for method dispatch, in order to have a more expressive name == #
 # == that hides the details of the implementation                                                == #
 def overload(*args, **kwargs):
@@ -460,6 +472,7 @@ def overload(*args, **kwargs):
         # called as @overload(*args, **kwargs)
         return dispatch(*args, **kwargs)
 
+
 # == Replacements for array, dict, list, tuple that allow to specify content input types == #
 class _iterable_of(object):
     def __init__(self, types):
@@ -469,10 +482,12 @@ class _iterable_of(object):
         return "iterable_of(" + str(self.types) + ")"
     __repr__ = __str__
 
+
 class _array_of(_iterable_of):
     def __str__(self):
         return "array_of(" + str(self.types) + ")"
     __repr__ = __str__
+
 
 class _dict_of(object):
     def __init__(self, types_from, types_to):
@@ -483,20 +498,24 @@ class _dict_of(object):
         return "dict_of(" + str(self.types_from) + ": " + str(self.types_to) + ")"
     __repr__ = __str__
 
+
 class _list_of(_iterable_of):
     def __str__(self):
         return "list_of(" + str(self.types) + ")"
     __repr__ = __str__
+
 
 class _set_of(_iterable_of):
     def __str__(self):
         return "set_of(" + str(self.types) + ")"
     __repr__ = __str__
 
+
 class _tuple_of(_iterable_of):
     def __str__(self):
         return "tuple_of(" + str(self.types) + ")"
     __repr__ = __str__
+
 
 _all_iterable_of_instances = dict()
 _all_array_of_instances = dict()
@@ -504,6 +523,7 @@ _all_dict_of_instances = dict()
 _all_list_of_instances = dict()
 _all_set_of_instances = dict()
 _all_tuple_of_instances = dict()
+
 
 def _remove_repeated_types(types):
     if isinstance(types, tuple):
@@ -520,17 +540,20 @@ def _remove_repeated_types(types):
     else:
         return (types, frozenset({types}))
 
+
 def iterable_of(types):
     (types, types_set) = _remove_repeated_types(types)
     if types_set not in _all_iterable_of_instances:
         _all_iterable_of_instances[types_set] = _iterable_of(types)
     return _all_iterable_of_instances[types_set]
 
+
 def array_of(types):
     (types, types_set) = _remove_repeated_types(types)
     if types_set not in _all_array_of_instances:
         _all_array_of_instances[types_set] = _array_of(types)
     return _all_array_of_instances[types_set]
+
 
 def dict_of(types_from, types_to):
     (types_from, types_from_set) = _remove_repeated_types(types_from)
@@ -539,11 +562,13 @@ def dict_of(types_from, types_to):
         _all_dict_of_instances[(types_from_set, types_to_set)] = _dict_of(types_from, types_to)
     return _all_dict_of_instances[(types_from_set, types_to_set)]
 
+
 def list_of(types):
     (types, types_set) = _remove_repeated_types(types)
     if types_set not in _all_list_of_instances:
         _all_list_of_instances[types_set] = _list_of(types)
     return _all_list_of_instances[types_set]
+
 
 def set_of(types):
     (types, types_set) = _remove_repeated_types(types)
@@ -551,11 +576,13 @@ def set_of(types):
         _all_set_of_instances[types_set] = _set_of(types)
     return _all_set_of_instances[types_set]
 
+
 def tuple_of(types):
     (types, types_set) = _remove_repeated_types(types)
     if types_set not in _all_tuple_of_instances:
         _all_tuple_of_instances[types_set] = _tuple_of(types)
     return _all_tuple_of_instances[types_set]
+
 
 # == Validation that no array, dict, list, tuple are provided as types to @dispatch == #
 def validate_types(inputs, allow_lambda):
@@ -584,6 +611,7 @@ def validate_types(inputs, allow_lambda):
                     or input_ is None
                     or (islambda(input_) and allow_lambda))
 
+
 # == Get types for provided inputs == #
 def get_types(inputs):
     inputs = remove_trailing_None(inputs)
@@ -592,6 +620,7 @@ def get_types(inputs):
         types.append(get_type(input_))
     types = tuple(types)
     return types
+
 
 def get_type(input_):
     type_input_ = type(input_)
@@ -631,6 +660,7 @@ def get_type(input_):
         else:
             return None
 
+
 # == Customize tuple expansion to handle array_of, dict_of, iterable_of, list_of, set_of, tuple_of == #
 def expand_tuples(L):
     if not L:
@@ -638,6 +668,7 @@ def expand_tuples(L):
     else:
         output = set((item,) + t for t in expand_tuples(L[1:]) for item in expand_arg(L[0]))
     return output
+
 
 def expand_arg(arg, tuple_expansion=True):
     if isinstance(arg, tuple) and tuple_expansion:
@@ -658,6 +689,7 @@ def expand_arg(arg, tuple_expansion=True):
     else:
         yield arg
 
+
 _generator_of = {
     _array_of: array_of,
     _dict_of: dict_of,
@@ -666,6 +698,7 @@ _generator_of = {
     _set_of: set_of,
     _tuple_of: tuple_of
 }
+
 
 # == Customize conflict operators to handle array_of, dict_of, list_of, set_of, tuple_of == #
 def supercedes(A, B):
@@ -719,7 +752,10 @@ def supercedes(A, B):
                     return False
         else:
             return True
+
+
 multipledispatch.conflict.supercedes = supercedes
+
 
 def consistent(A, B):
     """ It is possible for an argument list to satisfy both A and B """
@@ -760,7 +796,10 @@ def consistent(A, B):
                     return False
         else:
             return True
+
+
 multipledispatch.conflict.consistent = consistent
+
 
 # == Helper function to remove trailing None arguments (used as default arguments) == #
 def remove_trailing_None(inputs):
@@ -776,15 +815,19 @@ def remove_trailing_None(inputs):
     else:
         raise TypeError("This type is unsupported")
 
+
 # == Helper function to create itertools.powerset without empty tuple == #
 def powerset(types):
     if not isinstance(types, (list, tuple)):
         types = (types, )
     return itertools.chain.from_iterable(itertools.combinations(types, r) for r in range(1, len(types) + 1))
 
+
 # == Helper function to determine if function is a lambda function == #
 def islambda(arg):
     return isinstance(arg, _reference_lambda_type) and arg.__name__ == _reference_lambda_name
+
+
 _reference_lambda = lambda: 0  # noqa: E731
 _reference_lambda_type = type(_reference_lambda)
 _reference_lambda_name = _reference_lambda.__name__

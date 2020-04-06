@@ -6,6 +6,7 @@
 
 from rbnics.utils.cache.cache import Cache
 
+
 class TimeSeriesCache(Cache):
     def __setitem__(self, key, value):
         """
@@ -19,9 +20,11 @@ class TimeSeriesCache(Cache):
             (args, kwargs, storage_key) = self._compute_storage_key(key)
             storage_filename = self._filename_generator(*args, **kwargs)
             original_append = value.append
+
             def patched_append(self_, item):
                 self._export(storage_filename, item, len(self_))
                 original_append(item)
+
             PatchInstanceMethod(value, "append", patched_append).patch()
         # Call standard setitem, disabling export
         bak_filename_generator = self._filename_generator

@@ -6,7 +6,9 @@
 
 from rbnics.backends.abstract import NonAffineExpansionStorage as AbstractNonAffineExpansionStorage
 
+
 def NonAffineExpansionStorage(backend, wrapping):
+
     class _NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
         def __init__(self, content):
             self._content = tuple(backend.ParametrizedTensorFactory(op) for op in content)

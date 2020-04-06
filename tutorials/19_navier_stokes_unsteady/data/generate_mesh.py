@@ -26,22 +26,27 @@ mesh = generate_mesh(domain, 100)
 subdomains = MeshFunction("size_t", mesh, 2)
 subdomains.set_all(0)
 
+
 # Create boundaries
 class Walls(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and (abs(x[1]) < DOLFIN_EPS or abs(x[1] - H) < DOLFIN_EPS)
 
+
 class Outlet(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0] - L) < DOLFIN_EPS
+
 
 class Inlet(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and abs(x[0]) < DOLFIN_EPS
 
+
 class AllBoundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary
+
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)

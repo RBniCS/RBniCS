@@ -8,6 +8,7 @@ from rbnics.problems.base import NonlinearTimeDependentReducedProblem
 from rbnics.problems.stokes_unsteady.stokes_unsteady_reduced_problem import AbstractCFDUnsteadyReducedProblem
 from rbnics.backends import product, sum
 
+
 def NavierStokesUnsteadyReducedProblem(NavierStokesReducedProblem_DerivedClass):
     NavierStokesUnsteadyReducedProblem_Base = AbstractCFDUnsteadyReducedProblem(
         NonlinearTimeDependentReducedProblem(NavierStokesReducedProblem_DerivedClass))

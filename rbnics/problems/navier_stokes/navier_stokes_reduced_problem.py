@@ -7,6 +7,7 @@
 from rbnics.problems.base import NonlinearReducedProblem
 from rbnics.backends import product, sum
 
+
 def NavierStokesReducedProblem(StokesReducedProblem_DerivedClass):
 
     NavierStokesReducedProblem_Base = NonlinearReducedProblem(StokesReducedProblem_DerivedClass)

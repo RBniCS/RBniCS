@@ -10,6 +10,7 @@ from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_param
     strings_to_sympy_symbolic_parameters)
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
+
 def compute_shape_parametrization_gradient(shape_parametrization_expression_on_subdomain):
     # Get the domain dimension and symbolic coordinates
     dim = len(shape_parametrization_expression_on_subdomain)

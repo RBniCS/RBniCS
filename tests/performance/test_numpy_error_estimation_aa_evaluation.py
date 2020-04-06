@@ -18,6 +18,7 @@ all_product = {"numpy": numpy_product, "online": online_product, "factory": fact
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
 all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory": factory_transpose}
 
+
 class Data(object):
     def __init__(self, N, Q):
         self.N = N
@@ -51,6 +52,7 @@ class Data(object):
         result_builtin = self.evaluate_builtin(theta, aa_product, aa_product_legacy, u, v)
         relative_error = abs(result_builtin - result_backend) / abs(result_builtin)
         assert isclose(relative_error, 0., atol=1e-10)
+
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
 @pytest.mark.parametrize("Q", [2 + 4 * j for j in range(1, 3)])

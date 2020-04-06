@@ -8,6 +8,7 @@ from rbnics.reduction_methods.base.nonlinear_pod_galerkin_reduction import Nonli
 from rbnics.reduction_methods.base.time_dependent_pod_galerkin_reduction import TimeDependentPODGalerkinReduction
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(NonlinearPODGalerkinReduction, TimeDependentPODGalerkinReduction)
 def NonlinearTimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
 

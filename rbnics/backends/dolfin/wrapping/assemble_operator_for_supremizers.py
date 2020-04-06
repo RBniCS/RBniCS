@@ -8,6 +8,7 @@ import types
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_restriction import assemble_operator_for_restriction
 from rbnics.utils.decorators import overload
 
+
 def assemble_operator_for_supremizers(assemble_operator):
     from rbnics.problems.stokes import StokesProblem
     from rbnics.problems.stokes_optimal_control import StokesOptimalControlProblem

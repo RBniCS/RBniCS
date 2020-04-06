@@ -11,6 +11,7 @@ from rbnics.utils.decorators import BackendFor, tuple_of
 
 NonAffineExpansionStorage_Base = BasicNonAffineExpansionStorage
 
+
 @BackendFor("numpy", inputs=((int, tuple_of(Matrix.Type()), tuple_of(Vector.Type())), (int, None)))
 class NonAffineExpansionStorage(NonAffineExpansionStorage_Base):
     pass

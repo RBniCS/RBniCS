@@ -6,8 +6,10 @@
 
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def sync_setters__internal(other_object__name__or__instance, method__name, private_attribute__name,
                            method__decorator=None):
+
     def sync_setters_decorator(__init__):
 
         def __synced__init__(self, *args, **kwargs):
@@ -59,6 +61,7 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                 # Now both storage and local variable should be consistent between self and other_object,
                 # and pointing to the same memory location
                 assert _synced_setters[method__name][self] is _synced_setters[method__name][other_object]
+
                 # Override both self and other_object setters to propagate to all synced setters
                 def overridden_method(self_, arg):
                     if method__name not in _synced_setters__disabled_methods:
@@ -67,6 +70,7 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                             setter = _original_setters[method__name][obj]
                             if getattr(obj, private_attribute__name) is not arg:
                                 setter(arg)
+
                 method__decorator__changed = False
                 if method__decorator is not None:
                     if method__name not in _synced_setters__decorators:
@@ -91,7 +95,9 @@ def sync_setters__internal(other_object__name__or__instance, method__name, priva
                 getattr(self, method__name)(getattr(other_object, private_attribute__name))
 
         return __synced__init__
+
     return sync_setters_decorator
+
 
 def sync_setters(other_object, method__name, private_attribute__name, method__decorator=None):
     assert method__name in (
@@ -107,7 +113,9 @@ def sync_setters(other_object, method__name, private_attribute__name, method__de
     else:
         raise ValueError("Invalid method in sync_setters.")
 
+
 def set_mu_range__decorator(set_mu_range__method):
+
     def set_mu_range__decorated(self_, mu_range):
         # set_mu_range by defaults calls set_mu. Since set_mu
         # (1) requires a properly initialized mu range, but
@@ -122,7 +130,9 @@ def set_mu_range__decorator(set_mu_range__method):
         # as done in ParametrizedProblem
         _synced_setters__disabled_methods.remove("set_mu")
         self_.set_mu(tuple([r[0] for r in mu_range]))
+
     return set_mu_range__decorated
+
 
 _original_setters = dict()
 _synced_setters = dict()

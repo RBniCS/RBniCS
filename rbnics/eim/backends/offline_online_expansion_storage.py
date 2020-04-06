@@ -11,9 +11,12 @@ from rbnics.utils.cache import cache
 from rbnics.utils.io import Folders
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @cache
 def OfflineOnlineExpansionStorage(problem_name):
+
     _OfflineOnlineExpansionStorage_Base = OfflineOnlineSwitch(problem_name)
+
     class _OfflineOnlineExpansionStorage(_OfflineOnlineExpansionStorage_Base):
 
         def __init__(self, problem, expansion_storage_type_attribute):
@@ -44,6 +47,7 @@ def OfflineOnlineExpansionStorage(problem_name):
                 def _patch_save_load(expansion_storage, method):
                     if not hasattr(expansion_storage, method + "_patched"):
                         original_method = getattr(expansion_storage, method)
+
                         def patched_method(self, directory, filename):
                             # Get full directory name
                             full_directory = Folders.Folder(
@@ -51,6 +55,7 @@ def OfflineOnlineExpansionStorage(problem_name):
                             full_directory.create()
                             # Call original implementation
                             return original_method(full_directory, filename)
+
                         PatchInstanceMethod(expansion_storage, method, patched_method).patch()
                         setattr(expansion_storage, method + "_patched", True)
 

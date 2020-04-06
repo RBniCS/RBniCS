@@ -6,6 +6,7 @@
 
 from rbnics.backends.online import OnlineVector as _OnlineVector
 
+
 def OnlineVector(N):
     assert isinstance(N, int)
     return _OnlineVector({"u": N})

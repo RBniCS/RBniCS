@@ -7,12 +7,15 @@
 from dolfin import MPI
 from rbnics.utils.test import add_performance_options, patch_benchmark_plugin
 
+
 def pytest_addoption(parser):
     add_performance_options(parser)
+
 
 def pytest_configure(config):
     assert config.pluginmanager.hasplugin("benchmark")
     patch_benchmark_plugin(config.pluginmanager.getplugin("benchmark"))
+
 
 def pytest_runtest_teardown(item, nextitem):
     # Do the normal teardown

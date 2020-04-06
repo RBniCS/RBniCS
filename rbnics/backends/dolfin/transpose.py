@@ -20,11 +20,15 @@ from rbnics.backends.dolfin.wrapping import (function_from_ufl_operators, functi
 from rbnics.backends.online import OnlineMatrix, OnlineVector
 from rbnics.utils.decorators import backend_for, ModuleWrapper
 
+
 def AdditionalIsFunction(arg):
     return isinstance(arg, Operator)
+
+
 def ConvertAdditionalFunctionTypes(arg):
     assert isinstance(arg, Operator)
     return function_from_ufl_operators(arg)
+
 
 backend = ModuleWrapper(BasisFunctionsMatrix, evaluate, Function, FunctionsList, Matrix, NonAffineExpansionStorage,
                         ParametrizedTensorFactory, TensorsList, Vector)
@@ -34,6 +38,7 @@ online_backend = ModuleWrapper(OnlineMatrix=OnlineMatrix, OnlineVector=OnlineVec
 online_wrapping = ModuleWrapper()
 transpose_base = basic_transpose(backend, wrapping, online_backend, online_wrapping,
                                  AdditionalIsFunction, ConvertAdditionalFunctionTypes)
+
 
 @backend_for("dolfin", inputs=((BasisFunctionsMatrix, Function.Type(), FunctionsList, Matrix.Type(), Operator,
                                 ParametrizedTensorFactory, TensorsList, Vector.Type()), ))

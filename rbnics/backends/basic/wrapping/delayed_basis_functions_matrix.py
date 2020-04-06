@@ -11,6 +11,7 @@ from rbnics.utils.decorators import overload
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 from rbnics.utils.test import PatchInstanceMethod
 
+
 class DelayedBasisFunctionsMatrix(object):
     def __init__(self, space):
         self.space = space
@@ -21,9 +22,11 @@ class DelayedBasisFunctionsMatrix(object):
         self._precomputed_slices = Cache()  # from tuple to FunctionsList
 
     def init(self, components_name):
+
         # Patch DelayedFunctionsList.enrich() to update internal attributes
         def patch_delayed_functions_list_enrich(component_name, memory):
             original_delayed_functions_list_enrich = memory.enrich
+
             def patched_delayed_functions_list_enrich(self_, functions, component=None, weights=None, copy=True):
                 # Append to storage
                 original_delayed_functions_list_enrich(functions, component, weights, copy)
@@ -41,6 +44,7 @@ class DelayedBasisFunctionsMatrix(object):
                 self._precomputed_slices.clear()
                 # Prepare trivial precomputed slice
                 self._prepare_trivial_precomputed_slice()
+
             memory.enrich_patch = PatchInstanceMethod(memory, "enrich", patched_delayed_functions_list_enrich)
             memory.enrich_patch.patch()
 

@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @SCM()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
@@ -104,6 +105,7 @@ class Graetz(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/graetz.xml")

@@ -6,7 +6,9 @@
 
 from slepc4py import SLEPc
 
+
 def BasicSLEPcEPSSolver(backend, wrapping):
+
     class _BasicSLEPcEPSSolver(object):
         def __init__(self, A, B):
             self.eps = SLEPc.EPS().create(wrapping.get_mpi_comm(A))

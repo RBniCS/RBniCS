@@ -6,6 +6,7 @@
 
 from rbnics.utils.cache import cache
 
+
 @cache
 def get_global_dof_to_local_dof_map(V, dofmap):
     local_to_global = dofmap.tabulate_local_to_global_dofs()

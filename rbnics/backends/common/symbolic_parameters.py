@@ -7,6 +7,7 @@
 from rbnics.backends.abstract import SymbolicParameters as AbstractSymbolicParameters
 from rbnics.utils.decorators import BackendFor, tuple_of
 
+
 # Handle the trivial case of a non-parametric problem, that is mu = ()
 @BackendFor("common", inputs=(object, object, tuple_of(())))
 class SymbolicParameters(AbstractSymbolicParameters, tuple):

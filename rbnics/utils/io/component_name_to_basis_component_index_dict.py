@@ -6,5 +6,6 @@
 
 from collections import OrderedDict
 
+
 class ComponentNameToBasisComponentIndexDict(OrderedDict):
     pass

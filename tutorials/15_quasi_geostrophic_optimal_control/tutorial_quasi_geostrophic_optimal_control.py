@@ -10,6 +10,7 @@ from rbnics.backends import export, import_
 from problems import *
 from reduction_methods import *
 
+
 class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
     def __init__(self, W, **kwargs):
         GeostrophicOptimalControlProblem.__init__(self, W, **kwargs)
@@ -200,6 +201,7 @@ class GeostrophicOptimalControl(GeostrophicOptimalControlProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")

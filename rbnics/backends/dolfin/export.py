@@ -23,11 +23,13 @@ tensor_save = basic_tensor_save(backend, wrapping_for_wrapping)
 wrapping = ModuleWrapper(function_extend_or_restrict, function_save, get_function_subspace, tensor_save=tensor_save)
 export_base = basic_export(backend, wrapping)
 
+
 # Export a solution to file
 @backend_for("dolfin", inputs=((Function.Type(), Matrix.Type(), Operator, Vector.Type()), (Folders.Folder, str),
                                str, (int, None), (int, str, None)))
 def export(solution, directory, filename, suffix=None, component=None):
     _export(solution, directory, filename, suffix, component)
+
 
 @overload
 def _export(
@@ -52,6 +54,7 @@ def _export(
     ) = None
 ):
     export_base(solution, directory, filename, suffix, component)
+
 
 @overload
 def _export(

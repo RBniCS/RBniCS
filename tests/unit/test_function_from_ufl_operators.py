@@ -13,54 +13,68 @@ from dolfin_utils.test import fixture as module_fixture
 from rbnics.backends.dolfin import transpose
 from rbnics.backends.dolfin.wrapping import function_from_ufl_operators
 
+
 # Mesh
 @module_fixture
 def mesh():
     return UnitSquareMesh(10, 10)
 
+
 # Scalar fixtures
 def ScalarSpace(mesh):
     return FunctionSpace(mesh, "Lagrange", 2)
 
+
 def scalar_linear_form(V):
     v = TestFunction(V)
     return v * dx
+
 
 def scalar_bilinear_form(V):
     u = TrialFunction(V)
     v = TestFunction(V)
     return u * v * dx
 
+
 def scalar_conversion_isclose(a, b):
     return isclose(a, b)
+
 
 def scalar_normalization_isclose(a, b):
     return isclose(a, b)
 
+
 def scalar_transpose_isclose(a, b):
     return isclose(a, b)
+
 
 # Vector fixtures
 def VectorSpace(mesh):
     return VectorFunctionSpace(mesh, "Lagrange", 2)
 
+
 def vector_linear_form(V):
     v = TestFunction(V)
     return v[0] * dx + v[1] * dx
+
 
 def vector_bilinear_form(V):
     u = TrialFunction(V)
     v = TestFunction(V)
     return u[0] * v[0] * dx + u[1] * v[1] * dx
 
+
 def vector_conversion_isclose(a, b):
     return isclose(a, b)
+
 
 def vector_normalization_isclose(a, b):
     return isclose(a, b / sqrt(2))
 
+
 def vector_transpose_isclose(a, b):
     return isclose(a, 2 * b)
+
 
 # Mixed fixtures
 def MixedSpace(mesh):
@@ -69,10 +83,12 @@ def MixedSpace(mesh):
     element = MixedElement(element_0, element_1)
     return FunctionSpace(mesh, element)
 
+
 def mixed_linear_form(V):
     v = TestFunction(V)
     (v_0, v_1) = split(v)
     return v_0[0] * dx + v_0[1] * dx + v_1 * dx
+
 
 def mixed_bilinear_form(V):
     u = TrialFunction(V)
@@ -81,14 +97,18 @@ def mixed_bilinear_form(V):
     (v_0, v_1) = split(v)
     return u_0[0] * v_0[0] * dx + u_0[1] * v_0[1] * dx + u_1 * v_1 * dx
 
+
 def mixed_conversion_isclose(a, b):
     return isclose(a, b)
+
 
 def mixed_normalization_isclose(a, b):
     return isclose(a, b / sqrt(3))
 
+
 def mixed_transpose_isclose(a, b):
     return isclose(a, 3 * b)
+
 
 # Tests
 @pytest.mark.parametrize("FunctionSpace, isclose", [
@@ -142,6 +162,7 @@ def test_conversion(mesh, FunctionSpace, isclose):
     z1_minus_z2_plus_z3 = function_from_ufl_operators(z1 - z2 + z3)
     assert isclose(z1_minus_z2_plus_z3.vector().get_local(), 2.).all()
 
+
 @pytest.mark.parametrize("FunctionSpace, bilinear_form, isclose", [
     (ScalarSpace, scalar_bilinear_form, scalar_normalization_isclose),
     (VectorSpace, vector_bilinear_form, vector_normalization_isclose),
@@ -157,6 +178,7 @@ def test_normalization(mesh, FunctionSpace, bilinear_form, isclose):
 
     z1_normalized = function_from_ufl_operators(z1 / sqrt(transpose(z1) * A * z1))
     assert isclose(z1_normalized.vector().get_local(), 1).all()
+
 
 @pytest.mark.parametrize("FunctionSpace, bilinear_form, linear_form, isclose", [
     (ScalarSpace, scalar_bilinear_form, scalar_linear_form, scalar_transpose_isclose),

@@ -7,6 +7,7 @@
 from rbnics.backends.basic.wrapping import DelayedBasisFunctionsMatrix, DelayedLinearSolver, DelayedTranspose
 from rbnics.utils.decorators import backend_for
 
+
 @backend_for("common", inputs=((DelayedBasisFunctionsMatrix, DelayedLinearSolver), ))
 def transpose(arg):
     return DelayedTranspose(arg)

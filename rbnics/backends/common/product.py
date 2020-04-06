@@ -10,12 +10,14 @@ from rbnics.backends.common.affine_expansion_storage import AffineExpansionStora
 from rbnics.backends.common.non_affine_expansion_storage import NonAffineExpansionStorage
 from rbnics.utils.decorators import array_of, backend_for, list_of, overload, ThetaType
 
+
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
 @backend_for("common", inputs=(ThetaType, (AffineExpansionStorage, array_of(DelayedBasisFunctionsMatrix),
                                array_of(DelayedLinearSolver), NonAffineExpansionStorage), ThetaType + (None,)))
 def product(thetas, operators, thetas2=None):
     return _product(thetas, operators, thetas2)
+
 
 @overload
 def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExpansionStorage), thetas2: None):
@@ -24,6 +26,7 @@ def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExp
     for (theta, operator) in zip(thetas, operators):
         output += theta * operator
     return ProductOutput(output)
+
 
 @overload
 def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExpansionStorage), thetas2: ThetaType):
@@ -35,6 +38,7 @@ def _product(thetas: ThetaType, operators: (AffineExpansionStorage, NonAffineExp
         for j, theta2_j in enumerate(thetas2):
             output += theta_i * operators[i, j] * theta2_j
     return ProductOutput(output)
+
 
 @overload
 def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_of(DelayedLinearSolver)),
@@ -67,6 +71,7 @@ def _product(thetas: ThetaType, operators: (array_of(DelayedLinearSolver), list_
     output.solve()
     return ProductOutput(output._solution)
 
+
 @overload
 def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix), thetas2: None):
     from rbnics.backends import BasisFunctionsMatrix
@@ -90,6 +95,7 @@ def _product(thetas: ThetaType, operators: array_of(DelayedBasisFunctionsMatrix)
             output.enrich(_product(thetas, delayed_functions_over_theta, None).sum_product_return_value,
                           component=component_name if len(components_name) > 1 else None)
     return ProductOutput(output)
+
 
 # Auxiliary class to signal to the sum() function that it is dealing with an output of the product() method
 class ProductOutput(object):

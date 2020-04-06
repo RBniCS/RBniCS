@@ -6,6 +6,7 @@
 
 from rbnics.reduction_methods.base import TimeDependentReductionMethod
 
+
 def NonlinearParabolicReductionMethod(NonlinearEllipticReductionMethod_DerivedClass):
 
     NonlinearParabolicReductionMethod_Base = TimeDependentReductionMethod(NonlinearEllipticReductionMethod_DerivedClass)

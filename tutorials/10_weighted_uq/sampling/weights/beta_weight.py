@@ -7,6 +7,7 @@
 from scipy.stats import beta
 from .weight import Weight
 
+
 class BetaWeight(Weight):
     def __init__(self, a, b):
         assert isinstance(a, (list, tuple))

@@ -14,6 +14,7 @@ from rbnics.reduction_methods.nonlinear_elliptic import NonlinearEllipticPODGale
 NonlinearEllipticPODGalerkinReducedProblem_Base = NonlinearPODGalerkinReducedProblem(
     NonlinearEllipticReducedProblem(EllipticPODGalerkinReducedProblem))
 
+
 @ReducedProblemFor(NonlinearEllipticProblem, NonlinearEllipticPODGalerkinReduction)
 class NonlinearEllipticPODGalerkinReducedProblem(NonlinearEllipticPODGalerkinReducedProblem_Base):
     pass

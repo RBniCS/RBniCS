@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 from rbnics.sampling import ParameterSpaceSubset
 from rbnics.utils.io import Folders
 
+
 # Implementation of a class containing an offline/online decomposition of ROM for parametrized problems
 class ReductionMethod(object, metaclass=ABCMeta):
     def __init__(self, folder_prefix):

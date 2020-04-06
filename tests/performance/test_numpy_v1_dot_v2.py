@@ -14,6 +14,7 @@ from test_utils import RandomNumpyVector
 transpose = None
 all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory": factory_transpose}
 
+
 class Data(object):
     def __init__(self, N):
         self.N = N
@@ -35,6 +36,7 @@ class Data(object):
         result_builtin = self.evaluate_builtin(v1, v2)
         relative_error = (result_builtin - result_backend) / result_builtin
         assert isclose(relative_error, 0., atol=1e-12)
+
 
 @pytest.mark.parametrize("N", [2**i for i in range(1, 9)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))

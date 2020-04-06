@@ -8,6 +8,7 @@ from numbers import Number
 from rbnics.backends.abstract import NonAffineExpansionStorage as AbstractNonAffineExpansionStorage
 from rbnics.utils.decorators import BackendFor, tuple_of
 
+
 @BackendFor("common", inputs=(tuple_of(Number),))
 class NonAffineExpansionStorage(AbstractNonAffineExpansionStorage):
     def __init__(self, args):

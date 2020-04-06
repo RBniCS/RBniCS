@@ -10,7 +10,9 @@ from rbnics.backends.abstract import (BasisFunctionsMatrix as AbstractBasisFunct
 from rbnics.backends.basic.wrapping import DelayedTranspose
 from rbnics.utils.decorators import overload
 
+
 def DelayedTransposeWithArithmetic(backend):
+
     class DelayedTransposeWithArithmetic_Class(object):
         def __init__(self, arg):
             assert isinstance(arg, DelayedTranspose)

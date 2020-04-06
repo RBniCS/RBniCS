@@ -8,6 +8,7 @@ from math import sqrt
 from numpy import isclose
 from rbnics.utils.decorators import PreserveClassName
 
+
 def DecoratedProblemWithStabilityFactorEvaluation(ParametrizedDifferentialProblem_DerivedClass):
     from rbnics.problems.elliptic import EllipticCoerciveProblem, EllipticProblem
     from rbnics.problems.stokes import StokesProblem
@@ -33,6 +34,7 @@ def DecoratedProblemWithStabilityFactorEvaluation(ParametrizedDifferentialProble
 
     # Elliptic non-coercive (needs to be after the coercive case) or Stokes problem specialization
     elif issubclass(ParametrizedDifferentialProblem_DerivedClass, (EllipticProblem, StokesProblem)):
+
         @PreserveClassName
         class DecoratedProblemWithStabilityFactorEvaluation_Class(
                 DecoratedProblemWithStabilityFactorEvaluation_Class_Base):

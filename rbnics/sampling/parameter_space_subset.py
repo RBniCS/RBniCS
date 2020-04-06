@@ -14,6 +14,7 @@ from rbnics.utils.decorators import overload
 from rbnics.utils.io import ExportableList
 from rbnics.utils.mpi import parallel_io as parallel_generate, parallel_max
 
+
 class ParameterSpaceSubset(ExportableList):  # equivalent to a list of tuples
     def __init__(self):
         ExportableList.__init__(self, "text")
@@ -39,8 +40,10 @@ class ParameterSpaceSubset(ExportableList):  # equivalent to a list of tuples
             elif isinstance(sampling, tuple):
                 assert len(sampling) == len(box)
                 sampling = CompositeDistribution(sampling)
+
             def run_sampling():
                 return sampling.sample(box, n)
+
             self._list = parallel_generate(run_sampling, self.mpi_comm)
         else:
             for i in range(n):

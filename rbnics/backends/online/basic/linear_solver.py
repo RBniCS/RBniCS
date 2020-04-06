@@ -8,7 +8,9 @@ from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver, Linea
 from rbnics.backends.online.basic.wrapping import DirichletBC, preserve_solution_attributes
 from rbnics.utils.decorators import DictOfThetaType, overload, ThetaType
 
+
 def LinearSolver(backend, wrapping):
+
     class LinearSolver_Class(AbstractLinearSolver):
         @overload((backend.Matrix.Type(), wrapping.DelayedTransposeWithArithmetic),
                   backend.Function.Type(),

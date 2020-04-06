@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def form_on_reduced_function_space(form_wrapper, at):
     pass

@@ -11,7 +11,9 @@ from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
+
     class _BasisFunctionsMatrix(AbstractBasisFunctionsMatrix):
         def __init__(self, space, component=None):
             if component is not None:
@@ -27,6 +29,37 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             self._component_name_to_basis_component_length = OnlineSizeDict()
 
         def init(self, components_name):
+
+            # Helper function to patch FunctionsList.enrich() to update internal attributes
+            def patch_functions_list_enrich(component_name, functions_list):
+                original_functions_list_enrich = functions_list.enrich
+
+                def patched_functions_list_enrich(self_, functions, component=None, weights=None, copy=True):
+                    # Append to storage
+                    original_functions_list_enrich(functions, component, weights, copy)
+                    # Update component name to basis component length
+                    if component is not None:
+                        if isinstance(component, dict):
+                            assert len(component) == 1
+                            for (_, component_to) in component.items():
+                                break
+                            assert component_name == component_to
+                        else:
+                            assert component_name == component
+                    self._update_component_name_to_basis_component_length(component_name)
+                    # Reset precomputed sub components
+                    self._precomputed_sub_components.clear()
+                    # Prepare trivial precomputed sub components
+                    self._prepare_trivial_precomputed_sub_components()
+                    # Reset precomputed slices
+                    self._precomputed_slices.clear()
+                    # Prepare trivial precomputed slice
+                    self._prepare_trivial_precomputed_slice()
+
+                functions_list.enrich_patch = PatchInstanceMethod(functions_list, "enrich",
+                                                                  patched_functions_list_enrich)
+                functions_list.enrich_patch.patch()
+
             if self._components_name != components_name:  # Do nothing if it was already initialized with the same dicts
                 # Store components name
                 self._components_name = components_name
@@ -47,32 +80,6 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
                 # Reset precomputed slices
                 self._precomputed_slices.clear()
                 # Patch FunctionsList.enrich() to update internal attributes
-                def patch_functions_list_enrich(component_name, functions_list):
-                    original_functions_list_enrich = functions_list.enrich
-                    def patched_functions_list_enrich(self_, functions, component=None, weights=None, copy=True):
-                        # Append to storage
-                        original_functions_list_enrich(functions, component, weights, copy)
-                        # Update component name to basis component length
-                        if component is not None:
-                            if isinstance(component, dict):
-                                assert len(component) == 1
-                                for (_, component_to) in component.items():
-                                    break
-                                assert component_name == component_to
-                            else:
-                                assert component_name == component
-                        self._update_component_name_to_basis_component_length(component_name)
-                        # Reset precomputed sub components
-                        self._precomputed_sub_components.clear()
-                        # Prepare trivial precomputed sub components
-                        self._prepare_trivial_precomputed_sub_components()
-                        # Reset precomputed slices
-                        self._precomputed_slices.clear()
-                        # Prepare trivial precomputed slice
-                        self._prepare_trivial_precomputed_slice()
-                    functions_list.enrich_patch = PatchInstanceMethod(functions_list, "enrich",
-                                                                      patched_functions_list_enrich)
-                    functions_list.enrich_patch.patch()
                 for component_name in components_name:
                     patch_functions_list_enrich(component_name, self._components[component_name])
 
@@ -192,13 +199,15 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
 
         @overload(online_backend.OnlineMatrix.Type(), )
         def __mul__(self, other):
-            if isinstance(other.M, dict):
-                assert set(other.M.keys()) == set(self._components_name)
+
             def BasisFunctionsMatrixWithInit(space):
                 output = _BasisFunctionsMatrix.__new__(type(self), space)
                 output.__init__(space)
                 output.init(self._components_name)
                 return output
+
+            if isinstance(other.M, dict):
+                assert set(other.M.keys()) == set(self._components_name)
             return wrapping.basis_functions_matrix_mul_online_matrix(self, other, BasisFunctionsMatrixWithInit)
 
         @overload(online_backend.OnlineFunction.Type(), )
@@ -322,4 +331,5 @@ def BasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping):
             assert len(self._components_name) == 1
             component_0 = self._components_name[0]
             return self._components[component_0].__iter__()
+
     return _BasisFunctionsMatrix

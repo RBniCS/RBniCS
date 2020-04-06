@@ -7,6 +7,7 @@
 from rbnics.sampling import ParameterSpaceSubset
 from rbnics.utils.decorators import overload
 
+
 class GreedySelectedParametersList(object):
     def __init__(self):
         self.parameter_space_subset = ParameterSpaceSubset()

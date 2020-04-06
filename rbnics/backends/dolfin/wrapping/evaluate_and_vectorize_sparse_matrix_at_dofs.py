@@ -8,6 +8,7 @@ from mpi4py.MPI import MAX
 from rbnics.backends.online import OnlineVector
 from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 
+
 def evaluate_and_vectorize_sparse_matrix_at_dofs(sparse_matrix, dofs_list):
     mat = to_petsc4py(sparse_matrix)
     row_start, row_end = mat.getOwnershipRange()

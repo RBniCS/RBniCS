@@ -18,6 +18,7 @@ AllNonlinearSolver = {"dolfin": DolfinNonlinearSolver, "factory": FactoryNonline
 
 PETScOptions.set("snes_linesearch_type", "basic")
 
+
 class Data(object):
     def __init__(self, Th, callback_type):
         # Create mesh and define function space
@@ -45,14 +46,17 @@ class Data(object):
     def generate_random(self):
         # Generate random forcing
         g = RandomDolfinFunction(self.V)
+
         # Generate correspondingly residual and jacobian forms
         r = self.r(self.u, g)
         j = self.j(self.u, r)
+
         # Prepare problem wrapper
         class ProblemWrapper(NonlinearProblemWrapper):
             # Residual and jacobian functions
             def residual_eval(self_, solution):
                 return self.callback(r)
+
             def jacobian_eval(self_, solution):
                 return self.callback(j)
 
@@ -63,6 +67,7 @@ class Data(object):
             # Empty solution monitor
             def monitor(self_, solution):
                 pass
+
         problem_wrapper = ProblemWrapper()
         # Return
         return (r, j, problem_wrapper)
@@ -106,6 +111,7 @@ class Data(object):
         error.vector().apply("add")
         relative_error = error.vector().norm("l2") / result_builtin.vector().norm("l2")
         assert isclose(relative_error, 0., atol=1e-12)
+
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 8)])
 @pytest.mark.parametrize("callback_type", ["form callbacks", "tensor callbacks"])

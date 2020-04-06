@@ -9,6 +9,7 @@ from numpy import isclose
 from rbnics.problems.base import LinearTimeDependentRBReducedProblem
 from rbnics.backends import assign, product, sum, TimeSeries, transpose
 
+
 def AbstractParabolicRBReducedProblem(AbstractParabolicReducedProblem_DerivedClass):
     AbstractParabolicRBReducedProblem_Base = LinearTimeDependentRBReducedProblem(
         AbstractParabolicReducedProblem_DerivedClass)

@@ -10,6 +10,7 @@ from dolfin import adjoint, Constant
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import DirichletBC
 from rbnics.utils.decorators import overload
 
+
 def assemble_operator_for_stability_factor(assemble_operator):
     from rbnics.problems.elliptic import EllipticCoerciveProblem
 

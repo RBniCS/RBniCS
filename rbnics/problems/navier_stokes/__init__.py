@@ -10,7 +10,6 @@ from rbnics.problems.navier_stokes.navier_stokes_problem import NavierStokesProb
 # from rbnics.problems.navier_stokes.navier_stokes_rb_reduced_problem import NavierStokesRBReducedProblem
 from rbnics.problems.navier_stokes.navier_stokes_reduced_problem import NavierStokesReducedProblem
 
-
 __all__ = [
     "NavierStokesPODGalerkinReducedProblem",
     "NavierStokesProblem",

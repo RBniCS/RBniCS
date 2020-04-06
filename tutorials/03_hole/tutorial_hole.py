@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/hole_vertices_mapping.vmp")
 class Hole(EllipticCoerciveProblem):
@@ -57,6 +58,7 @@ class Hole(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/hole.xml")

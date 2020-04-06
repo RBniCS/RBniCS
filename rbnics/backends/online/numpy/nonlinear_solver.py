@@ -20,6 +20,7 @@ backend = ModuleWrapper(Matrix, Vector)
 wrapping = ModuleWrapper(DelayedTransposeWithArithmetic=DelayedTransposeWithArithmetic)
 _NonlinearProblem_Base = _BasicNonlinearProblem(backend, wrapping)
 
+
 @BackendFor("numpy", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
     def __init__(self, problem_wrapper, solution):
@@ -79,6 +80,7 @@ class NonlinearSolver(AbstractNonlinearSolver):
                 print("scipy solver diverged due to arithmetic error " + str(error))
         self.monitor(self.problem.solution)
 
+
 class _NonlinearProblem(_NonlinearProblem_Base):
     def residual_vector_eval(self, solution):
         # Store solution
@@ -101,6 +103,7 @@ class _NonlinearProblem(_NonlinearProblem_Base):
             self.bcs.apply_to_matrix(jacobian_matrix)
         # Return
         return jacobian_matrix
+
 
 # Adapted from scipy/optimize/nonlin.py, asjacobian method
 class _Jacobian(Jacobian):

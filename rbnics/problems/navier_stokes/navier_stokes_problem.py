@@ -10,6 +10,7 @@ from rbnics.backends import product, sum
 
 NavierStokesProblem_Base = NonlinearProblem(StokesProblem)
 
+
 class NavierStokesProblem(NavierStokesProblem_Base):
 
     # Default initialization of members

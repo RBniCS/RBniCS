@@ -15,15 +15,18 @@ from rbnics.backends.dolfin.wrapping.parametrized_constant import (
     is_parametrized_constant, parametrized_constant_to_float)
 from rbnics.utils.decorators import overload, tuple_of
 
+
 # Function from Function: do nothing
 @overload
 def function_from_ufl_operators(input_function: Function):
     return input_function
 
+
 # Function from Sum
 @overload
 def function_from_ufl_operators(input_function: Sum):
     return _function_from_ufl_sum(input_function.ufl_operands[0], input_function.ufl_operands[1])
+
 
 def _function_from_ufl_sum(addend_1, addend_2):
     addend_1 = function_from_ufl_operators(addend_1)
@@ -35,10 +38,12 @@ def _function_from_ufl_sum(addend_1, addend_2):
     sum_.vector().apply("")
     return sum_
 
+
 # Function from Product
 @overload
 def function_from_ufl_operators(input_function: Product):
     return _function_from_ufl_product(input_function.ufl_operands[0], input_function.ufl_operands[1])
+
 
 @overload
 def _function_from_ufl_product(factor_1: (Number, ScalarValue), factor_2: (Function, Operator)):
@@ -47,6 +52,7 @@ def _function_from_ufl_product(factor_1: (Number, ScalarValue), factor_2: (Funct
     product.vector()[:] *= float(factor_1)
     return product
 
+
 @overload
 def _function_from_ufl_product(factor_1: (Function, Operator), factor_2: (Number, ScalarValue)):
     factor_1 = function_from_ufl_operators(factor_1)
@@ -54,10 +60,12 @@ def _function_from_ufl_product(factor_1: (Function, Operator), factor_2: (Number
     product.vector()[:] *= float(factor_2)
     return product
 
+
 # Function from Division
 @overload
 def function_from_ufl_operators(input_function: Division):
     return _function_from_ufl_division(input_function.ufl_operands[0], input_function.ufl_operands[1])
+
 
 def _function_from_ufl_division(nominator, denominator):
     nominator = function_from_ufl_operators(nominator)
@@ -68,16 +76,19 @@ def _function_from_ufl_division(nominator, denominator):
     division.vector()[:] /= float(denominator)
     return division
 
+
 # Function from ComponentTensor
 @overload
 def function_from_ufl_operators(input_function: ComponentTensor):
     return _function_from_ufl_component_tensor(input_function.ufl_operands[0], input_function.ufl_operands[1].indices())
+
 
 @overload
 def _function_from_ufl_component_tensor(expression: Sum, indices: tuple_of(IndexBase)):
     addend_1 = as_tensor(expression.ufl_operands[0], indices)
     addend_2 = as_tensor(expression.ufl_operands[1], indices)
     return _function_from_ufl_sum(addend_1, addend_2)
+
 
 @overload
 def _function_from_ufl_component_tensor(expression: Product, indices: tuple_of(IndexBase)):
@@ -89,6 +100,7 @@ def _function_from_ufl_component_tensor(expression: Product, indices: tuple_of(I
     else:  # isinstance(factor_2, (Number, ScalarValue))
         factor_1 = as_tensor(factor_1, indices)
     return _function_from_ufl_product(factor_1, factor_2)
+
 
 @overload
 def _function_from_ufl_component_tensor(expression: Division, indices: tuple_of(IndexBase)):

@@ -6,6 +6,7 @@
 
 from rbnics.utils.io import ExportableList
 
+
 class BoundingBoxSideList(ExportableList):
     def __init__(self, size=None):
         ExportableList.__init__(self, "text")

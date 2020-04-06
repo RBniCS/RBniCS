@@ -11,6 +11,7 @@ from rbnics.backends import BasisFunctionsMatrix, Function, FunctionsList, Linea
 from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.decorators import overload, PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(None)
 def RBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

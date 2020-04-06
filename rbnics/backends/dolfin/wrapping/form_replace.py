@@ -7,6 +7,7 @@
 from ufl.domain import extract_domains
 from rbnics.backends.dolfin.wrapping.expression_replace import replace
 
+
 def form_replace(form, replacements, replacement_type="nodes"):
     assert replacement_type in ("nodes", "measures")
     if replacement_type == "nodes":

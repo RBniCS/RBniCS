@@ -6,6 +6,7 @@
 
 from dolfin import Function, FunctionSpace
 
+
 def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsListType):
     space = functions_list.space
     assert isinstance(space, FunctionSpace)
@@ -20,6 +21,7 @@ def functions_list_mul_online_matrix(functions_list, online_matrix, FunctionsLis
         output_j.vector().apply("add")
         output.enrich(output_j)
     return output
+
 
 def functions_list_mul_online_vector(functions_list, online_vector):
     space = functions_list.space

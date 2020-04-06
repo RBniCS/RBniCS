@@ -15,6 +15,7 @@ from ufl.indexed import Indexed
 from ufl.tensors import ComponentTensor
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 
+
 def expand_sum_product(form):
     # TODO support forms in the complex field. This is currently needed otherwise conj((a+b)*c) does not get expanded.
     form = remove_complex_nodes(form)
@@ -34,6 +35,7 @@ def expand_sum_product(form):
     unpatch_expr_mul()
     # Return
     return expanded_split_form
+
 
 class SympyExpander(MultiFunction):
     def __init__(self):
@@ -60,8 +62,10 @@ class SympyExpander(MultiFunction):
     def sum(self, e, arg1, arg2):
         if e not in self.ufl_to_replaced_ufl:
             self._store_sympy_symbol(e)
+
             def op(arg1, arg2):
                 return arg1 + arg2
+
             (new_e, new_sympy_e) = self._apply_sympy_simplify(e, arg1, arg2, op)
             self._update_sympy_symbol(e, new_e, new_sympy_e)
             self.ufl_to_replaced_ufl[e] = new_e
@@ -72,8 +76,10 @@ class SympyExpander(MultiFunction):
     def product(self, e, arg1, arg2):
         if e not in self.ufl_to_replaced_ufl:
             self._store_sympy_symbol(e)
+
             def op(arg1, arg2):
                 return arg1 * arg2
+
             (new_e, new_sympy_e) = self._apply_sympy_simplify(e, arg1, arg2, op)
             self._update_sympy_symbol(e, new_e, new_sympy_e)
             self.ufl_to_replaced_ufl[e] = new_e
@@ -178,6 +184,7 @@ class SympyExpander(MultiFunction):
                 return expr.func(*args, evaluate=False), True
         return expr, False
 
+
 def split_sum(input_, output):
     if isinstance(input_, Sum):
         for operand in input_.ufl_operands:
@@ -192,15 +199,19 @@ def split_sum(input_, output):
     else:
         output.append(input_)
 
+
 # Sympy reconstructs expressions from scratch. If that expression contains a product, we do not want to go through
 # the helper method _mult defined in ufl/exproperators.py, but rather create a plain UFL Product class.
 Expr_mul = Expr.__mul__
 Expr_rmul = Expr.__rmul__
+
+
 def patch_expr_mul():
     def plain_mul(a, b):
         return Product(a, b)
     Expr.__mul__ = plain_mul
     Expr.__rmul__ = plain_mul
+
 
 def unpatch_expr_mul():
     Expr.__mul__ = Expr_mul

@@ -7,6 +7,7 @@
 from numpy import random
 from rbnics.sampling.distributions.distribution import Distribution
 
+
 class UniformDistribution(Distribution):
     def sample(self, box, n):
         set_ = list()  # of tuples

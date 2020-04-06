@@ -8,7 +8,9 @@ from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import (
     is_pull_back_expression, is_pull_back_expression_parametrized)
 
+
 def basic_is_parametrized(backend, wrapping):
+
     def _basic_is_parametrized(expression_or_form, iterator):
         for node in iterator(expression_or_form):
             # ... parametrized expressions
@@ -24,12 +26,15 @@ def basic_is_parametrized(backend, wrapping):
                 if wrapping.is_problem_solution(node) or wrapping.is_problem_solution_dot(node):
                     return True
         return False
+
     return _basic_is_parametrized
+
 
 from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
 from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
 from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
 from rbnics.utils.decorators import ModuleWrapper
+
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type)
 is_parametrized = basic_is_parametrized(backend, wrapping)

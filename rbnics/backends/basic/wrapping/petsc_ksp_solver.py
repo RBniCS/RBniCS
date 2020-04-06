@@ -6,7 +6,9 @@
 
 from petsc4py import PETSc
 
+
 def BasicPETScKSPSolver(backend, wrapping):
+
     class _BasicPETScKSPSolver(object):
         def __init__(self, lhs, solution, rhs):
             self.lhs = lhs

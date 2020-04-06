@@ -7,6 +7,7 @@
 import os
 import matplotlib.pyplot as plt
 
+
 def plot_phase_space(solution_over_time, reduced_solution_over_time, basis_functions, x, folder, filename):
     plt.figure()
     (all_u1, all_u2) = (list(), list())

@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def sum(product_output):
     return product_output.sum_product_return_value

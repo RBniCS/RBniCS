@@ -7,6 +7,7 @@
 from ufl.algorithms.traversal import iter_expressions
 from ufl.corealg.traversal import pre_traversal
 
+
 def form_iterator(form, iterator_type="nodes"):
     assert iterator_type in ("nodes", "integrals")
     if iterator_type == "nodes":

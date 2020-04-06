@@ -13,6 +13,7 @@ from reduction_methods import GeostrophicPODGalerkinReduction
 GeostrophicPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
     GeostrophicReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 @ReducedProblemFor(GeostrophicProblem, GeostrophicPODGalerkinReduction)
 class GeostrophicPODGalerkinReducedProblem(GeostrophicPODGalerkinReducedProblem_Base):
     pass

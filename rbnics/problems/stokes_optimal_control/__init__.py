@@ -12,7 +12,6 @@ from rbnics.problems.stokes_optimal_control.stokes_optimal_control_problem impor
 from rbnics.problems.stokes_optimal_control.stokes_optimal_control_reduced_problem import (
     StokesOptimalControlReducedProblem)
 
-
 __all__ = [
     "StokesOptimalControlPODGalerkinReducedProblem",
     "StokesOptimalControlProblem",

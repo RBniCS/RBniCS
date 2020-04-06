@@ -7,6 +7,7 @@
 from rbnics.problems.base import NonlinearTimeDependentReducedProblem
 from rbnics.backends import product, sum
 
+
 def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClass):
 
     NonlinearParabolicReducedProblem_Base = NonlinearTimeDependentReducedProblem(

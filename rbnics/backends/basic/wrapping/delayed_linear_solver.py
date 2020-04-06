@@ -19,6 +19,7 @@ from rbnics.utils.decorators import get_problem_from_problem_name, get_reduced_p
 from rbnics.utils.io import (Folders, TextIO as BCsIO, TextIO as LHSIO, TextIO as ParametersIO,
                              TextIO as RHSIO, TextIO as SolutionIO)
 
+
 class DelayedLinearSolver(object):
     def __init__(self, lhs=None, solution=None, rhs=None, bcs=None):
         self._lhs = lhs

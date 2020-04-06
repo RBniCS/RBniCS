@@ -17,7 +17,9 @@ from rbnics.utils.io import (ComponentNameToBasisComponentIndexDict, Folders, On
                              TextIO as ContentItemShapeIO, TextIO as ContentItemTypeIO, TextIO as DictIO,
                              TextIO as ScalarContentIO)
 
+
 def AffineExpansionStorage(backend, wrapping):
+
     class _AffineExpansionStorage(AbstractAffineExpansionStorage):
         def __init__(self, arg1, arg2):
             self._content = None

@@ -9,6 +9,7 @@ from rbnics.problems.parabolic.abstract_parabolic_problem import AbstractParabol
 
 ParabolicProblem_Base = AbstractParabolicProblem(EllipticProblem)
 
+
 # Base class containing the definition of parabolic problems
 class ParabolicProblem(ParabolicProblem_Base):
     pass

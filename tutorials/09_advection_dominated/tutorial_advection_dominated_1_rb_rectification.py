@@ -9,6 +9,7 @@ from rbnics import *
 from problems import *
 from reduction_methods import *
 
+
 @OnlineRectification()
 @OnlineStabilization()
 class AdvectionDominated(EllipticCoerciveProblem):
@@ -96,8 +97,10 @@ class AdvectionDominated(EllipticCoerciveProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 def bool_to_string(bool_):
     return "with" if bool_ else "without"
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/square.xml")

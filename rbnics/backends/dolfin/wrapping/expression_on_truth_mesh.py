@@ -13,7 +13,9 @@ from rbnics.utils.decorators import (exact_problem, get_problem_from_solution, g
 
 logger = getLogger("rbnics/backends/dolfin/expression_on_truth_mesh.py")
 
+
 def basic_expression_on_truth_mesh(backend, wrapping):
+
     def _basic_expression_on_truth_mesh(expression_wrapper, function=None):
         expression = expression_wrapper._expression
         expression_name = expression_wrapper.name()

@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("x[0]", "mu[0]*x[1]"),  # subdomain 1
@@ -184,6 +185,7 @@ class StokesOptimalControl(StokesOptimalControlProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/mesh1.xml")

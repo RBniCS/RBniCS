@@ -14,6 +14,7 @@ from rbnics.utils.io import (ErrorAnalysisTable, GreedySelectedParametersList, G
 
 logger = getLogger("rbnics/reduction_methods/base/rb_reduction.py")
 
+
 @RequiredBaseDecorators(None)
 def RBReduction(DifferentialProblemReductionMethod_DerivedClass):
 

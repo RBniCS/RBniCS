@@ -11,6 +11,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import dict_of, list_of, overload, ThetaType, tuple_of
 from rbnics.utils.mpi import parallel_io
 
+
 def FunctionsList(backend, wrapping, online_backend, online_wrapping,
                   AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None):
     from rbnics.backends.common import TimeSeries  # cannot import at global scope due to cyclic dependence
@@ -186,4 +187,5 @@ def FunctionsList(backend, wrapping, online_backend, online_wrapping,
 
         def __iter__(self):
             return self._list.__iter__()
+
     return _FunctionsList

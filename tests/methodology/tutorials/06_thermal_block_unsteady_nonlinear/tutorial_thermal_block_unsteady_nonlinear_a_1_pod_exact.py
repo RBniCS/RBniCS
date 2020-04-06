@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @ExactParametrizedFunctions()
 class UnsteadyThermalBlock(NonlinearParabolicProblem):
 
@@ -88,6 +89,7 @@ class UnsteadyThermalBlock(NonlinearParabolicProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NonlinearParabolicProblem)
 def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
@@ -102,6 +104,7 @@ def CustomizeReducedNonlinearParabolic(ReducedNonlinearParabolic_Base):
             })
 
     return ReducedNonlinearParabolic
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")

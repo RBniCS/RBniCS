@@ -6,7 +6,9 @@
 
 from rbnics.utils.decorators import list_of, overload
 
+
 def copy(backend, wrapping):
+
     class _Copy(object):
         @overload(backend.Function.Type(), )
         def __call__(self, arg):
@@ -22,4 +24,5 @@ def copy(backend, wrapping):
         @overload((backend.Matrix.Type(), backend.Vector.Type()), )
         def __call__(self, arg):
             return wrapping.tensor_copy(arg)
+
     return _Copy()

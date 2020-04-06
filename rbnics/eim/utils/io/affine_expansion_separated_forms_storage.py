@@ -6,6 +6,7 @@
 
 from numpy import empty as AffineExpansionSeparatedFormsStorageContent_Base
 
+
 class AffineExpansionSeparatedFormsStorage(object):
     def __init__(self, Q):
         self._content = AffineExpansionSeparatedFormsStorageContent_Base((Q,), dtype=object)

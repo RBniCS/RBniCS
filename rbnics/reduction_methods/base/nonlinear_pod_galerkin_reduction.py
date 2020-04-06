@@ -8,6 +8,7 @@ from rbnics.reduction_methods.base.nonlinear_reduction_method import NonlinearRe
 from rbnics.reduction_methods.base.pod_galerkin_reduction import PODGalerkinReduction
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(NonlinearReductionMethod, PODGalerkinReduction)
 def NonlinearPODGalerkinReduction(DifferentialProblemReductionMethod_DerivedClass):
 

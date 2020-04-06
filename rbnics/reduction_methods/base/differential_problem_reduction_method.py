@@ -12,6 +12,7 @@ from rbnics.utils.decorators import StoreMapFromProblemToReductionMethod, Update
 from rbnics.utils.factories import ReducedProblemFactory
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @StoreMapFromProblemToReductionMethod
 @UpdateMapFromProblemToTrainingStatus
 class DifferentialProblemReductionMethod(ReductionMethod):
@@ -81,17 +82,22 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         # Get helper strings and functions depending on the number of basis components
         if n_components > 1:
             dirichlet_bc_string = "dirichlet_bc_{c}"
+
             def has_non_homogeneous_dirichlet_bc(component):
                 return (self.reduced_problem.dirichlet_bc[component]
                         and not self.reduced_problem.dirichlet_bc_are_homogeneous[component])
+
             def assert_lengths(component, theta_bc):
                 assert self.reduced_problem.N_bc[component] == len(theta_bc)
         else:
             dirichlet_bc_string = "dirichlet_bc"
+
             def has_non_homogeneous_dirichlet_bc(component):
                 return self.reduced_problem.dirichlet_bc and not self.reduced_problem.dirichlet_bc_are_homogeneous
+
             def assert_lengths(component, theta_bc):
                 assert self.reduced_problem.N_bc == len(theta_bc)
+
         # Carry out postprocessing
         for component in self.reduced_problem.components:
             if has_non_homogeneous_dirichlet_bc(component):
@@ -158,6 +164,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         if "with_respect_to" in kwargs:
             assert inspect.isfunction(kwargs["with_respect_to"])
             other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+
             def patched_truth_solve(self_, **kwargs_):
                 other_truth_problem.solve(**kwargs_)
                 assign(self.truth_problem._solution, other_truth_problem._solution)
@@ -186,12 +193,15 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             def disable_import_solution_method(
                     self_, folder=None, filename=None, solution=None, component=None, suffix=None):
                 raise OSError
+
             self.disable_import_solution = PatchInstanceMethod(
                 other_truth_problem, "import_solution", disable_import_solution_method)
             self.disable_import_solution.patch()
+
             def disable_export_solution_method(
                     self_, folder=None, filename=None, solution=None, component=None, suffix=None):
                 pass
+
             self.disable_export_solution = PatchInstanceMethod(
                 other_truth_problem, "export_solution", disable_export_solution_method)
             self.disable_export_solution.patch()
@@ -213,6 +223,7 @@ class DifferentialProblemReductionMethod(ReductionMethod):
         if "with_respect_to" in kwargs:
             assert inspect.isfunction(kwargs["with_respect_to"])
             other_truth_problem = kwargs["with_respect_to"](self.truth_problem)
+
             def patched_truth_compute_output(self_):
                 other_truth_problem.compute_output()
                 self.truth_problem._output = other_truth_problem._output
@@ -240,11 +251,14 @@ class DifferentialProblemReductionMethod(ReductionMethod):
             # Disable the capability of importing/exporting truth outputs
             def disable_import_output_method(self_, folder=None, filename=None, output=None, suffix=None):
                 raise OSError
+
             self.disable_import_output = PatchInstanceMethod(
                 other_truth_problem, "import_output", disable_import_output_method)
             self.disable_import_output.patch()
+
             def disable_export_output_method(self_, folder=None, filename=None, output=None, suffix=None):
                 pass
+
             self.disable_export_output = PatchInstanceMethod(
                 other_truth_problem, "export_output", disable_export_output_method)
             self.disable_export_output.patch()

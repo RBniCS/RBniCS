@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class NonlinearSolver(object, metaclass=ABCMeta):
     def __init__(self, problem_wrapper, solution):
@@ -18,6 +19,7 @@ class NonlinearSolver(object, metaclass=ABCMeta):
     @abstractmethod
     def solve(self):
         pass
+
 
 class NonlinearProblemWrapper(object, metaclass=ABCMeta):
     @abstractmethod

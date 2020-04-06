@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import PreserveClassName, ProblemDecoratorFor
 
+
 def OnlineStabilizationDecoratedProblem(**decorator_kwargs):
     from .online_stabilization import OnlineStabilization
 

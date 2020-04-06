@@ -7,6 +7,7 @@
 from rbnics.backends.dolfin.product import ProductOutput
 from rbnics.utils.decorators import backend_for
 
+
 @backend_for("dolfin", inputs=(ProductOutput, ))
 def sum(product_output):
     return product_output.sum_product_return_value

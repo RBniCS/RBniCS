@@ -9,6 +9,7 @@ from rbnics.problems.parabolic.abstract_parabolic_problem import AbstractParabol
 
 ParabolicCoerciveProblem_Base = AbstractParabolicProblem(EllipticCoerciveProblem)
 
+
 # Base class containing the definition of parabolic coercive problems
 class ParabolicCoerciveProblem(ParabolicCoerciveProblem_Base):
     pass

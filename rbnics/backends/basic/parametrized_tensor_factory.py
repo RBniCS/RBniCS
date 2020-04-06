@@ -11,7 +11,9 @@ from rbnics.eim.utils.decorators import (add_to_map_from_parametrized_operator_t
                                          get_problem_from_parametrized_operator)
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot, overload
 
+
 def ParametrizedTensorFactory(backend, wrapping):
+
     class _ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
         def __init__(self, form, spaces, assemble_empty_snapshot):
             AbstractParametrizedTensorFactory.__init__(self, form)
@@ -177,6 +179,7 @@ def ParametrizedTensorFactory(backend, wrapping):
             return hashlib.sha1(string.encode("utf-8")).hexdigest()
 
     return _ParametrizedTensorFactory
+
 
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):

@@ -8,11 +8,13 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 from rbnics.utils.decorators.sync_setters import sync_setters
 
+
 def exact_problem(decorated_problem, preserve_class_name=True):
     if (decorated_problem, preserve_class_name) not in _all_exact_problems:
         DecoratedProblem = type(decorated_problem)
         if hasattr(DecoratedProblem, "ProblemDecorators"):
             assert hasattr(DecoratedProblem, "UndecoratedProblemClass")
+
             @PreserveClassName
             class ExactProblem_Class(DecoratedProblem.UndecoratedProblemClass):
                 @sync_setters(decorated_problem, "set_mu", "mu")
@@ -71,5 +73,6 @@ def exact_problem(decorated_problem, preserve_class_name=True):
 
     # Return
     return _all_exact_problems[(decorated_problem, preserve_class_name)]
+
 
 _all_exact_problems = Cache()

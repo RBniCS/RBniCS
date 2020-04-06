@@ -7,9 +7,12 @@
 from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
 from rbnics.utils.cache import cache
 
+
 @cache
 def OfflineOnlineExpansionStorageSize(problem_name):
+
     _OfflineOnlineExpansionStorageSize_Base = OfflineOnlineSwitch(problem_name)
+
     class _OfflineOnlineExpansionStorageSize(_OfflineOnlineExpansionStorageSize_Base):
         def __init__(self):
             _OfflineOnlineExpansionStorageSize_Base.__init__(self)

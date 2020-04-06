@@ -11,7 +11,6 @@ from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_problem import Nonl
 #    NonlinearParabolicRBReducedProblem)
 from rbnics.problems.nonlinear_parabolic.nonlinear_parabolic_reduced_problem import NonlinearParabolicReducedProblem
 
-
 __all__ = [
     "NonlinearParabolicPODGalerkinReducedProblem",
     "NonlinearParabolicProblem",

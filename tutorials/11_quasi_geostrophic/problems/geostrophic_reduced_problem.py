@@ -7,6 +7,7 @@
 from rbnics.backends import product, sum
 from rbnics.problems.base import LinearReducedProblem
 
+
 def GeostrophicReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
     GeostrophicReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)

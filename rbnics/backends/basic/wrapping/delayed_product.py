@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 class DelayedProduct(object):
     def __init__(self, arg):
         assert not isinstance(arg, DelayedProduct)

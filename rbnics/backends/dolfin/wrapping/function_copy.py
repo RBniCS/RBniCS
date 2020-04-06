@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def function_copy(function):
     return function.copy(deepcopy=True)

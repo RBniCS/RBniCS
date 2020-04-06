@@ -10,6 +10,7 @@ from rbnics.backends.online import OnlineFunction, OnlineLinearSolver
 from rbnics.utils.cache import Cache
 from rbnics.utils.io import OnlineSizeDict
 
+
 def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
     StokesReducedProblem_Base = LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass)
@@ -22,11 +23,13 @@ def StokesReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
             StokesReducedProblem_Base.__init__(self, truth_problem, **kwargs)
             # Auxiliary storage for solution of reduced order supremizer problem (if requested through solve_supremizer)
             self._supremizer = None  # OnlineFunction
+
             # I/O
             def _supremizer_cache_key_generator(*args, **kwargs):
                 assert len(args) == 2
                 assert args[0] == self.mu
                 return self._supremizer_cache_key_from_N_and_kwargs(args[1], **kwargs)
+
             self._supremizer_cache = Cache(
                 "reduced problems",
                 key_generator=_supremizer_cache_key_generator

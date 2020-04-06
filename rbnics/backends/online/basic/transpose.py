@@ -7,6 +7,7 @@
 from rbnics.backends.basic import transpose as basic_transpose
 from rbnics.utils.decorators import overload
 
+
 def transpose(backend, wrapping, online_backend, online_wrapping,
               AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None,
               AdditionalIsVector=None, ConvertAdditionalVectorTypes=None,

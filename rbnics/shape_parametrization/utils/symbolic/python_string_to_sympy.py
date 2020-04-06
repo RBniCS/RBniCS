@@ -9,9 +9,11 @@ from rbnics.problems.base import ParametrizedProblem
 from rbnics.utils.decorators import overload, tuple_of
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
+
 def MatrixListSymbol(prefix, dim, one):
     assert one == 1
     return Matrix([symbols(prefix + "[" + str(i) + "]") for i in range(dim)])
+
 
 @overload
 def python_string_to_sympy(string_expression: str, problem: ParametrizedProblem):
@@ -22,10 +24,12 @@ def python_string_to_sympy(string_expression: str, problem: ParametrizedProblem)
     mu_symb = MatrixListSymbol("mu", len(problem.mu), 1)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
 
+
 @overload
 def python_string_to_sympy(string_expression: str, x_symb: (Matrix, MatrixSymbol, None),
                            mu_symb: (Matrix, MatrixSymbol, None)):
     return sympify(string_expression, locals={"x": x_symb, "mu": mu_symb})
+
 
 @overload
 def python_string_to_sympy(string_expression: tuple_of(str), problem: ParametrizedProblem):
@@ -36,6 +40,7 @@ def python_string_to_sympy(string_expression: tuple_of(str), problem: Parametriz
     mu_symb = MatrixListSymbol("mu", len(problem.mu), 1)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
 
+
 @overload
 def python_string_to_sympy(string_expression: tuple_of(str), x_symb: (Matrix, MatrixSymbol, None),
                            mu_symb: (Matrix, MatrixSymbol, None)):
@@ -43,6 +48,7 @@ def python_string_to_sympy(string_expression: tuple_of(str), x_symb: (Matrix, Ma
     for (i, si) in enumerate(string_expression):
         sympy_expression[i] = sympify(si, locals={"x": x_symb, "mu": mu_symb})
     return ImmutableMatrix(sympy_expression)
+
 
 @overload
 def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), problem: ParametrizedProblem):
@@ -52,6 +58,7 @@ def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), problem: 
     x_symb = sympy_symbolic_coordinates(problem.V.mesh().geometry().dim(), MatrixListSymbol)
     mu_symb = MatrixListSymbol("mu", len(problem.mu), 1)
     return python_string_to_sympy(string_expression, x_symb, mu_symb)
+
 
 @overload
 def python_string_to_sympy(string_expression: tuple_of(tuple_of(str)), x_symb: (Matrix, MatrixSymbol, None),

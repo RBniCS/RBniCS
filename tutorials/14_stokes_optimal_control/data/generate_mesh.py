@@ -7,6 +7,7 @@
 from dolfin import *
 from mshr import *
 
+
 def generate_mesh1():
     # Create mesh
     domain = Rectangle(Point(0., 0.), Point(1., 1.))
@@ -51,5 +52,6 @@ def generate_mesh1():
     XDMFFile("mesh1.xdmf").write(mesh)
     XDMFFile("mesh1_physical_region.xdmf").write(subdomains)
     XDMFFile("mesh1_facet_region.xdmf").write(boundaries)
+
 
 generate_mesh1()

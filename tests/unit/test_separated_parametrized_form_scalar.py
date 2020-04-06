@@ -48,12 +48,14 @@ expr16 = Function(vector_V)  # f_32
 expr16_split = split(expr16)
 expr17 = Function(tensor_V)  # f_35
 
+
 class Problem(object):
     def __init__(self, name):
         self._name = name
 
     def name(self):
         return self._name
+
 
 _solution_to_problem_map[expr12] = Problem("problem12")
 _solution_to_problem_map[expr13] = Problem("problem13")
@@ -62,8 +64,10 @@ _solution_to_problem_map[expr14] = Problem("problem14")
 u = TrialFunction(V)
 v = TestFunction(V)
 
+
 # Fixtures
 skip_in_parallel = pytest.mark.skipif(MPI.COMM_WORLD.size > 1, reason="Numbering of functions changes in parallel.")
+
 
 # Tests
 @skip_in_parallel
@@ -118,6 +122,7 @@ def test_separated_parametrized_forms_scalar_1():
 
     assert 0 == len(a1_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="2", depends=["1"])
@@ -171,6 +176,7 @@ def test_separated_parametrized_forms_scalar_2():
     test_logger.log(DEBUG, "\t\t" + str(len(a2_sep._form_unchanged)))
 
     assert 0 == len(a2_sep._form_unchanged)
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -266,6 +272,7 @@ def test_separated_parametrized_forms_scalar_3():
 
     assert 0 == len(a3_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="4", depends=["3"])
@@ -330,6 +337,7 @@ def test_separated_parametrized_forms_scalar_4():
 
     assert 0 == len(a4_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="5", depends=["4"])
@@ -381,6 +389,7 @@ def test_separated_parametrized_forms_scalar_5():
 
     assert 0 == len(a5_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="6", depends=["5"])
@@ -417,6 +426,7 @@ def test_separated_parametrized_forms_scalar_6():
 
     assert 0 == len(a6_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="7", depends=["6"])
@@ -444,6 +454,7 @@ def test_separated_parametrized_forms_scalar_7():
             == str(a7_sep._form_unchanged[0].integrals()[0].integrand()))
     assert "f_12 * (grad(v_1))[0] * v_0" == str(a7_sep._form_unchanged[1].integrals()[0].integrand())
     assert "f_13 * v_0 * v_1" == str(a7_sep._form_unchanged[2].integrals()[0].integrand())
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -486,6 +497,7 @@ def test_separated_parametrized_forms_scalar_8():
 
     assert "v_0 * (grad(v_1))[0] * f_12" == str(a8_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_13 * v_0 * v_1" == str(a8_sep._form_unchanged[1].integrals()[0].integrand())
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -531,6 +543,7 @@ def test_separated_parametrized_forms_scalar_9():
     assert "v_0 * (grad(v_1))[0] * f_12" == str(a9_sep._form_unchanged[0].integrals()[0].integrand())
     assert "f_13 * v_0 * v_1" == str(a9_sep._form_unchanged[1].integrals()[0].integrand())
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="10", depends=["9"])
@@ -554,6 +567,7 @@ def test_separated_parametrized_forms_scalar_10():
     test_logger.log(DEBUG, "\t\t" + str(a10_sep._form_unchanged[0].integrals()[0].integrand()))
 
     assert "v_0 * v_1 * diameter * f_13" == str(a10_sep._form_unchanged[0].integrals()[0].integrand())
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -592,6 +606,7 @@ def test_separated_parametrized_forms_scalar_11():
 
     assert 0 == len(a11_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="12", depends=["11"])
@@ -627,6 +642,7 @@ def test_separated_parametrized_forms_scalar_12():
     test_logger.log(DEBUG, "\t\t" + str(len(a12_sep._form_unchanged)))
 
     assert 0 == len(a12_sep._form_unchanged)
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -683,6 +699,7 @@ def test_separated_parametrized_forms_scalar_13():
 
     assert 0 == len(a13_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="14", depends=["13"])
@@ -735,6 +752,7 @@ def test_separated_parametrized_forms_scalar_14():
     test_logger.log(DEBUG, "\t\t" + str(len(a14_sep._form_unchanged)))
 
     assert 0 == len(a14_sep._form_unchanged)
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -789,6 +807,7 @@ def test_separated_parametrized_forms_scalar_15():
     test_logger.log(DEBUG, "\t\t" + str(len(a15_sep._form_unchanged)))
 
     assert 0 == len(a15_sep._form_unchanged)
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -846,6 +865,7 @@ def test_separated_parametrized_forms_scalar_16():
 
     assert 0 == len(a16_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="17", depends=["16"])
@@ -888,6 +908,7 @@ def test_separated_parametrized_forms_scalar_17():
     test_logger.log(DEBUG, "\t\t" + str(len(a17_sep._form_unchanged)))
 
     assert 0 == len(a17_sep._form_unchanged)
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -942,6 +963,7 @@ def test_separated_parametrized_forms_scalar_18():
 
     assert 0 == len(a18_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="19", depends=["18"])
@@ -974,6 +996,7 @@ def test_separated_parametrized_forms_scalar_19():
             == str(a19_sep._form_unchanged[1].integrals()[0].integrand()))
     assert "v_1 * v_0 * f_29" == str(a19_sep._form_unchanged[2].integrals()[0].integrand())
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="20", depends=["19"])
@@ -999,6 +1022,7 @@ def test_separated_parametrized_forms_scalar_20():
 
     assert "v_0 * f_32[0] * v_1" == str(a20_sep._form_unchanged[0].integrals()[0].integrand())
     assert "(grad(v_1))[0] * f_32[1] * v_0" == str(a20_sep._form_unchanged[1].integrals()[0].integrand())
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -1044,6 +1068,7 @@ def test_separated_parametrized_forms_scalar_21():
 
     assert 0 == len(a21_sep._form_unchanged)
 
+
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
 @pytest.mark.dependency(name="22", depends=["21"])
@@ -1070,6 +1095,7 @@ def test_separated_parametrized_forms_scalar_22():
     assert ("v_0 * (sum_{i_{58}} (grad(f_32))[0, i_{58}] * (grad(v_1))[i_{58}] )"
             == str(a22_sep._form_unchanged[0].integrals()[0].integrand()))
     assert "v_0 * (grad(v_1))[0] * (grad(f_32))[1, 0]" == str(a22_sep._form_unchanged[1].integrals()[0].integrand())
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging
@@ -1105,6 +1131,7 @@ def test_separated_parametrized_forms_scalar_23():
     test_logger.log(DEBUG, "\t\t" + str(len(a23_sep._form_unchanged)))
 
     assert 0 == len(a23_sep._form_unchanged)
+
 
 @skip_in_parallel
 @enable_separated_parametrized_form_logging

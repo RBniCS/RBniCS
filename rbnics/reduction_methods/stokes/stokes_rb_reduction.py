@@ -12,6 +12,7 @@ from rbnics.reduction_methods.stokes.stokes_reduction_method import StokesReduct
 
 StokesRBReduction_Base = LinearRBReduction(StokesReductionMethod(DifferentialProblemReductionMethod))
 
+
 @ReductionMethodFor(StokesProblem, "ReducedBasis")
 class StokesRBReduction(StokesRBReduction_Base):
 

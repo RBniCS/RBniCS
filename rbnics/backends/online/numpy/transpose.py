@@ -27,6 +27,7 @@ online_backend = ModuleWrapper(OnlineMatrix=Matrix, OnlineVector=Vector)
 online_wrapping = ModuleWrapper()
 transpose_base = basic_transpose(backend, wrapping, online_backend, online_wrapping)
 
+
 @backend_for("numpy", inputs=((BasisFunctionsMatrix, DelayedTransposeWithArithmetic, Function.Type(),
                                FunctionsList, TensorsList, Vector.Type()), ))
 def transpose(arg):

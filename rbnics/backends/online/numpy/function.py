@@ -10,11 +10,15 @@ from rbnics.backends.online.numpy.vector import Vector
 
 _Function_Type = BasicFunction(Vector)
 
+
 @backend_for("numpy", inputs=(OnlineSizeType + (Vector.Type(), ), ))
 def Function(arg):
     return _Function_Type(arg)
 
+
 # Attach a Type() function
 def Type():
     return _Function_Type
+
+
 Function.Type = Type

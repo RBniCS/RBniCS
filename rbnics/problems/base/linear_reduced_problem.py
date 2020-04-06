@@ -7,6 +7,7 @@
 from rbnics.backends import LinearProblemWrapper, LinearSolver
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(None)
 def LinearReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

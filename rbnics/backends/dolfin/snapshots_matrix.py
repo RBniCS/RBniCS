@@ -11,6 +11,7 @@ from rbnics.utils.decorators import BackendFor
 
 SnapshotsMatrix_Base = BasicSnapshotsMatrix(FunctionsList)
 
+
 @BackendFor("dolfin", inputs=(FunctionSpace, (str, None)))
 class SnapshotsMatrix(SnapshotsMatrix_Base):
     pass

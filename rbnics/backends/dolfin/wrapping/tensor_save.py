@@ -11,27 +11,37 @@ from rbnics.utils.decorators import overload
 from rbnics.utils.io import Folders, PickleIO
 from rbnics.utils.mpi import parallel_io
 
+
 def basic_tensor_save(backend, wrapping):
+
     def _basic_tensor_save(tensor, directory, filename):
         mpi_comm = tensor.mpi_comm()
         form = tensor.generator._form
+
         # Write out generator
         assert hasattr(tensor, "generator")
         full_filename_generator = os.path.join(str(directory), filename + ".generator")
         form_name = wrapping.form_name(form)
+
         def save_generator():
             with open(full_filename_generator, "w") as generator_file:
                 generator_file.write(form_name)
+
         parallel_io(save_generator, mpi_comm)
+
         # Write out generator mpi size
         full_filename_generator_mpi_size = os.path.join(str(directory), filename + ".generator_mpi_size")
+
         def save_generator_mpi_size():
             with open(full_filename_generator_mpi_size, "w") as generator_mpi_size_file:
                 generator_mpi_size_file.write(str(mpi_comm.size))
+
         parallel_io(save_generator_mpi_size, mpi_comm)
+
         # Write out generator mapping from processor dependent indices
         # to processor independent (global_cell_index, cell_dof) tuple
         _permutation_save(tensor, directory, form, form_name + "_" + str(mpi_comm.size), mpi_comm)
+
         # Write out content
         _tensor_save(tensor, directory, filename, mpi_comm)
 

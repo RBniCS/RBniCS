@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(None)
 def NonlinearReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 

@@ -10,6 +10,7 @@ from rbnics.utils.decorators import overload
 
 logger = getLogger("rbnics/backends/basic/transpose.py")
 
+
 def transpose(backend, wrapping, online_backend, online_wrapping,
               AdditionalIsFunction=None, ConvertAdditionalFunctionTypes=None,
               AdditionalIsVector=None, ConvertAdditionalVectorTypes=None,
@@ -39,6 +40,7 @@ def transpose(backend, wrapping, online_backend, online_wrapping,
         def _ConvertAdditionalMatrixTypes(arg):
             raise NotImplementedError("Please implement conversion of additional matrix types")
         ConvertAdditionalMatrixTypes = _ConvertAdditionalMatrixTypes
+
     # Prepare all possible auxiliary classes, which will be dispatched depending on the input argument
     _FunctionsList_Transpose__times__Matrix = FunctionsList_Transpose__times__Matrix(
         backend, wrapping, online_backend, online_wrapping,
@@ -76,6 +78,7 @@ def transpose(backend, wrapping, online_backend, online_wrapping,
     _TensorsList_Transpose = TensorsList_Transpose(
         backend, wrapping, online_backend, online_wrapping,
         _Vector_Transpose, _VectorizedMatrix_Transpose)
+
     # Start dispatching based on input argument
     class _Transpose(object):
         @overload(backend.FunctionsList, )
@@ -109,6 +112,7 @@ def transpose(backend, wrapping, online_backend, online_wrapping,
 
     if hasattr(backend, "ParametrizedTensorFactory"):
         assert hasattr(backend, "evaluate")
+
         class _Transpose(_Transpose):
             @overload(backend.ParametrizedTensorFactory, )
             def __call__(self, arg):
@@ -117,12 +121,14 @@ def transpose(backend, wrapping, online_backend, online_wrapping,
 
     return _Transpose()
 
+
 # Auxiliary: transpose of a vector
 def Vector_Transpose(backend, wrapping, online_backend, online_wrapping,
                      AdditionalIsFunction, ConvertAdditionalFunctionTypes,
                      AdditionalIsVector, ConvertAdditionalVectorTypes,
                      AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
                      _Vector_Transpose__times__Matrix):
+
     class _Vector_Transpose(object):
         @overload(backend.Function.Type(), )
         def __init__(self, function):
@@ -176,6 +182,7 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping,
 
     if hasattr(backend, "ParametrizedTensorFactory"):
         assert hasattr(backend, "evaluate")
+
         class _Vector_Transpose(_Vector_Transpose):
             @overload(backend.ParametrizedTensorFactory, )
             def __mul__(self, other):
@@ -184,10 +191,12 @@ def Vector_Transpose(backend, wrapping, online_backend, online_wrapping,
 
     return _Vector_Transpose
 
+
 # Auxiliary: multiplication of the transpose of a Vector with a Matrix
 def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping,
                                     AdditionalIsFunction, ConvertAdditionalFunctionTypes,
                                     AdditionalIsVector, ConvertAdditionalVectorTypes):
+
     class _Vector_Transpose__times__Matrix(object):
         @overload(backend.Function.Type(), backend.Matrix.Type())
         def __init__(self, function, matrix):
@@ -224,7 +233,9 @@ def Vector_Transpose__times__Matrix(backend, wrapping, online_backend, online_wr
                 return self.__mul__(other_vector)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+
     return _Vector_Transpose__times__Matrix
+
 
 # Auxiliary: transpose of a FunctionsList
 def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping,
@@ -232,6 +243,7 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping,
                             AdditionalIsVector, ConvertAdditionalVectorTypes,
                             AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
                             _FunctionsList_Transpose__times__Matrix):
+
     class _FunctionsList_Transpose(object):
         @overload(backend.FunctionsList, )
         def __init__(self, functions_list):
@@ -274,12 +286,15 @@ def FunctionsList_Transpose(backend, wrapping, online_backend, online_wrapping,
                 return self.__mul__(vector)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+
     return _FunctionsList_Transpose
+
 
 # Auxiliary: multiplication of the transpose of a FunctionsList with a Matrix
 def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping,
                                            AdditionalIsFunction, ConvertAdditionalFunctionTypes,
                                            AdditionalIsVector, ConvertAdditionalVectorTypes):
+
     class _FunctionsList_Transpose__times__Matrix(object):
         @overload(backend.FunctionsList, backend.Matrix.Type())
         def __init__(self, functions_list, matrix):
@@ -327,7 +342,9 @@ def FunctionsList_Transpose__times__Matrix(backend, wrapping, online_backend, on
                 return self.__mul__(vector)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+
     return _FunctionsList_Transpose__times__Matrix
+
 
 # Auxiliary: transpose of a BasisFunctionsMatrix
 def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wrapping,
@@ -335,6 +352,7 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
                                    AdditionalIsVector, ConvertAdditionalVectorTypes,
                                    AdditionalIsMatrix, ConvertAdditionalMatrixTypes,
                                    _BasisFunctionsMatrix_Transpose__times__Matrix):
+
     class _BasisFunctionsMatrix_Transpose(object):
         @overload(backend.BasisFunctionsMatrix, )
         def __init__(self, basis_functions_matrix):
@@ -404,10 +422,12 @@ def BasisFunctionsMatrix_Transpose(backend, wrapping, online_backend, online_wra
 
     return _BasisFunctionsMatrix_Transpose
 
+
 # Auxiliary: multiplication of the transpose of a BasisFunctionsMatrix with a Matrix
 def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_backend, online_wrapping,
                                                   AdditionalIsFunction, ConvertAdditionalFunctionTypes,
                                                   AdditionalIsVector, ConvertAdditionalVectorTypes):
+
     class _BasisFunctionsMatrix_Transpose__times__Matrix(object):
         @overload(backend.BasisFunctionsMatrix, backend.Matrix.Type())
         def __init__(self, basis_functions_matrix, matrix):
@@ -491,11 +511,14 @@ def BasisFunctionsMatrix_Transpose__times__Matrix(backend, wrapping, online_back
                 return self.__mul__(vector)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+
     return _BasisFunctionsMatrix_Transpose__times__Matrix
+
 
 # Auxiliary: transpose of a vectorized matrix (i.e. vector obtained by stacking its columns)
 def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrapping,
                                AdditionalIsMatrix, ConvertAdditionalMatrixTypes):
+
     class _VectorizedMatrix_Transpose(object):
         @overload(backend.Matrix.Type(), )
         def __init__(self, matrix):
@@ -522,11 +545,14 @@ def VectorizedMatrix_Transpose(backend, wrapping, online_backend, online_wrappin
                 return self.__mul__(other_matrix)
             else:
                 raise RuntimeError("Invalid arguments in transpose.")
+
     return _VectorizedMatrix_Transpose
+
 
 # Auxiliary: transpose of a TensorsList
 def TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping,
                           _Vector_Transpose, _VectorizedMatrix_Transpose):
+
     class _TensorsList_Transpose(object):
         @overload(backend.TensorsList, )
         def __init__(self, tensors_list):
@@ -551,4 +577,5 @@ def TensorsList_Transpose(backend, wrapping, online_backend, online_wrapping,
         @overload(backend.Matrix.Type())
         def _transpose(self, matrix):
             return _VectorizedMatrix_Transpose(matrix)
+
     return _TensorsList_Transpose

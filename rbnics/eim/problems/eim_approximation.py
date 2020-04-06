@@ -13,6 +13,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 from rbnics.eim.utils.decorators import StoreMapFromParametrizedExpressionToProblem
 
+
 # Empirical interpolation method for the interpolation of parametrized functions
 @StoreMapFromParametrizedExpressionToProblem
 class EIMApproximation(ParametrizedProblem):
@@ -48,20 +49,25 @@ class EIMApproximation(ParametrizedProblem):
         self.folder["basis"] = os.path.join(self.folder_prefix, "basis")
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
         self.folder["reduced_operators"] = os.path.join(self.folder_prefix, "reduced_operators")
+
         def _snapshot_cache_key_generator(*args, **kwargs):
             assert args == self.mu
             assert len(kwargs) == 0
             return self._cache_key()
+
         def _snapshot_cache_import(filename):
             snapshot = copy(self.snapshot)
             self.import_solution(self.folder["cache"], filename, snapshot)
             return snapshot
+
         def _snapshot_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
+
         def _snapshot_cache_filename_generator(*args, **kwargs):
             assert args == self.mu
             assert len(kwargs) == 0
             return self._cache_file()
+
         self._snapshot_cache = Cache(
             "EIM",
             key_generator=_snapshot_cache_key_generator,

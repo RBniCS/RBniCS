@@ -6,6 +6,7 @@
 
 import types
 
+
 class AttachInstanceMethod(object):
     def __init__(self, instance, method_name, patched_method):
         self._instance = instance

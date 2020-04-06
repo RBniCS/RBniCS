@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @EIM("online")
 @ExactParametrizedFunctions("offline")
 class Gaussian(EllipticCoerciveProblem):
@@ -66,6 +67,7 @@ class Gaussian(EllipticCoerciveProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/gaussian.xml")

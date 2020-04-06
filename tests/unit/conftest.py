@@ -7,6 +7,7 @@
 from dolfin import MPI
 from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa: F401
 
+
 # Customize item selection
 def pytest_collection_modifyitems(session, config, items):
     # Deselect first using markers (note: cannot import _pytest.mark globally)
@@ -74,12 +75,14 @@ def pytest_collection_modifyitems(session, config, items):
                     assert not hasattr(item, "_runtest_teardown_function")
                     item._runtest_teardown_function = enable_matplotlib
 
+
 def pytest_runtest_setup(item):
     # Do the normal setup
     item.setup()
     # Carry out additional setup
     if hasattr(item, "_runtest_setup_function"):
         item._runtest_setup_function()
+
 
 def pytest_runtest_teardown(item, nextitem):
     # Carry out additional teardown

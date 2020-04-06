@@ -13,6 +13,7 @@ from .geostrophic_optimal_control_problem import GeostrophicOptimalControlProble
 GeostrophicOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
     GeostrophicOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 @ReducedProblemFor(GeostrophicOptimalControlProblem, GeostrophicOptimalControlPODGalerkinReduction)
 class GeostrophicOptimalControlPODGalerkinReducedProblem(GeostrophicOptimalControlPODGalerkinReducedProblem_Base):
     pass

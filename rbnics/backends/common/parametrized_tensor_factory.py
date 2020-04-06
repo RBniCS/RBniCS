@@ -8,6 +8,7 @@ from numbers import Number
 from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import ParametrizedTensorFactory as AbstractParametrizedTensorFactory
 
+
 @BackendFor("common", inputs=(Number, ))
 class ParametrizedTensorFactory(AbstractParametrizedTensorFactory):
     def __init__(self, scalar):

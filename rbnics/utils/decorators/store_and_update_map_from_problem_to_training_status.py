@@ -7,6 +7,7 @@
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
+
 def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedClass):
 
     @PreserveClassName
@@ -21,6 +22,7 @@ def StoreMapFromProblemToTrainingStatus(ParametrizedDifferentialProblem_DerivedC
 
     # return value (a class) for the decorator
     return StoreMapFromProblemToTrainingStatus_Class
+
 
 def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_DerivedClass):
 
@@ -48,27 +50,33 @@ def UpdateMapFromProblemToTrainingStatus(DifferentialProblemReductionMethod_Deri
     # return value (a class) for the decorator
     return UpdateMapFromProblemToTrainingStatus_Class
 
+
 def init_map_from_problem_to_training_status(problem):
     if problem not in _problem_to_training_status:
         _problem_to_training_status[problem] = None
     else:
         assert _problem_to_training_status[problem] is None
 
+
 def set_map_from_problem_to_training_status_on(problem):
     assert problem in _problem_to_training_status
     _problem_to_training_status[problem] = True
+
 
 def set_map_from_problem_to_training_status_off(problem):
     assert problem in _problem_to_training_status
     _problem_to_training_status[problem] = False
 
+
 def is_training_started(problem):
     assert problem in _problem_to_training_status
     return _problem_to_training_status[problem] is not None
+
 
 def is_training_finished(problem):
     assert problem in _problem_to_training_status
     return (_problem_to_training_status[problem] is not None
             and _problem_to_training_status[problem])
+
 
 _problem_to_training_status = Cache()

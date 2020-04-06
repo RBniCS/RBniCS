@@ -14,7 +14,9 @@ from rbnics.utils.decorators import (exact_problem, get_problem_from_solution, g
 
 logger = getLogger("rbnics/backends/dolfin/form_on_truth_function_space.py")
 
+
 def basic_form_on_truth_function_space(backend, wrapping):
+
     def _basic_form_on_truth_function_space(form_wrapper, tensor=None):
         form = form_wrapper._form
         form_name = form_wrapper.name()

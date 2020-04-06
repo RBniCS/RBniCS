@@ -17,6 +17,7 @@ except ImportError:
                 os.system("git clone " + url + " " + to_path)
 from rbnics.utils.test.patch_initialize_testing_training_set import patch_initialize_testing_training_set
 
+
 def add_gold_options(parser, subdirectory):
     available_options = [name for opt in parser._anonymous.options for name in opt.names()]
     # Comparison to gold files in methodology tests and tutorials
@@ -30,11 +31,13 @@ def add_gold_options(parser, subdirectory):
             data_dir_default = "git@gitlab.com:RBniCS-test-data/" + subdirectory + ".git"
         parser.addoption("--data-dir", action="store", default=data_dir_default)
 
+
 def add_performance_options(parser):
     available_options = [name for opt in parser._anonymous.options for name in opt.names()]
     # Comparison to previous performance tests
     if "--overhead-speedup-storage" not in available_options:
         parser.addoption("--overhead-speedup-storage", action="store", default=".benchmarks")
+
 
 def process_gold_options(config):
     if config.option.action is not None:

@@ -9,6 +9,7 @@ from rbnics.backends import product, sum, transpose
 
 EllipticOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
+
 # Base class containing the definition of saddle point problems
 class EllipticOptimalControlProblem(EllipticOptimalControlProblem_Base):
     """

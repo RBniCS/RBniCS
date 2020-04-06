@@ -8,6 +8,7 @@ import sys
 from numpy import cumsum
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
+
 def slice_to_array(obj, key, length_dict, index_dict):
     key = _check_key(obj, key)
     length_dict = _check_length_dict(key, length_dict)
@@ -62,13 +63,16 @@ def slice_to_array(obj, key, length_dict, index_dict):
     else:
         return tuple(slices)
 
+
 def _check_key(obj, key):
     if not isinstance(key, tuple):
         key = (key,)
     assert isinstance(key, tuple)
     assert all([isinstance(key_i, slice) for key_i in key])
+
     def shape_attribute(slice_index):
         return getattr(obj, _slice_shape_attribute[len(key)][slice_index])
+
     converted_key = list()
     for (slice_index, slice_) in enumerate(key):
         shape_index = shape_attribute(slice_index)
@@ -98,6 +102,7 @@ def _check_key(obj, key):
         converted_key.append(converted_slice)
     return converted_key
 
+
 _slice_shape_attribute = {
     1: {
         0: "N",
@@ -108,6 +113,7 @@ _slice_shape_attribute = {
     }
 }
 
+
 def _check_length_dict(key, length_dict):
     if length_dict is None:
         length_dict = (None, ) * len(key)
@@ -117,6 +123,7 @@ def _check_length_dict(key, length_dict):
     assert all([isinstance(length_dict_i, OnlineSizeDict) or length_dict_i is None for length_dict_i in length_dict])
     assert len(key) == len(length_dict)
     return length_dict
+
 
 def _check_index_dict(key, index_dict):
     if index_dict is None:

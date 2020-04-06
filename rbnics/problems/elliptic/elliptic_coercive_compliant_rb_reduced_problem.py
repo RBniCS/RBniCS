@@ -15,6 +15,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 EllipticCoerciveCompliantRBReducedProblem_Base = EllipticCoerciveCompliantReducedProblem(
     EllipticCoerciveRBReducedProblem)
 
+
 @ReducedProblemFor(EllipticCoerciveCompliantProblem, EllipticRBReduction)
 class EllipticCoerciveCompliantRBReducedProblem(EllipticCoerciveCompliantRBReducedProblem_Base):
     # Return an error bound for the current solution

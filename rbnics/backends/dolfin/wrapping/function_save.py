@@ -11,6 +11,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
 from rbnics.utils.mpi import parallel_io
 
+
 class SolutionFile_Base(object):
     def __init__(self, directory, filename):
         self._directory = directory
@@ -23,9 +24,11 @@ class SolutionFile_Base(object):
     @staticmethod
     def remove_files(directory, filename):
         full_filename = os.path.join(str(directory), filename)
+
         def remove_files_task():
             if os.path.exists(full_filename + "_index.sfx"):
                 os.remove(full_filename + "_index.sfx")
+
         parallel_io(remove_files_task)
 
     def write(self, function, name, index):
@@ -50,6 +53,7 @@ class SolutionFile_Base(object):
         self._last_index = index
         # Write out current index
         IndexIO.save_file(index, self._directory, self._filename + "_index.sfx")
+
 
 class SolutionFileXML(SolutionFile_Base):
     def __init__(self, directory, filename):
@@ -85,6 +89,7 @@ class SolutionFileXML(SolutionFile_Base):
         else:
             raise OSError
 
+
 class SolutionFileXDMF(SolutionFile_Base):
     # DOLFIN 2018.1.0.dev added (throughout the developement cycle) an optional append
     # attribute to XDMFFile.write_checkpoint, which should be set to its non-default value,
@@ -103,12 +108,14 @@ class SolutionFileXDMF(SolutionFile_Base):
         SolutionFile_Base.remove_files(directory, filename)
         #
         full_filename = os.path.join(str(directory), filename)
+
         def remove_files_task():
             if os.path.exists(full_filename + ".xdmf"):
                 os.remove(full_filename + ".xdmf")
                 os.remove(full_filename + ".h5")
                 os.remove(full_filename + "_checkpoint.xdmf")
                 os.remove(full_filename + "_checkpoint.h5")
+
         parallel_io(remove_files_task)
 
     def write(self, function, name, index):
@@ -145,6 +152,7 @@ class SolutionFileXDMF(SolutionFile_Base):
         else:
             raise OSError
 
+
 def function_save(fun, directory, filename, suffix=None):
     fun_V = fun.function_space()
     if hasattr(fun_V, "_index_to_components") and len(fun_V._index_to_components) > 1:
@@ -152,6 +160,7 @@ def function_save(fun, directory, filename, suffix=None):
             _write_to_file(fun.sub(index, deepcopy=True), directory, filename, suffix, components)
     else:
         _write_to_file(fun, directory, filename, suffix)
+
 
 def _write_to_file(fun, directory, filename, suffix, components=None):
     if components is not None:
@@ -196,5 +205,6 @@ def _write_to_file(fun, directory, filename, suffix, components=None):
             # Write function to file
             file_ = SolutionFile(directory, filename)
             file_.write(fun, function_name, 0)
+
 
 _all_solution_files = Cache()

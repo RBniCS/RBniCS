@@ -25,12 +25,15 @@ from rbnics.utils.test import enable_logging
 test_logger = getLogger("tests/unit/test_reduced_mesh.py")
 enable_reduced_mesh_logging = enable_logging({test_logger: DEBUG})
 
+
 # Meshes
 def structured_mesh_1d():
     return UnitIntervalMesh(24)
 
+
 def structured_mesh_2d():
     return UnitSquareMesh(3, 3)
+
 
 if has_mshr:
     def unstructured_mesh_2d():
@@ -43,6 +46,7 @@ else:
     generate_meshes = pytest.mark.parametrize("mesh", [
         structured_mesh_1d(), structured_mesh_2d()])
 
+
 # Helper functions
 def nonzero_values(function):
     serialized_vector = Vector(MPI.COMM_SELF)
@@ -50,9 +54,11 @@ def nonzero_values(function):
     indices = nonzero(serialized_vector.get_local())
     return sort(serialized_vector.get_local()[indices])
 
+
 # ~~~ Elliptic case ~~~ #
 def EllipticFunctionSpace(mesh):
     return FunctionSpace(mesh, "CG", 2)
+
 
 # === Matrix computation === #
 @generate_meshes
@@ -60,6 +66,7 @@ def EllipticFunctionSpace(mesh):
 def test_reduced_mesh_io_elliptic_matrix(mesh, tempdir):
     test_reduced_mesh_save_elliptic_matrix(mesh, tempdir)
     test_reduced_mesh_load_elliptic_matrix(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -77,6 +84,7 @@ def test_reduced_mesh_save_elliptic_matrix(mesh, save_tempdir):
 
     _test_reduced_mesh_elliptic_matrix(V, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_elliptic_matrix(mesh, load_tempdir):
@@ -86,6 +94,7 @@ def test_reduced_mesh_load_elliptic_matrix(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_matrix")
 
     _test_reduced_mesh_elliptic_matrix(V, reduced_mesh)
+
 
 def _test_reduced_mesh_elliptic_matrix(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
@@ -115,12 +124,14 @@ def _test_reduced_mesh_elliptic_matrix(V, reduced_mesh):
 
     assert isclose(A_dofs, A_N_reduced_dofs).all()
 
+
 # === Vector computation === #
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_io_elliptic_vector(mesh, tempdir):
     test_reduced_mesh_save_elliptic_vector(mesh, tempdir)
     test_reduced_mesh_load_elliptic_vector(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -138,6 +149,7 @@ def test_reduced_mesh_save_elliptic_vector(mesh, save_tempdir):
 
     _test_reduced_mesh_elliptic_vector(V, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_elliptic_vector(mesh, load_tempdir):
@@ -147,6 +159,7 @@ def test_reduced_mesh_load_elliptic_vector(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_vector")
 
     _test_reduced_mesh_elliptic_vector(V, reduced_mesh)
+
 
 def _test_reduced_mesh_elliptic_vector(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
@@ -173,12 +186,14 @@ def _test_reduced_mesh_elliptic_vector(V, reduced_mesh):
 
     assert isclose(b_dofs, b_N_reduced_dofs).all()
 
+
 # === Function computation === #
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_io_elliptic_function(mesh, tempdir):
     test_reduced_mesh_save_elliptic_function(mesh, tempdir)
     test_reduced_mesh_load_elliptic_function(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -196,6 +211,7 @@ def test_reduced_mesh_save_elliptic_function(mesh, save_tempdir):
 
     _test_reduced_mesh_elliptic_function(V, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_elliptic_function(mesh, load_tempdir):
@@ -205,6 +221,7 @@ def test_reduced_mesh_load_elliptic_function(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_elliptic_function")
 
     _test_reduced_mesh_elliptic_function(V, reduced_mesh)
+
 
 def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
@@ -239,6 +256,7 @@ def _test_reduced_mesh_elliptic_function(V, reduced_mesh):
     assert isclose(nonzero_values(f_dofs), nonzero_values(f_reduced_dofs)).all()
     assert isclose(f_reduced_dofs.vector().get_local(), f_N_reduced_dofs.vector().get_local()).all()
 
+
 # ~~~ Mixed case ~~~ #
 def MixedFunctionSpace(mesh):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
@@ -246,12 +264,14 @@ def MixedFunctionSpace(mesh):
     element = MixedElement(element_0, element_1)
     return FunctionSpace(mesh, element)
 
+
 # === Matrix computation === #
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_io_mixed_matrix(mesh, tempdir):
     test_reduced_mesh_save_mixed_matrix(mesh, tempdir)
     test_reduced_mesh_load_mixed_matrix(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -269,6 +289,7 @@ def test_reduced_mesh_save_mixed_matrix(mesh, save_tempdir):
 
     _test_reduced_mesh_mixed_matrix(V, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_mixed_matrix(mesh, load_tempdir):
@@ -278,6 +299,7 @@ def test_reduced_mesh_load_mixed_matrix(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_mixed_matrix")
 
     _test_reduced_mesh_mixed_matrix(V, reduced_mesh)
+
 
 def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
@@ -315,12 +337,14 @@ def _test_reduced_mesh_mixed_matrix(V, reduced_mesh):
 
     assert isclose(A_dofs, A_N_reduced_dofs).all()
 
+
 # === Vector computation === #
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_io_mixed_vector(mesh, tempdir):
     test_reduced_mesh_save_mixed_vector(mesh, tempdir)
     test_reduced_mesh_load_mixed_vector(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -338,6 +362,7 @@ def test_reduced_mesh_save_mixed_vector(mesh, save_tempdir):
 
     _test_reduced_mesh_mixed_vector(V, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_mixed_vector(mesh, load_tempdir):
@@ -347,6 +372,7 @@ def test_reduced_mesh_load_mixed_vector(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_mixed_vector")
 
     _test_reduced_mesh_mixed_vector(V, reduced_mesh)
+
 
 def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
@@ -375,6 +401,7 @@ def _test_reduced_mesh_mixed_vector(V, reduced_mesh):
 
     assert isclose(b_dofs, b_N_reduced_dofs).all()
 
+
 # ~~~ Collapsed case ~~~ #
 def CollapsedFunctionSpaces(mesh):
     element_0 = VectorElement("Lagrange", mesh.ufl_cell(), 2, dim=2)
@@ -384,12 +411,14 @@ def CollapsedFunctionSpaces(mesh):
     V = U.sub(0).collapse()
     return (V, U)
 
+
 # === Matrix computation === #
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_io_collapsed_matrix(mesh, tempdir):
     test_reduced_mesh_save_collapsed_matrix(mesh, tempdir)
     test_reduced_mesh_load_collapsed_matrix(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -407,6 +436,7 @@ def test_reduced_mesh_save_collapsed_matrix(mesh, save_tempdir):
 
     _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_collapsed_matrix(mesh, load_tempdir):
@@ -416,6 +446,7 @@ def test_reduced_mesh_load_collapsed_matrix(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_collapsed_matrix")
 
     _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh)
+
 
 def _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()
@@ -447,12 +478,14 @@ def _test_reduced_mesh_collapsed_matrix(V, U, reduced_mesh):
 
     assert isclose(A_dofs, A_N_reduced_dofs).all()
 
+
 # === Vector computation === #
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_io_collapsed_vector(mesh, tempdir):
     test_reduced_mesh_save_collapsed_vector(mesh, tempdir)
     test_reduced_mesh_load_collapsed_vector(mesh, tempdir)
+
 
 @generate_meshes
 @enable_reduced_mesh_logging
@@ -470,6 +503,7 @@ def test_reduced_mesh_save_collapsed_vector(mesh, save_tempdir):
 
     _test_reduced_mesh_collapsed_vector(V, reduced_mesh)
 
+
 @generate_meshes
 @enable_reduced_mesh_logging
 def test_reduced_mesh_load_collapsed_vector(mesh, load_tempdir):
@@ -479,6 +513,7 @@ def test_reduced_mesh_load_collapsed_vector(mesh, load_tempdir):
     reduced_mesh.load(load_tempdir, "test_reduced_mesh_collapsed_vector")
 
     _test_reduced_mesh_collapsed_vector(V, reduced_mesh)
+
 
 def _test_reduced_mesh_collapsed_vector(V, reduced_mesh):
     reduced_V = reduced_mesh.get_reduced_function_spaces()

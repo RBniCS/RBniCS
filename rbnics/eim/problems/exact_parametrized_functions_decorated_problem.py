@@ -11,6 +11,7 @@ from rbnics.eim.utils.decorators import (DefineSymbolicParameters, StoreMapFromP
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def ExactParametrizedFunctions_OfflineAndOnline(**kwargs):
     assert kwargs["stages"] in ("offline", ("offline", ), ("offline", "online"))
     if kwargs["stages"] == ("offline", "online"):

@@ -11,6 +11,7 @@ from rbnics.backends.online import OnlineEigenSolver, OnlineFunction
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 
+
 class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
 
     # Default initialization of members
@@ -34,15 +35,19 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
         # Solution
         self._eigenvalue = 0.
         self._eigenvector = None  # OnlineFunction
+
         # I/O
         def _eigenvalue_cache_key_generator(*args, **kwargs):
             return args
+
         self._eigenvalue_cache = Cache(
             "reduced problems",
             key_generator=_eigenvalue_cache_key_generator
         )
+
         def _eigenvector_cache_key_generator(*args, **kwargs):
             return args
+
         self._eigenvector_cache = Cache(
             "reduced problems",
             key_generator=_eigenvector_cache_key_generator

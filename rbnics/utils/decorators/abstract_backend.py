@@ -9,6 +9,7 @@ import inspect
 from functools import wraps
 from rbnics.utils.decorators.backend_for import _cache as backends_cache
 
+
 def AbstractBackend(Class):
     assert inspect.isclass(Class)
     assert hasattr(Class, "__abstractmethods__")  # this means that ABCMeta was used as metaclass, see PEP 3119
@@ -17,6 +18,7 @@ def AbstractBackend(Class):
     setattr(backends_cache, Class.__name__, Class)
     backends_cache.__all__.add(Class.__name__)
     return Class
+
 
 def abstract_backend(function):
     assert inspect.isfunction(function)
@@ -32,6 +34,7 @@ def abstract_backend(function):
     backends_cache.__all__.add(function.__name__)
     return abstract_backend_function
 
+
 def abstract_online_backend(function):
     assert inspect.isfunction(function)
 
@@ -46,6 +49,7 @@ def abstract_online_backend(function):
     setattr(backends_cache, function.__name__, abstract_online_backend_function)
     backends_cache.__all__.add(function.__name__)
     return abstract_online_backend_function
+
 
 def abstractonlinemethod(method):
     assert inspect.isfunction(method)

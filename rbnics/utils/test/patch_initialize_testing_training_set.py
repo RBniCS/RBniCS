@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def patch_initialize_testing_training_set(action):
     import rbnics.reduction_methods.base
     import rbnics.eim.reduction_methods
@@ -21,6 +22,7 @@ def patch_initialize_testing_training_set(action):
             except OSError:
                 raise AssertionError("Loading should have not been failing")
             return True
+
         rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
 
         def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
@@ -29,9 +31,11 @@ def patch_initialize_testing_training_set(action):
             except OSError:
                 raise AssertionError("Loading should have not been failing")
             return True
+
         rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set
     elif action == "regold":
         original_initialize_training_set = rbnics.reduction_methods.base.ReductionMethod.initialize_training_set
+
         def initialize_training_set(self, mu_range, ntrain, enable_import=True, sampling=None, **kwargs):
             self.folder["training_set"].create()
             try:
@@ -40,9 +44,11 @@ def patch_initialize_testing_training_set(action):
                 return original_initialize_training_set(self, mu_range, ntrain, enable_import, sampling, **kwargs)
             else:
                 return True
+
         rbnics.reduction_methods.base.ReductionMethod.initialize_training_set = initialize_training_set
 
         original_initialize_testing_set = rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set
+
         def initialize_testing_set(self, mu_range, ntest, enable_import=False, sampling=None, **kwargs):
             self.folder["testing_set"].create()
             try:
@@ -51,24 +57,29 @@ def patch_initialize_testing_training_set(action):
                 return original_initialize_testing_set(self, mu_range, ntest, enable_import, sampling, **kwargs)
             else:
                 return True
+
         rbnics.reduction_methods.base.ReductionMethod.initialize_testing_set = initialize_testing_set
 
     original__time_dependent_eim__initialize_training_set = (
         rbnics.eim.reduction_methods.TimeDependentEIMApproximationReductionMethod.initialize_training_set)
+
     def time_dependent_eim__initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
         import_successful = original__time_dependent_eim__initialize_training_set(
             self, ntrain, True, sampling, **kwargs)
         assert import_successful
         return import_successful
+
     rbnics.eim.reduction_methods.TimeDependentEIMApproximationReductionMethod.initialize_training_set = (
         time_dependent_eim__initialize_training_set)
 
     original__time_dependent_eim__initialize_testing_set = (
         rbnics.eim.reduction_methods.TimeDependentEIMApproximationReductionMethod.initialize_testing_set)
+
     def time_dependent_eim__initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
         import_successful = original__time_dependent_eim__initialize_testing_set(
             self, ntest, True, sampling, **kwargs)
         assert import_successful
         return import_successful
+
     rbnics.eim.reduction_methods.TimeDependentEIMApproximationReductionMethod.initialize_testing_set = (
         time_dependent_eim__initialize_testing_set)

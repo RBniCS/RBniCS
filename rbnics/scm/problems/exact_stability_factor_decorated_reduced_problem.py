@@ -9,6 +9,7 @@ from rbnics.scm.problems.decorated_reduced_problem_with_stability_factor_evaluat
 from rbnics.scm.problems.exact_stability_factor import ExactStabilityFactor
 from rbnics.utils.decorators import PreserveClassName, ReducedProblemDecoratorFor
 
+
 @ReducedProblemDecoratorFor(ExactStabilityFactor)
 def ExactStabilityFactorDecoratedReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

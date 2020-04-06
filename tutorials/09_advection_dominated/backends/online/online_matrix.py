@@ -6,6 +6,7 @@
 
 from rbnics.backends.online import OnlineMatrix as _OnlineMatrix
 
+
 def OnlineMatrix(M, N):
     assert isinstance(M, int)
     assert isinstance(N, int)

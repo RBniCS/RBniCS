@@ -14,6 +14,7 @@ from rbnics.reduction_methods.nonlinear_parabolic import NonlinearParabolicPODGa
 NonlinearParabolicPODGalerkinReducedProblem_Base = NonlinearTimeDependentPODGalerkinReducedProblem(
     NonlinearParabolicReducedProblem(NonlinearEllipticPODGalerkinReducedProblem))
 
+
 @ReducedProblemFor(NonlinearParabolicProblem, NonlinearParabolicPODGalerkinReduction)
 class NonlinearParabolicPODGalerkinReducedProblem(NonlinearParabolicPODGalerkinReducedProblem_Base):
     pass

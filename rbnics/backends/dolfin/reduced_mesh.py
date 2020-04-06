@@ -83,7 +83,9 @@ else:
             self.h5_file.write(mesh_function, "/mesh_function")
             self.xdmf_file.write(mesh_function)
 
+
 def BasicReducedMesh(backend, wrapping):
+
     class _BasicReducedMesh(AbstractReducedMesh):
         def __init__(self, V, subdomain_data=None, auxiliary_problems_and_components=None, **kwargs):
             AbstractReducedMesh.__init__(self, V)
@@ -542,16 +544,20 @@ def BasicReducedMesh(backend, wrapping):
                 assert (is_pod_galerkin or is_reduced_basis) and not (is_pod_galerkin and is_reduced_basis)
                 if is_pod_galerkin:
                     original_compute_basis_functions = auxiliary_reduction_method.compute_basis_functions
+
                     def patched_compute_basis_functions(self_):
                         original_compute_basis_functions()
                         update_and_save_auxiliary_basis_functions_matrix()
+
                     PatchInstanceMethod(auxiliary_reduction_method, "compute_basis_functions",
                                         patched_compute_basis_functions).patch()
                 elif is_reduced_basis:
                     original_update_basis_matrix = auxiliary_reduction_method.update_basis_matrix
+
                     def patched_update_basis_matrix(self_, snapshot):
                         original_update_basis_matrix(snapshot)
                         update_and_save_auxiliary_basis_functions_matrix()
+
                     PatchInstanceMethod(auxiliary_reduction_method, "update_basis_matrix",
                                         patched_update_basis_matrix).patch()
                 else:
@@ -775,10 +781,13 @@ def BasicReducedMesh(backend, wrapping):
 
                 auxiliary_reduction_method = get_reduction_method_from_problem(auxiliary_problem)
                 original_finalize_offline = auxiliary_reduction_method._finalize_offline
+
                 def patched_finalize_offline(self_):
                     original_finalize_offline()
                     load_auxiliary_basis_functions_matrix()
+
                 PatchInstanceMethod(auxiliary_reduction_method, "_finalize_offline", patched_finalize_offline).patch()
+
                 # Update bool value
                 self._auxiliary_basis_functions_matrix_load_patched[key] = True
 
@@ -866,7 +875,9 @@ def BasicReducedMesh(backend, wrapping):
                 assert min(self.reduced_mesh.keys()) == 0
                 assert max(self.reduced_mesh.keys()) == N - 1
             return N
+
     return _BasicReducedMesh
+
 
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.wrapping import (build_dof_map_reader_mapping, build_dof_map_writer_mapping,
@@ -877,6 +888,7 @@ from rbnics.backends.dolfin.wrapping import (build_dof_map_reader_mapping, build
                                              map_functionspaces_between_mesh_and_submesh)
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
     AuxiliaryProblemForNonParametrizedFunction)
+
 backend = ModuleWrapper(BasisFunctionsMatrix)
 wrapping = ModuleWrapper(AuxiliaryProblemForNonParametrizedFunction, build_dof_map_reader_mapping,
                          build_dof_map_writer_mapping, create_submesh, convert_meshfunctions_to_submesh,
@@ -884,6 +896,7 @@ wrapping = ModuleWrapper(AuxiliaryProblemForNonParametrizedFunction, build_dof_m
                          map_functionspaces_between_mesh_and_submesh,
                          evaluate_basis_functions_matrix_at_dofs=evaluate_basis_functions_matrix_at_dofs)
 ReducedMesh_Base = BasicReducedMesh(backend, wrapping)
+
 
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class ReducedMesh(ReducedMesh_Base):

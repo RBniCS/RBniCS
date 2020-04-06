@@ -15,20 +15,24 @@ from dolfin import Constant, Function
 from dolfin.function.expression import BaseExpression
 from rbnics.utils.decorators import overload
 
+
 @overload
 def is_problem_solution_type(node: (Argument, BaseExpression, Constant, ConstantValue, GeometricQuantity,
                                     IndexBase, MultiIndex, Operator)):
     return False
 
+
 @overload
 def is_problem_solution_type(node: Function):
     return True
+
 
 @overload
 def is_problem_solution_type(node: Indexed):
     assert len(node.ufl_operands) == 2
     assert isinstance(node.ufl_operands[1], MultiIndex)
     return is_problem_solution_type(node.ufl_operands[0])
+
 
 @overload
 def is_problem_solution_type(node: ListTensor):

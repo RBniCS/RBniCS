@@ -23,6 +23,7 @@ ProperOrthogonalDecomposition_Base = BasicProperOrthogonalDecomposition(
     backend, wrapping, online_backend, online_wrapping, AbstractProperOrthogonalDecomposition, SnapshotsMatrix,
     FunctionsList)
 
+
 @BackendFor("numpy", inputs=(AbstractFunctionsList, Matrix.Type(), (str, None)))
 class ProperOrthogonalDecomposition(ProperOrthogonalDecomposition_Base):
     def __init__(self, basis_functions, inner_product, component=None):

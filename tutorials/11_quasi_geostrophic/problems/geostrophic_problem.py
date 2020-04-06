@@ -9,6 +9,7 @@ from rbnics.backends import product, sum
 
 GeostrophicProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
+
 class GeostrophicProblem(GeostrophicProblem_Base):
     # Default initialization of members
     def __init__(self, V, **kwargs):

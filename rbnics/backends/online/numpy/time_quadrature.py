@@ -10,6 +10,7 @@ from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
 from rbnics.backends.online.numpy.function import Function
 from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
+
 @BackendFor("numpy", inputs=(tuple_of(Number), list_of(Function.Type())))
 class TimeQuadrature(AbstractTimeQuadrature):
     def __init__(self, time_interval, function_over_time):

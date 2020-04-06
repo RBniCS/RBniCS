@@ -7,10 +7,12 @@
 import math
 from numbers import Number
 
+
 def sympy_eval(string, locals):
     locals = dict(locals)
     locals.update(math_locals)
     return eval(string, {"__builtins__": None}, locals)
+
 
 math_locals = dict()
 for package in (math, ):

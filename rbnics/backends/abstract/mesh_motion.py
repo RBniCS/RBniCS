@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class MeshMotion(object, metaclass=ABCMeta):
     def __init__(self, space, subdomains, shape_parametrization_expression):

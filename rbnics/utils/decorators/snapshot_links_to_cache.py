@@ -9,10 +9,13 @@ import os
 from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def snapshot_links_to_cache(offline_method):
+
     def patched_export_solution(truth_problem, snapshots_folder):
         cache_folder = truth_problem.folder["cache"]
         original_export_solution = truth_problem.export_solution
+
         def patched_export_solution_internal(self_, folder=None, filename=None, *args, **kwargs):
             if str(folder) == str(snapshots_folder):
                 assert (hasattr(truth_problem, "_cache_file_from_kwargs")
@@ -23,6 +26,7 @@ def snapshot_links_to_cache(offline_method):
                     cache_filename = truth_problem._cache_file()
                 else:
                     raise AttributeError("Invalid cache file attribute.")
+
                 def create_links():
                     for cache_path in glob.iglob(os.path.join(str(cache_folder), cache_filename + "*")):
                         cache_path_filename = os.path.basename(cache_path)
@@ -47,9 +51,11 @@ def snapshot_links_to_cache(offline_method):
                                 with open(cache_path, "r") as cache_file, open(snapshot_path, "w") as snapshot_file:
                                     for l in cache_file.readlines():
                                         snapshot_file.write(l.replace(cache_filename, filename))
+
                 parallel_io(create_links)
             else:
                 original_export_solution(folder, filename, *args, **kwargs)
+
         return patched_export_solution_internal
 
     def patched_offline_method(self_):

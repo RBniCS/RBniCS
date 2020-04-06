@@ -12,12 +12,14 @@ from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function
 from rbnics.utils.decorators import backend_for, list_of, overload, tuple_of
 
+
 # Generic backend
 @backend_for("dolfin", inputs=((tuple_of(list_of(DirichletBC)), tuple_of(Form), tuple_of(Function.Type()),
                                 tuple_of(Matrix.Type()), tuple_of(Vector.Type()),
                                 tuple_of((Form, Matrix.Type())), tuple_of((Form, Vector.Type()))), ))
 def AffineExpansionStorage(args):
     return _AffineExpansionStorage(args)
+
 
 # Base implementation
 class AffineExpansionStorage_Base(AbstractAffineExpansionStorage):
@@ -34,15 +36,18 @@ class AffineExpansionStorage_Base(AbstractAffineExpansionStorage):
         assert self._content is not None
         return len(self._content)
 
+
 # Specialization for Dirichlet BCs
 class AffineExpansionStorage_DirichletBC(AffineExpansionStorage_Base):
     def __init__(self, args):
         AffineExpansionStorage_Base.__init__(self, args)
         self._content = args
 
+
 @overload
 def _AffineExpansionStorage(args: tuple_of(list_of(DirichletBC))):
     return AffineExpansionStorage_DirichletBC(args)
+
 
 # Specialization for forms
 class AffineExpansionStorage_Form(AffineExpansionStorage_Base):
@@ -58,6 +63,7 @@ class AffineExpansionStorage_Form(AffineExpansionStorage_Base):
                 raise RuntimeError("Invalid argument to AffineExpansionStorage")
         self._content = tuple(content)
 
+
 @overload
 def _AffineExpansionStorage(args: (
     tuple_of(Form),
@@ -68,11 +74,13 @@ def _AffineExpansionStorage(args: (
 )):
     return AffineExpansionStorage_Form(args)
 
+
 # Specialization for functions
 class AffineExpansionStorage_Function(AffineExpansionStorage_Base):
     def __init__(self, args):
         AffineExpansionStorage_Base.__init__(self, args)
         self._content = args
+
 
 @overload
 def _AffineExpansionStorage(args: tuple_of(Function.Type())):

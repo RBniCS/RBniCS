@@ -11,6 +11,7 @@ from rbnics.utils.cache import Cache
 
 StokesProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
+
 # Base class containing the definition of saddle point problems
 class StokesProblem(StokesProblem_Base):
 
@@ -34,21 +35,26 @@ class StokesProblem(StokesProblem_Base):
 
         # Auxiliary storage for supremizer enrichment, using a subspace of V
         self._supremizer = Function(V, "s")
+
         # I/O
         def _supremizer_cache_key_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._supremizer_cache_key_from_kwargs(**kwargs)
+
         def _supremizer_cache_import(filename):
             supremizer = copy(self._supremizer)
             self.import_supremizer(self.folder["cache"], filename, supremizer)
             return supremizer
+
         def _supremizer_cache_export(filename):
             self.export_supremizer(self.folder["cache"], filename)
+
         def _supremizer_cache_filename_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._supremizer_cache_file_from_kwargs(**kwargs)
+
         self._supremizer_cache = Cache(
             "problems",
             key_generator=_supremizer_cache_key_generator,

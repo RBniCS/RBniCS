@@ -11,6 +11,7 @@ from rbnics.utils.decorators.reduction_method_decorator_for import _cache as red
 
 logger = getLogger("rbnics/utils/factories/reduction_method_factory.py")
 
+
 # Factory to generate a reduction method corresponding to a category (e.g. RB or POD) and a given truth problem
 def ReductionMethodFactory(truth_problem, category, **kwargs):
 
@@ -59,8 +60,10 @@ def ReductionMethodFactory(truth_problem, category, **kwargs):
     # Finally, return an instance of the generated class
     return ComposedType(truth_problem, **kwargs)
 
+
 def ReducedBasis(truth_problem, **kwargs):
     return ReductionMethodFactory(truth_problem, "ReducedBasis", **kwargs)
+
 
 def PODGalerkin(truth_problem, **kwargs):
     return ReductionMethodFactory(truth_problem, "PODGalerkin", **kwargs)

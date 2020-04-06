@@ -15,10 +15,12 @@ mesh = generate_mesh(domain, 30)
 subdomains = MeshFunction("size_t", mesh, 2)
 subdomains.set_all(0)
 
+
 # Create boundaries
 class Boundary(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary
+
 
 boundaries = MeshFunction("size_t", mesh, mesh.topology().dim() - 1)
 boundaries.set_all(0)

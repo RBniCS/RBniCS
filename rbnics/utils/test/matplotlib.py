@@ -8,8 +8,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 matplotlib_backend = matplotlib.get_backend()
 
+
 def disable_matplotlib():
     plt.switch_backend("agg")
+
 
 def enable_matplotlib():
     plt.switch_backend(matplotlib_backend)

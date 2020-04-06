@@ -12,6 +12,7 @@ from rbnics.backends.online import OnlineAffineExpansionStorage, OnlineFunction,
 from rbnics.utils.cache import Cache, TimeSeriesCache
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators, sync_setters
 
+
 @RequiredBaseDecorators(None)
 def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 
@@ -57,24 +58,29 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
             self._solution_over_time = None  # TimeSeries of Functions
             self._solution_dot_over_time = None  # TimeSeries of Functions
             self._output_over_time = None  # TimeSeries of numbers
+
             # I/O
             def _solution_cache_key_generator(*args, **kwargs):
                 assert len(args) == 2
                 assert args[0] == self.mu
                 return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+
             self._solution_over_time_cache = TimeSeriesCache(
                 "reduced problems",
                 key_generator=_solution_cache_key_generator
             )
+
             self._solution_dot_over_time_cache = TimeSeriesCache(
                 "reduced problems",
                 key_generator=_solution_cache_key_generator
             )
             del self._solution_cache
+
             def _output_cache_key_generator(*args, **kwargs):
                 assert len(args) == 2
                 assert args[0] == self.mu
                 return self._cache_key_from_N_and_kwargs(args[1], **kwargs)
+
             self._output_over_time_cache = Cache(
                 "reduced problems",
                 key_generator=_output_cache_key_generator

@@ -10,15 +10,18 @@ from rbnics.utils.io import Folders, TextIO
 
 NotImplementedType = type(NotImplemented)
 
+
 @backend_for("common", inputs=((list_of(NotImplementedType), list_of(Number)), (Folders.Folder, str), str,
                                (int, None), None))
 def export(solution, directory, filename, suffix=None, component=None):
     _export(solution, directory, filename, suffix, component)
 
+
 # used while trying to write out scalar outputs for a problem without any output
 @overload(list_of(NotImplementedType), (Folders.Folder, str), str, (int, None), None)
 def _export(solution, directory, filename, suffix=None, component=None):
     pass
+
 
 @overload(list_of(Number), (Folders.Folder, str), str, (int, None), None)
 def _export(solution, directory, filename, suffix=None, component=None):

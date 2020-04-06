@@ -13,6 +13,7 @@ from rbnics.backends.dolfin.wrapping.is_problem_solution import _split_function
 from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_mute_indices
 from rbnics.utils.cache import Cache, cache
 
+
 # Only a V attribute and a name method are required
 class AuxiliaryProblemForNonParametrizedFunction(object, metaclass=ABCMeta):
     def __init__(self, V):
@@ -21,6 +22,7 @@ class AuxiliaryProblemForNonParametrizedFunction(object, metaclass=ABCMeta):
     @abstractmethod
     def name(self):
         pass
+
 
 def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping):
     @cache  # to skip preprocessing if node is queried multiple time
@@ -70,9 +72,11 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
                 AuxiliaryProblemForNonParametrizedFunction.__name__ + "_" +
                 str(len(_auxiliary_problem_for_non_parametrized_function_cache))
             )
+
             class AuxiliaryProblemForNonParametrizedFunction_Local(AuxiliaryProblemForNonParametrizedFunction):
                 def name(self):
                     return auxiliary_problem_for_non_parametrized_function_name
+
             AuxiliaryProblemForNonParametrizedFunction_Local.__name__ = (
                 auxiliary_problem_for_non_parametrized_function_name)
             auxiliary_problem_for_non_parametrized_function = AuxiliaryProblemForNonParametrizedFunction_Local(V)
@@ -86,8 +90,10 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
 
     return _basic_get_auxiliary_problem_for_non_parametrized_function
 
+
 from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
 from rbnics.utils.decorators import ModuleWrapper
+
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(get_function_space)
 get_auxiliary_problem_for_non_parametrized_function = basic_get_auxiliary_problem_for_non_parametrized_function(

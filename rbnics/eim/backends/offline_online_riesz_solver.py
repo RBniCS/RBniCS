@@ -11,9 +11,12 @@ from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
 from rbnics.utils.cache import cache
 from rbnics.utils.decorators import overload
 
+
 @cache
 def OfflineOnlineRieszSolver(problem_name):
+
     _OfflineOnlineRieszSolver_Base = OfflineOnlineSwitch(problem_name)
+
     class _OfflineOnlineRieszSolver(_OfflineOnlineRieszSolver_Base):
 
         def __call__(self, problem):

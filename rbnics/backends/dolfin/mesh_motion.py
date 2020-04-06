@@ -12,6 +12,7 @@ from rbnics.backends.abstract import MeshMotion as AbstractMeshMotion
 from rbnics.backends.dolfin.wrapping import ParametrizedExpression
 from rbnics.utils.decorators import BackendFor, tuple_of
 
+
 @BackendFor("dolfin", inputs=(FunctionSpace, MeshFunctionSizet, tuple_of(tuple_of(str))))
 class MeshMotion(AbstractMeshMotion):
     def __init__(self, V, subdomains, shape_parametrization_expression):

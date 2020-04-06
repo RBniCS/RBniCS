@@ -11,7 +11,6 @@ from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_problem import Nonlin
 #   NonlinearEllipticRBReducedProblem)
 from rbnics.problems.nonlinear_elliptic.nonlinear_elliptic_reduced_problem import NonlinearEllipticReducedProblem
 
-
 __all__ = [
     "NonlinearEllipticPODGalerkinReducedProblem",
     "NonlinearEllipticProblem",

@@ -9,16 +9,20 @@ import dolfin  # otherwise the next import from rbnics would disable dolfin as a
 from rbnics.utils.test import (add_gold_options, disable_matplotlib, enable_matplotlib, PatchInstanceMethod,
                                process_gold_options, run_and_compare_to_gold)
 
+
 def pytest_addoption(parser):
     add_gold_options(parser, "RBniCS")
 
+
 def pytest_configure(config):
     process_gold_options(config)
+
 
 def pytest_collection_modifyitems(session, config, items):
     for item in items:
         if item.name.startswith("test_eim_approximation_"):
             patch_test_item(item)
+
 
 def patch_test_item(test_item):
     """

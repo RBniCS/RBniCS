@@ -11,6 +11,7 @@ from rbnics.utils.cache import Cache
 
 StokesOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
+
 class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
     """
     The problem to be solved is
@@ -68,25 +69,30 @@ class StokesOptimalControlProblem(StokesOptimalControlProblem_Base):
             "s": Function(V, "s"),
             "r": Function(V, "r")
         }
+
         # I/O
         def _supremizer_cache_key_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._supremizer_cache_key_from_kwargs(**kwargs)
+
         def _supremizer_cache_import(component):
             def _supremizer_cache_import_impl(filename):
                 supremizer = copy(self._supremizer[component])
                 self.import_supremizer(self.folder["cache"], filename, supremizer, component=component)
                 return supremizer
             return _supremizer_cache_import_impl
+
         def _supremizer_cache_export(component):
             def _supremizer_cache_export_impl(filename):
                 self.export_supremizer(self.folder["cache"], filename, component=component)
             return _supremizer_cache_export_impl
+
         def _supremizer_cache_filename_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._supremizer_cache_file_from_kwargs(**kwargs)
+
         self._supremizer_cache = {
             "s": Cache(
                 "problems",

@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def PreserveClassName(Derived):
     Parents = Derived.__bases__
     assert len(Parents) == 1

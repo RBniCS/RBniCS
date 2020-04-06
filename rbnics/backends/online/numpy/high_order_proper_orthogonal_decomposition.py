@@ -23,6 +23,7 @@ HighOrderProperOrthogonalDecomposition_Base = BasicHighOrderProperOrthogonalDeco
     backend, wrapping, online_backend, online_wrapping, AbstractHighOrderProperOrthogonalDecomposition,
     TensorSnapshotsList, TensorBasisList)
 
+
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class HighOrderProperOrthogonalDecomposition(HighOrderProperOrthogonalDecomposition_Base):
     def __init__(self, basis_functions, empty_tensor):

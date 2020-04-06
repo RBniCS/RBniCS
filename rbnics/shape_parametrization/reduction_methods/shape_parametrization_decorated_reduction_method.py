@@ -7,6 +7,7 @@
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.shape_parametrization.problems import ShapeParametrization
 
+
 @ReductionMethodDecoratorFor(ShapeParametrization)
 def ShapeParametrizationDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 

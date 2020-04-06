@@ -20,6 +20,7 @@ with cost
     0.625
 """
 
+
 def test_linear_program_solver():
     c = Vector(2)
     A = Matrix(2, 2)

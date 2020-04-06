@@ -7,6 +7,7 @@
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 
+
 def StoreMapFromParametrizedOperatorsToTermAndIndex(ExactParametrizedFunctionsDecoratedProblem_DerivedClass):
 
     @PreserveClassName
@@ -26,6 +27,7 @@ def StoreMapFromParametrizedOperatorsToTermAndIndex(ExactParametrizedFunctionsDe
     # return value (a class) for the decorator
     return StoreMapFromParametrizedOperatorsToTermAndIndex_Class
 
+
 def add_to_map_from_parametrized_operator_to_term_and_index(operator, term, index):
     if operator not in _parametrized_operator_to_term_and_index_map:
         _parametrized_operator_to_term_and_index_map[operator] = (term, index)
@@ -34,8 +36,10 @@ def add_to_map_from_parametrized_operator_to_term_and_index(operator, term, inde
         # of them anyway since we are going to use this function to only export the term name
         pass
 
+
 def get_term_and_index_from_parametrized_operator(operator):
     assert operator in _parametrized_operator_to_term_and_index_map
     return _parametrized_operator_to_term_and_index_map[operator]
+
 
 _parametrized_operator_to_term_and_index_map = Cache()

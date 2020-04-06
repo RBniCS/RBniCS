@@ -8,7 +8,9 @@ from numbers import Number
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
+
 def Vector(backend, wrapping, VectorBaseType):
+
     class Vector_Class(object):
         def __init__(self, N, content=None):
             assert isinstance(N, (int, dict))

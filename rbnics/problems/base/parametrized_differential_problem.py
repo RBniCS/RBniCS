@@ -15,6 +15,7 @@ from rbnics.utils.decorators import (StoreMapFromProblemNameToProblem, StoreMapF
                                      StoreMapFromSolutionToProblem)
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @StoreMapFromProblemNameToProblem
 @StoreMapFromProblemToTrainingStatus
 @StoreMapFromSolutionToProblem
@@ -64,20 +65,25 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
         self._output = 0.
         # I/O
         self.folder["cache"] = os.path.join(self.folder_prefix, "cache")
+
         def _solution_cache_key_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_key_from_kwargs(**kwargs)
+
         def _solution_cache_import(filename):
             solution = copy(self._solution)
             self.import_solution(self.folder["cache"], filename, solution)
             return solution
+
         def _solution_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
+
         def _solution_cache_filename_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_file_from_kwargs(**kwargs)
+
         self._solution_cache = Cache(
             "problems",
             key_generator=_solution_cache_key_generator,
@@ -85,21 +91,26 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
             export=_solution_cache_export,
             filename_generator=_solution_cache_filename_generator
         )
+
         def _output_cache_key_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_key_from_kwargs(**kwargs)
+
         def _output_cache_import(filename):
             output = [0.]
             self.import_output(self.folder["cache"], filename, output)
             assert len(output) == 1
             return output[0]
+
         def _output_cache_export(filename):
             self.export_output(self.folder["cache"], filename)
+
         def _output_cache_filename_generator(*args, **kwargs):
             assert len(args) == 1
             assert args[0] == self.mu
             return self._cache_file_from_kwargs(**kwargs)
+
         self._output_cache = Cache(
             "problems",
             key_generator=_output_cache_key_generator,
@@ -244,12 +255,15 @@ class ParametrizedDifferentialProblem(ParametrizedProblem, metaclass=ABCMeta):
                         # but not the one in compute_theta (since theta would not matter, being multiplied by zero)
                         def generate_modified_compute_theta(component, operator_bc):
                             standard_compute_theta = self.compute_theta
+
                             def modified_compute_theta(self_, term):
                                 if term == dirichlet_bc_string.format(c=component):
                                     return (0., ) * len(operator_bc)
                                 else:
                                     return standard_compute_theta(term)
+
                             return modified_compute_theta
+
                         PatchInstanceMethod(
                             self, "compute_theta", generate_modified_compute_theta(component, operator_bc)).patch()
                         dirichlet_bc_are_homogeneous[component] = True

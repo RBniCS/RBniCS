@@ -10,6 +10,7 @@ from rbnics.scm.problems.scm_approximation import SCMApproximation
 from rbnics.scm.problems.decorated_problem_with_stability_factor_evaluation import (
     DecoratedProblemWithStabilityFactorEvaluation)
 
+
 def SCMDecoratedProblem(
     **decorator_kwargs
 ):

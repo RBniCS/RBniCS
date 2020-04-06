@@ -8,6 +8,7 @@
 from rbnics.backends.abstract import TensorsList as AbstractTensorsList
 from rbnics.utils.decorators import overload
 
+
 def basic_tensors_list_mul_online_function(backend, wrapping):
     def _basic_tensors_list_mul_online_function(tensors_list, online_function):
         output = wrapping.tensor_copy(tensors_list._list[0])

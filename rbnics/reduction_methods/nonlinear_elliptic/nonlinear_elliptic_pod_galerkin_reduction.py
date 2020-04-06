@@ -14,6 +14,7 @@ from rbnics.reduction_methods.nonlinear_elliptic.nonlinear_elliptic_reduction_me
 NonlinearEllipticPODGalerkinReduction_Base = NonlinearPODGalerkinReduction(
     NonlinearEllipticReductionMethod(EllipticPODGalerkinReduction))
 
+
 @ReductionMethodFor(NonlinearEllipticProblem, "PODGalerkin")
 class NonlinearEllipticPODGalerkinReduction(NonlinearEllipticPODGalerkinReduction_Base):
     pass

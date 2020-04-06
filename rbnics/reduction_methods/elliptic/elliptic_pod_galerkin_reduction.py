@@ -12,6 +12,7 @@ from rbnics.utils.decorators import ReductionMethodFor
 EllipticPODGalerkinReduction_Base = LinearPODGalerkinReduction(
     EllipticReductionMethod(DifferentialProblemReductionMethod))
 
+
 # Base class containing the interface of a POD-Galerkin ROM
 # for elliptic problems
 @ReductionMethodFor(EllipticProblem, "PODGalerkin")

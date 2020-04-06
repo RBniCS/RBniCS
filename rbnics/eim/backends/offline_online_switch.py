@@ -6,8 +6,10 @@
 
 from rbnics.utils.cache import cache
 
+
 @cache
 def OfflineOnlineSwitch(problem_name):
+
     class _OfflineOnlineSwitch(object):
         _current_stage = "offline"
 

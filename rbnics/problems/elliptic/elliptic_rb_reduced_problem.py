@@ -15,6 +15,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 
 EllipticRBReducedProblem_Base = LinearRBReducedProblem(EllipticReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 # Base class containing the interface of a projection based ROM
 # for elliptic problems.
 # The following implementation will be retained if no output is provided in the "s" term

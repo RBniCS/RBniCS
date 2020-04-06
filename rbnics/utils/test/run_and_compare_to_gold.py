@@ -17,23 +17,29 @@ except ImportError:
 from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test.diff import diff
 
+
 def run_and_compare_to_gold(subdirectory=""):
+
     def run_and_compare_to_gold_decorator(runtest):
+
         def run_and_compare_to_gold_function(self):
             """
             Handles the comparison of test/tutorial with gold files
             """
 
             rootdir = str(self.config.rootdir)
+
             # Get action
             action = self.config.option.action
             assert action in ("compare", "regold", None)
+
             # Get data directory
             if action is not None:
                 data_dir = self.config.option.data_dir
                 assert data_dir is not None
             else:
                 data_dir = None
+
             # Get current and reference directory
             current_dir = str(self.fspath.dirname)
             if action is not None:
@@ -42,6 +48,7 @@ def run_and_compare_to_gold(subdirectory=""):
                 reference_dir = os.path.join(reference_dir, subdirectory)
             else:
                 reference_dir = None
+
             # Copy training and testing sets
             if action is not None:
                 def copy_training_and_testing_sets():
@@ -57,8 +64,10 @@ def run_and_compare_to_gold(subdirectory=""):
                                 shutil.copytree(os.path.join(reference_dir, set_directory),
                                                 os.path.join(current_dir, set_directory))
                 parallel_io(copy_training_and_testing_sets)
+
             # Run test/tutorial
             runtest(self)
+
             # Process results
             def process_results():
                 if action == "compare":
@@ -98,5 +107,7 @@ def run_and_compare_to_gold(subdirectory=""):
                     # Clean repository
                     data_dir_repo.git.clean("-Xdf")
             parallel_io(process_results)
+
         return run_and_compare_to_gold_function
+
     return run_and_compare_to_gold_decorator

@@ -13,6 +13,7 @@ from rbnics.utils.decorators import ReducedProblemFor
 EllipticPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
     EllipticReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 # Base class containing the interface of a projection based ROM
 # for elliptic problems.
 @ReducedProblemFor(EllipticProblem, EllipticPODGalerkinReduction)

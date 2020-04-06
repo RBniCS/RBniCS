@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 class ElasticBlock(EllipticCoerciveProblem):
 
     # Default initialization of members
@@ -88,6 +89,7 @@ class ElasticBlock(EllipticCoerciveProblem):
         lambda_1 = self.lambda_1
         lambda_2 = self.lambda_2
         return 2.0 * lambda_2 * inner(sym(grad(u)), sym(grad(v))) + lambda_1 * tr(sym(grad(u))) * tr(sym(grad(v)))
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/elastic_block.xml")

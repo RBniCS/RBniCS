@@ -10,6 +10,7 @@ from rbnics.eim.problems.eim_approximation import EIMApproximation
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import sync_setters
 
+
 def set_mu_decorator(set_mu):
     def decorated_set_mu(self, mu):
         assert isinstance(mu, (EnlargedMu, tuple))
@@ -27,6 +28,7 @@ def set_mu_decorator(set_mu):
             raise ValueError("Invalid mu")
 
     return decorated_set_mu
+
 
 class TimeDependentEIMApproximation(EIMApproximation):
 
@@ -52,18 +54,22 @@ class TimeDependentEIMApproximation(EIMApproximation):
             assert args[1] == self.t
             assert len(kwargs) == 0
             return self._cache_key()
+
         def _snapshot_cache_import(filename):
             snapshot = copy(self.snapshot)
             self.import_solution(self.folder["cache"], filename, snapshot)
             return snapshot
+
         def _snapshot_cache_export(filename):
             self.export_solution(self.folder["cache"], filename)
+
         def _snapshot_cache_filename_generator(*args, **kwargs):
             assert len(args) == 2
             assert args[0] == self.mu
             assert args[1] == self.t
             assert len(kwargs) == 0
             return self._cache_file()
+
         self._snapshot_cache = Cache(
             "EIM",
             key_generator=_snapshot_cache_key_generator,
@@ -101,6 +107,7 @@ class TimeDependentEIMApproximation(EIMApproximation):
 
     def _cache_key(self):
         return (self.mu, self.t)
+
 
 class EnlargedMu(dict):
     def __str__(self):

@@ -8,6 +8,7 @@ from rbnics.problems.base.linear_pod_galerkin_reduced_problem import LinearPODGa
 from rbnics.problems.base.time_dependent_pod_galerkin_reduced_problem import TimeDependentPODGalerkinReducedProblem
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(LinearPODGalerkinReducedProblem, TimeDependentPODGalerkinReducedProblem)
 def LinearTimeDependentPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

@@ -8,6 +8,7 @@ from rbnics.problems.base.linear_problem import LinearProblem
 from rbnics.problems.base.time_dependent_problem import TimeDependentProblem
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(LinearProblem, TimeDependentProblem)
 def LinearTimeDependentProblem(ParametrizedDifferentialProblem_DerivedClass):
 

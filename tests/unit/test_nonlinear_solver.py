@@ -19,6 +19,7 @@ Solve
 for g such that u = u_ex = x + sin(2*x)
 """
 
+
 # ~~~ Sparse case ~~~ #
 def _test_nonlinear_solver_sparse(callback_type):
     from dolfin import Function
@@ -114,6 +115,7 @@ def _test_nonlinear_solver_sparse(callback_type):
     assert isclose(error_norm, 0., atol=1.e-5)
     return (error_norm, V, u, r, j, X, initial_guess, exact_solution)
 
+
 # ~~~ Dense case ~~~ #
 def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solution):
     from rbnics.backends.online.numpy import Function, NonlinearSolver, Matrix, Vector
@@ -202,6 +204,7 @@ def _test_nonlinear_solver_dense(V, u, r, j, X, sparse_initial_guess, exact_solu
     print("Dense error:", error_norm)
     assert isclose(error_norm, 0., atol=1.e-5)
     return error_norm
+
 
 # ~~~ Test function ~~~ #
 def test_nonlinear_solver():

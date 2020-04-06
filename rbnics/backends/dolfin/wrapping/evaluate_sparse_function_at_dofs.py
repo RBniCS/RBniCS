@@ -10,6 +10,7 @@ from dolfin import Function
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_vector_at_dofs import evaluate_sparse_vector_at_dofs
 from rbnics.backends.dolfin.wrapping.to_petsc4py import to_petsc4py
 
+
 def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, reduced_dofs_list=None):
     assert (output_V is None) == (reduced_dofs_list is None)
     if output_V is None:
@@ -20,6 +21,7 @@ def evaluate_sparse_function_at_dofs(input_function, dofs_list, output_V=None, r
         out = to_petsc4py(output_function.vector())
         _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list)
         return output_function
+
 
 def _evaluate_sparse_function_at_dofs(vec, dofs_list, out, reduced_dofs_list):
     vec_row_start, vec_row_end = vec.getOwnershipRange()

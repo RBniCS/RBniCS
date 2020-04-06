@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class GramSchmidt(object, metaclass=ABCMeta):
     def __init__(self, space, inner_product, component=None):

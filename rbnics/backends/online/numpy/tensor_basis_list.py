@@ -11,6 +11,7 @@ from rbnics.utils.decorators import BackendFor
 
 TensorBasisList_Base = BasicTensorBasisList(TensorsList)
 
+
 @BackendFor("numpy", inputs=(AbstractTensorsList, ))
 class TensorBasisList(TensorBasisList_Base):
     pass

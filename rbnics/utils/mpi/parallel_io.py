@@ -7,6 +7,7 @@
 import sys
 from mpi4py.MPI import COMM_WORLD
 
+
 def parallel_io(lambda_function, mpi_comm=None):
     if mpi_comm is None:
         mpi_comm = COMM_WORLD

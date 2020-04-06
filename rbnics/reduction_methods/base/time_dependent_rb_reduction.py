@@ -15,6 +15,7 @@ from rbnics.utils.io import ErrorAnalysisTable
 
 logger = getLogger("rbnics/reduction_methods/base/time_dependent_rb_reduction.py")
 
+
 @RequiredBaseDecorators(RBReduction, TimeDependentReductionMethod)
 def TimeDependentRBReduction(DifferentialProblemReductionMethod_DerivedClass):
 

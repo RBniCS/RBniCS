@@ -22,6 +22,7 @@ online_backend = ModuleWrapper(OnlineFunction=Function, OnlineMatrix=Matrix, Onl
 online_wrapping = ModuleWrapper(function_to_vector)
 BasisFunctionsMatrix_Base = BasicBasisFunctionsMatrix(backend, wrapping, online_backend, online_wrapping)
 
+
 @BackendFor("numpy", inputs=(AbstractFunctionsList, ))
 class BasisFunctionsMatrix(BasisFunctionsMatrix_Base):
     pass

@@ -17,7 +17,9 @@ from rbnics.utils.io import OnlineSizeDict
 
 logger = getLogger("rbnics/backends/dolfin/form_on_reduced_function_space.py")
 
+
 def basic_form_on_reduced_function_space(backend, wrapping, online_backend, online_wrapping):
+
     def _basic_form_on_reduced_function_space(form_wrapper, at):
         form = form_wrapper._form
         form_name = form_wrapper.name()

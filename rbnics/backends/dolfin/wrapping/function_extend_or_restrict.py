@@ -7,6 +7,7 @@
 from collections import OrderedDict
 from dolfin import assign, Function
 
+
 def function_extend_or_restrict(function, function_components, V, V_components, weight, copy,
                                 extended_or_restricted_function=None):
     function_V = function.function_space()
@@ -92,6 +93,7 @@ def function_extend_or_restrict(function, function_components, V, V_components, 
             restricted_function.vector()[:] *= weight
         return restricted_function
 
+
 def _function_spaces_eq(V, W, index_V, index_W):  # V == W
     V = _sub_from_tuple(V, index_V)
     W = _sub_from_tuple(W, index_W)
@@ -99,6 +101,7 @@ def _function_spaces_eq(V, W, index_V, index_W):  # V == W
     # We thus resort to:
     assert V.ufl_domain() == W.ufl_domain()
     return V.ufl_element() == W.ufl_element()
+
 
 def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W):  # V < W
     assert V.ufl_domain() == W.ufl_domain()
@@ -138,8 +141,10 @@ def _function_spaces_lt(V, W, W_to_V_mapping, index_V, index_W):  # V < W
 
     return True
 
+
 def _function_spaces_gt(V, W, V_to_W_mapping, index_V, index_W):  # V > W
     return _function_spaces_lt(W, V, V_to_W_mapping, index_W, index_V)
+
 
 def _get_sub_elements(V, index_V):
     if index_V is not None:
@@ -161,6 +166,7 @@ def _get_sub_elements(V, index_V):
             output.update(sub_elements__sorted_by_index_length[index_length])
     return output
 
+
 def _get_sub_elements__recursive(V, index_V):
     sub_elements = OrderedDict()
     if V.num_sub_spaces() == 0:
@@ -177,6 +183,7 @@ def _get_sub_elements__recursive(V, index_V):
             sub_elements_i = _get_sub_elements__recursive(V.sub(i), index_V_comma_i)
             sub_elements.update(sub_elements_i)
         return sub_elements
+
 
 def _sub_from_tuple(input_, index_as_tuple):
     if index_as_tuple is None:

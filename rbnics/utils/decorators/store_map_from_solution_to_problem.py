@@ -7,6 +7,7 @@
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
+
 def StoreMapFromSolutionToProblem(ParametrizedDifferentialProblem_DerivedClass):
 
     @PreserveClassName
@@ -22,14 +23,17 @@ def StoreMapFromSolutionToProblem(ParametrizedDifferentialProblem_DerivedClass):
     # return value (a class) for the decorator
     return StoreMapFromSolutionToProblem_Class
 
+
 def add_to_map_from_solution_to_problem(solution, problem):
     if solution not in _solution_to_problem_map:
         _solution_to_problem_map[solution] = problem
     else:
         assert problem is _solution_to_problem_map[solution]
 
+
 def get_problem_from_solution(solution):
     assert solution in _solution_to_problem_map
     return _solution_to_problem_map[solution]
+
 
 _solution_to_problem_map = Cache()

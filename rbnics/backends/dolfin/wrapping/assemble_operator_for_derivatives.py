@@ -8,6 +8,7 @@ import types
 from rbnics.backends.dolfin.wrapping.assemble_operator_for_derivative import assemble_operator_for_derivative
 from rbnics.utils.decorators import overload
 
+
 def assemble_operator_for_derivatives(assemble_operator):
     from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
     from rbnics.problems.navier_stokes import NavierStokesProblem

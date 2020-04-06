@@ -9,6 +9,7 @@ from rbnics.backends.online import OnlineAffineExpansionStorage
 from rbnics.utils.io import Folders, TextIO as NmaxIO
 from rbnics.utils.decorators import overload, tuple_of
 
+
 class OnlineNonHierarchicalAffineExpansionStorage(object):
     def __init__(self, arg1):
         self._content = dict()

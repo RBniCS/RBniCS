@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend
 
+
 @AbstractBackend
 class SymbolicParameters(object, metaclass=ABCMeta):
     def __init__(cls, problem, space, mu):

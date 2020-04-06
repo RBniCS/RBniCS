@@ -8,6 +8,7 @@ from rbnics.problems.base.nonlinear_reduced_problem import NonlinearReducedProbl
 from rbnics.problems.base.pod_galerkin_reduced_problem import PODGalerkinReducedProblem
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(NonlinearReducedProblem, PODGalerkinReducedProblem)
 def NonlinearPODGalerkinReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

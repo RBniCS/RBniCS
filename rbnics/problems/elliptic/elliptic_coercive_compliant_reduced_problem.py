@@ -6,6 +6,7 @@
 
 from rbnics.backends import product, sum, transpose
 
+
 def EllipticCoerciveCompliantReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
 
     EllipticCoerciveCompliantReducedProblem_Base = EllipticCoerciveReducedProblem_DerivedClass

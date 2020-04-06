@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def form_argument_space(form, number):
     all_arguments = form.arguments()
     number_arguments = list()

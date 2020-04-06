@@ -7,6 +7,7 @@
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 from rbnics.utils.decorators.store_problem_decorators_for_factories import StoreProblemDecoratorsForFactories
 
+
 def ProblemDecoratorFor(Algorithm, ExactAlgorithm=None, replaces=None, replaces_if=None, **kwargs):
     def ProblemDecoratorFor_Decorator(ProblemDecorator):
         def ProblemDecorator_WithStorage(Problem):

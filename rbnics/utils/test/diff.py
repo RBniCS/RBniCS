@@ -10,6 +10,7 @@ from numpy import isclose
 from rbnics.utils.decorators import dict_of, list_of, overload, tuple_of
 from rbnics.utils.io import CSVIO, TextIO
 
+
 def diff(reference_file, current_file):
     reference_ext = os.path.splitext(reference_file)[1]
     current_ext = os.path.splitext(current_file)[1]
@@ -21,15 +22,18 @@ def diff(reference_file, current_file):
     else:
         raise ValueError("Invalid argument to diff")
 
+
 def _diff_txt(reference_file, current_file):
     reference_content = TextIO.load_file("", reference_file)
     current_content = TextIO.load_file("", current_file)
     return _diff_content(reference_content, current_content, "")
 
+
 def _diff_csv(reference_file, current_file):
     reference_lines = CSVIO.load_file("", reference_file)
     current_lines = CSVIO.load_file("", current_file)
     return _diff_content(reference_lines, current_lines, "")
+
 
 @overload
 def _diff_content(reference_items: (list_of(object), tuple_of(object)),
@@ -51,6 +55,7 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)),
                         d
                     )
         return diff_items
+
 
 @overload
 def _diff_content(reference_items: dict_of(object, object), current_items: dict_of(object, object), tab: str):
@@ -78,6 +83,7 @@ def _diff_content(reference_items: dict_of(object, object), current_items: dict_
                     )
         return diff_items
 
+
 @overload
 def _diff_content(reference_item: str, current_item: str, tab: str):
     try:
@@ -97,6 +103,7 @@ def _diff_content(reference_item: str, current_item: str, tab: str):
         assert isinstance(reference_item, float)
         assert isinstance(current_item, float)
         return _diff_content(reference_item, current_item, tab)
+
 
 @overload
 def _diff_content(reference_item: Number, current_item: Number, tab: str):

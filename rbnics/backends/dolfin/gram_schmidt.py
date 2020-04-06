@@ -19,6 +19,7 @@ backend = ModuleWrapper(Function, transpose)
 wrapping = ModuleWrapper(function_extend_or_restrict, get_function_subspace, gram_schmidt_projection_step)
 GramSchmidt_Base = BasicGramSchmidt(backend, wrapping)
 
+
 @BackendFor("dolfin", inputs=(FunctionSpace, (Form, Matrix.Type()), (str, None)))
 class GramSchmidt(GramSchmidt_Base):
     @overload(Operator, (None, str, dict_of(str, str)))

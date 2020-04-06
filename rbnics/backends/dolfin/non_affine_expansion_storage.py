@@ -13,6 +13,7 @@ backend = ModuleWrapper(ParametrizedTensorFactory)
 wrapping = ModuleWrapper()
 NonAffineExpansionStorage_Base = BasicNonAffineExpansionStorage(backend, wrapping)
 
+
 @BackendFor("dolfin", inputs=(tuple_of(Form), ))
 class NonAffineExpansionStorage(NonAffineExpansionStorage_Base):
     pass

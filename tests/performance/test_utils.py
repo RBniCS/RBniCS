@@ -9,11 +9,13 @@ from dolfin import Function
 from numpy.random import random, randint
 from rbnics.backends.online.numpy import Matrix as NumpyMatrix, Vector as NumpyVector
 
+
 def RandomDolfinFunction(V):
     f = Function(V)
     f.vector().set_local(_rand(f.vector().get_local().size))
     f.vector().apply("insert")
     return f
+
 
 def RandomNumber():
     if COMM_WORLD.rank == 0:
@@ -24,6 +26,7 @@ def RandomNumber():
     assert number is not None
     return number
 
+
 def RandomNumpyMatrix(N, M):
     m = NumpyMatrix(N, M)
     if COMM_WORLD.rank == 0:
@@ -31,12 +34,14 @@ def RandomNumpyMatrix(N, M):
     COMM_WORLD.Bcast(m.content, root=0)
     return m
 
+
 def RandomNumpyVector(N):
     v = NumpyVector(N)
     if COMM_WORLD.rank == 0:
         v[:] = _rand(N)
     COMM_WORLD.Bcast(v.content, root=0)
     return v
+
 
 def RandomSize(N_lower, N_upper):
     if COMM_WORLD.rank == 0:
@@ -47,6 +52,7 @@ def RandomSize(N_lower, N_upper):
     assert size is not None
     return size
 
+
 def RandomTuple(Q):
     if COMM_WORLD.rank == 0:
         tuple_ = tuple(float(v) for v in _rand(Q))
@@ -55,6 +61,7 @@ def RandomTuple(Q):
     tuple_ = COMM_WORLD.bcast(tuple_, root=0)
     assert tuple_ is not None
     return tuple_
+
 
 def _rand(*args):
     return (-1)**randint(2, size=(args)) * random(args) / (1e-3 + random(args))

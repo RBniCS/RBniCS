@@ -12,6 +12,7 @@ from rbnics.scm.reduction_methods.scm_approximation_reduction_method import SCMA
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.utils.test import PatchInstanceMethod
 
+
 @ReductionMethodDecoratorFor(SCM)
 def SCMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 

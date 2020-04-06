@@ -8,6 +8,7 @@ from dolfin import *
 from rbnics import *
 from sampling import LinearlyDependentUniformDistribution
 
+
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
 class Stokes(StokesProblem):
@@ -95,6 +96,7 @@ class Stokes(StokesProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/t_bypass.xml")
 subdomains = MeshFunction("size_t", mesh, "data/t_bypass_physical_region.xml")
@@ -133,11 +135,14 @@ reduced_stokes_problem.set_mu(online_mu)
 reduced_stokes_problem.solve()
 reduced_stokes_problem.export_solution(filename="online_solution")
 
+
 # 7. Perform an error analysis
 def N_generator():
     N = min(reduced_stokes_problem.N.values())
     for n in range(2, N + 1, 2):
         yield n
+
+
 pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
 pod_galerkin_method.error_analysis(N_generator)
 

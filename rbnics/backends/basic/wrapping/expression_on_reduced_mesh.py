@@ -4,5 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def expression_on_reduced_mesh(expression_wrapper, at):
     pass

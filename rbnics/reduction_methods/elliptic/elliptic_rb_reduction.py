@@ -11,6 +11,7 @@ from rbnics.utils.decorators import ReductionMethodFor
 
 EllipticRBReduction_Base = LinearRBReduction(EllipticReductionMethod(DifferentialProblemReductionMethod))
 
+
 # Base class containing the interface of the RB method
 # for elliptic problems
 @ReductionMethodFor(EllipticProblem, "ReducedBasis")

@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class TimeQuadrature(object, metaclass=ABCMeta):
     def __init__(self, time_interval, function_over_time):

@@ -18,6 +18,7 @@ NavierStokesUnsteadyPODGalerkinReducedProblem_Base = AbstractCFDUnsteadyPODGaler
     NonlinearTimeDependentPODGalerkinReducedProblem(
         NavierStokesUnsteadyReducedProblem(NavierStokesPODGalerkinReducedProblem)))
 
+
 @ReducedProblemFor(NavierStokesUnsteadyProblem, NavierStokesUnsteadyPODGalerkinReduction)
 class NavierStokesUnsteadyPODGalerkinReducedProblem(NavierStokesUnsteadyPODGalerkinReducedProblem_Base):
     pass

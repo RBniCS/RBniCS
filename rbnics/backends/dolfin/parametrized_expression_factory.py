@@ -32,6 +32,7 @@ wrapping = ModuleWrapper(
     is_parametrized=is_parametrized, is_time_dependent=is_time_dependent)
 ParametrizedExpressionFactory_Base = BasicParametrizedExpressionFactory(backend, wrapping)
 
+
 @BackendFor("dolfin", inputs=((BaseExpression, Function.Type(), Operator), ))
 class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
     def __init__(self, expression):
@@ -43,6 +44,7 @@ class ParametrizedExpressionFactory(ParametrizedExpressionFactory_Base):
         inner_product = assemble(inner(f, g) * dx)
         # Call Parent
         ParametrizedExpressionFactory_Base.__init__(self, expression, space, inner_product)
+
 
 # Space generation for BaseExpression
 @overload
@@ -64,10 +66,12 @@ def _generate_space(expression: BaseExpression):
         raise ValueError("Invalid expression in ParametrizedExpressionFactory.__init__().")
     return space
 
+
 # Space generation for Function
 @overload
 def _generate_space(expression: Function.Type()):
     return expression.function_space()
+
 
 # Space generation for Operator
 @overload

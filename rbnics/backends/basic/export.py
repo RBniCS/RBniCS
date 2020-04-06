@@ -7,7 +7,9 @@
 from rbnics.utils.decorators import overload
 from rbnics.utils.io import Folders
 
+
 def export(backend, wrapping):
+
     class _Export(object):
         @overload(backend.Function.Type(), (Folders.Folder, str), str, (int, None), None)
         def __call__(self, solution, directory, filename, suffix, component):
@@ -22,4 +24,5 @@ def export(backend, wrapping):
         @overload((backend.Matrix.Type(), backend.Vector.Type()), (Folders.Folder, str), str, None, None)
         def __call__(self, solution, directory, filename, suffix, component):
             wrapping.tensor_save(solution, directory, filename)
+
     return _Export()

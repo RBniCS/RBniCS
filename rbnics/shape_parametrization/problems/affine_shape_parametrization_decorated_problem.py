@@ -13,6 +13,7 @@ from rbnics.utils.decorators import ProblemDecoratorFor
 
 logger = getLogger("rbnics/shape_parametrization/problems/affine_shape_parametrization_decorated_problem.py")
 
+
 def AffineShapeParametrizationDecoratedProblem(*shape_parametrization_vertices_mappings, **decorator_kwargs):
 
     if "shape_parametrization_vertices_mappings" in decorator_kwargs:

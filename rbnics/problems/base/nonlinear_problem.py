@@ -7,6 +7,7 @@
 from rbnics.backends import NonlinearProblemWrapper, NonlinearSolver
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(None)
 def NonlinearProblem(ParametrizedDifferentialProblem_DerivedClass):
 

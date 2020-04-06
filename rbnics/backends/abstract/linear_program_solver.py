@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class LinearProgramSolver(object, metaclass=ABCMeta):
     def __init__(self, cost, inequality_constraints_matrix, inequality_constraints_vector, bounds):

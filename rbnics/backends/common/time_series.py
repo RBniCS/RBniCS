@@ -9,6 +9,7 @@ from numpy import arange, isclose
 from rbnics.backends.abstract import TimeSeries as AbstractTimeSeries
 from rbnics.utils.decorators import BackendFor, overload, tuple_of
 
+
 @BackendFor("common", inputs=((tuple_of(Number), AbstractTimeSeries), (Number, None)))
 class TimeSeries(AbstractTimeSeries):
     def __init__(self, *args):

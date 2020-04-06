@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, abstractonlinemethod
 
+
 @AbstractBackend
 class AffineExpansionStorage(object, metaclass=ABCMeta):
     def __init__(self):

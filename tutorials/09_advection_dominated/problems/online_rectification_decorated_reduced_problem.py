@@ -13,6 +13,7 @@ from rbnics.utils.io import GreedySelectedParametersList
 from backends.online import OnlineMatrix, OnlineNonHierarchicalAffineExpansionStorage, OnlineSolveKwargsGenerator
 from .online_rectification import OnlineRectification
 
+
 @ReducedProblemDecoratorFor(OnlineRectification)
 def OnlineRectificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
 

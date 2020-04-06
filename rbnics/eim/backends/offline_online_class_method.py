@@ -7,9 +7,12 @@
 from rbnics.eim.backends.offline_online_switch import OfflineOnlineSwitch
 from rbnics.utils.cache import cache
 
+
 @cache
 def OfflineOnlineClassMethod(problem_name):
+
     _OfflineOnlineClassMethod_Base = OfflineOnlineSwitch(problem_name)
+
     class _OfflineOnlineClassMethod(_OfflineOnlineClassMethod_Base):
         def __init__(self, problem, original_class_method_name):
             _OfflineOnlineClassMethod_Base.__init__(self)

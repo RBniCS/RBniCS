@@ -8,7 +8,9 @@ from numbers import Number
 from rbnics.backends.online.basic.wrapping import slice_to_array, slice_to_size
 from rbnics.utils.io import ComponentNameToBasisComponentIndexDict, OnlineSizeDict
 
+
 def Matrix(backend, wrapping, MatrixBaseType):
+
     class Matrix_Class(object):
         def __init__(self, M, N, content=None):
             assert isinstance(M, (int, dict))

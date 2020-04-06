@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def tensor_copy(tensor):
     output = tensor.copy()
     # Preserve generator for I/O

@@ -9,6 +9,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import dict_of, overload, PreserveClassName
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
 
     @PreserveClassName
@@ -58,14 +59,17 @@ def StoreMapFromEachBasisFunctionToComponentAndIndex(ExactParametrizedFunctionsD
     # return value (a class) for the decorator
     return StoreMapFromEachBasisFunctionToComponentAndIndex_Class
 
+
 def add_to_map_from_basis_function_to_component_and_index(basis_function, component, index):
     if basis_function not in _basis_function_to_component_and_index_map:
         _basis_function_to_component_and_index_map[basis_function] = (component, index)
     else:
         assert (component, index) == _basis_function_to_component_and_index_map[basis_function]
 
+
 def get_component_and_index_from_basis_function(basis_function):
     assert basis_function in _basis_function_to_component_and_index_map
     return _basis_function_to_component_and_index_map[basis_function]
+
 
 _basis_function_to_component_and_index_map = Cache()

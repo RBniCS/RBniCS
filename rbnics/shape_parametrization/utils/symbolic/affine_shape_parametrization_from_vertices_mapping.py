@@ -11,6 +11,7 @@ from rbnics.shape_parametrization.utils.symbolic.strings_to_sympy_symbolic_param
     strings_to_sympy_symbolic_parameters)
 from rbnics.shape_parametrization.utils.symbolic.sympy_symbolic_coordinates import sympy_symbolic_coordinates
 
+
 def affine_shape_parametrization_from_vertices_mapping(dim, vertices_mapping):
     # Check if the "identity" string is provided, and return this trivial case
     if isinstance(vertices_mapping, str):

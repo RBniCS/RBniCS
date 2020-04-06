@@ -6,7 +6,9 @@
 
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
 
+
 def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, **kwargs):
+
     def StoreProblemDecoratorsForFactories_Decorator(DecoratedProblem_Base):
         assert issubclass(DecoratedProblem_Base, Problem)
 
@@ -62,5 +64,6 @@ def StoreProblemDecoratorsForFactories(Problem, Algorithm, ExactAlgorithm=None, 
 
         # Return
         return DecoratedProblem
+
     # Return
     return StoreProblemDecoratorsForFactories_Decorator

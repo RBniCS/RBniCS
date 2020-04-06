@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class TimeSeries(metaclass=ABCMeta):
     def __init__(self, *args):

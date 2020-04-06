@@ -7,6 +7,7 @@
 from numpy import random
 from rbnics.sampling.distributions import CompositeDistribution, DrawFrom
 
+
 class BetaDistribution(CompositeDistribution):
     def __init__(self, a, b):
         assert isinstance(a, (list, tuple))

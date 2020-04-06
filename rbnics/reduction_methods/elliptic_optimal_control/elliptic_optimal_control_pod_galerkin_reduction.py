@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-
 from rbnics.utils.decorators import ReductionMethodFor
 from rbnics.problems.elliptic_optimal_control.elliptic_optimal_control_problem import EllipticOptimalControlProblem
 from rbnics.reduction_methods.base import DifferentialProblemReductionMethod, LinearPODGalerkinReduction
@@ -13,6 +12,7 @@ from rbnics.reduction_methods.elliptic_optimal_control.elliptic_optimal_control_
 
 EllipticOptimalControlPODGalerkinReduction_Base = LinearPODGalerkinReduction(
     EllipticOptimalControlReductionMethod(DifferentialProblemReductionMethod))
+
 
 @ReductionMethodFor(EllipticOptimalControlProblem, "PODGalerkin")
 class EllipticOptimalControlPODGalerkinReduction(EllipticOptimalControlPODGalerkinReduction_Base):

@@ -24,7 +24,9 @@ from rbnics.utils.decorators import BackendFor, get_problem_from_solution, get_p
 
 logger = getLogger("rbnics/backends/dolfin/separated_parametrized_form.py")
 
+
 def BasicSeparatedParametrizedForm(backend, wrapping):
+
     class _BasicSeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
         def __init__(self, form, strict=False):
             AbstractSeparatedParametrizedForm.__init__(self, form)
@@ -423,6 +425,7 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
 
     return _BasicSeparatedParametrizedForm
 
+
 from rbnics.backends.dolfin.wrapping import (expression_name, is_problem_solution, is_problem_solution_dot,
                                              is_problem_solution_type, is_pull_back_expression,
                                              is_pull_back_expression_parametrized,
@@ -433,6 +436,7 @@ wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_proble
                          solution_dot_identify_component, solution_identify_component,
                          expression_name=expression_name)
 SeparatedParametrizedForm_Base = BasicSeparatedParametrizedForm(backend, wrapping)
+
 
 @BackendFor("dolfin", inputs=(Form, ))
 class SeparatedParametrizedForm(SeparatedParametrizedForm_Base):

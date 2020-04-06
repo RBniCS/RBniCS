@@ -14,6 +14,7 @@ from rbnics.eim.reduction_methods.time_dependent_eim_approximation_reduction_met
     TimeDependentEIMApproximationReductionMethod)
 from rbnics.problems.base import ParametrizedProblem
 
+
 @pytest.mark.parametrize("expression_type", ["Function", "Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_10(expression_type, basis_generation):

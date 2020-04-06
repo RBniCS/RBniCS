@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 class ThermalBlock(EllipticCoerciveCompliantProblem):
 
     # Default initialization of members
@@ -66,6 +67,7 @@ class ThermalBlock(EllipticCoerciveCompliantProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # 1. Read the mesh for this problem
 mesh = Mesh("data/thermal_block.xml")
 subdomains = MeshFunction("size_t", mesh, "data/thermal_block_physical_region.xml")
@@ -94,11 +96,14 @@ reduced_thermal_block_problem.set_mu(online_mu)
 reduced_thermal_block_problem.solve()
 reduced_thermal_block_problem.export_solution(filename="online_solution")
 
+
 # 7. Perform an error analysis
 def N_generator():
     N = reduced_thermal_block_problem.N
     for n in range(2, N + 1, 2):
         yield n
+
+
 reduced_basis_method.initialize_testing_set(100)
 reduced_basis_method.error_analysis(N_generator)
 

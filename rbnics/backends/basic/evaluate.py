@@ -6,7 +6,9 @@
 
 from rbnics.utils.decorators import overload
 
+
 def evaluate(backend, wrapping, online_backend, online_wrapping):
+
     class _Evaluate(object):
         @overload(backend.Function.Type(), (backend.ReducedMesh, backend.ReducedVertices))
         def __call__(self, function, at):
@@ -82,4 +84,5 @@ def evaluate(backend, wrapping, online_backend, online_wrapping):
             else:  # impossible to arrive here anyway thanks to the assert
                 raise ValueError("Invalid form rank")
             """
+
     return _Evaluate()

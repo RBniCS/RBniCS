@@ -17,6 +17,7 @@ from rbnics.utils.decorators import (is_training_finished, PreserveClassName, Re
                                      set_map_from_problem_to_training_status_off,
                                      set_map_from_problem_to_training_status_on)
 
+
 @ReductionMethodDecoratorFor(DEIM)
 def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 
@@ -45,41 +46,52 @@ def DEIMDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass
         # OFFLINE: set maximum reduced space dimension (stopping criterion)
         def set_Nmax(self, Nmax, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_Nmax(self, Nmax, **kwargs)
+
             # Set Nmax of DEIM reductions
             def setter(DEIM_reduction, Nmax_DEIM):
                 DEIM_reduction.set_Nmax(max(DEIM_reduction.Nmax, Nmax_DEIM))  # kwargs are not needed
+
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
 
         # OFFLINE: set tolerance (stopping criterion)
         def set_tolerance(self, tol, **kwargs):
             DifferentialProblemReductionMethod_DerivedClass.set_tolerance(self, tol, **kwargs)
+
             # Set tolerance of DEIM reductions
             def setter(DEIM_reduction, tol_DEIM):
                 DEIM_reduction.set_tolerance(max(DEIM_reduction.tol, tol_DEIM))  # kwargs are not needed
+
             self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, Number, **kwargs)
 
         # OFFLINE: set the elements in the training set.
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_training_set(
                 self, ntrain, enable_import, sampling, **kwargs)
+
             # Since exact evaluation is required, we cannot use a distributed training set
             self.training_set.serialize_maximum_computations()
+
             # Initialize training set of DEIM reductions
             def setter(DEIM_reduction, ntrain_DEIM):
                 # kwargs are not needed
                 return DEIM_reduction.initialize_training_set(ntrain_DEIM, enable_import, sampling)
+
             import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
+
             return import_successful and import_successful_DEIM
 
         # ERROR ANALYSIS: set the elements in the testing set.
         def initialize_testing_set(self, ntest, enable_import=False, sampling=None, **kwargs):
             import_successful = DifferentialProblemReductionMethod_DerivedClass.initialize_testing_set(
                 self, ntest, enable_import, sampling, **kwargs)
+
             # Initialize testing set of DEIM reductions
             def setter(DEIM_reduction, ntest_DEIM):
                 # kwargs are not needed
                 return DEIM_reduction.initialize_testing_set(ntest_DEIM, enable_import, sampling)
+
             import_successful_DEIM = self._propagate_setter_from_kwargs_to_DEIM_reductions(setter, int, **kwargs)
+
             return import_successful and import_successful_DEIM
 
         def _propagate_setter_from_kwargs_to_DEIM_reductions(self, setter, Type, **kwargs):

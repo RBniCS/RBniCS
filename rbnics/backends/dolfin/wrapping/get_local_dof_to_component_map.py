@@ -7,9 +7,11 @@
 from dolfin import compile_cpp_code
 from rbnics.utils.cache import cache
 
+
 @cache
 def get_local_dof_to_component_map(V):
     return _get_local_dof_to_component_map(V)
+
 
 def _get_local_dof_to_component_map(V, component=None, dof_component_map=None, recursive=False):
     if component is None:

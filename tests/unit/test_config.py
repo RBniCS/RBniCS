@@ -8,6 +8,7 @@ import os
 import sys
 from rbnics.utils.config import Config
 
+
 def test_config(tempdir):
     # Create a default configuration
     config = Config()

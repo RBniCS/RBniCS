@@ -6,6 +6,7 @@
 
 from dolfin import Function
 
+
 def get_function_norm(function, norm_type):
     assert isinstance(function, Function)
     return function.vector().norm(norm_type)

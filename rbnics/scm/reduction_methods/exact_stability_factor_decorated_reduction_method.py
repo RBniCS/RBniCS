@@ -7,6 +7,7 @@
 from rbnics.utils.decorators import PreserveClassName, ReductionMethodDecoratorFor
 from rbnics.scm.problems import ExactStabilityFactor
 
+
 @ReductionMethodDecoratorFor(ExactStabilityFactor)
 def ExactStabilityFactorDecoratedReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
 

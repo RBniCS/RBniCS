@@ -6,6 +6,7 @@
 
 import shutil
 
+
 class TextLine(object):
     def __init__(self, text, fill):
         self._text = " " + text + " "

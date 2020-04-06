@@ -28,12 +28,14 @@ from rbnics.utils.decorators import backend_for, ComputeThetaType, overload, tup
 # are preprocessed by float().
 ThetaType = ComputeThetaType((Expression, Operator))
 
+
 # product function to assemble truth/reduced affine expansions. To be used in combination with sum,
 # even though this one actually carries out both the sum and the product!
 @backend_for("dolfin", inputs=(ThetaType, (AffineExpansionStorage_Base, NonAffineExpansionStorage), None))
 def product(thetas, operators, thetas2=None):
     assert len(thetas) == len(operators)
     return _product(thetas, operators)
+
 
 @overload
 def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
@@ -62,9 +64,11 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_DirichletBC):
         output.append(DirichletBC(*args, **item[0][0]._kwargs))
     return ProductOutput(output)
 
+
 @overload
 def _product(thetas: ThetaType, operators: (AffineExpansionStorage_Form, NonAffineExpansionStorage)):
     return _product(thetas, operators._content)
+
 
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(Form)):
@@ -89,8 +93,11 @@ def _product(thetas: ThetaType, operators: tuple_of(Form)):
             theta = float(theta)
             constant.assign(theta)
         return output
+
+
 _product_forms_output_cache = Cache()
 _product_forms_constants_cache = Cache()
+
 
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(ParametrizedTensorFactory)):
@@ -115,8 +122,11 @@ def _product(thetas: ThetaType, operators: tuple_of(ParametrizedTensorFactory)):
             theta = float(theta)
             constant.assign(theta)
         return output
+
+
 _product_parametrized_tensor_factories_output_cache = Cache()
 _product_parametrized_tensor_factories_constants_cache = Cache()
+
 
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(Matrix.Type())):
@@ -126,6 +136,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Matrix.Type())):
         theta = float(theta)
         output += theta * operator
     return ProductOutput(output)
+
 
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(Vector.Type())):
@@ -137,6 +148,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Vector.Type())):
     output.apply("add")
     return ProductOutput(output)
 
+
 @overload
 def _product(thetas: ThetaType, operators: tuple_of(Number)):
     output = 0.
@@ -144,6 +156,7 @@ def _product(thetas: ThetaType, operators: tuple_of(Number)):
         theta = float(theta)
         output += theta * operator
     return ProductOutput(output)
+
 
 @overload
 def _product(thetas: ThetaType, operators: AffineExpansionStorage_Function):
@@ -154,6 +167,7 @@ def _product(thetas: ThetaType, operators: AffineExpansionStorage_Function):
         output.vector().add_local(theta * operator.vector().get_local())
     output.vector().apply("add")
     return ProductOutput(output)
+
 
 # Auxiliary class to signal to the sum() function that it is dealing with an output of the product() method
 class ProductOutput(object):

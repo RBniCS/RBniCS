@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod, abstractproperty
 
+
 @AbstractBackend
 class SeparatedParametrizedForm(object, metaclass=ABCMeta):
     def __init__(self, form):

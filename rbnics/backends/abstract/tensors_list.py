@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class TensorsList(object, metaclass=ABCMeta):
     def __init__(self, space, empty_tensor):

@@ -8,6 +8,7 @@ from rbnics.problems.base.nonlinear_rb_reduced_problem import NonlinearRBReduced
 from rbnics.problems.base.time_dependent_rb_reduced_problem import TimeDependentRBReducedProblem
 from rbnics.utils.decorators import PreserveClassName, RequiredBaseDecorators
 
+
 @RequiredBaseDecorators(NonlinearRBReducedProblem, TimeDependentRBReducedProblem)
 def NonlinearTimeDependentRBReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
 

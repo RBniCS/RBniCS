@@ -22,6 +22,7 @@ wrapping = ModuleWrapper(function_extend_or_restrict, function_load, get_functio
                          tensor_load=tensor_load)
 import_base = basic_import_(backend, wrapping)
 
+
 # Import a solution from file
 @backend_for("dolfin", inputs=((Function.Type(), Matrix.Type(), Vector.Type()), (Folders.Folder, str),
                                str, (int, None), (int, str, None)))

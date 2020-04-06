@@ -7,6 +7,7 @@
 from rbnics.utils.decorators import ReducedProblemDecoratorFor
 from .weighted_uncertainty_quantification import WeightedUncertaintyQuantification
 
+
 @ReducedProblemDecoratorFor(WeightedUncertaintyQuantification)
 def WeightedUncertaintyQuantificationDecoratedReducedProblem(EllipticCoerciveReducedProblem_DerivedClass):
     # return value (a class) for the decorator

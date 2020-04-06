@@ -6,6 +6,7 @@
 
 from rbnics.sampling.distributions.distribution import Distribution
 
+
 class DiscreteDistribution(Distribution):
     def __init__(self, distribution, box_step_size):
         self.distribution = distribution

@@ -14,6 +14,7 @@ from rbnics.reduction_methods.nonlinear_parabolic.nonlinear_parabolic_reduction_
 NonlinearParabolicPODGalerkinReduction_Base = NonlinearTimeDependentPODGalerkinReduction(
     NonlinearParabolicReductionMethod(NonlinearEllipticPODGalerkinReduction))
 
+
 @ReductionMethodFor(NonlinearParabolicProblem, "PODGalerkin")
 class NonlinearParabolicPODGalerkinReduction(NonlinearParabolicPODGalerkinReduction_Base):
     pass

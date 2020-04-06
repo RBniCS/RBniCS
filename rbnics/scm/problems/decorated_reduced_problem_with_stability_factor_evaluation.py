@@ -12,6 +12,7 @@ from rbnics.scm.problems.parametrized_stability_factor_reduced_eigenproblem impo
     ParametrizedStabilityFactorReducedEigenProblem)
 from rbnics.utils.decorators import PreserveClassName
 
+
 def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDifferentialProblem_DerivedClass):
     from rbnics.problems.elliptic import EllipticRBReducedProblem, EllipticCoerciveRBReducedProblem
     from rbnics.problems.stokes import StokesRBReducedProblem
@@ -61,6 +62,7 @@ def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDiff
 
     # Elliptic coercive RB reduced problem specialization
     if issubclass(ParametrizedReducedDifferentialProblem_DerivedClass, EllipticCoerciveRBReducedProblem):
+
         @PreserveClassName
         class DecoratedReducedProblemWithStabilityFactorEvaluation_Class(
                 DecoratedReducedProblemWithStabilityFactorEvaluation_Class_Base):
@@ -76,6 +78,7 @@ def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDiff
     # Elliptic non-coercive (needs to be after the coercive case) or Stokes RB reduced problem specialization
     elif issubclass(ParametrizedReducedDifferentialProblem_DerivedClass,
                     (EllipticRBReducedProblem, StokesRBReducedProblem)):
+
         @PreserveClassName
         class DecoratedReducedProblemWithStabilityFactorEvaluation_Class(
                 DecoratedReducedProblemWithStabilityFactorEvaluation_Class_Base):

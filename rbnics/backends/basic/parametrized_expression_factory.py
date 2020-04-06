@@ -7,7 +7,9 @@
 from rbnics.backends.abstract import ParametrizedExpressionFactory as AbstractParametrizedExpressionFactory
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
+
 def ParametrizedExpressionFactory(backend, wrapping):
+
     class _ParametrizedExpressionFactory(AbstractParametrizedExpressionFactory):
         def __init__(self, expression, space, inner_product):
             AbstractParametrizedExpressionFactory.__init__(self, expression)
@@ -89,7 +91,9 @@ def ParametrizedExpressionFactory(backend, wrapping):
 
         def is_time_dependent(self):
             return wrapping.is_time_dependent(self._expression, wrapping.expression_iterator)
+
     return _ParametrizedExpressionFactory
+
 
 class PrettyTuple(tuple):
     def __new__(cls, arg0, arg1, arg2):

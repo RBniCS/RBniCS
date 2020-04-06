@@ -6,6 +6,7 @@
 
 from rbnics.utils.io import Folders
 
+
 class ParametrizedProblem(object):
     """This is the base class, which is inherited by all other
     classes. It defines the base interface with variables and

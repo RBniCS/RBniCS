@@ -9,6 +9,7 @@ from rbnics.backends import product, sum, transpose
 
 GeostrophicOptimalControlProblem_Base = LinearProblem(ParametrizedDifferentialProblem)
 
+
 class GeostrophicOptimalControlProblem(GeostrophicOptimalControlProblem_Base):
 
     """

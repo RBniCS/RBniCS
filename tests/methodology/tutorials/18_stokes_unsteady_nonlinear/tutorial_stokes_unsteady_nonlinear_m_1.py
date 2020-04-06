@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @ExactParametrizedFunctions()
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
@@ -137,6 +138,7 @@ class StokesUnsteady(NavierStokesUnsteadyProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesUnsteadyProblem)
 def CustomizeReducedNavierStokesUnsteady(ReducedNavierStokesUnsteady_Base):
@@ -151,6 +153,7 @@ def CustomizeReducedNavierStokesUnsteady(ReducedNavierStokesUnsteady_Base):
             })
 
     return ReducedNavierStokesUnsteady
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/cavity.xml")

@@ -9,6 +9,7 @@ from rbnics.utils.io import TextBox
 from backends.online import OnlineSolveKwargsGenerator
 from problems import OnlineRectification
 
+
 @ReductionMethodDecoratorFor(OnlineRectification)
 def OnlineRectificationDecoratedReductionMethod(EllipticCoerciveReductionMethod_DerivedClass):
 

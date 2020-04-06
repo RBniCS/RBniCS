@@ -14,6 +14,7 @@ from rbnics.reduction_methods.elliptic_optimal_control import EllipticOptimalCon
 EllipticOptimalControlPODGalerkinReducedProblem_Base = LinearPODGalerkinReducedProblem(
     EllipticOptimalControlReducedProblem(ParametrizedReducedDifferentialProblem))
 
+
 @ReducedProblemFor(EllipticOptimalControlProblem, EllipticOptimalControlPODGalerkinReduction)
 class EllipticOptimalControlPODGalerkinReducedProblem(EllipticOptimalControlPODGalerkinReducedProblem_Base):
     pass

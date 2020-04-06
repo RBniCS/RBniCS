@@ -6,5 +6,6 @@
 
 from numpy import dot
 
+
 def vector_mul_vector(vector1, vector2):
     return dot(vector1, vector2)

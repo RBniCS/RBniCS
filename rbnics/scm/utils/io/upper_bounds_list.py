@@ -9,6 +9,7 @@ from rbnics.backends.online import online_copy, online_export, online_import_, O
 from rbnics.utils.decorators import list_of, overload
 from rbnics.utils.io import Folders, TextIO as ItemVectorDimensionIO, TextIO as LenIO
 
+
 class UpperBoundsList(list):
     def __init__(self):
         self._list = list()

@@ -6,6 +6,7 @@
 
 from abc import ABCMeta, abstractmethod
 
+
 class Distribution(object, metaclass=ABCMeta):
     @abstractmethod
     def sample(self, box, n):

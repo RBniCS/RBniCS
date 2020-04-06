@@ -11,6 +11,7 @@ from pylru import lrucache
 
 logger = getLogger("rbnics/utils/cache/cache.py")
 
+
 class Cache(object):
     def __init__(self, config_section=None, key_generator=None, import_=None, export=None, filename_generator=None):
         self._config_section = config_section
@@ -171,6 +172,7 @@ class Cache(object):
         """
         return self._storage.values()
 
+
 def cache(fun):
     storage = Cache()
 
@@ -183,6 +185,7 @@ def cache(fun):
             return storage[args]
 
     return wrapper
+
 
 class DisabledStorage(MutableMapping):
     def __getitem__(self, key):

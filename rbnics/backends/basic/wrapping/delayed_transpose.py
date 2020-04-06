@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 class DelayedTranspose(object):
     def __init__(self, arg):
         self._args = [arg]

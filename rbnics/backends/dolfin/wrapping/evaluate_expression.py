@@ -8,6 +8,7 @@ from ufl.core.operator import Operator
 from dolfin import assign, Function, LagrangeInterpolator, project
 from dolfin.function.expression import BaseExpression
 
+
 def evaluate_expression(expression, function, replaced_expression=None):
     if replaced_expression is None:
         replaced_expression = expression

@@ -11,7 +11,9 @@ from dolfin import CompiledExpression, Constant, Expression
 from dolfin.function.expression import BaseExpression
 from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
 
+
 def basic_expression_name(backend, wrapping):
+
     def _basic_expression_name(expression):
         str_repr = ""
         coefficients_replacement = dict()
@@ -95,6 +97,7 @@ def basic_expression_name(backend, wrapping):
         return hash_code
 
     return _basic_expression_name
+
 
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
 from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (

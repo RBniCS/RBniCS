@@ -8,13 +8,16 @@ from dolfin import as_backend_type, Function
 from dolfin.cpp.la import GenericMatrix, GenericVector
 from rbnics.utils.decorators import overload
 
+
 @overload
 def to_petsc4py(function: Function):
     return to_petsc4py(function.vector())
 
+
 @overload
 def to_petsc4py(vector: GenericVector):
     return as_backend_type(vector).vec()
+
 
 @overload
 def to_petsc4py(matrix: GenericMatrix):

@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ProblemDecoratorFor
 
+
 def WeightedUncertaintyQuantificationDecoratedProblem(**decorator_kwargs):
     from .weighted_uncertainty_quantification import WeightedUncertaintyQuantification
 

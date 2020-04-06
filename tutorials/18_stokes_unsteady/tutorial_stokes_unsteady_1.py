@@ -7,6 +7,7 @@
 from dolfin import *
 from rbnics import *
 
+
 @PullBackFormsToReferenceDomain()
 @ShapeParametrization(
     ("mu[0]*x[0]", "x[1]"),
@@ -116,6 +117,7 @@ class StokesUnsteady(StokesUnsteadyProblem):
             return (x0,)
         else:
             raise ValueError("Invalid term for assemble_operator().")
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/cavity.xml")

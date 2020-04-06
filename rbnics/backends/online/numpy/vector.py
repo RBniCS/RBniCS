@@ -9,12 +9,15 @@ from rbnics.backends.online.basic import Vector as BasicVector
 from rbnics.backends.online.numpy.wrapping import Slicer
 from rbnics.utils.decorators import backend_for, ModuleWrapper, OnlineSizeType
 
+
 def VectorBaseType(N):
     return zeros(N)
+
 
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(Slicer=Slicer)
 _Vector_Type_Base = BasicVector(backend, wrapping, VectorBaseType)
+
 
 class _Vector_Type(_Vector_Type_Base):
     def __getitem__(self, key):
@@ -29,11 +32,15 @@ class _Vector_Type(_Vector_Type_Base):
     def __array__(self, dtype=None):
         return self.content.__array__(dtype)
 
+
 @backend_for("numpy", inputs=(OnlineSizeType, ))
 def Vector(N):
     return _Vector_Type(N)
 
+
 # Attach a Type() function
 def Type():
     return _Vector_Type
+
+
 Vector.Type = Type

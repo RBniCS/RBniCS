@@ -8,7 +8,9 @@ from math import sqrt
 from rbnics.backends.abstract import GramSchmidt as AbstractGramSchmidt
 from rbnics.utils.decorators import dict_of, overload
 
+
 def GramSchmidt(backend, wrapping):
+
     class _GramSchmidt(AbstractGramSchmidt):
         def __init__(self, space, inner_product, component=None):
             if component is None:
@@ -45,4 +47,5 @@ def GramSchmidt(backend, wrapping):
                 break
             return wrapping.function_extend_or_restrict(function, component_from, self.space, component_to,
                                                         weight=None, copy=True)
+
     return _GramSchmidt

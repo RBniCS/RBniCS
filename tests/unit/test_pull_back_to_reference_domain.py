@@ -29,12 +29,15 @@ enable_pull_back_to_reference_domain_logging = enable_logging({pull_back_to_refe
 
 data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "test_pull_back_to_reference_domain")
 
+
 def theta_times_operator(problem, term):
     return sum([Constant(theta) * operator for (theta, operator) in zip(
         problem.compute_theta(term), problem.assemble_operator(term))])
 
+
 def keep_shape_parametrization_affine(shape_parametrization_expression):
     return shape_parametrization_expression
+
 
 def make_shape_parametrization_non_affine(shape_parametrization_expression):
     non_affine_shape_parametrization_expression = list()
@@ -48,10 +51,12 @@ def make_shape_parametrization_non_affine(shape_parametrization_expression):
             non_affine_shape_parametrization_expression_on_subdomain))
     return non_affine_shape_parametrization_expression
 
+
 def NoDecorator():
     def NoDecorator_decorator(Class):
         return Class
     return NoDecorator_decorator
+
 
 def raises(ExceptionType):
     """
@@ -69,7 +74,9 @@ def raises(ExceptionType):
                 raise e
         return not_raises()
 
+
 def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decorator_kwargs):
+
     def generate_default_decorator_args(is_affine):
         header = "shape_parametrization_preprocessing, AdditionalProblemDecorator, ExceptionType, exception_message"
         if is_affine:
@@ -145,6 +152,7 @@ def check_affine_and_non_affine_shape_parametrizations(*decorator_args, **decora
         return decorated_test
 
     return check_affine_and_non_affine_shape_parametrizations_decorator
+
 
 # Test forms pull back to reference domain for tutorial 03
 @enable_pull_back_to_reference_domain_logging
@@ -332,6 +340,7 @@ def test_pull_back_to_reference_domain_hole(
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 03 rotation
 @enable_pull_back_to_reference_domain_logging
@@ -559,6 +568,7 @@ def test_pull_back_to_reference_domain_hole_rotation(
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
 
+
 # Test forms pull back to reference domain for tutorial 04
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
@@ -716,6 +726,7 @@ def test_pull_back_to_reference_domain_graetz(
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 07
 @enable_pull_back_to_reference_domain_logging
@@ -925,6 +936,7 @@ def test_pull_back_to_reference_domain_nonlinear_elliptic(
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
 
+
 # Test forms pull back to reference domain for tutorial 09
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
@@ -1087,6 +1099,7 @@ def test_pull_back_to_reference_domain_advection_dominated(
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 12
 @enable_pull_back_to_reference_domain_logging
@@ -1328,6 +1341,7 @@ def test_pull_back_to_reference_domain_stokes(
         g_pull_back = theta_times_operator(problem_pull_back, "g")
         assert forms_are_close(g_on_reference_domain, g_pull_back)
 
+
 # Test forms pull back to reference domain for stabilization of Stokes problem
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations((
@@ -1536,6 +1550,7 @@ def test_pull_back_to_reference_domain_stokes_stabilization(
         g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
         g_pull_back = theta_times_operator(problem_pull_back, "g")
         assert forms_are_close(g_on_reference_domain, g_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 13
 @enable_pull_back_to_reference_domain_logging
@@ -1794,6 +1809,7 @@ def test_pull_back_to_reference_domain_elliptic_optimal_control_1(
         h_on_reference_domain = theta_times_operator(problem_on_reference_domain, "h")
         h_pull_back = theta_times_operator(problem_pull_back, "h")
         assert forms_are_close(h_on_reference_domain, h_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 14
 @enable_pull_back_to_reference_domain_logging
@@ -2102,6 +2118,7 @@ def test_pull_back_to_reference_domain_stokes_optimal_control_1(
         h_pull_back = theta_times_operator(problem_pull_back, "h")
         assert forms_are_close(h_on_reference_domain, h_pull_back)
 
+
 # Test forms pull back to reference domain for tutorial 16
 @enable_pull_back_to_reference_domain_logging
 @check_affine_and_non_affine_shape_parametrizations()
@@ -2308,6 +2325,7 @@ def test_pull_back_to_reference_domain_stokes_coupled(
         f_on_reference_domain = theta_times_operator(problem_on_reference_domain, "f")
         f_pull_back = theta_times_operator(problem_pull_back, "f")
         assert forms_are_close(f_on_reference_domain, f_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 17
 @enable_pull_back_to_reference_domain_logging
@@ -2532,6 +2550,7 @@ def test_pull_back_to_reference_domain_navier_stokes(
         g_on_reference_domain = theta_times_operator(problem_on_reference_domain, "g")
         g_pull_back = theta_times_operator(problem_pull_back, "g")
         assert forms_are_close(g_on_reference_domain, g_pull_back)
+
 
 # Test forms pull back to reference domain for tutorial 18
 @enable_pull_back_to_reference_domain_logging

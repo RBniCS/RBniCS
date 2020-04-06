@@ -8,6 +8,7 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import PreserveClassName
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecoratedReducedProblem_DerivedClass):
 
     @PreserveClassName
@@ -25,10 +26,12 @@ def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecorat
             # BasisFunctionsMatrix._precompute_sub_components
             if not hasattr(self.basis_functions, "_precompute_sub_components_patched"):
                 original_precompute_sub_components = self.basis_functions._precompute_sub_components
+
                 def patched_precompute_sub_components(self_, sub_components):
                     output = original_precompute_sub_components(sub_components)
                     add_to_map_from_basis_functions_to_reduced_problem(output, self)
                     return output
+
                 # Apply patch
                 PatchInstanceMethod(self.basis_functions, "_precompute_sub_components",
                                     patched_precompute_sub_components).patch()
@@ -37,14 +40,17 @@ def StoreMapFromBasisFunctionsToReducedProblem(ExactParametrizedFunctionsDecorat
     # return value (a class) for the decorator
     return StoreMapFromBasisFunctionsToReducedProblem_Class
 
+
 def add_to_map_from_basis_functions_to_reduced_problem(basis_functions, reduced_problem):
     if basis_functions not in _basis_functions_to_reduced_problem_map:
         _basis_functions_to_reduced_problem_map[basis_functions] = reduced_problem
     else:
         assert _basis_functions_to_reduced_problem_map[basis_functions] is reduced_problem
 
+
 def get_reduced_problem_from_basis_functions(basis_functions):
     assert basis_functions in _basis_functions_to_reduced_problem_map
     return _basis_functions_to_reduced_problem_map[basis_functions]
+
 
 _basis_functions_to_reduced_problem_map = Cache()

@@ -9,6 +9,7 @@ from rbnics.problems.base import LinearTimeDependentProblem
 from rbnics.problems.stokes import StokesProblem
 from rbnics.backends import copy, product, sum
 
+
 def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
     class AbstractCFDUnsteadyProblem_Class(AbstractCFDUnsteadyProblem_Base):
 
@@ -76,8 +77,10 @@ def AbstractCFDUnsteadyProblem(AbstractCFDUnsteadyProblem_Base):
 
     return AbstractCFDUnsteadyProblem_Class
 
+
 # Base class containing the definition of saddle point problems
 StokesUnsteadyProblem_Base = AbstractCFDUnsteadyProblem(LinearTimeDependentProblem(StokesProblem))
+
 
 class StokesUnsteadyProblem(StokesUnsteadyProblem_Base):
     class ProblemSolver(StokesUnsteadyProblem_Base.ProblemSolver):

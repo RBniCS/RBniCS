@@ -20,7 +20,6 @@ from rbnics.problems.elliptic.elliptic_problem import EllipticProblem
 from rbnics.problems.elliptic.elliptic_rb_reduced_problem import EllipticRBReducedProblem
 from rbnics.problems.elliptic.elliptic_reduced_problem import EllipticReducedProblem
 
-
 __all__ = [
     "EllipticCoerciveCompliantPODGalerkinReducedProblem",
     "EllipticCoerciveCompliantProblem",

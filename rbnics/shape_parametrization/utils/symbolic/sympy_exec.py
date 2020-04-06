@@ -8,11 +8,13 @@ import math
 from numbers import Number
 import sympy
 
+
 def sympy_exec(string, locals):
     locals = dict(locals)
     locals.update(math_sympy_locals)
     exec(string, {"__builtins__": None}, locals)  # stores the result in an expression named e
     return e  # noqa: F821
+
 
 math_sympy_locals = dict()
 for package in (math, sympy):

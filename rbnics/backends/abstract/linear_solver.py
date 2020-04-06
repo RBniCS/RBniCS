@@ -6,6 +6,7 @@
 
 from rbnics.utils.decorators import ABCMeta, AbstractBackend, abstractmethod
 
+
 @AbstractBackend
 class LinearSolver(object, metaclass=ABCMeta):
     # will use @overload in derived classes
@@ -23,6 +24,7 @@ class LinearSolver(object, metaclass=ABCMeta):
     @abstractmethod
     def solve(self):
         pass
+
 
 class LinearProblemWrapper(object, metaclass=ABCMeta):
     @abstractmethod

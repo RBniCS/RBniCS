@@ -11,28 +11,37 @@ from rbnics.utils.decorators import overload
 from rbnics.utils.io import Folders, PickleIO
 from rbnics.utils.mpi import parallel_io
 
+
 def basic_tensor_load(backend, wrapping):
+
     def _basic_tensor_load(tensor, directory, filename):
         mpi_comm = tensor.mpi_comm()
         form = tensor.generator._form
+
         # Read in generator
         full_filename_generator = os.path.join(str(directory), filename + ".generator")
+
         def load_generator():
             if os.path.exists(full_filename_generator):
                 with open(full_filename_generator, "r") as generator_file:
                     return generator_file.readline()
             else:
                 raise OSError
+
         generator_string = parallel_io(load_generator, mpi_comm)
+
         # Read in generator mpi size
         full_filename_generator_mpi_size = os.path.join(str(directory), filename + ".generator_mpi_size")
+
         def load_generator_mpi_size():
             if os.path.exists(full_filename_generator_mpi_size):
                 with open(full_filename_generator_mpi_size, "r") as generator_mpi_size_file:
                     return generator_mpi_size_file.readline()
             else:
                 raise OSError
+
         generator_mpi_size_string = parallel_io(load_generator_mpi_size, mpi_comm)
+
         # Read in generator mapping from processor dependent indices (at the time of saving)
         # to processor independent (global_cell_index, cell_dof) tuple
         permutation = _permutation_load(tensor, directory, filename, form,

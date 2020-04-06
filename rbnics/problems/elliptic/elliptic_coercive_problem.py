@@ -6,6 +6,7 @@
 
 from rbnics.problems.elliptic.elliptic_problem import EllipticProblem
 
+
 # Base class containing the definition of elliptic coercive problems
 class EllipticCoerciveProblem(EllipticProblem):
     pass

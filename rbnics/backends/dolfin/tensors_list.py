@@ -24,6 +24,7 @@ online_backend = ModuleWrapper(OnlineFunction=OnlineFunction)
 online_wrapping = ModuleWrapper()
 TensorsList_Base = BasicTensorsList(backend, wrapping, online_backend, online_wrapping)
 
+
 @BackendFor("dolfin", inputs=(FunctionSpace, ))
 class TensorsList(TensorsList_Base):
     pass

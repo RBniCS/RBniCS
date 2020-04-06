@@ -8,6 +8,7 @@ from math import exp, log
 from rbnics.sampling.distributions.distribution import Distribution
 from rbnics.sampling.distributions.equispaced_distribution import EquispacedDistribution
 
+
 class LogEquispacedDistribution(Distribution):
     def __init__(self):
         self.equispaced_distribution = EquispacedDistribution()

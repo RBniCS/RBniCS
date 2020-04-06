@@ -19,6 +19,7 @@ from rbnics.utils.decorators import (StoreMapFromProblemNameToProblem, StoreMapF
                                      StoreMapFromProblemToReductionMethod, StoreMapFromProblemToTrainingStatus,
                                      StoreMapFromSolutionToProblem, sync_setters, UpdateMapFromProblemToTrainingStatus)
 
+
 @pytest.mark.parametrize("expression_type", ["Vector", "Matrix"])
 @pytest.mark.parametrize("basis_generation", ["Greedy", "POD"])
 def test_eim_approximation_15(expression_type, basis_generation):

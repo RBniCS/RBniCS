@@ -14,6 +14,7 @@ from dolfin.cpp.mesh import MeshFunctionBool
 
 logger = getLogger("rbnics/backends/dolfin/wrapping/create_submesh.py")
 
+
 # Implement an extended version of cbcpost create_submesh that:
 # a) as cbcpost version (and in contrast to standard dolfin) also works in parallel
 # b) works for number of cells less than number of processors, by arbitrarily adding a cell on empty processors
@@ -367,6 +368,7 @@ def create_submesh(mesh, markers):
         markers.array()[0] = backup_first_marker_id
     return submesh
 
+
 def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
     assert meshfunctions_on_mesh is None or (
         isinstance(meshfunctions_on_mesh, list) and len(meshfunctions_on_mesh) > 0)
@@ -391,11 +393,13 @@ def convert_meshfunctions_to_submesh(mesh, submesh, meshfunctions_on_mesh):
         meshfunctions_on_submesh.append(submesh_subdomain)
     return meshfunctions_on_submesh
 
+
 def convert_functionspace_to_submesh(functionspace_on_mesh, submesh, CustomFunctionSpace=None):
     if CustomFunctionSpace is None:
         CustomFunctionSpace = FunctionSpace
     functionspace_on_submesh = CustomFunctionSpace(submesh, functionspace_on_mesh.ufl_element())
     return functionspace_on_submesh
+
 
 # This function is similar to cbcpost restriction_map. The main difference are:
 # a) it builds a KDTree for each cell, rather than exploring the entire submesh at a time, so that

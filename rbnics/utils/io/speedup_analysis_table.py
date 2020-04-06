@@ -6,5 +6,6 @@
 
 from rbnics.utils.io.performance_table import PerformanceTable
 
+
 class SpeedupAnalysisTable(PerformanceTable):
     pass

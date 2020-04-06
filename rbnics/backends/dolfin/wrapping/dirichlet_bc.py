@@ -9,6 +9,8 @@ from numpy import zeros
 from dolfin import Constant, DirichletBC, Function, project
 
 original_DirichletBC__init__ = DirichletBC.__init__
+
+
 def custom_DirichletBC__init__(self, *args, **kwargs):
     # Deduce private member values from arguments
     if len(args) == 1 and isinstance(args[0], DirichletBC):
@@ -45,35 +47,59 @@ def custom_DirichletBC__init__(self, *args, **kwargs):
     self._domain = _domain
     self._kwargs = _kwargs
     self._identifier = _identifier
+
+
 DirichletBC.__init__ = custom_DirichletBC__init__
+
 
 # Override the value(), set_value() and homogenize() methods. These are already available in the public interface,
 # but it is cast the value to a base type (GenericFunction), which makes it not possible to perform the sum
 def custom_DirichletBC_value(self):
     return self._value
+
+
 DirichletBC.value = custom_DirichletBC_value
+
+
 original_DirichletBC_set_value = DirichletBC.set_value
+
+
 def custom_DirichletBC_set_value(self, g):
     self._value = g
     original_DirichletBC_set_value(self, g)
+
+
 DirichletBC.set_value = custom_DirichletBC_set_value
+
+
 original_DirichletBC_homogenize = DirichletBC.homogenize
+
+
 def custom_DirichletBC_homogenize(self):
     self._value = Constant(zeros(self._value.ufl_shape))
     original_DirichletBC_homogenize(self, self._value)
+
+
 DirichletBC.homogenize = custom_DirichletBC_homogenize
+
 
 # Override the function_space() method. This is already available in the public interface,
 # but it casts the function space to a C++ FunctionSpace and then wraps it into a python FunctionSpace,
 # losing all the customization that we have done in the function_space.py file
 def custom_DirichletBC_function_space(self):
     return self._function_space
+
+
 DirichletBC.function_space = custom_DirichletBC_function_space
+
 
 # Define an identifier() method, that identifies whether BCs are defined on the same boundary
 def custom_DirichletBC_identifier(self):
     return self._identifier
+
+
 DirichletBC.identifier = custom_DirichletBC_identifier
+
 
 # Add a multiplication operator by a scalar
 def custom_DirichletBC_mul_by_scalar(self, other):
@@ -85,8 +111,11 @@ def custom_DirichletBC_mul_by_scalar(self, other):
         return DirichletBC(*args, **self._kwargs)
     else:
         return NotImplemented
+
+
 DirichletBC.__mul__ = custom_DirichletBC_mul_by_scalar
 DirichletBC.__rmul__ = custom_DirichletBC_mul_by_scalar
+
 
 class ProductOutputDirichletBC(list):
     # Define the __invert__ operator to be used in combination with __and__ operator of Matrix
@@ -100,6 +129,7 @@ class ProductOutputDirichletBC(list):
 
     def __hash__(self):
         return hash(tuple(self))
+
 
 class InvertProductOutputDirichletBC(object):
     def __init__(self, bc_list):

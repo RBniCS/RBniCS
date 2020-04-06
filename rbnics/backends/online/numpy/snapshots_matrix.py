@@ -11,6 +11,7 @@ from rbnics.utils.decorators import BackendFor
 
 SnapshotsMatrix_Base = BasicSnapshotsMatrix(FunctionsList)
 
+
 @BackendFor("numpy", inputs=(AbstractFunctionsList, (str, None)))
 class SnapshotsMatrix(SnapshotsMatrix_Base):
     pass

@@ -10,7 +10,9 @@ from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import overload
 from rbnics.utils.mpi import parallel_io
 
+
 def TensorsList(backend, wrapping, online_backend, online_wrapping):
+
     class _TensorsList(AbstractTensorsList):
         def __init__(self, space, empty_tensor):
             self.space = space
@@ -104,4 +106,5 @@ def TensorsList(backend, wrapping, online_backend, online_wrapping):
 
         def __iter__(self):
             return self._list.__iter__()
+
     return _TensorsList

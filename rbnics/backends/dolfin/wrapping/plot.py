@@ -7,6 +7,7 @@
 from dolfin import plot as original_plot
 from rbnics.backends.online import OnlineFunction
 
+
 def plot(obj, *args, **kwargs):
     if isinstance(obj, OnlineFunction.Type()):
         assert "reduced_problem" in kwargs, (
@@ -25,6 +26,7 @@ def plot(obj, *args, **kwargs):
         truth_problem = None
     if truth_problem is not None and hasattr(truth_problem, "mesh_motion"):
         truth_problem.mesh_motion.move_mesh()
-    original_plot(obj, *args, **kwargs)
+    output = original_plot(obj, *args, **kwargs)
     if truth_problem is not None and hasattr(truth_problem, "mesh_motion"):
         truth_problem.mesh_motion.reset_reference()
+    return output

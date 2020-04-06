@@ -25,6 +25,7 @@ from rbnics.utils.decorators import backend_for, tuple_of
 # evaluate_base = basic_evaluate(backend, wrapping, online_backend, online_wrapping)
 evaluate_base = None  # TODO
 
+
 # Evaluate a parametrized expression, possibly at a specific location
 @backend_for("numpy", inputs=((Matrix.Type(), Vector.Type()), (tuple_of(int), tuple_of(tuple_of(int)), None)))
 def evaluate(expression, at=None):

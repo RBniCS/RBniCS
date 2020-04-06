@@ -12,6 +12,7 @@ from rbnics.reduction_methods.base import LinearTimeDependentPODGalerkinReductio
 from rbnics.reduction_methods.stokes import StokesPODGalerkinReduction
 from rbnics.reduction_methods.stokes_unsteady.stokes_unsteady_reduction_method import StokesUnsteadyReductionMethod
 
+
 def AbstractCFDUnsteadyPODGalerkinReduction(
         AbstractCFDPODGalerkinReduction, AbstractCFDUnsteadyPODGalerkinReduction_Base):
     class AbstractCFDUnsteadyPODGalerkinReduction_Class(AbstractCFDUnsteadyPODGalerkinReduction_Base):
@@ -63,9 +64,11 @@ def AbstractCFDUnsteadyPODGalerkinReduction(
 
     return AbstractCFDUnsteadyPODGalerkinReduction_Class
 
+
 StokesUnsteadyPODGalerkinReduction_Base = AbstractCFDUnsteadyPODGalerkinReduction(
     StokesPODGalerkinReduction,
     LinearTimeDependentPODGalerkinReduction(StokesUnsteadyReductionMethod(StokesPODGalerkinReduction)))
+
 
 @ReductionMethodFor(StokesUnsteadyProblem, "PODGalerkin")
 class StokesUnsteadyPODGalerkinReduction(StokesUnsteadyPODGalerkinReduction_Base):

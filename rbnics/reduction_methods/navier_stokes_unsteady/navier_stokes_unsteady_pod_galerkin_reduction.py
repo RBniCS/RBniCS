@@ -17,6 +17,7 @@ NavierStokesUnsteadyPODGalerkinReduction_Base = AbstractCFDUnsteadyPODGalerkinRe
     NavierStokesPODGalerkinReduction,
     NonlinearTimeDependentPODGalerkinReduction(NavierStokesUnsteadyReductionMethod(NavierStokesPODGalerkinReduction)))
 
+
 @ReductionMethodFor(NavierStokesUnsteadyProblem, "PODGalerkin")
 class NavierStokesUnsteadyPODGalerkinReduction(NavierStokesUnsteadyPODGalerkinReduction_Base):
     pass

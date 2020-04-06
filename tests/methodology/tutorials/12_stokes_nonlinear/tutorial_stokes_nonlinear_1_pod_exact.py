@@ -8,6 +8,7 @@ from dolfin import *
 from rbnics import *
 from sampling import LinearlyDependentUniformDistribution
 
+
 @ExactParametrizedFunctions()
 @PullBackFormsToReferenceDomain()
 @AffineShapeParametrization("data/t_bypass_vertices_mapping.vmp")
@@ -107,6 +108,7 @@ class Stokes(NavierStokesProblem):
         else:
             raise ValueError("Invalid term for assemble_operator().")
 
+
 # Customize the resulting reduced problem
 @CustomizeReducedProblemFor(NavierStokesProblem)
 def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
@@ -118,6 +120,7 @@ def CustomizeReducedNavierStokes(ReducedNavierStokes_Base):
             })
 
     return ReducedNavierStokes
+
 
 # 1. Read the mesh for this problem
 mesh = Mesh("data/t_bypass.xml")

@@ -6,6 +6,7 @@
 
 from rbnics.reduction_methods.base import NonlinearReductionMethod
 
+
 def NonlinearEllipticReductionMethod(EllipticReductionMethod_DerivedClass):
 
     NonlinearEllipticReductionMethod_Base = NonlinearReductionMethod(EllipticReductionMethod_DerivedClass)

@@ -16,11 +16,13 @@ from rbnics.eim.utils.io import AffineExpansionSeparatedFormsStorage
 from rbnics.utils.decorators import overload, PreserveClassName, ProblemDecoratorFor, tuple_of
 from rbnics.utils.test import PatchInstanceMethod
 
+
 def ExactEIMAlgorithm(**kwargs):
     # Enable exact parametrized functions evaluation both offline and online
     from rbnics.eim.problems.exact_parametrized_functions import ExactParametrizedFunctions
     kwargs["stages"] = ("offline", "online")
     return ExactParametrizedFunctions(**kwargs)
+
 
 def EIMDecoratedProblem(
     stages=("offline", "online"),

@@ -8,6 +8,7 @@ from numbers import Number
 from rbnics.utils.decorators import BackendFor
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
 
+
 @BackendFor("common", inputs=(Number, ))
 class SeparatedParametrizedForm(AbstractSeparatedParametrizedForm):
     def __init__(self, form):

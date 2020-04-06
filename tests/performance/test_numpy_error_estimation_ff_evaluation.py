@@ -16,6 +16,7 @@ sum = None
 all_product = {"numpy": numpy_product, "online": online_product, "factory": factory_product}
 all_sum = {"numpy": numpy_sum, "online": online_sum, "factory": factory_sum}
 
+
 class Data(object):
     def __init__(self, N, Q):
         self.N = N
@@ -44,6 +45,7 @@ class Data(object):
         result_builtin = self.evaluate_builtin(theta, ff_product, ff_product_legacy)
         relative_error = abs(result_builtin - result_backend) / abs(result_builtin)
         assert isclose(relative_error, 0., atol=1e-10)
+
 
 @pytest.mark.parametrize("N", [2**(i + 3) for i in range(1, 3)])
 @pytest.mark.parametrize("Q", [2 + 4 * j for j in range(1, 3)])

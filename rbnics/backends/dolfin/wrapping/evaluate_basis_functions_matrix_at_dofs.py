@@ -4,7 +4,9 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+
 def basic_evaluate_basis_functions_matrix_at_dofs(backend, wrapping):
+
     def _basic_evaluate_basis_functions_matrix_at_dofs(input_basis_functions_matrix, dofs_list,
                                                        output_basis_functions_matrix, reduced_dofs_list):
         components = output_basis_functions_matrix._components_name
@@ -23,10 +25,13 @@ def basic_evaluate_basis_functions_matrix_at_dofs(backend, wrapping):
                     basis_function, dofs_list, reduced_space, reduced_dofs_list)
                 output_basis_functions_matrix.enrich(reduced_basis_function)
         return output_basis_functions_matrix
+
     return _basic_evaluate_basis_functions_matrix_at_dofs
+
 
 from rbnics.backends.dolfin.wrapping.evaluate_sparse_function_at_dofs import evaluate_sparse_function_at_dofs
 from rbnics.utils.decorators import ModuleWrapper
+
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(evaluate_sparse_function_at_dofs)
 evaluate_basis_functions_matrix_at_dofs = basic_evaluate_basis_functions_matrix_at_dofs(backend, wrapping)
