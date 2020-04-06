@@ -40,9 +40,9 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)),
                   current_items: (list_of(object), tuple_of(object)), tab: str):
     if len(reference_items) != len(current_items):
         return [
-            tab + "@@ different lengths @@" + "\n" +
-            tab + "- " + str(len(reference_items)) + "\n" +
-            tab + "+ " + str(len(current_items)) + "\n"
+            tab + "@@ different lengths @@" + "\n"
+            + tab + "- " + str(len(reference_items)) + "\n"
+            + tab + "+ " + str(len(current_items)) + "\n"
         ]
     else:
         diff_items = list()
@@ -51,8 +51,8 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)),
             if len(diff_item) > 0:
                 for d in diff_item:
                     diff_items.append(
-                        tab + "@@ " + str(item_number) + " @@" + "\n" +
-                        d
+                        tab + "@@ " + str(item_number) + " @@" + "\n"
+                        + d
                     )
         return diff_items
 
@@ -61,15 +61,15 @@ def _diff_content(reference_items: (list_of(object), tuple_of(object)),
 def _diff_content(reference_items: dict_of(object, object), current_items: dict_of(object, object), tab: str):
     if len(reference_items) != len(current_items):
         return [
-            tab + "@@ different lengths @@" + "\n" +
-            tab + "- " + str(len(reference_items)) + "\n" +
-            tab + "+ " + str(len(current_items)) + "\n"
+            tab + "@@ different lengths @@" + "\n"
+            + tab + "- " + str(len(reference_items)) + "\n"
+            + tab + "+ " + str(len(current_items)) + "\n"
         ]
     elif reference_items.keys() != current_items.keys():
         return [
-            tab + "@@ different keys @@" + "\n" +
-            tab + "- " + str(reference_items.keys()) + "\n" +
-            tab + "+ " + str(current_items.keys()) + "\n"
+            tab + "@@ different keys @@" + "\n"
+            + tab + "- " + str(reference_items.keys()) + "\n"
+            + tab + "+ " + str(current_items.keys()) + "\n"
         ]
     else:
         diff_items = list()
@@ -78,8 +78,8 @@ def _diff_content(reference_items: dict_of(object, object), current_items: dict_
             if len(diff_item) > 0:
                 for d in diff_item:
                     diff_items.append(
-                        tab + "@@ " + str(item_key) + " @@" + "\n" +
-                        d
+                        tab + "@@ " + str(item_key) + " @@" + "\n"
+                        + d
                     )
         return diff_items
 
@@ -94,8 +94,8 @@ def _diff_content(reference_item: str, current_item: str, tab: str):
         assert isinstance(current_item, str)
         if reference_item != current_item:
             return [
-                tab + "- " + reference_item + "\n" +
-                tab + "+ " + current_item + "\n"
+                tab + "- " + reference_item + "\n"
+                + tab + "+ " + current_item + "\n"
             ]
         else:
             return []
@@ -109,8 +109,8 @@ def _diff_content(reference_item: str, current_item: str, tab: str):
 def _diff_content(reference_item: Number, current_item: Number, tab: str):
     if not isclose(reference_item, current_item):
         return [
-            tab + "- " + str(reference_item) + "\n" +
-            tab + "+ " + str(current_item) + "\n"
+            tab + "- " + str(reference_item) + "\n"
+            + tab + "+ " + str(current_item) + "\n"
         ]
     else:
         return []

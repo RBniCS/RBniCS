@@ -132,8 +132,8 @@ class Dispatcher(OriginalDispatcher):
                 self.funcs[types] = conditional_func
                 self.signature_to_provided_signature[types] = provided_signature
     add.__doc__ = (
-        OriginalDispatcher.add.__doc__ +
-        """
+        OriginalDispatcher.add.__doc__
+        + """
 
         This is a customization of the Dispatcher.add method provided by the multipledispatch
         package so that:
@@ -410,8 +410,8 @@ def dispatch(*types, **kwargs):
 
 
 dispatch.__doc__ = (
-    original_dispatch.__doc__ +
-    """
+    original_dispatch.__doc__
+    + """
 
     This is a customized version of the @dispatch decorator provided by the
     multipledispatch package, such that an optional module kwarg is passed
@@ -742,11 +742,8 @@ def supercedes(A, B):
                     return False
                 elif a is None and b is None:
                     continue
-                elif (
-                    (a is None and b is not None)
-                        or
-                    (b is None and a is not None)
-                ):
+                elif ((a is None and b is not None)
+                      or (b is None and a is not None)):
                     return False
                 elif not issubclass(a, b):
                     return False

@@ -77,9 +77,9 @@ class Data(object):
         result_builtin = list()
         for t in range(self.Ntrain):
             result_builtin.append(
-                einsum("n,i,ijnm,j,m", u[t], theta_a[t], aa_product_legacy, theta_a[t], v[t], optimize=True) +
-                einsum("i,ijn,j,n", theta_a[t], af_product_legacy, theta_f[t], u[t], optimize=True) +
-                einsum("i,ij,j", theta_f[t], ff_product_legacy, theta_f[t], optimize=True)
+                einsum("n,i,ijnm,j,m", u[t], theta_a[t], aa_product_legacy, theta_a[t], v[t], optimize=True)
+                + einsum("i,ijn,j,n", theta_a[t], af_product_legacy, theta_f[t], u[t], optimize=True)
+                + einsum("i,ij,j", theta_f[t], ff_product_legacy, theta_f[t], optimize=True)
             )
         return result_builtin
 
@@ -91,9 +91,9 @@ class Data(object):
         result_backend = []
         for t in range(self.Ntrain):
             result_backend.append(
-                transpose(u[t]) * sum(product(theta_a[t], aa_product[:self.N, :self.N], theta_a[t])) * v[t] +
-                transpose(u[t]) * sum(product(theta_a[t], af_product[:self.N], theta_f[t])) +
-                sum(product(theta_f[t], ff_product, theta_f[t]))
+                transpose(u[t]) * sum(product(theta_a[t], aa_product[:self.N, :self.N], theta_a[t])) * v[t]
+                + transpose(u[t]) * sum(product(theta_a[t], af_product[:self.N], theta_f[t]))
+                + sum(product(theta_f[t], ff_product, theta_f[t]))
             )
         return result_backend
 

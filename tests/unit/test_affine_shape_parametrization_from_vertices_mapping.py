@@ -147,8 +147,8 @@ def test_affine_shape_parametrization_from_vertices_mapping_hole_rotation():
     assert len(shape_parametrization_expression[0]) == 2
     assert symbolic_equal(
         shape_parametrization_expression[0][X],
-        "-2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2)" +
-        "+ x[1] * (- sqrt(2.0) * sin(mu[0]) / 2 - 3 * sqrt(2.0) * cos(mu[0]) / 2 + 2) + 2",
+        "-2 * sqrt(2.0) * cos(mu[0]) + x[0] * (sqrt(2.0) * sin(mu[0]) / 2 + sqrt(2.0) * cos(mu[0]) / 2)"
+        + "+ x[1] * (- sqrt(2.0) * sin(mu[0]) / 2 - 3 * sqrt(2.0) * cos(mu[0]) / 2 + 2) + 2",
         x, mu)
     assert symbolic_equal(
         shape_parametrization_expression[0][Y],

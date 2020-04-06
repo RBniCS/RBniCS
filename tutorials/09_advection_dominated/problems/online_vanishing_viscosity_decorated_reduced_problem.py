@@ -173,9 +173,9 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
                                 viscosity_i = 0.
                             elif i < n_max:
                                 viscosity_i = (
-                                    self._viscosity *
-                                    (lambda_i - lambda_n_min)**2 / (lambda_n_max - lambda_n_min)**3 *
-                                    (2 * lambda_n_max**2 - (lambda_n_min + lambda_n_max) * lambda_i)
+                                    self._viscosity
+                                    * (lambda_i - lambda_n_min)**2 / (lambda_n_max - lambda_n_min)**3
+                                    * (2 * lambda_n_max**2 - (lambda_n_min + lambda_n_max) * lambda_i)
                                 )
                             else:
                                 viscosity_i = self._viscosity * lambda_i
@@ -257,8 +257,8 @@ def OnlineVanishingViscosityDecoratedReducedProblem(EllipticCoerciveReducedProbl
             if kwargs["online_vanishing_viscosity"]:
                 assembled_operator = dict()
                 assembled_operator["a"] = (
-                    sum(product(self.compute_theta("a"), self.operator["a"][:N, :N])) +
-                    self.operator["vanishing_viscosity"][:N, :N][0]
+                    sum(product(self.compute_theta("a"), self.operator["a"][:N, :N]))
+                    + self.operator["vanishing_viscosity"][:N, :N][0]
                 )
                 assembled_operator["f"] = sum(product(self.compute_theta("f"), self.operator["f"][:N]))
                 self._solution = OnlineFunction(N)

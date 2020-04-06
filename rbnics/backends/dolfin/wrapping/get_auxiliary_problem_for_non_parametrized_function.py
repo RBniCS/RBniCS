@@ -69,8 +69,8 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
         except KeyError:
             # Change the name of the (local) class to uniquely identify the function.
             auxiliary_problem_for_non_parametrized_function_name = (
-                AuxiliaryProblemForNonParametrizedFunction.__name__ + "_" +
-                str(len(_auxiliary_problem_for_non_parametrized_function_cache))
+                AuxiliaryProblemForNonParametrizedFunction.__name__ + "_"
+                + str(len(_auxiliary_problem_for_non_parametrized_function_cache))
             )
 
             class AuxiliaryProblemForNonParametrizedFunction_Local(AuxiliaryProblemForNonParametrizedFunction):
