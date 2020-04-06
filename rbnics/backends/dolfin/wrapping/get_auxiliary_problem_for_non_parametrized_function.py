@@ -9,9 +9,11 @@ from ufl.core.multiindex import MultiIndex
 from ufl.indexed import Indexed
 from ufl.tensors import ListTensor
 from dolfin import Function
+from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
 from rbnics.backends.dolfin.wrapping.is_problem_solution import _split_function
 from rbnics.backends.dolfin.wrapping.solution_identify_component import _remove_mute_indices
 from rbnics.utils.cache import Cache, cache
+from rbnics.utils.decorators import ModuleWrapper
 
 
 # Only a V attribute and a name method are required
@@ -90,9 +92,6 @@ def basic_get_auxiliary_problem_for_non_parametrized_function(backend, wrapping)
 
     return _basic_get_auxiliary_problem_for_non_parametrized_function
 
-
-from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
-from rbnics.utils.decorators import ModuleWrapper
 
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(get_function_space)

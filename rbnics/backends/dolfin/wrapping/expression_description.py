@@ -6,7 +6,16 @@
 
 from dolfin import CompiledExpression, Constant, Expression
 from dolfin.function.expression import BaseExpression
-from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot
+from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
+from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
+    get_auxiliary_problem_for_non_parametrized_function)
+from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
+from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
+from rbnics.backends.dolfin.wrapping.solution_dot_identify_component import solution_dot_identify_component
+from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
+from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
+from rbnics.utils.decorators import get_problem_from_solution, get_problem_from_solution_dot, ModuleWrapper
 
 
 def basic_expression_description(backend, wrapping):
@@ -73,17 +82,6 @@ def basic_expression_description(backend, wrapping):
 
     return _basic_expression_description
 
-
-from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator
-from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
-    get_auxiliary_problem_for_non_parametrized_function)
-from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
-from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
-from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
-from rbnics.backends.dolfin.wrapping.solution_dot_identify_component import solution_dot_identify_component
-from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
-from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
-from rbnics.utils.decorators import ModuleWrapper
 
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(

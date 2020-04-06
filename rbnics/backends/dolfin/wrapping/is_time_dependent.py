@@ -5,9 +5,14 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from dolfin.function.expression import BaseExpression
-from rbnics.utils.decorators import get_problem_from_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
+from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
+from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
+from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
+from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
 from rbnics.backends.dolfin.wrapping.pull_back_to_reference_domain import (
     is_pull_back_expression, is_pull_back_expression_time_dependent)
+from rbnics.utils.decorators import get_problem_from_solution, ModuleWrapper
 
 
 def basic_is_time_dependent(backend, wrapping):
@@ -35,13 +40,6 @@ def basic_is_time_dependent(backend, wrapping):
 
     return _basic_is_time_dependent
 
-
-from rbnics.backends.dolfin.wrapping.is_problem_solution import is_problem_solution
-from rbnics.backends.dolfin.wrapping.is_problem_solution_dot import is_problem_solution_dot
-from rbnics.backends.dolfin.wrapping.is_problem_solution_type import is_problem_solution_type
-from rbnics.backends.dolfin.wrapping.solution_identify_component import solution_identify_component
-from rbnics.backends.dolfin.wrapping.solution_iterator import solution_iterator
-from rbnics.utils.decorators import ModuleWrapper
 
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type,

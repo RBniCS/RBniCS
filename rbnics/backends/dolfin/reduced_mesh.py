@@ -9,8 +9,16 @@ from logging import DEBUG, getLogger
 from mpi4py.MPI import MAX
 from dolfin import cells, has_hdf5, has_hdf5_parallel, Mesh, MeshFunction
 from rbnics.backends.abstract import ReducedMesh as AbstractReducedMesh
-from rbnics.backends.dolfin.wrapping import FunctionSpace
+from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
+from rbnics.backends.dolfin.wrapping import (build_dof_map_reader_mapping, build_dof_map_writer_mapping,
+                                             create_submesh, convert_meshfunctions_to_submesh,
+                                             convert_functionspace_to_submesh,
+                                             evaluate_basis_functions_matrix_at_dofs,
+                                             evaluate_sparse_function_at_dofs, FunctionSpace,
+                                             map_functionspaces_between_mesh_and_submesh)
 from rbnics.backends.dolfin.wrapping.function_extend_or_restrict import _sub_from_tuple
+from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
+    AuxiliaryProblemForNonParametrizedFunction)
 from rbnics.utils.decorators import (abstractmethod, BackendFor, get_reduced_problem_from_problem,
                                      get_reduction_method_from_problem, is_training_finished, ModuleWrapper)
 from rbnics.utils.io import ExportableList, Folders
@@ -878,16 +886,6 @@ def BasicReducedMesh(backend, wrapping):
 
     return _BasicReducedMesh
 
-
-from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
-from rbnics.backends.dolfin.wrapping import (build_dof_map_reader_mapping, build_dof_map_writer_mapping,
-                                             create_submesh, convert_meshfunctions_to_submesh,
-                                             convert_functionspace_to_submesh,
-                                             evaluate_basis_functions_matrix_at_dofs,
-                                             evaluate_sparse_function_at_dofs,
-                                             map_functionspaces_between_mesh_and_submesh)
-from rbnics.backends.dolfin.wrapping.get_auxiliary_problem_for_non_parametrized_function import (
-    AuxiliaryProblemForNonParametrizedFunction)
 
 backend = ModuleWrapper(BasisFunctionsMatrix)
 wrapping = ModuleWrapper(AuxiliaryProblemForNonParametrizedFunction, build_dof_map_reader_mapping,

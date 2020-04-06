@@ -19,7 +19,11 @@ from ufl.tensors import ComponentTensor, ListTensor
 from dolfin import Constant
 from dolfin.function.expression import BaseExpression
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm
-from rbnics.backends.dolfin.wrapping import expand_sum_product, remove_complex_nodes, rewrite_quotients
+from rbnics.backends.dolfin.wrapping import (expand_sum_product, expression_name, is_problem_solution,
+                                             is_problem_solution_dot, is_problem_solution_type,
+                                             is_pull_back_expression, is_pull_back_expression_parametrized,
+                                             remove_complex_nodes, rewrite_quotients,
+                                             solution_dot_identify_component, solution_identify_component)
 from rbnics.utils.decorators import BackendFor, get_problem_from_solution, get_problem_from_solution_dot, ModuleWrapper
 
 logger = getLogger("rbnics/backends/dolfin/separated_parametrized_form.py")
@@ -426,10 +430,6 @@ def BasicSeparatedParametrizedForm(backend, wrapping):
     return _BasicSeparatedParametrizedForm
 
 
-from rbnics.backends.dolfin.wrapping import (expression_name, is_problem_solution, is_problem_solution_dot,
-                                             is_problem_solution_type, is_pull_back_expression,
-                                             is_pull_back_expression_parametrized,
-                                             solution_dot_identify_component, solution_identify_component)
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(is_problem_solution, is_problem_solution_dot, is_problem_solution_type,
                          is_pull_back_expression, is_pull_back_expression_parametrized,

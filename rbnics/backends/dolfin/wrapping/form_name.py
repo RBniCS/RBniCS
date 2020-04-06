@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import hashlib
+from rbnics.backends.dolfin.wrapping.expression_name import expression_name
+from rbnics.utils.decorators import ModuleWrapper
 
 
 def basic_form_name(backend, wrapping):
@@ -19,9 +21,6 @@ def basic_form_name(backend, wrapping):
 
     return _basic_form_name
 
-
-from rbnics.utils.decorators import ModuleWrapper
-from rbnics.backends.dolfin.wrapping.expression_name import expression_name
 
 backend = ModuleWrapper()
 wrapping = ModuleWrapper(expression_name=expression_name)
