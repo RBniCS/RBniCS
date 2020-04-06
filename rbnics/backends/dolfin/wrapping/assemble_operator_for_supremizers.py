@@ -25,12 +25,15 @@ def assemble_operator_for_supremizers(assemble_operator):
         return _assemble_operator_for_supremizers_impl_stokes_problem(self_, term)
 
     _assemble_operator_for_supremizers_impl_stokes_problem = (
-        assemble_operator_for_restriction({"bt_restricted": "bt"}, test="s")(
-        assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"}, trial="s")(
-        assemble_operator_for_restriction({"inner_product_s": "inner_product_u"}, test="s", trial="s")(
-            assemble_operator
-        )
-        )
+        assemble_operator_for_restriction({"bt_restricted": "bt"},
+                                          test="s")(
+            assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_u"},
+                                              trial="s")(
+                assemble_operator_for_restriction({"inner_product_s": "inner_product_u"},
+                                                  test="s", trial="s")(
+                    assemble_operator
+                )
+            )
         )
     )
 
@@ -40,18 +43,24 @@ def assemble_operator_for_supremizers(assemble_operator):
         return _assemble_operator_for_supremizers_impl_stokes_optimal_control_problem(self_, term)
 
     _assemble_operator_for_supremizers_impl_stokes_optimal_control_problem = (
-        assemble_operator_for_restriction({"bt*_restricted": "bt*"}, test="s")(
-        assemble_operator_for_restriction({"bt_restricted": "bt"}, test="r")(
-        assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_v"}, trial="s")(
-        assemble_operator_for_restriction({"dirichlet_bc_r": "dirichlet_bc_w"}, trial="r")(
-        assemble_operator_for_restriction({"inner_product_s": "inner_product_v"}, test="s", trial="s")(
-        assemble_operator_for_restriction({"inner_product_r": "inner_product_w"}, test="r", trial="r")(
-            assemble_operator
-        )
-        )
-        )
-        )
-        )
+        assemble_operator_for_restriction({"bt*_restricted": "bt*"},
+                                          test="s")(
+            assemble_operator_for_restriction({"bt_restricted": "bt"},
+                                              test="r")(
+                assemble_operator_for_restriction({"dirichlet_bc_s": "dirichlet_bc_v"},
+                                                  trial="s")(
+                    assemble_operator_for_restriction({"dirichlet_bc_r": "dirichlet_bc_w"},
+                                                      trial="r")(
+                        assemble_operator_for_restriction({"inner_product_s": "inner_product_v"},
+                                                          test="s", trial="s")(
+                            assemble_operator_for_restriction({"inner_product_r": "inner_product_w"},
+                                                              test="r", trial="r")(
+                                assemble_operator
+                            )
+                        )
+                    )
+                )
+            )
         )
     )
 

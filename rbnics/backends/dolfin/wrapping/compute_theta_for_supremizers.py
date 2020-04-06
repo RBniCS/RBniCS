@@ -37,9 +37,9 @@ def compute_theta_for_supremizers(compute_theta):
 
     _compute_theta_for_supremizers_impl_stokes_optimal_control_problem = (
         compute_theta_for_restriction({"bt*_restricted": "bt*"})(
-        compute_theta_for_restriction({"bt_restricted": "bt"})(
-            compute_theta
-        )
+            compute_theta_for_restriction({"bt_restricted": "bt"})(
+                compute_theta
+            )
         )
     )
 
