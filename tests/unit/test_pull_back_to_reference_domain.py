@@ -437,7 +437,7 @@ def test_pull_back_to_reference_domain_hole_rotation(
                 theta_a4 = -1 / (sqrt(2.0) * cos(mu[0]) - 2)
                 theta_a5 = (sqrt(2.0) * sin(mu[0]) - 1) / (sqrt(2.0) * cos(mu[0]) - 2)
                 theta_a6 = -sqrt(2.0) / (sqrt(2.0) - 4 * sin(mu[0]))
-                theta_a7 = (-5  * sqrt(2.0)**2 + 8 * sqrt(2.0) * sin(mu[0]) + 16 * sqrt(2.0) * cos(mu[0]) - 16) / (
+                theta_a7 = (-5 * sqrt(2.0)**2 + 8 * sqrt(2.0) * sin(mu[0]) + 16 * sqrt(2.0) * cos(mu[0]) - 16) / (
                     sqrt(2.0) * (sqrt(2.0) - 4 * sin(mu[0])))
                 theta_a8 = (-2 * sqrt(2.0) + 4 * cos(mu[0])) / (sqrt(2.0) - 4 * sin(mu[0]))
                 theta_a9 = -1 / (sqrt(2.0) * sin(mu[0]) - 2)
