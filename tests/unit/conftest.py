@@ -8,6 +8,14 @@ from dolfin import MPI
 from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa: F401
 
 
+# Add markers to configuration
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "pull_back_to_reference_domain: Tests associated to @PullBackFormsToReferenceDomain().")
+    config.addinivalue_line(
+        "markers", "time_stepping: Tests associated to PETSc TS wrappers.")
+
+
 # Customize item selection
 def pytest_collection_modifyitems(session, config, items):
     # Deselect first using markers (note: cannot import _pytest.mark globally)
