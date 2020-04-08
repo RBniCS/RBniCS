@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-import pytest
 from numpy import dot, isclose
 from numpy.linalg import norm as monitor_norm
 from dolfin import (assemble, Constant, derivative, DirichletBC, DOLFIN_EPS, dx, Expression, FunctionSpace, grad,
@@ -276,7 +275,6 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
 
 
 # ~~~ Test function ~~~ #
-@pytest.mark.time_stepping
 def test_time_stepping_1():
     (error_sparse_tensor_callbacks_beuler, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
         exact_solution_expression, exact_solution, exact_solution_dot) = _test_time_stepping_1_sparse(

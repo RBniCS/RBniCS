@@ -62,7 +62,7 @@ tests_unit_serial:
     - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
     - python3 -c "import dolfin; import rbnics"
   script:
-    - pytest -n auto -vv -k "not time_stepping and not pull_back_to_reference_domain" --html=pytest_tests_unit_serial.html --self-contained-html tests/unit
+    - pytest -n auto -vv -k "not test_time_stepping and not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" --html=pytest_tests_unit_serial.html --self-contained-html tests/unit
   artifacts:
     paths:
       - pytest_tests_unit_serial.html
@@ -78,7 +78,7 @@ tests_unit_parallel:
     - export DIJITSO_CACHE_DIR=$CI_PROJECT_DIR/.dijitso
     - python3 -c "import dolfin; import rbnics"
   script:
-    - mpirun -n 2 pytest -vv --gc-disable --gc-scope function -k "not time_stepping and not pull_back_to_reference_domain" --ignore "tests/unit/test_config.py" --ignore "tests/unit/test_function_extend_or_restrict.py" --html=pytest_tests_unit_parallel.html --self-contained-html tests/unit
+    - mpirun -n 2 pytest -vv --gc-disable --gc-scope function -k "not test_time_stepping and not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor and not test_config and not test_function_extend_or_restrict" --html=pytest_tests_unit_parallel.html --self-contained-html tests/unit
   artifacts:
     paths:
       - pytest_tests_unit_parallel.html
