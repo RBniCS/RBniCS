@@ -234,7 +234,7 @@ def test_pull_back_to_reference_domain_hole(
                 # subdomains 3 and 5
                 theta_a6 = - mu[1] / (mu[0] - 2)
                 theta_a7 = - (mu[0] - 2) / mu[1] - (2 * (2 * mu[1] - 2) * (mu[1] - 1)) / (mu[1] * (mu[0] - 2))
-                theta_a8 = -(2 * (mu[1] - 1)) / (mu[0] - 2)
+                theta_a8 = - (2 * (mu[1] - 1)) / (mu[0] - 2)
                 # subdomains 4 and 6
                 theta_a9 = -1 / (mu[0] - 2)
                 theta_a10 = 2 - (mu[1] - 1) * (mu[1] - 1) / (mu[0] - 2) - mu[0]
@@ -260,22 +260,22 @@ def test_pull_back_to_reference_domain_hole(
                 a0 = inner(u.dx(0), v.dx(0)) * dx(1) + inner(u.dx(0), v.dx(0)) * dx(7)
                 a1 = inner(u.dx(1), v.dx(1)) * dx(1) + inner(u.dx(1), v.dx(1)) * dx(7)
                 a2 = (inner(u.dx(0), v.dx(1)) * dx(1) + inner(u.dx(1), v.dx(0)) * dx(1)
-                      - inner(u.dx(0), v.dx(1)) * dx(7) + inner(u.dx(1), v.dx(0)) * dx(7))
+                      - inner(u.dx(0), v.dx(1)) * dx(7) - inner(u.dx(1), v.dx(0)) * dx(7))
                 # subdomains 2 and 8
                 a3 = inner(u.dx(0), v.dx(0)) * dx(2) + inner(u.dx(0), v.dx(0)) * dx(8)
                 a4 = inner(u.dx(1), v.dx(1)) * dx(2) + inner(u.dx(1), v.dx(1)) * dx(8)
                 a5 = (inner(u.dx(0), v.dx(1)) * dx(2) + inner(u.dx(1), v.dx(0)) * dx(2)
-                      - inner(u.dx(0), v.dx(1)) * dx(8) + inner(u.dx(1), v.dx(0)) * dx(8))
+                      - inner(u.dx(0), v.dx(1)) * dx(8) - inner(u.dx(1), v.dx(0)) * dx(8))
                 # subdomains 3 and 5
                 a6 = inner(u.dx(0), v.dx(0)) * dx(3) + inner(u.dx(0), v.dx(0)) * dx(5)
                 a7 = inner(u.dx(1), v.dx(1)) * dx(3) + inner(u.dx(1), v.dx(1)) * dx(5)
                 a8 = (inner(u.dx(0), v.dx(1)) * dx(3) + inner(u.dx(1), v.dx(0)) * dx(3)
-                      - inner(u.dx(0), v.dx(1)) * dx(5) + inner(u.dx(1), v.dx(0)) * dx(5))
+                      - inner(u.dx(0), v.dx(1)) * dx(5) - inner(u.dx(1), v.dx(0)) * dx(5))
                 # subdomains 4 and 6
                 a9 = inner(u.dx(0), v.dx(0)) * dx(4) + inner(u.dx(0), v.dx(0)) * dx(6)
                 a10 = inner(u.dx(1), v.dx(1)) * dx(4) + inner(u.dx(1), v.dx(1)) * dx(6)
                 a11 = (inner(u.dx(0), v.dx(1)) * dx(4) + inner(u.dx(1), v.dx(0)) * dx(4)
-                       - inner(u.dx(0), v.dx(1)) * dx(6) + inner(u.dx(1), v.dx(0)) * dx(6))
+                       - inner(u.dx(0), v.dx(1)) * dx(6) - inner(u.dx(1), v.dx(0)) * dx(6))
                 # boundaries 5, 6, 7 and 8
                 a12 = inner(u, v) * ds(5) + inner(u, v) * ds(6) + inner(u, v) * ds(7) + inner(u, v) * ds(8)
                 # Return
