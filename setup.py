@@ -12,7 +12,9 @@ import shutil
 import subprocess
 import tempfile
 
+
 def AdditionalBackendsOptions(SetuptoolsClass):
+
     class AdditionalBackendsOptions_Class(SetuptoolsClass):
         user_options = SetuptoolsClass.user_options + [
             ("additional-backends=", None, "Desired additional backends"),
@@ -36,7 +38,9 @@ def AdditionalBackendsOptions(SetuptoolsClass):
                                                + ".git"], cwd=self.additional_backends_directory)
                     self.additional_backends_directory_cloned = True
             SetuptoolsClass.finalize_options(self)
+
     return AdditionalBackendsOptions_Class
+
 
 @AdditionalBackendsOptions
 class install(setuptools_install):
@@ -50,6 +54,7 @@ class install(setuptools_install):
         if self.additional_backends is not None:
             for symlink in egg_info.additional_backends_symlinks:
                 os.unlink(symlink)
+
 
 @AdditionalBackendsOptions
 class egg_info(setuptools_egg_info):
@@ -67,6 +72,7 @@ class egg_info(setuptools_egg_info):
                 self.distribution.packages.append("rbnics.backends." + additional_module)
                 self.distribution.packages.append("rbnics.backends." + additional_module + ".wrapping")
         setuptools_egg_info.run(self)
+
 
 setup(name="RBniCS",
       description="Reduced order modelling in FEniCS",
