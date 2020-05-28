@@ -684,7 +684,7 @@ def expand_arg(arg, tuple_expansion=True):
         for i in powerset(arg.types_from):
             for j in expand_arg(i, tuple_expansion=False):
                 for k in powerset(arg.types_to):
-                    for l in expand_arg(k, tuple_expansion=False):
+                    for l in expand_arg(k, tuple_expansion=False):  # noqa: E741
                         yield dict_of(j, l)
     else:
         yield arg

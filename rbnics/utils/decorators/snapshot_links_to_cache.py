@@ -49,7 +49,7 @@ def snapshot_links_to_cache(offline_method):
                                 os.symlink(cache_relpath, snapshot_path)
                             else:
                                 with open(cache_path, "r") as cache_file, open(snapshot_path, "w") as snapshot_file:
-                                    for l in cache_file.readlines():
+                                    for l in cache_file.readlines():  # noqa: E741
                                         snapshot_file.write(l.replace(cache_filename, filename))
 
                 parallel_io(create_links)
