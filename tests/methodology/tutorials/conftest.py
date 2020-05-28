@@ -26,7 +26,7 @@ def pytest_collect_file(path, parent):
     Hook into py.test to collect tutorial files.
     """
     if path.ext == ".py" and path.basename.startswith("tutorial_"):
-        return TutorialFile(path, parent)
+        return TutorialFile.from_parent(parent=parent, fspath=path)
 
 
 def pytest_pycollect_makemodule(path, parent):
@@ -34,7 +34,7 @@ def pytest_pycollect_makemodule(path, parent):
     Hook into py.test to avoid collecting twice tutorial files explicitly provided on the command lines
     """
     if path.ext == ".py" and path.basename.startswith("tutorial_"):
-        return DoNothingFile(path, parent)
+        return DoNothingFile.from_parent(parent=parent, fspath=path)
 
 
 class TutorialFile(pytest.File):
@@ -43,7 +43,7 @@ class TutorialFile(pytest.File):
     """
 
     def collect(self):
-        yield TutorialItem(os.path.relpath(str(self.fspath), str(self.parent.fspath)), self)
+        yield TutorialItem.from_parent(parent=self, name=os.path.relpath(str(self.fspath), str(self.parent.fspath)))
 
 
 class TutorialItem(pytest.Item):
