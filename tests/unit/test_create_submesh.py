@@ -240,6 +240,7 @@ else:
 # ===       assert the results. Instead, we rely on fenicstools'      === #
 # ===       DofMapPlotter and compare its internal state.             === #
 
+
 # Test mesh to submesh global cell indices
 @enable_create_submesh_logging
 def test_mesh_to_submesh_global_cell_indices(mesh, submesh, tempdir):
