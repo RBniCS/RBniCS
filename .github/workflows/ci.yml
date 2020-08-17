@@ -17,6 +17,10 @@ jobs:
     container: quay.io/fenicsproject/dev
     steps:
       - uses: actions/checkout@v2
+      - name: Install RBniCS dependencies
+        run: pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-html pytest-instafail pytest-xdist sympy toposort
+      - name: Install RBniCS
+        run: python3 setup.py -q install
 
   docker:
     if: github.repository == 'RBniCS/RBniCS'
@@ -26,7 +30,7 @@ jobs:
       RELEASE_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build the docker testing image
+      - name: Build the docker release image
         run: docker build --pull -t ${RELEASE_IMAGE} -f docker/Dockerfile .
       - name: Log into the docker registry
         run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
