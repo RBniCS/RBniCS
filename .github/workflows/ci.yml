@@ -1,0 +1,28 @@
+name: RBniCS CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: "0 2 * * MON"
+
+env:
+  TESTING_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:testing-${{ github.sha }}
+  RELEASE_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:latest
+
+jobs:
+  build:
+    if: github.repository == 'RBniCS/RBniCS'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker testing image
+      run: docker build --pull -t ${TESTING_IMAGE} -f docker/Dockerfile .
+    - name: Log into the docker registry
+      run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
+    - name: Push to the docker registry
+      run: docker push ${TESTING_IMAGE}
