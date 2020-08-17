@@ -1,0 +1,26 @@
+name: Mirror repository
+
+on: [push, delete]
+
+jobs:
+  to_github_mathlab:
+    if: github.repository == 'RBniCS/RBniCS'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: spyoungtech/mirror-action@master
+        with:
+          REMOTE: https://github.com/mathLab/RBniCS.git
+          GIT_USERNAME: ${{ secrets.MIRROR_GITHUB_USER }}
+          GIT_PASSWORD: ${{ secrets.MIRROR_GITHUB_TOKEN }}
+
+  to_gitlab_rbnics:
+    if: github.repository == 'RBniCS/RBniCS'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: spyoungtech/mirror-action@master
+        with:
+          REMOTE: https://gitlab.com/RBniCS/RBniCS.git
+          GIT_USERNAME: ${{ secrets.MIRROR_GITLAB_USER }}
+          GIT_PASSWORD: ${{ secrets.MIRROR_GITLAB_TOKEN }}
