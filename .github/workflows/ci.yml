@@ -10,35 +10,25 @@ on:
   schedule:
     - cron: "0 2 * * MON"
 
-env:
-  TESTING_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:testing-${{ github.sha }}
-  RELEASE_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:latest
-
 jobs:
-  build:
-    if: github.repository == 'RBniCS/RBniCS'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build the docker testing image
-        run: docker build --pull -t ${TESTING_IMAGE} -f docker/Dockerfile .
-      - name: Log into the docker registry
-        run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
-      - name: Push to the docker registry
-        run: docker push ${TESTING_IMAGE}
-
   test:
     if: "!(contains(github.event.head_commit.message, '[ci skip]') || contains(github.event.head_commit.message, '[skip ci]'))"
     runs-on: ubuntu-latest
-    container: ${{ env.TESTING_IMAGE }}
+    container: quay.io/fenicsproject/dev
     steps:
       - uses: actions/checkout@v2
 
-  cleanup:
+  docker:
+    if: github.repository == 'RBniCS/RBniCS'
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [test]
+    env:
+      RELEASE_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:latest
     steps:
-      - name: Remove docker testing image from the docker registry
-        run: |
-          CI_REGISTRY_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${{ secrets.CI_REGISTRY_USER }}'", "password": "'${{ secrets.CI_REGISTRY_PASSWORD }}'"}' "https://hub.docker.com/v2/users/login/" | jq -r .token)
-          curl "https://hub.docker.com/v2/repositories/$(echo $TESTING_IMAGE | sed 's#:#/tags/#g')" -X DELETE -H "Accept: application/json" -H "Authorization: JWT ${CI_REGISTRY_TOKEN}"
+      - uses: actions/checkout@v2
+      - name: Build the docker testing image
+        run: docker build --pull -t ${RELEASE_IMAGE} -f docker/Dockerfile .
+      - name: Log into the docker registry
+        run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
+      - name: Push to the docker registry
+        run: docker push ${RELEASE_IMAGE}
