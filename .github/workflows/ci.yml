@@ -31,7 +31,7 @@ jobs:
       - name: Run unit tests (serial)
         run: pytest -n auto -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" tests/unit
       - name: Run unit tests (parallel)
-        run: mpirun -n 2 pytest --gc-disable --gc-scope function -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor and not test_config and not test_function_extend_or_restrict" tests/unit
+        run: mpirun -n 2 pytest --gc-disable --gc-scope function -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" tests/unit
       - name: Run separated parametrized form tests
         run: |
           pytest tests/unit/test_separated_parametrized_form_scalar.py
