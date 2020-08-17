@@ -20,7 +20,14 @@ jobs:
       - name: Install RBniCS dependencies
         run: pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-html pytest-instafail pytest-xdist sympy toposort
       - name: Install RBniCS
-        run: python3 setup.py -q install
+        run: |
+          python3 setup.py -q install
+          python3 -c "import dolfin; import rbnics"
+      - name: Run flake8 checks
+        run: |
+          pytest --flake8 -m flake8 rbnics
+          pytest --flake8 -m flake8 tests
+          pytest --flake8 -m flake8 tutorials
 
   docker:
     if: github.repository == 'RBniCS/RBniCS'
