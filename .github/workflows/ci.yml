@@ -53,6 +53,8 @@ jobs:
           mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_save tests/unit/test_tensor_io.py
           mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/test_tensor_io.py
           pytest -k test_tensor_load tests/unit/test_tensor_io.py
+      - name: Run performance tests
+        run: pytest --benchmark-disable -n auto tests/performance
 
   docker:
     if: github.repository == 'RBniCS/RBniCS'
