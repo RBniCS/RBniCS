@@ -19,10 +19,19 @@ jobs:
     if: github.repository == 'RBniCS/RBniCS'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker testing image
-      run: docker build --pull -t ${TESTING_IMAGE} -f docker/Dockerfile .
-    - name: Log into the docker registry
-      run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
-    - name: Push to the docker registry
-      run: docker push ${TESTING_IMAGE}
+      - uses: actions/checkout@v2
+      - name: Build the docker testing image
+        run: docker build --pull -t ${TESTING_IMAGE} -f docker/Dockerfile .
+      - name: Log into the docker registry
+        run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
+      - name: Push to the docker registry
+        run: docker push ${TESTING_IMAGE}
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Remove docker testing image from the docker registry
+        run: |
+          CI_REGISTRY_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${{ secrets.CI_REGISTRY_USER }}'", "password": "'${{ secrets.CI_REGISTRY_PASSWORD }}'"}' "https://hub.docker.com/v2/users/login/" | jq -r .token)
+          curl "https://hub.docker.com/v2/repositories/$(echo $TESTING_IMAGE | sed 's#:#/tags/#g')" -X DELETE -H "Accept: application/json" -H "Authorization: JWT ${CI_REGISTRY_TOKEN}"
