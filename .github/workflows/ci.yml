@@ -59,7 +59,7 @@ jobs:
         run: pytest --benchmark-disable -n auto tests/performance
 
   docker:
-    if: github.repository == 'RBniCS/RBniCS'
+    if: github.repository == 'RBniCS/RBniCS' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: [test]
     env:
