@@ -13,6 +13,7 @@ except ImportError:
     # Full git support is only required by regold action;
     # null and compare actions do not require any git support
     pass
+from mpi4py.MPI import COMM_WORLD
 from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test.diff import diff
 
@@ -25,6 +26,8 @@ def run_and_compare_to_gold(subdirectory=""):
             """
             Handles the comparison of test/tutorial with gold files
             """
+
+            mpi_comm = COMM_WORLD
 
             rootdir = str(self.config.rootdir)
 
@@ -42,7 +45,8 @@ def run_and_compare_to_gold(subdirectory=""):
             # Get current and reference directory
             current_dir = str(self.fspath.dirname)
             if action is not None:
-                reference_dir = os.path.join(current_dir.replace(rootdir, data_dir), self.fspath.basename)
+                reference_dir = os.path.join(
+                    current_dir.replace(rootdir, data_dir), self.fspath.basename, str(mpi_comm.size))
                 current_dir = os.path.join(current_dir, subdirectory)
                 reference_dir = os.path.join(reference_dir, subdirectory)
             else:
@@ -62,7 +66,7 @@ def run_and_compare_to_gold(subdirectory=""):
                                     shutil.rmtree(os.path.join(current_dir, set_directory))
                                 shutil.copytree(os.path.join(reference_dir, set_directory),
                                                 os.path.join(current_dir, set_directory))
-                parallel_io(copy_training_and_testing_sets)
+                parallel_io(copy_training_and_testing_sets, mpi_comm)
 
             # Run test/tutorial
             runtest(self)
@@ -105,7 +109,7 @@ def run_and_compare_to_gold(subdirectory=""):
                     data_dir_repo.git.commit(message=message)
                     # Clean repository
                     data_dir_repo.git.clean("-Xdf")
-            parallel_io(process_results)
+            parallel_io(process_results, mpi_comm)
 
         return run_and_compare_to_gold_function
 
