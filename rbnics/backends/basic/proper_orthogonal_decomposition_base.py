@@ -85,7 +85,7 @@ def ProperOrthogonalDecompositionBase(backend, wrapping, online_backend, online_
                 if norm_b != 0.:
                     b /= norm_b
                 basis_functions.enrich(b)
-                if self.retained_energy[N] > 1. - tol:
+                if tol > 0. and self.retained_energy[N] > 1. - tol:
                     break
             N += 1
 
