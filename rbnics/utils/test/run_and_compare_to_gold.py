@@ -95,7 +95,7 @@ def run_and_compare_to_gold(subdirectory=""):
                         os.remove(os.path.join(reference_dir, ".gitignore"))
                     data_dir_repo.git.add([reference_dir])
                     # Commit changes
-                    commit = str(git.Repo(rootdir).head.reference.commit)
+                    commit = str(git.Repo(rootdir).head.commit)
                     relpath = os.path.relpath(str(self.fspath), rootdir)
                     if self.name != relpath:
                         message = ("Automatic regold of " + self.name + " in " + relpath
