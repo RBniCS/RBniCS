@@ -11,7 +11,7 @@ from rbnics.utils.test import (add_gold_options, disable_matplotlib, enable_matp
 
 
 def pytest_addoption(parser):
-    add_gold_options(parser, "RBniCS")
+    add_gold_options(parser)
 
 
 def pytest_configure(config):

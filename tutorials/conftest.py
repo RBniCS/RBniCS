@@ -14,7 +14,7 @@ from rbnics.utils.test import (
 
 
 def pytest_addoption(parser):
-    add_gold_options(parser, "RBniCS")
+    add_gold_options(parser)
 
 
 def pytest_configure(config):

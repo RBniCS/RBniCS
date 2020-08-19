@@ -11,8 +11,7 @@ try:
     import git
 except ImportError:
     # Full git support is only required by regold action;
-    # null action does not require any git support, while
-    # compare action only requires to be able to do a git clone
+    # null and compare actions do not require any git support
     pass
 from rbnics.utils.mpi import parallel_io
 from rbnics.utils.test.diff import diff
