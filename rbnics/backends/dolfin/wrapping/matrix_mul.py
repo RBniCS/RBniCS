@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from dolfin import as_backend_type, compile_cpp_code
+from dolfin import compile_cpp_code
 
 
 def matrix_mul_vector(matrix, vector):
@@ -13,42 +13,69 @@ def matrix_mul_vector(matrix, vector):
 
 cpp_code = """
     #include <pybind11/pybind11.h>
+    #include <dolfin/la/LinearAlgebraObject.h>
+    #include <dolfin/la/GenericMatrix.h>
     #include <dolfin/la/PETScMatrix.h>
 
     void throw_error(PetscErrorCode ierr, std::string reason);
 
-    PetscScalar vectorized_matrix_inner_vectorized_matrix(std::shared_ptr<dolfin::PETScMatrix> A,
-                                                          std::shared_ptr<dolfin::PETScMatrix> B)
+    PetscScalar vectorized_matrix_inner_vectorized_matrix(std::shared_ptr<dolfin::GenericMatrix> A,
+                                                          std::shared_ptr<dolfin::GenericMatrix> B)
     {
-        Mat a = A->mat();
-        Mat b = B->mat();
+        Mat a = dolfin::as_type<dolfin::PETScMatrix>(*A).mat();
+        Mat b = dolfin::as_type<dolfin::PETScMatrix>(*B).mat();
         PetscInt start_a, end_a, ncols_a, start_b, end_b, ncols_b;
         PetscErrorCode ierr;
         const PetscInt *cols_a, *cols_b;
         const PetscScalar *vals_a, *vals_b;
-        PetscScalar output(0.);
+        PetscScalar sum(0.);
 
         ierr = MatGetOwnershipRange(a, &start_a, &end_a);
         if (ierr != 0) throw_error(ierr, "MatGetOwnershipRange");
-        ierr = MatGetOwnershipRange(b, &start_b, &end_b);
-        if (ierr != 0) throw_error(ierr, "MatGetOwnershipRange");
+        if (a != b) {
+            ierr = MatGetOwnershipRange(b, &start_b, &end_b);
+            if (ierr != 0) throw_error(ierr, "MatGetOwnershipRange");
+        }
+        else {
+            start_b = start_a;
+            end_b = end_a;
+        }
         if (start_a != start_b) throw_error(ierr, "start_a != start_b");
         if (end_a != end_b) throw_error(ierr, "end_a != end_b");
+
         for (PetscInt i(start_a); i < end_a; i++) {
             ierr = MatGetRow(a, i, &ncols_a, &cols_a, &vals_a);
             if (ierr != 0) throw_error(ierr, "MatGetRow");
-            ierr = MatGetRow(b, i, &ncols_b, &cols_b, &vals_b);
-            if (ierr != 0) throw_error(ierr, "MatGetRow");
-            if (ncols_a != ncols_b) throw_error(ierr, "ncols_a != ncols_b");
+            if (a != b) {
+                ierr = MatGetRow(b, i, &ncols_b, &cols_b, &vals_b);
+                if (ierr != 0) throw_error(ierr, "MatGetRow");
+                if (ncols_a != ncols_b) throw_error(ierr, "ncols_a != ncols_b");
+            }
+            else {
+                ncols_b = ncols_a;
+                cols_b = cols_a;
+                vals_b = vals_a;
+            }
             for (PetscInt j(0); j < ncols_a; j++) {
                 if (cols_a[j] != cols_b[j]) throw_error(ierr, "cols_a[j] != cols_b[j]");
-                output += vals_a[j]*vals_b[j];
+                sum += vals_a[j]*vals_b[j];
+            }
+            if (a != b) {
+                ierr = MatRestoreRow(b, i, &ncols_b, &cols_b, &vals_b);
+                if (ierr != 0) throw_error(ierr, "MatRestoreRow");
+            }
+            else {
+                ncols_b = 0;
+                cols_b = NULL;
+                vals_b = NULL;
             }
             ierr = MatRestoreRow(a, i, &ncols_a, &cols_a, &vals_a);
             if (ierr != 0) throw_error(ierr, "MatRestoreRow");
-            ierr = MatRestoreRow(b, i, &ncols_b, &cols_b, &vals_b);
-            if (ierr != 0) throw_error(ierr, "MatRestoreRow");
         }
+
+        PetscReal output(0.);
+        ierr = MPIU_Allreduce(&sum, &output, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject) a));
+        if (ierr != 0) throw_error(ierr, "MPIU_Allreduce");
         return output;
     }
 
@@ -67,4 +94,4 @@ _vectorized_matrix_inner_vectorized_matrix = compile_cpp_code(cpp_code).vectoriz
 
 
 def vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix):
-    return _vectorized_matrix_inner_vectorized_matrix(as_backend_type(matrix), as_backend_type(other_matrix))
+    return _vectorized_matrix_inner_vectorized_matrix(matrix, other_matrix)
