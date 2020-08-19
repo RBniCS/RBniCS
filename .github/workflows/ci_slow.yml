@@ -3,6 +3,7 @@ name: RBniCS CI (slow tests)
 on:
   schedule:
     - cron: "0 2 * * TUE"
+  workflow_dispatch:
 
 jobs:
   test:

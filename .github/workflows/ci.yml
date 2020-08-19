@@ -9,6 +9,7 @@ on:
       - master
   schedule:
     - cron: "0 2 * * MON"
+  workflow_dispatch:
 
 jobs:
   test:
