@@ -1,0 +1,19 @@
+name: RBniCS methodology tests
+
+on:
+  schedule:
+    - cron: "0 2 * * WED"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: quay.io/fenicsproject/dev
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install RBniCS dependencies
+        run: pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-html pytest-instafail pytest-xdist sympy toposort
+      - name: Install RBniCS
+        run: |
+          python3 setup.py -q install
+          python3 -c "import dolfin; import rbnics"
