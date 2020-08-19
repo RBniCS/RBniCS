@@ -41,10 +41,7 @@ setup(name="RBniCS",
           "pytest",
           "pytest-benchmark",
           "pytest-dependency",
-          "pytest-flake8",
-          "pytest-html",
-          "pytest-instafail",
-          "pytest-xdist"
+          "pytest-flake8"
       ],
       zip_safe=False
       )

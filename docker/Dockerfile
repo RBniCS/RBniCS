@@ -12,8 +12,7 @@ RUN apt-get -qq update && \
     apt-get -qq remove python3-pytest && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-html pytest-instafail pytest-xdist sympy toposort && \
-    sed -i "s/pytest_report_header/DISABLED_pytest_report_header/g" /usr/local/lib/python3.6/dist-packages/pytest_metadata/plugin.py && \
+    pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 sympy toposort && \
     cat /dev/null > $FENICS_HOME/WELCOME
 
 USER fenics

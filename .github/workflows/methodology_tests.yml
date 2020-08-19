@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install RBniCS dependencies
-        run: pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-html pytest-instafail pytest-xdist sympy toposort
+        run: pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-xdist sympy toposort
       - name: Install RBniCS
         run: |
           python3 setup.py -q install
