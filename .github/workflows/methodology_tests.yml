@@ -18,7 +18,7 @@ jobs:
     container: quay.io/fenicsproject/dev
     strategy:
       matrix:
-        which: [eim/00, eim/01, eim/02, eim/03, eim/04]
+        which: [eim/00, eim/01, eim/02, eim/03, eim/04, eim/05]
       fail-fast: false
     steps:
       - uses: actions/checkout@v1  # @v2 cannot be used because container image has old version of git
@@ -47,64 +47,88 @@ jobs:
           GIT_PASSWORD: ${{ secrets.MIRROR_GITHUB_TOKEN }}
       - name: Regold methodology tests (serial)
         if: env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          pytest -n auto test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action regold
+        uses: ./.github/actions/tutorials/run_action
+        with:
+          action: "regold"
+          pytest: "pytest -n auto"
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up regolded results (serial)
         if: env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          git clean -xdf
+        uses: ./.github/actions/tutorials/clean_up
+        with:
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Run methodology tests (serial, offline and online)
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          pytest -n auto test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action compare
+        uses: ./.github/actions/tutorials/run_action
+        with:
+          action: "compare"
+          pytest: "pytest -n auto"
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Run methodology tests (serial, online only)
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          pytest -n auto test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action compare
+        uses: ./.github/actions/tutorials/run_action
+        with:
+          action: "compare"
+          pytest: "pytest -n auto"
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
 #      - name: Run methodology tests (parallel from serial, online only) - not working due to empty mesh on one process
 #        if: env.REQUIRED_ACTION == 'compare'
-#        run: |
-#          cd tests/methodology/${FOLDER_NAME}
-#          mpirun -n 2 pytest --gc-disable --gc-scope function test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action compare
+#        uses: ./.github/actions/tutorials/run_action
+#        with:
+#          action: "compare"
+#          pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
+#          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+#          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up results (serial)
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          git clean -xdf
+        uses: ./.github/actions/tutorials/clean_up
+        with:
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Regold methodology tests (parallel)
         if: env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          mpirun -n 2 pytest --gc-disable --gc-scope function test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action regold
+        uses: ./.github/actions/tutorials/run_action
+        with:
+          action: "regold"
+          pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up regolded results (parallel)
         if: env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          git clean -xdf
+        uses: ./.github/actions/tutorials/clean_up
+        with:
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Run methodology tests (parallel, offline and online)
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          mpirun -n 2 pytest --gc-disable --gc-scope function test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action compare
+        uses: ./.github/actions/tutorials/run_action
+        with:
+          action: "compare"
+          pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Run methodology tests (parallel, online only)
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          mpirun -n 2 pytest --gc-disable --gc-scope function test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action compare
+        uses: ./.github/actions/tutorials/run_action
+        with:
+          action: "compare"
+          pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
 #      - name: Run methodology tests (serial from parallel, online only) - need to mix gold results in the comparison
 #        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-#        run: |
-#          cd tests/methodology/${FOLDER_NAME}
-#          pytest -n auto test_${FOLDER_NAME}_approximation_${TEST_NUMBER}.py --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action compare
+#        uses: ./.github/actions/tutorials/run_action
+#        with:
+#          action: "compare"
+#          pytest: "pytest -n auto"
+#          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
+#          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up results (parallel)
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          cd tests/methodology/${FOLDER_NAME}
-          git clean -xdf
+        uses: ./.github/actions/tutorials/clean_up
+        with:
+          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Push regolded test data
         if: env.REQUIRED_ACTION == 'regold'
         uses: ./.github/actions/tutorials/push_regolded_test_data

@@ -1,0 +1,30 @@
+name: Run action
+description: Run action
+
+inputs:
+  action:
+    description: 'Action to run'
+    required: true
+  pytest:
+    description: 'pytest command'
+    required: true
+  folder_path:
+    description: "Relative folder path"
+    required: true
+  file_name:
+    description: "File name to run"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run action
+      run: |
+        cd ${FOLDER_PATH}
+        ${PYTEST} ${FILE_NAME} --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action ${ACTION}
+      env:
+        ACTION: ${{ inputs.action }}
+        PYTEST: ${{ inputs.pytest }}
+        FOLDER_PATH: ${{ inputs.folder_path }}
+        FILE_NAME: ${{ inputs.file_name }}
+      shell: bash
