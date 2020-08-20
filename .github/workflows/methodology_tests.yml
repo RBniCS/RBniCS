@@ -42,14 +42,9 @@ jobs:
         env:
           REGOLD_FOLDER_NAME: ${{ github.event.inputs.regoldFolderName }}
           REGOLD_TEST_NUMBER: ${{ github.event.inputs.regoldTestNumber }}
-      - name: Install RBniCS dependencies
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: pip3 -q install --upgrade cvxopt gitpython multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-xdist sympy toposort
       - name: Install RBniCS
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        run: |
-          python3 setup.py -q install
-          python3 -c "import dolfin; import rbnics"
+        uses: ./.github/actions/install
       - name: Clone test data repository
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
         run: |

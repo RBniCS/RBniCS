@@ -18,12 +18,8 @@ jobs:
     container: quay.io/fenicsproject/dev
     steps:
       - uses: actions/checkout@v2
-      - name: Install RBniCS dependencies
-        run: pip3 -q install --upgrade cvxopt multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-xdist sympy toposort
       - name: Install RBniCS
-        run: |
-          python3 setup.py -q install
-          python3 -c "import dolfin; import rbnics"
+        uses: ./.github/actions/install
       - name: Run flake8 checks
         run: |
           pytest --flake8 -m flake8 rbnics
