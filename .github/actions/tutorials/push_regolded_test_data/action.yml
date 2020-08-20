@@ -1,0 +1,11 @@
+name: Push regolded test data
+description: Push regolded files to test data repository
+
+runs:
+  using: "composite"
+  steps:
+    - name: Push regolded files to test data repository
+      run: |
+        cd ${DATA_DIR}
+        git push
+      shell: bash
