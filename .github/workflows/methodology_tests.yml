@@ -5,10 +5,12 @@ on:
     - cron: "0 2 * * WED"
   workflow_dispatch:
     inputs:
-      regoldFolderName:
-        description: 'Folder to regold'
-      regoldTestNumber:
-        description: 'Test number to regold'
+      required_action:
+        description: 'Action to run (compare or regold)'
+      only_on_folder_name:
+        description: 'Run only on folder name'
+      only_on_test_number:
+        description: 'Run only on test number'
 
 jobs:
   test:
@@ -16,7 +18,7 @@ jobs:
     container: quay.io/fenicsproject/dev
     strategy:
       matrix:
-        which: [eim/00, eim/01, eim/02, eim/03]
+        which: [eim/00, eim/01, eim/02, eim/03, eim/04]
       fail-fast: false
     steps:
       - uses: actions/checkout@v1  # @v2 cannot be used because container image has old version of git
@@ -27,23 +29,13 @@ jobs:
           folder_name_variable: FOLDER_NAME
           file_name_variable: TEST_NUMBER
       - name: Get required action (compare or regold)
-        run: |
-          echo "::set-env name=FOLDER_NAME::$(echo ${{ matrix.which }} | cut -d'_' -f1)"
-          if [ "${REGOLD_FOLDER_NAME}" != "" ] && \
-             [ "${REGOLD_TEST_NUMBER}" != "" ]; then
-            if [ "${REGOLD_FOLDER_NAME}" = "${FOLDER_NAME}" ] && \
-               [ "${REGOLD_TEST_NUMBER}" = "${TEST_NUMBER}" ]; then
-              REQUIRED_ACTION="regold"
-            else
-              REQUIRED_ACTION="skip"
-            fi
-          else
-            REQUIRED_ACTION="compare"
-          fi
-          echo "::set-env name=REQUIRED_ACTION::${REQUIRED_ACTION}"
-        env:
-          REGOLD_FOLDER_NAME: ${{ github.event.inputs.regoldFolderName }}
-          REGOLD_TEST_NUMBER: ${{ github.event.inputs.regoldTestNumber }}
+        uses: ./.github/actions/tutorials/parse_workflow_dispatch
+        with:
+          required_action: ${{ github.event.inputs.regoldFolderName }}
+          only_on_folder_name: ${{ github.event.inputs.only_on_folder_name }}
+          only_on_file_name: ${{ github.event.inputs.only_on_test_number }}
+          current_folder_name: ${{ env.FOLDER_NAME }}
+          current_file_name: ${{ env.TEST_NUMBER }}
       - name: Install RBniCS
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
         uses: ./.github/actions/install

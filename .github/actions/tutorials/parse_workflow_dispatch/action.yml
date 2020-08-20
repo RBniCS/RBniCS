@@ -1,0 +1,46 @@
+name: Parse workflow_dispatch
+description: Parse inputs provided to workflow_dispatch
+
+inputs:
+  required_action:
+    description: 'Action to run (compare or regold)'
+    required: true
+  only_on_folder_name:
+    description: 'Run only on folder name'
+    required: true
+  only_on_file_name:
+    description: 'Run only on file name'
+    required: true
+  current_folder_name:
+    description: "Name of the folder of the current run"
+    required: true
+  current_file_name:
+    description: "Name of the file of the current run"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Parse inputs provided to workflow_dispatch
+      run: |
+        # Set required action based on input data
+        REQUIRED_ACTION=${REQUIRED_ACTION_IN}
+        if [ "${REQUIRED_ACTION}" = "" ]; then
+          REQUIRED_ACTION="compare"
+        fi
+        # Owerwrite action if only_on_* inputs are provided
+        if [ "${ONLY_ON_FOLDER_NAME}" != "" ] && \
+           [ "${ONLY_ON_FILE_NAME}" != "" ]; then
+          if [ "${ONLY_ON_FOLDER_NAME}" != "${CURRENT_FOLDER_NAME}" ] || \
+             [ "${ONLY_ON_FILE_NAME}" != "${CURRENT_FILE_NAME}" ]; then
+            REQUIRED_ACTION="skip"
+          fi
+        fi
+        echo "::set-env name=REQUIRED_ACTION::${REQUIRED_ACTION}"
+      env:
+        REQUIRED_ACTION_IN: ${{ inputs.required_action }}
+        ONLY_ON_FOLDER_NAME: ${{ inputs.only_on_folder_name }}
+        ONLY_ON_FILE_NAME: ${{ inputs.only_on_file_name }}
+        CURRENT_FOLDER_NAME: ${{ inputs.current_folder_name }}
+        CURRENT_FILE_NAME: ${{ inputs.current_file_name }}
+      shell: bash
