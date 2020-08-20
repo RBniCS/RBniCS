@@ -18,7 +18,9 @@ jobs:
     container: quay.io/fenicsproject/dev
     strategy:
       matrix:
-        which: [eim/00, eim/01, eim/02, eim/03, eim/04, eim/05]
+        which: [eim/00, eim/01, eim/02, eim/03, eim/04, eim/05, eim/06, eim/07, eim/08, eim/09,
+          eim/10, eim/11, eim/12, eim/13, eim/14, eim/15, eim/16, eim/17, eim/18, eim/19,
+          eim/20, eim/21, eim/22, eim/23]
       fail-fast: false
     steps:
       - uses: actions/checkout@v1  # @v2 cannot be used because container image has old version of git
