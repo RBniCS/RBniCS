@@ -16,14 +16,16 @@ jobs:
     container: quay.io/fenicsproject/dev
     strategy:
       matrix:
-        which: [eim_00, eim_01, eim_02, eim_03]
+        which: [eim/00, eim/01, eim/02, eim/03]
       fail-fast: false
     steps:
       - uses: actions/checkout@v1  # @v2 cannot be used because container image has old version of git
       - name: Get folder name and test number
-        run: |
-          echo "::set-env name=FOLDER_NAME::$(echo ${{ matrix.which }} | cut -d'_' -f1)"
-          echo "::set-env name=TEST_NUMBER::$(echo ${{ matrix.which }} | cut -d'_' -f2)"
+        uses: ./.github/actions/tutorials/parse_matrix
+        with:
+          matrix_which: ${{ matrix.which }}
+          folder_name_variable: FOLDER_NAME
+          file_name_variable: TEST_NUMBER
       - name: Get required action (compare or regold)
         run: |
           echo "::set-env name=FOLDER_NAME::$(echo ${{ matrix.which }} | cut -d'_' -f1)"
