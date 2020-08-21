@@ -58,12 +58,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     env:
-      RELEASE_IMAGE: ${{ secrets.CI_REGISTRY_IMAGE }}:latest
+      RELEASE_IMAGE: rbnics/rbnics:latest
     steps:
       - uses: actions/checkout@v2
       - name: Build the docker release image
         run: docker build --pull -t ${RELEASE_IMAGE} -f docker/Dockerfile .
+      - name: Try importing the library inside the docker image
+        run: docker run -i --rm ${RELEASE_IMAGE} "python3 -c 'import dolfin; import rbnics'"
+      - name: Run unit tests (serial) to verify that the docker image is working
+        run: docker run -i --rm ${RELEASE_IMAGE} "cd RBniCS && pytest -k 'not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor' tests/unit"
       - name: Log into the docker registry
-        run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }} ${{ secrets.CI_REGISTRY }}
+        run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }}
       - name: Push to the docker registry
         run: docker push ${RELEASE_IMAGE}
