@@ -85,7 +85,7 @@ def test_eim_approximation_15(expression_type, basis_generation):
             # I/O
             self.folder["basis"] = os.path.join(self.truth_problem.folder_prefix, "basis")
             # Gram Schmidt
-            self.GS = GramSchmidt(self.truth_problem.inner_product)
+            self.GS = GramSchmidt(self.truth_problem.V, self.truth_problem.inner_product)
 
         def initialize_training_set(self, ntrain, enable_import=True, sampling=None, **kwargs):
             return ReductionMethod.initialize_training_set(
@@ -112,8 +112,9 @@ def test_eim_approximation_15(expression_type, basis_generation):
         def update_basis_matrix(self, index_and_snapshot):
             (index, snapshot) = index_and_snapshot
             component = "u" if index % 2 == 0 else "s"
-            self.reduced_problem.basis_functions.enrich(snapshot, component)
-            self.GS.apply(self.reduced_problem.basis_functions[component], 0)
+            new_basis_function = self.GS.apply(
+                snapshot, self.reduced_problem.basis_functions[component], component=component)
+            self.reduced_problem.basis_functions.enrich(new_basis_function, component)
 
         def error_analysis(self, N=None, **kwargs):
             pass
