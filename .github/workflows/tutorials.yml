@@ -64,7 +64,7 @@ jobs:
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "regold"
-          pytest: "pytest -n auto"
+          pytest: "pytest"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
           file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
       - name: Clean up regolded results (serial)
@@ -81,7 +81,7 @@ jobs:
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "compare"
-          pytest: "pytest -n auto"
+          pytest: "pytest"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
           file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
       - name: Run tutorials (serial, online only)
@@ -91,7 +91,7 @@ jobs:
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "compare"
-          pytest: "pytest -n auto"
+          pytest: "pytest"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
           file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
 #      - name: Run tutorials (parallel from serial, online only) - not working due to empty mesh on one process
@@ -155,7 +155,7 @@ jobs:
 #        uses: ./.github/actions/tutorials/run_action
 #        with:
 #          action: "compare"
-#          pytest: "pytest -n auto"
+#          pytest: "pytest"
 #          folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
 #          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
       - name: Clean up results (parallel)
