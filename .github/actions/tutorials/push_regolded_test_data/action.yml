@@ -7,5 +7,6 @@ runs:
     - name: Push regolded files to test data repository
       run: |
         cd ${DATA_DIR}
-        git push
+        git pull --rebase origin master
+        git push origin master
       shell: bash
