@@ -1,0 +1,13 @@
+name: RBniCS extra tutorials
+
+on:
+  schedule:
+    - cron: "0 2 * * FRI"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: quay.io/fenicsproject/dev
+    steps:
+      - uses: actions/checkout@v2
