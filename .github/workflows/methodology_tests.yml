@@ -6,11 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       required_action:
-        description: 'Action to run (compare or regold)'
+        description: "Action to run (compare or regold)"
+      required_parallelism:
+        description: "Parallelism to be employed when running the test (serial, parallel or both)"
       only_on_folder_name:
-        description: 'Run only on folder name'
+        description: "Run only on folder name (eim is currently the only valid value)"
       only_on_test_number:
-        description: 'Run only on test number'
+        description: "Run only on test number"
 
 jobs:
   test:
@@ -30,10 +32,11 @@ jobs:
           matrix_which: ${{ matrix.which }}
           folder_name_variable: FOLDER_NAME
           file_name_variable: TEST_NUMBER
-      - name: Get required action (compare or regold)
+      - name: Get required action (compare or regold) and required parallelism (serial, parallel or both)
         uses: ./.github/actions/tutorials/parse_workflow_dispatch
         with:
-          required_action: ${{ github.event.inputs.regoldFolderName }}
+          required_action: ${{ github.event.inputs.required_action }}
+          required_parallelism: ${{ github.event.inputs.required_parallelism }}
           only_on_folder_name: ${{ github.event.inputs.only_on_folder_name }}
           only_on_file_name: ${{ github.event.inputs.only_on_test_number }}
           current_folder_name: ${{ env.FOLDER_NAME }}
@@ -48,7 +51,9 @@ jobs:
           GIT_USERNAME: ${{ secrets.MIRROR_GITHUB_USER }}
           GIT_PASSWORD: ${{ secrets.MIRROR_GITHUB_TOKEN }}
       - name: Regold methodology tests (serial)
-        if: env.REQUIRED_ACTION == 'regold'
+        if: >-
+          env.REQUIRED_ACTION == 'regold' &&
+          (env.REQUIRED_PARALLELISM == 'serial' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "regold"
@@ -56,12 +61,16 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
           file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up regolded results (serial)
-        if: env.REQUIRED_ACTION == 'regold'
+        if: >-
+          env.REQUIRED_ACTION == 'regold' &&
+          (env.REQUIRED_PARALLELISM == 'serial' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/clean_up
         with:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Run methodology tests (serial, offline and online)
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+        if: >-
+          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+          (env.REQUIRED_PARALLELISM == 'serial' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "compare"
@@ -69,7 +78,9 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
           file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Run methodology tests (serial, online only)
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+        if: >-
+          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+          (env.REQUIRED_PARALLELISM == 'serial' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "compare"
@@ -77,7 +88,9 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
           file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
 #      - name: Run methodology tests (parallel from serial, online only) - not working due to empty mesh on one process
-#        if: env.REQUIRED_ACTION == 'compare'
+#        if: >-
+#          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+#          (env.REQUIRED_PARALLELISM == 'serial' || env.REQUIRED_PARALLELISM == 'serial_parallel')
 #        uses: ./.github/actions/tutorials/run_action
 #        with:
 #          action: "compare"
@@ -85,12 +98,16 @@ jobs:
 #          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
 #          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up results (serial)
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+        if: >-
+          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+          (env.REQUIRED_PARALLELISM == 'serial' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/clean_up
         with:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Regold methodology tests (parallel)
-        if: env.REQUIRED_ACTION == 'regold'
+        if: >-
+          env.REQUIRED_ACTION == 'regold' &&
+          (env.REQUIRED_PARALLELISM == 'parallel' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "regold"
@@ -98,12 +115,16 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
           file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up regolded results (parallel)
-        if: env.REQUIRED_ACTION == 'regold'
+        if: >-
+          env.REQUIRED_ACTION == 'regold' &&
+          (env.REQUIRED_PARALLELISM == 'parallel' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/clean_up
         with:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Run methodology tests (parallel, offline and online)
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+        if: >-
+          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+          (env.REQUIRED_PARALLELISM == 'parallel' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "compare"
@@ -111,7 +132,9 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
           file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Run methodology tests (parallel, online only)
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+        if: >-
+          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+          (env.REQUIRED_PARALLELISM == 'parallel' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/run_action
         with:
           action: "compare"
@@ -119,7 +142,9 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
           file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
 #      - name: Run methodology tests (serial from parallel, online only) - need to mix gold results in the comparison
-#        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+#        if: >-
+#          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+#          (env.REQUIRED_PARALLELISM == 'parallel' || env.REQUIRED_PARALLELISM == 'serial_parallel')
 #        uses: ./.github/actions/tutorials/run_action
 #        with:
 #          action: "compare"
@@ -127,7 +152,9 @@ jobs:
 #          folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
 #          file_name: "test_${{ env.FOLDER_NAME }}_approximation_${{ env.TEST_NUMBER}}.py"
       - name: Clean up results (parallel)
-        if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
+        if: >-
+          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
+          (env.REQUIRED_PARALLELISM == 'parallel' || env.REQUIRED_PARALLELISM == 'serial_parallel')
         uses: ./.github/actions/tutorials/clean_up
         with:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"

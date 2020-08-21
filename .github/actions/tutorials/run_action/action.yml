@@ -3,10 +3,10 @@ description: Run action
 
 inputs:
   action:
-    description: 'Action to run'
+    description: "Action to run"
     required: true
   pytest:
-    description: 'pytest command'
+    description: "pytest command"
     required: true
   folder_path:
     description: "Relative folder path"
