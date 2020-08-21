@@ -2,7 +2,7 @@ name: RBniCS methodology tests
 
 on:
   schedule:
-    - cron: "0 2 * * WED"
+    - cron: "0 21 * * TUE"
   workflow_dispatch:
     inputs:
       required_action:

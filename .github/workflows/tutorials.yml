@@ -2,7 +2,7 @@ name: RBniCS tutorials
 
 on:
   schedule:
-    - cron: "0 2 * * THU"
+    - cron: "0 21 * * WED"
   workflow_dispatch:
     inputs:
       required_action:
