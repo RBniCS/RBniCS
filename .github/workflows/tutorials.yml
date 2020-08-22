@@ -23,12 +23,14 @@ jobs:
         which: [01/thermal_block, 02/elastic_block, 03/hole, 04/graetz_1, 04/graetz_2,
           05/gaussian_deim, 05/gaussian_eim, 05/gaussian_exact,
           06/thermal_block_unsteady_1_pod, 06/thermal_block_unsteady_1_rb,
-          06/thermal_block_unsteady_2_pod, 06/thermal_block_unsteady_2_rb,
-          06/thermal_block_unsteady_3_pod, 06/thermal_block_unsteady_3_rb,
-          11/quasi_geostrophic, 12/stokes_1_pod, 12/stokes_1_rb, 12/stokes_2_pod, 12/stokes_2_rb,
+          # 06/thermal_block_unsteady_2_pod, 06/thermal_block_unsteady_2_rb,
+          # 06/thermal_block_unsteady_3_pod, 06/thermal_block_unsteady_3_rb,
+          # 11/quasi_geostrophic,
+          12/stokes_1_pod, 12/stokes_1_rb, 12/stokes_2_pod, 12/stokes_2_rb,
           13/elliptic_optimal_control_1_pod, 13/elliptic_optimal_control_1_rb,
           13/elliptic_optimal_control_2_pod, 13/elliptic_optimal_control_2_rb,
-          14/stokes_optimal_control_1, 15/quasi_geostrophic_optimal_control,
+          14/stokes_optimal_control_1,
+          # 15/quasi_geostrophic_optimal_control,
           17/navier_stokes_exact_1, 17/navier_stokes_exact_2]
       fail-fast: false
     steps:
@@ -65,7 +67,7 @@ jobs:
           action: "regold"
           pytest: "pytest"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
       - name: Clean up regolded results (serial)
         if: >-
           env.REQUIRED_ACTION == 'regold' &&
@@ -82,7 +84,7 @@ jobs:
           action: "compare"
           pytest: "pytest"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
       - name: Run tutorials (serial, online only)
         if: >-
           (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
@@ -92,7 +94,7 @@ jobs:
           action: "compare"
           pytest: "pytest"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
 #      - name: Run tutorials (parallel from serial, online only) - not working due to empty mesh on one process
 #        if: >-
 #          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
@@ -102,7 +104,7 @@ jobs:
 #          action: "compare"
 #          pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
 #          folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-#          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+#          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
       - name: Clean up results (serial)
         if: >-
           (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
@@ -119,7 +121,7 @@ jobs:
           action: "regold"
           pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
       - name: Clean up regolded results (parallel)
         if: >-
           env.REQUIRED_ACTION == 'regold' &&
@@ -136,7 +138,7 @@ jobs:
           action: "compare"
           pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
       - name: Run tutorials (parallel, online only)
         if: >-
           (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
@@ -146,7 +148,7 @@ jobs:
           action: "compare"
           pytest: "mpirun -n 2 pytest --gc-disable --gc-scope function"
           folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
 #      - name: Run tutorials (serial from parallel, online only) - need to mix gold results in the comparison
 #        if: >-
 #          (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
@@ -156,7 +158,7 @@ jobs:
 #          action: "compare"
 #          pytest: "pytest"
 #          folder_path: "tutorials/${{ env.FOLDER_NUMBER }}*"
-#          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.py"
+#          file_name: "tutorial_${{ env.TUTORIAL_NAME }}.ipynb"
       - name: Clean up results (parallel)
         if: >-
           (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') &&
