@@ -50,6 +50,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Test if can import
         import_successful = False
         if enable_import:
+            self.training_set.clear()
             try:
                 self.training_set.load(self.folder["training_set"], "training_set")
             except OSError:
@@ -69,6 +70,7 @@ class ReductionMethod(object, metaclass=ABCMeta):
         # Test if can import
         import_successful = False
         if enable_import:
+            self.testing_set.clear()
             try:
                 self.testing_set.load(self.folder["testing_set"], "testing_set")
             except OSError:

@@ -35,6 +35,9 @@ class ExportableList(object):
     def extend(self, other_list):
         self._list.extend(other_list._list)
 
+    def clear(self):
+        self._list.clear()
+
     def save(self, directory, filename):
         self._FileIO.save_file(self._list, directory, filename)
 
