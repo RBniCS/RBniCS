@@ -20,6 +20,7 @@ runs:
   steps:
     - name: Run action
       run: |
+        ROOT_DIR=${PWD}
         cd ${FOLDER_PATH}
         ${PYTEST} ${FILE_NAME} --data-dir ${DATA_DIR} --rootdir ${ROOT_DIR} --action ${ACTION}
       env:

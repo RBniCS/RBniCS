@@ -1,6 +1,11 @@
 name: Clone test data
 description: Clone test data repository
 
+inputs:
+  branch:
+    description: "Branch to checkout after clone"
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -10,6 +15,7 @@ runs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/RBniCS/RBniCS-test-data test-data/RBniCS
-        echo "::set-env name=ROOT_DIR::${PWD}"
-        echo "::set-env name=DATA_DIR::${PWD}/test-data/RBniCS"
+        cd test-data/RBniCS
+        git checkout "${{ inputs.branch }}"
+        echo "::set-env name=DATA_DIR::${PWD}"
       shell: bash

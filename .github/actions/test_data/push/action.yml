@@ -1,0 +1,13 @@
+name: Push test data
+description: Push updated files to test data repository
+
+runs:
+  using: "composite"
+  steps:
+    - name: Push updated files to test data repository
+      run: |
+        cd ${DATA_DIR}
+        BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        git pull --rebase origin ${BRANCH}
+        git push origin ${BRANCH}
+      shell: bash

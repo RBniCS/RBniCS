@@ -46,7 +46,9 @@ jobs:
         uses: ./.github/actions/install
       - name: Clone test data repository
         if: env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold'
-        uses: ./.github/actions/tutorials/clone_test_data
+        uses: ./.github/actions/test_data/clone
+        with:
+          branch: master
         env:
           GIT_USERNAME: ${{ secrets.MIRROR_GITHUB_USER }}
           GIT_PASSWORD: ${{ secrets.MIRROR_GITHUB_TOKEN }}
@@ -160,7 +162,7 @@ jobs:
           folder_path: "tests/methodology/${{ env.FOLDER_NAME }}"
       - name: Push regolded test data
         if: env.REQUIRED_ACTION == 'regold'
-        uses: ./.github/actions/tutorials/push_regolded_test_data
+        uses: ./.github/actions/test_data/push
       - name: Store diffs on failure
         if: (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') && failure()
         uses: actions/upload-artifact@v2
