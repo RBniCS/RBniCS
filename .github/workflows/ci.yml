@@ -25,6 +25,7 @@ jobs:
           pytest --flake8 -m flake8 rbnics
           pytest --flake8 -m flake8 tests
           pytest --flake8 -m flake8 tutorials
+          pytest --flake8 -m flake8 .github
       - name: Run unit tests (serial)
         run: pytest -n auto -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" tests/unit
       - name: Run unit tests (parallel)
@@ -71,3 +72,18 @@ jobs:
         run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }}
       - name: Push to the docker registry
         run: docker push ${RELEASE_IMAGE}
+
+  jupyter:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          pip3 -q install --upgrade setuptools
+          pip3 -q install --upgrade pip
+          pip3 -q install --upgrade jupyter nbformat
+      - name: Check for stray outputs, counts and metadata in ipynb files
+        uses: ./.github/actions/jupyter/check_metadata
+        with:
+          folder_path: tutorials

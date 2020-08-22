@@ -1,0 +1,20 @@
+name: Check metadata
+description: Check for stray outputs, counts and metadata in ipynb files
+
+inputs:
+  folder_path:
+    description: "Relative folder path"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check for stray outputs, counts and metadata in ipynb files
+      run: |
+        while IFS= read -r -d '' -u 9; do
+          python3 ${CHECK_SCRIPT} "${REPLY}"
+        done 9< <( find . -type f -name "*.ipynb" -exec printf "%s\0" {} + )
+      env:
+        FOLDER_PATH: ${{ inputs.folder_path }}
+        CHECK_SCRIPT: .github/actions/jupyter/check_metadata/check_metadata.py
+      shell: bash
