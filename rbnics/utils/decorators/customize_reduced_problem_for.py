@@ -6,6 +6,7 @@
 
 import inspect
 from rbnics.utils.cache import Cache
+from rbnics.utils.jupyter import is_jupyter
 
 
 def CustomizeReducedProblemFor(Problem):
@@ -15,7 +16,8 @@ def CustomizeReducedProblemFor(Problem):
         + " be preserved with a call to exact_problem.")
 
     def CustomizeReducedProblemFor_Decorator(customizer):
-        assert Problem not in _cache
+        if not is_jupyter():
+            assert Problem not in _cache
         _cache[Problem] = customizer
         return customizer
 

@@ -6,6 +6,7 @@
 
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
+from rbnics.utils.jupyter import is_jupyter
 
 
 def StoreMapFromProblemNameToProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -30,7 +31,7 @@ def add_to_map_from_problem_name_to_problem(problem_name, problem):
         problem_name = problem.__decorated_problem__.name()
         assert problem_name in _problem_name_to_problem_map
     else:
-        if problem_name not in _problem_name_to_problem_map:
+        if problem_name not in _problem_name_to_problem_map or is_jupyter():
             _problem_name_to_problem_map[problem_name] = problem
         else:
             assert _problem_name_to_problem_map[problem_name] is problem

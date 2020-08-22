@@ -6,6 +6,7 @@
 
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
+from rbnics.utils.jupyter import is_jupyter
 
 
 def StoreMapFromProblemToReductionMethod(DifferentialProblemReductionMethod_DerivedClass):
@@ -25,7 +26,7 @@ def StoreMapFromProblemToReductionMethod(DifferentialProblemReductionMethod_Deri
 
 
 def add_to_map_from_problem_to_reduction_method(problem, reduction_method):
-    if problem not in _problem_to_reduction_method_map:
+    if problem not in _problem_to_reduction_method_map or is_jupyter():
         if hasattr(type(problem), "__is_exact__"):
             problem = problem.__decorated_problem__
         _problem_to_reduction_method_map[problem] = reduction_method

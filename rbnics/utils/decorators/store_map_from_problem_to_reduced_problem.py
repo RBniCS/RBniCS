@@ -6,6 +6,7 @@
 
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators.preserve_class_name import PreserveClassName
+from rbnics.utils.jupyter import is_jupyter
 
 
 def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_DerivedClass):
@@ -25,7 +26,7 @@ def StoreMapFromProblemToReducedProblem(ParametrizedReducedDifferentialProblem_D
 
 
 def add_to_map_from_problem_to_reduced_problem(problem, reduced_problem):
-    if problem not in _problem_to_reduced_problem_map:
+    if problem not in _problem_to_reduced_problem_map or is_jupyter():
         if hasattr(type(problem), "__is_exact__"):
             problem = problem.__decorated_problem__
         _problem_to_reduced_problem_map[problem] = reduced_problem
