@@ -31,6 +31,13 @@ runs:
         if [ "${REQUIRED_ACTION}" = "" ]; then
           REQUIRED_ACTION="compare"
         fi
+        # Fail if trying to regold from a fork, because credentials to push regolded
+        # test data may not be available
+        if [ "${REQUIRED_ACTION}" = "regold" ] && \
+           [ "${GITHUB_REPOSITORY}" != "RBniCS/RBniCS" ]; then
+          echo "Regold is only allowed from the main RBniCS repository, not on forks."
+          exit 1
+        fi
         # Set required parallelism based on input data
         REQUIRED_PARALLELISM=${REQUIRED_PARALLELISM_IN}
         if [ "${REQUIRED_PARALLELISM}" = "" ] || \
@@ -54,4 +61,5 @@ runs:
         ONLY_ON_FILE_NAME: ${{ inputs.only_on_file_name }}
         CURRENT_FOLDER_NAME: ${{ inputs.current_folder_name }}
         CURRENT_FILE_NAME: ${{ inputs.current_file_name }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       shell: bash
