@@ -87,3 +87,11 @@ jobs:
         uses: ./.github/actions/jupyter/check_metadata
         with:
           folder_path: tutorials
+      - name: Upload notebooks to Google Colab
+        if: github.repository == 'RBniCS/RBniCS' && github.ref == 'refs/heads/master'
+        uses: ./.github/actions/jupyter/upload_to_google_colab
+        with:
+          folder_path: tutorials
+          rclone_config_colab_client_id: ${{ secrets.RCLONE_CONFIG_COLAB_CLIENT_ID }}
+          rclone_config_colab_client_secret: ${{ secrets.RCLONE_CONFIG_COLAB_CLIENT_SECRET }}
+          rclone_config_colab_token: ${{ secrets.RCLONE_CONFIG_COLAB_TOKEN }}

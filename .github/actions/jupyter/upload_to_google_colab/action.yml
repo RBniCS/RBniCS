@@ -1,0 +1,35 @@
+name: Upload to Google Colab
+description: Upload jupyter notebooks to Google Colab
+
+inputs:
+  folder_path:
+    description: "Relative folder path"
+    required: true
+  rclone_config_colab_client_id:
+    description: "Rclone client ID for Google Colab"
+    required: true
+  rclone_config_colab_client_secret:
+    description: "Rclone client secret for Google Colab"
+    required: true
+  rclone_config_colab_token:
+    description: "Rclone token for Google Colab"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Upload jupyter notebooks to Google Colab
+      run: |
+        export BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        mkdir -p ${FOLDER_PATH}-colab
+        for src in $(find ${FOLDER_PATH} -type f -name "tutorial_*.ipynb"); do
+          bash ${PATCH_SCRIPT} ${src}
+        done
+        docker run --rm --volume ${PWD}/${FOLDER_PATH}-colab:/data --env RCLONE_CONFIG_COLAB_TYPE=drive --env RCLONE_CONFIG_COLAB_SCOPE=drive --env RCLONE_CONFIG_COLAB_CLIENT_ID=${RCLONE_CONFIG_COLAB_CLIENT_ID} --env RCLONE_CONFIG_COLAB_CLIENT_SECRET=${RCLONE_CONFIG_COLAB_CLIENT_SECRET} --env RCLONE_CONFIG_COLAB_TOKEN="${RCLONE_CONFIG_COLAB_TOKEN}" rclone/rclone copy -v /data colab:RBniCS-jupyter
+      env:
+        FOLDER_PATH: ${{ inputs.folder_path }}
+        PATCH_SCRIPT: .github/actions/jupyter/upload_to_google_colab/patch_notebook.sh
+        RCLONE_CONFIG_COLAB_CLIENT_ID: ${{ inputs.rclone_config_colab_client_id }}
+        RCLONE_CONFIG_COLAB_CLIENT_SECRET: ${{ inputs.rclone_config_colab_client_secret }}
+        RCLONE_CONFIG_COLAB_TOKEN: ${{ inputs.rclone_config_colab_token }}
+      shell: bash
