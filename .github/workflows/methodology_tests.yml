@@ -49,9 +49,6 @@ jobs:
         uses: ./.github/actions/test_data/clone
         with:
           branch: master
-        env:
-          GIT_USERNAME: ${{ secrets.MIRROR_GITHUB_USER }}
-          GIT_PASSWORD: ${{ secrets.MIRROR_GITHUB_TOKEN }}
       - name: Regold methodology tests (serial)
         if: >-
           env.REQUIRED_ACTION == 'regold' &&
@@ -163,6 +160,9 @@ jobs:
       - name: Push regolded test data
         if: env.REQUIRED_ACTION == 'regold'
         uses: ./.github/actions/test_data/push
+        with:
+          GIT_USERNAME: ${{ secrets.MIRROR_GITHUB_USER }}
+          GIT_PASSWORD: ${{ secrets.MIRROR_GITHUB_TOKEN }}
       - name: Store diffs on failure
         if: (env.REQUIRED_ACTION == 'compare' || env.REQUIRED_ACTION == 'regold') && failure()
         uses: actions/upload-artifact@v2

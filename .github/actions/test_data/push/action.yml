@@ -1,13 +1,31 @@
 name: Push test data
 description: Push updated files to test data repository
 
+inputs:
+  GIT_USERNAME:
+    description: "Username for remote repository"
+    required: true
+  GIT_PASSWORD:
+    description: "The password or token for the remote repository"
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Push updated files to test data repository
       run: |
+        echo <<EOF > credential-helper.sh
+#!/usr/bin/env  bash
+exec echo "${GIT_PASSWORD}"
+EOF
+        git config --global credential.username "${GIT_USERNAME}"
+        git config --global core.askPass ${PWD}/credential-helper.sh
+        git config --global credential.helper cache
         cd ${DATA_DIR}
         BRANCH=$(git rev-parse --abbrev-ref HEAD)
         git pull --rebase origin ${BRANCH}
         git push origin ${BRANCH}
+      env:
+        GIT_USERNAME: ${{ inputs.GIT_USERNAME }}
+        GIT_PASSWORD: ${{ inputs.GIT_PASSWORD }}
       shell: bash
