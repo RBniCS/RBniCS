@@ -21,14 +21,24 @@ import nbformat
 # Get notebook name
 assert len(sys.argv) == 2
 filename = sys.argv[1]
+dirname = os.path.dirname(filename)
+basename = os.path.basename(filename)
+top_dir = filename.split(os.sep)[0]
+
+# Get cell insertion location based on basename
+if basename.startswith("tutorial"):
+    insert_base = 1
+elif basename.startswith("generate_mesh"):
+    insert_base = 0
+else:
+    raise RuntimeError("Invalid notebook")
 
 # Read in notebook content
 with io.open(filename, "r", encoding="utf8") as f:
     nb = nbformat.read(f, as_version=nbformat.NO_CONVERT)
 
 # 1. Add FEniCS installation cell
-fenics_installation_cell = """
-# Install FEniCS
+fenics_installation_cell = """# Install FEniCS
 try:
     import dolfin
 except ImportError as e:
@@ -38,13 +48,11 @@ except ImportError as e:
     !apt install -y --no-install-recommends fenics
     !sed -i "s|#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1|#if 1|" /usr/include/dolfin/la/PETScLUSolver.h
     !pip3 -q install --upgrade sympy
-    import dolfin
-"""  # noqa: E501
-nb.cells.insert(1, nbformat.v4.new_code_cell(fenics_installation_cell))
+    import dolfin"""  # noqa: E501
+nb.cells.insert(insert_base, nbformat.v4.new_code_cell(fenics_installation_cell))
 
 # 2. Add RBniCS installation cell
-rbnics_installation_cell = """
-# Install RBniCS
+rbnics_installation_cell = """# Install RBniCS
 try:
     import rbnics
 except ImportError as e:
@@ -54,42 +62,57 @@ except ImportError as e:
     !ln -s /usr/local/lib/python3.6/dist-packages/RBniCS*egg/rbnics /usr/local/lib/python3.6/dist-packages/
     import rbnics
 import rbnics.utils.config
-assert "dolfin" in rbnics.utils.config.config.get("backends", "required backends")
-"""
-nb.cells.insert(2, nbformat.v4.new_code_cell(rbnics_installation_cell))
+assert "dolfin" in rbnics.utils.config.config.get("backends", "required backends")"""
+nb.cells.insert(insert_base + 1, nbformat.v4.new_code_cell(rbnics_installation_cell))
 
 # 3. Add cell to download auxiliary files (e.g. meshes)
 aux_urls = dict()
-aux_create_dirs = set()
-aux_download_files = set()
-for aux_file in glob.glob(os.path.join(os.path.dirname(filename), "**", "*"), recursive=True):
-    aux_urls_key = aux_file
-    while os.path.islink(aux_file):
-        aux_file = os.path.normpath(os.readlink(aux_file))
-    if os.path.isdir(aux_file):
-        continue
-    else:
-        assert os.path.isfile(aux_file)
-        aux_url = f"https://github.com/RBniCS/RBniCS/raw/{os.getenv('BRANCH', 'master')}/{aux_file}"
-    aux_file = os.path.relpath(aux_file, os.path.dirname(filename))
-    aux_dir = os.path.dirname(aux_file)
-    aux_urls[aux_urls_key] = aux_url
-    _, aux_file_ext = os.path.splitext(aux_file)
-    if aux_file_ext not in (".ipynb", ".png"):
-        aux_create_dirs.add("!mkdir -p ${aux_dir}")
-        aux_download_files.add("![ -f ${aux_file} ] || wget ${aux_url} -O ${aux_file}")
-assert (len(aux_create_dirs) > 0) is (len(aux_download_files) > 0)
-if len(aux_download_files) > 0:
-    aux_create_dirs = "\n".join(aux_create_dirs)
-    aux_download_files = "\n".join(aux_download_files)
-    auxiliary_files_cell = f"""
-# Download data files
-{aux_create_dirs}
-{aux_download_files}
-"""
-    nb.cells.insert(3, nbformat.v4.new_code_cell(auxiliary_files_cell))
 
-# Update images and links
+if basename.startswith("tutorial"):
+    aux_create_dirs = set()
+    aux_download_files = set()
+    for aux_file in glob.glob(os.path.join(dirname, "**", "*"), recursive=True):
+        aux_real_file = aux_file
+        while os.path.islink(aux_real_file):
+            aux_real_file = os.path.join(
+                top_dir, os.path.relpath(os.path.realpath(aux_real_file), os.path.realpath(top_dir)))
+        if os.path.isdir(aux_real_file):
+            continue
+        else:
+            assert os.path.isfile(aux_real_file), (
+                f"While processing {filename}, {aux_real_file} is not a file: ("
+                + f"exists: {os.path.exists(aux_real_file)}, "
+                + f"islink: {os.path.islink(aux_real_file)}, "
+                + f"isdir: {os.path.isdir(aux_real_file)})")
+            aux_url = f"https://github.com/RBniCS/RBniCS/raw/{os.getenv('BRANCH', 'master')}/{aux_real_file}"
+        _, aux_file_ext = os.path.splitext(aux_file)
+        if aux_file_ext not in (".ipynb", ".link"):
+            aux_urls[os.path.relpath(aux_file, top_dir)] = aux_url
+            aux_urls[os.path.relpath(aux_file, dirname)] = aux_url
+        if aux_file_ext not in (".ipynb", ".link", ".png"):
+            aux_dir = os.path.relpath(os.path.dirname(aux_file), dirname)
+            if aux_dir not in ("", "."):
+                aux_create_dirs.add(f"!mkdir -p {aux_dir}")
+            aux_download_files.add(
+                f"![ -f {os.path.relpath(aux_file, dirname)} ] || "
+                + f"wget {aux_url} -O {os.path.relpath(aux_file, dirname)}")
+    if len(aux_create_dirs) + len(aux_download_files) > 0:
+        aux_create_dirs = "\n".join(aux_create_dirs)
+        aux_download_files = "\n".join(aux_download_files)
+        auxiliary_files_cell = f"""# Download data files
+{aux_create_dirs}
+{aux_download_files}"""
+        nb.cells.insert(insert_base + 2, nbformat.v4.new_code_cell(auxiliary_files_cell))
+
+# Add the links of all other notebooks to auxiliary urls
+for link_file in glob.glob(os.path.join(top_dir, "**", "*.ipynb.link"), recursive=True):
+    with io.open(link_file, "r", encoding="utf8") as f:
+        link = f.read()
+    notebook = link_file.replace(".ipynb.link", ".ipynb")
+    aux_urls[os.path.relpath(notebook, top_dir)] = link
+    aux_urls[os.path.relpath(notebook, dirname)] = link
+
+# 4. Update images and links
 add_quotes_or_parentheses = (
     lambda text: '"' + text + '"',
     lambda text: "'" + text + "'",
@@ -100,8 +123,6 @@ for cell in nb.cells:
         for (original, url) in aux_urls.items():
             for preprocess in add_quotes_or_parentheses:
                 cell.source = cell.source.replace(preprocess(original), preprocess(url))
-                relative_original = os.path.relpath(original, os.path.dirname(filename))
-                cell.source = cell.source.replace(preprocess(relative_original), preprocess(url))
 
 # Overwrite notebook content
 with io.open(filename, "w", encoding="utf8") as f:

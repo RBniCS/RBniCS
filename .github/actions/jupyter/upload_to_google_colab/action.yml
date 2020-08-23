@@ -21,14 +21,30 @@ runs:
     - name: Upload jupyter notebooks to Google Colab
       run: |
         export BRANCH=$(git rev-parse --abbrev-ref HEAD)
-        mkdir -p ${FOLDER_PATH}-colab
-        for src in $(find ${FOLDER_PATH} -type f -name "tutorial_*.ipynb"); do
-          bash ${PATCH_SCRIPT} ${src}
+        find ${FOLDER_PATH} -type l -name "*.ipynb" -exec bash -c 'cp --remove-destination "$(readlink -e ""$@"")" "$@"' _ {} \;
+        readarray -d '' SRCS < <(find ${FOLDER_PATH} -type f -name "*.ipynb" -print0)
+        # Get public links of each notebook
+        echo "Getting public links before upload"
+        for SRC in "${SRCS[@]}"; do
+          bash ${GET_LINK_SCRIPT} ${SRC}
         done
-        docker run --rm --volume ${PWD}/${FOLDER_PATH}-colab:/data --env RCLONE_CONFIG_COLAB_TYPE=drive --env RCLONE_CONFIG_COLAB_SCOPE=drive --env RCLONE_CONFIG_COLAB_CLIENT_ID=${RCLONE_CONFIG_COLAB_CLIENT_ID} --env RCLONE_CONFIG_COLAB_CLIENT_SECRET=${RCLONE_CONFIG_COLAB_CLIENT_SECRET} --env RCLONE_CONFIG_COLAB_TOKEN="${RCLONE_CONFIG_COLAB_TOKEN}" rclone/rclone copy -v /data colab:RBniCS-jupyter
+        # Patch notebooks
+        for SRC in "${SRCS[@]}"; do
+          python3 ${PATCH_SCRIPT} ${SRC}
+        done
+        # Upload all notebooks to Google Colab
+        bash ${UPLOAD_SCRIPT}
+        # Get public links of each notebook to double check that they have not changed after upload
+        echo "Checking public links after upload"
+        for SRC in "${SRCS[@]}"; do
+          bash ${GET_LINK_SCRIPT} ${SRC}
+        done
       env:
         FOLDER_PATH: ${{ inputs.folder_path }}
-        PATCH_SCRIPT: .github/actions/jupyter/upload_to_google_colab/patch_notebook.sh
+        MOVE_SCRIPT: .github/actions/jupyter/upload_to_google_colab/move_notebook.sh
+        GET_LINK_SCRIPT: .github/actions/jupyter/upload_to_google_colab/get_notebook_link.sh
+        PATCH_SCRIPT: .github/actions/jupyter/upload_to_google_colab/patch_notebook.py
+        UPLOAD_SCRIPT: .github/actions/jupyter/upload_to_google_colab/upload_all_notebooks.sh
         RCLONE_CONFIG_COLAB_CLIENT_ID: ${{ inputs.rclone_config_colab_client_id }}
         RCLONE_CONFIG_COLAB_CLIENT_SECRET: ${{ inputs.rclone_config_colab_client_secret }}
         RCLONE_CONFIG_COLAB_TOKEN: ${{ inputs.rclone_config_colab_token }}
