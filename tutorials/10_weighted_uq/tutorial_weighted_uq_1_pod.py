@@ -91,31 +91,31 @@ boundaries = MeshFunction("size_t", mesh, "data/thermal_block_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the WeightedThermalBlock class
-thermal_block_problem = WeightedThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
+problem = WeightedThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(1.0, 3.0) for _ in range(9)]
-thermal_block_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 beta_a = [75.0 for _ in range(9)]
 beta_b = [75.0 for _ in range(9)]
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(thermal_block_problem)
-pod_galerkin_method.set_Nmax(15)
-pod_galerkin_method.set_tolerance(1e-5)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(15)
+reduction_method.set_tolerance(1e-5)
 
 # 5. Perform the offline phase
-pod_galerkin_method.initialize_training_set(
+reduction_method.initialize_training_set(
     100, sampling=BetaDistribution(beta_a, beta_b), weight=BetaWeight(beta_a, beta_b))
-reduced_thermal_block_problem = pod_galerkin_method.offline()
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = tuple([1.0 for _ in range(9)])
-reduced_thermal_block_problem.set_mu(online_mu)
-reduced_thermal_block_problem.solve()
-reduced_thermal_block_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100, sampling=BetaDistribution(beta_a, beta_b))
-pod_galerkin_method.error_analysis()
+reduction_method.initialize_testing_set(100, sampling=BetaDistribution(beta_a, beta_b))
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+reduction_method.speedup_analysis()

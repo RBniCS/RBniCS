@@ -97,32 +97,32 @@ boundaries = MeshFunction("size_t", mesh, "data/thermal_block_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the UnsteadyThermalBlock class
-unsteady_thermal_block_problem = UnsteadyThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
+problem = UnsteadyThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
-unsteady_thermal_block_problem.set_mu_range(mu_range)
-unsteady_thermal_block_problem.set_time_step_size(0.05)
-unsteady_thermal_block_problem.set_final_time(3)
+problem.set_mu_range(mu_range)
+problem.set_time_step_size(0.05)
+problem.set_final_time(3)
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(unsteady_thermal_block_problem)
-pod_galerkin_method.set_Nmax(20, nested_POD=4)
-pod_galerkin_method.set_tolerance(1e-6, nested_POD=1e-3)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(20, nested_POD=4)
+reduction_method.set_tolerance(1e-6, nested_POD=1e-3)
 
 # 5. Perform the offline phase
 lifting_mu = (0.5, 1.0)
-unsteady_thermal_block_problem.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(100)
-reduced_unsteady_thermal_block_problem = pod_galerkin_method.offline()
+problem.set_mu(lifting_mu)
+reduction_method.initialize_training_set(100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (8.0, -1.0)
-reduced_unsteady_thermal_block_problem.set_mu(online_mu)
-reduced_unsteady_thermal_block_problem.solve()
-reduced_unsteady_thermal_block_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(10)
-pod_galerkin_method.error_analysis()
+reduction_method.initialize_testing_set(10)
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+reduction_method.speedup_analysis()

@@ -184,18 +184,18 @@ mu_range = [
 stokes_problem.set_mu_range(mu_range)
 
 # 4a. Prepare reduction with a POD-Galerkin method
-stokes_pod_galerkin_method = PODGalerkin(stokes_problem)
-stokes_pod_galerkin_method.set_Nmax(25)
+stokes_reduction_method = PODGalerkin(stokes_problem)
+stokes_reduction_method.set_Nmax(25)
 
 # 5a. Perform the offline phase
-stokes_pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
-reduced_stokes_problem = stokes_pod_galerkin_method.offline()
+stokes_reduction_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
+stokes_reduced_problem = stokes_reduction_method.offline()
 
 # 6a. Perform an online solve
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi / 6.)
-reduced_stokes_problem.set_mu(online_mu)
-reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution(filename="online_solution")
+stokes_reduced_problem.set_mu(online_mu)
+stokes_reduced_problem.solve()
+stokes_reduced_problem.export_solution(filename="online_solution")
 
 # 2b. Create Finite Element space for advection diffusion problem
 element_c = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
@@ -207,32 +207,32 @@ advection_diffusion_problem = AdvectionDiffusion(
 advection_diffusion_problem.set_mu_range(mu_range)
 
 # 4b. Prepare reduction with a POD-Galerkin method
-advection_diffusion_pod_galerkin_method = PODGalerkin(advection_diffusion_problem)
-advection_diffusion_pod_galerkin_method.set_Nmax(25, DEIM=50)
+advection_diffusion_reduction_method = PODGalerkin(advection_diffusion_problem)
+advection_diffusion_reduction_method.set_Nmax(25, DEIM=50)
 
 # 5b. Perform the offline phase
 lifting_mu = (1.0, 1.0, 1.0, 1.0, 1.0, 0.0)
 advection_diffusion_problem.set_mu(lifting_mu)
-advection_diffusion_pod_galerkin_method.initialize_training_set(
+advection_diffusion_reduction_method.initialize_training_set(
     100, sampling=LinearlyDependentUniformDistribution(), DEIM=150)
-reduced_advection_diffusion_problem = advection_diffusion_pod_galerkin_method.offline()
+advection_diffusion_reduced_problem = advection_diffusion_reduction_method.offline()
 
 # 6b. Perform an online solve
-reduced_advection_diffusion_problem.set_mu(online_mu)
-reduced_advection_diffusion_problem.solve()
-reduced_advection_diffusion_problem.export_solution(filename="online_solution")
+advection_diffusion_reduced_problem.set_mu(online_mu)
+advection_diffusion_reduced_problem.solve()
+advection_diffusion_reduced_problem.export_solution(filename="online_solution")
 
 # 7a. Perform an error analysis for Stokes
-stokes_pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
-stokes_pod_galerkin_method.error_analysis()
+stokes_reduction_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
+stokes_reduction_method.error_analysis()
 
 # 7b. Perform an error analysis for Advection
-advection_diffusion_pod_galerkin_method.initialize_testing_set(
+advection_diffusion_reduction_method.initialize_testing_set(
     100, sampling=LinearlyDependentUniformDistribution(), DEIM=150)
-advection_diffusion_pod_galerkin_method.error_analysis()
+advection_diffusion_reduction_method.error_analysis()
 
 # 8a. Perform a speedup analysis for Stokes
-stokes_pod_galerkin_method.speedup_analysis()
+stokes_reduction_method.speedup_analysis()
 
 # 8b. Perform a speedup analysis for Advection
-advection_diffusion_pod_galerkin_method.speedup_analysis()
+advection_diffusion_reduction_method.speedup_analysis()

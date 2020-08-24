@@ -114,7 +114,7 @@ element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the Stokes class
-stokes_problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
+problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [
     (0.5, 1.5),
     (0.5, 1.5),
@@ -123,26 +123,26 @@ mu_range = [
     (0.5, 1.5),
     (0., pi / 6.)
 ]
-stokes_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
-reduced_basis_method = ReducedBasis(stokes_problem)
-reduced_basis_method.set_Nmax(25)
-reduced_basis_method.set_tolerance(1e-6)
+reduction_method = ReducedBasis(problem)
+reduction_method.set_Nmax(25)
+reduction_method.set_tolerance(1e-6)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
-reduced_stokes_problem = reduced_basis_method.offline()
+reduction_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi / 6.)
-reduced_stokes_problem.set_mu(online_mu)
-reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
-reduced_basis_method.error_analysis()
+reduction_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-reduced_basis_method.speedup_analysis()
+reduction_method.speedup_analysis()

@@ -111,38 +111,38 @@ boundaries = MeshFunction("size_t", mesh, "data/square_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 2)
 
 # 3. Allocate an object of the AdvectionDominated class
-advection_dominated_problem = AdvectionDominated(V, subdomains=subdomains, boundaries=boundaries)
+problem = AdvectionDominated(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.0, 6.0)]
-advection_dominated_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-reduced_basis_method = ReducedBasis(advection_dominated_problem)
-reduced_basis_method.set_Nmax(15)
+reduction_method = ReducedBasis(problem)
+reduction_method.set_Nmax(15)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(100)
-reduced_advection_dominated_problem = reduced_basis_method.offline()
+reduction_method.initialize_training_set(100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (6.0, )
-reduced_advection_dominated_problem.set_mu(online_mu)
+reduced_problem.set_mu(online_mu)
 for online_stabilization in (True, False):
     for online_rectification in (True, False):
         def filename(prefix):
             return ("online_" + prefix + "_" + bool_to_string(online_stabilization) + "_stabilization_and_"
                     + bool_to_string(online_rectification) + "_rectification")
-        reduced_advection_dominated_problem.solve(
+        reduced_problem.solve(
             online_stabilization=online_stabilization, online_rectification=online_rectification)
-        reduced_advection_dominated_problem.export_solution(filename=filename("solution"))
-        reduced_advection_dominated_problem.export_error(filename=filename("error"))
+        reduced_problem.export_solution(filename=filename("solution"))
+        reduced_problem.export_error(filename=filename("error"))
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(100)
+reduction_method.initialize_testing_set(100)
 for online_stabilization in (True, False):
     for online_rectification in (True, False):
         filename = ("error_analysis_" + bool_to_string(online_stabilization) + "_stabilization_and_"
                     + bool_to_string(online_rectification) + "_rectification")
-        reduced_basis_method.error_analysis(
+        reduction_method.error_analysis(
             online_stabilization=online_stabilization, online_rectification=online_rectification, filename=filename)
 
 # 8. Perform a speedup analysis
@@ -150,5 +150,5 @@ for online_stabilization in (True, False):
     for online_rectification in (True, False):
         filename = ("speedup_analysis_" + bool_to_string(online_stabilization) + "_stabilization_and_"
                     + bool_to_string(online_rectification) + "_rectification")
-        reduced_basis_method.speedup_analysis(
+        reduction_method.speedup_analysis(
             online_stabilization=online_stabilization, online_rectification=online_rectification, filename=filename)

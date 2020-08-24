@@ -77,36 +77,36 @@ boundaries = MeshFunction("size_t", mesh, "data/thermal_block_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ThermalBlock class
-thermal_block_problem = ThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
+problem = ThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
-thermal_block_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-reduced_basis_method = ReducedBasis(thermal_block_problem)
-reduced_basis_method.set_Nmax(4)
-reduced_basis_method.set_tolerance(1e-5)
+reduction_method = ReducedBasis(problem)
+reduction_method.set_Nmax(4)
+reduction_method.set_tolerance(1e-5)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(100)
-reduced_thermal_block_problem = reduced_basis_method.offline()
+reduction_method.initialize_training_set(100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (8.0, -1.0)
-reduced_thermal_block_problem.set_mu(online_mu)
-reduced_thermal_block_problem.solve()
-reduced_thermal_block_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 
 # 7. Perform an error analysis
 def N_generator():
-    N = reduced_thermal_block_problem.N
+    N = reduced_problem.N
     for n in range(2, N + 1, 2):
         yield n
 
 
-reduced_basis_method.initialize_testing_set(100)
-reduced_basis_method.error_analysis(N_generator)
+reduction_method.initialize_testing_set(100)
+reduction_method.error_analysis(N_generator)
 
 # 8. Perform a speedup analysis
-reduced_basis_method.initialize_testing_set(100)
-reduced_basis_method.error_analysis(N_generator)
+reduction_method.initialize_testing_set(100)
+reduction_method.error_analysis(N_generator)

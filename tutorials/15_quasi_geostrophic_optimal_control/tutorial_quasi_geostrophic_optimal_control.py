@@ -214,23 +214,23 @@ element = MixedElement(scalar_element, scalar_element, scalar_element, scalar_el
 V = FunctionSpace(mesh, element, components=["ypsi", "yq", "u", "ppsi", "pq"])
 
 # 3. Allocate an object of the Geostrophic class
-geostrophic_optimal_control = GeostrophicOptimalControl(V, subdomains=subdomains, boundaries=boundaries)
+problem = GeostrophicOptimalControl(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(1e-4, 1.0), (1e-4, 1.0)]
-geostrophic_optimal_control.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(geostrophic_optimal_control)
+pod_galerkin_method = PODGalerkin(problem)
 pod_galerkin_method.set_Nmax(10)
 
 # 5. Perform the offline phase
 pod_galerkin_method.initialize_training_set(50, sampling=LogUniformDistribution())
-reduced_geostrophic_optimal_control = pod_galerkin_method.offline()
+reduced_problem = pod_galerkin_method.offline()
 
 # 6. Perform an online solve
 online_mu = ((7e4 / 1e6)**3, 1e-4)
-reduced_geostrophic_optimal_control.set_mu(online_mu)
-reduced_geostrophic_optimal_control.solve()
-reduced_geostrophic_optimal_control.export_solution("GeostrophicOptimalControl", "online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution("GeostrophicOptimalControl", "online_solution")
 
 # 7. Perform an error analysis
 pod_galerkin_method.initialize_testing_set(50, sampling=LogUniformDistribution())

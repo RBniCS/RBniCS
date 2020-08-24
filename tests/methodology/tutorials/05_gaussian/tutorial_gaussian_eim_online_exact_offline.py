@@ -78,38 +78,38 @@ boundaries = MeshFunction("size_t", mesh, "data/gaussian_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the Gaussian class
-gaussian_problem = Gaussian(V, subdomains=subdomains, boundaries=boundaries)
+problem = Gaussian(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(-1.0, 1.0), (-1.0, 1.0)]
-gaussian_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-reduced_basis_method = ReducedBasis(gaussian_problem)
-reduced_basis_method.set_Nmax(20, EIM=21)
-reduced_basis_method.set_tolerance(1e-4, EIM=1e-3)
+reduction_method = ReducedBasis(problem)
+reduction_method.set_Nmax(20, EIM=21)
+reduction_method.set_tolerance(1e-4, EIM=1e-3)
 
 # 5. Perform the offline phase
-reduced_basis_method.initialize_training_set(50, EIM=60)
-reduced_gaussian_problem = reduced_basis_method.offline()
+reduction_method.initialize_training_set(50, EIM=60)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (0.3, -1.0)
-reduced_gaussian_problem.set_mu(online_mu)
-reduced_gaussian_problem.solve()
-reduced_gaussian_problem.export_solution(filename="online_solution")
-reduced_gaussian_problem.solve(EIM=11)
-reduced_gaussian_problem.export_solution(filename="online_solution__EIM_11")
-reduced_gaussian_problem.solve(EIM=1)
-reduced_gaussian_problem.export_solution(filename="online_solution__EIM_1")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
+reduced_problem.solve(EIM=11)
+reduced_problem.export_solution(filename="online_solution__EIM_11")
+reduced_problem.solve(EIM=1)
+reduced_problem.export_solution(filename="online_solution__EIM_1")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(50, EIM=60)
-reduced_basis_method.error_analysis(filename="error_analysis")
+reduction_method.initialize_testing_set(50, EIM=60)
+reduction_method.error_analysis(filename="error_analysis")
 
 # 8. Perform a speedup analysis
-reduced_basis_method.speedup_analysis(filename="speedup_analysis")
+reduction_method.speedup_analysis(filename="speedup_analysis")
 
 # 9. Perform an error analysis, but employing a smaller number of EIM basis functions
-reduced_basis_method.error_analysis(EIM=11, filename="error_analysis__EIM_11")
+reduction_method.error_analysis(EIM=11, filename="error_analysis__EIM_11")
 
 # 10. Perform a speedup analysis, but employing a smaller number of EIM basis functions
-reduced_basis_method.speedup_analysis(EIM=11, filename="speedup_analysis__DEIM_11")
+reduction_method.speedup_analysis(EIM=11, filename="speedup_analysis__DEIM_11")

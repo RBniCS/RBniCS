@@ -109,7 +109,7 @@ element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the Stokes class
-stokes_problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
+problem = Stokes(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [
     (0.5, 1.5),
     (0.5, 1.5),
@@ -118,33 +118,33 @@ mu_range = [
     (0.5, 1.5),
     (0., pi / 6.)
 ]
-stokes_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(stokes_problem)
-pod_galerkin_method.set_Nmax(25)
-pod_galerkin_method.set_tolerance(1e-6)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(25)
+reduction_method.set_tolerance(1e-6)
 
 # 5. Perform the offline phase
-pod_galerkin_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
-reduced_stokes_problem = pod_galerkin_method.offline()
+reduction_method.initialize_training_set(100, sampling=LinearlyDependentUniformDistribution())
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (1.0, 1.0, 1.0, 1.0, 1.0, pi / 6.)
-reduced_stokes_problem.set_mu(online_mu)
-reduced_stokes_problem.solve()
-reduced_stokes_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 
 # 7. Perform an error analysis
 def N_generator():
-    N = min(reduced_stokes_problem.N.values())
+    N = min(reduced_problem.N.values())
     for n in range(2, N + 1, 2):
         yield n
 
 
-pod_galerkin_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
-pod_galerkin_method.error_analysis(N_generator)
+reduction_method.initialize_testing_set(100, sampling=LinearlyDependentUniformDistribution())
+reduction_method.error_analysis(N_generator)
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis(N_generator)
+reduction_method.speedup_analysis(N_generator)

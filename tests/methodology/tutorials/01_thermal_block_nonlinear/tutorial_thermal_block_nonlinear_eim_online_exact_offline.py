@@ -98,27 +98,27 @@ boundaries = MeshFunction("size_t", mesh, "data/thermal_block_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the ThermalBlock class
-thermal_block_problem = ThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
+problem = ThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
-thermal_block_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-pod_galerkin_method = PODGalerkin(thermal_block_problem)
-pod_galerkin_method.set_Nmax(4, EIM=10)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(4, EIM=10)
 
 # 5. Perform the offline phase
-pod_galerkin_method.initialize_training_set(100, EIM=100)
-reduced_thermal_block_problem = pod_galerkin_method.offline()
+reduction_method.initialize_training_set(100, EIM=100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (8.0, -1.0)
-reduced_thermal_block_problem.set_mu(online_mu)
-reduced_thermal_block_problem.solve()
-reduced_thermal_block_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100, EIM=100)
-pod_galerkin_method.error_analysis()
+reduction_method.initialize_testing_set(100, EIM=100)
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+reduction_method.speedup_analysis()

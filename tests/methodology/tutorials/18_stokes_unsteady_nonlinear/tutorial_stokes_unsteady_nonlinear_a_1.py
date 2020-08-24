@@ -161,32 +161,32 @@ element = MixedElement(element_u, element_p)
 V = FunctionSpace(mesh, element, components=[["u", "s"], "p"])
 
 # 3. Allocate an object of the StokesUnsteady class
-stokes_unsteady_problem = StokesUnsteady(V, subdomains=subdomains, boundaries=boundaries)
+problem = StokesUnsteady(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.5, 2.5)]
-stokes_unsteady_problem.set_mu_range(mu_range)
-stokes_unsteady_problem.set_time_step_size(0.01)
-stokes_unsteady_problem.set_final_time(0.15)
+problem.set_mu_range(mu_range)
+problem.set_time_step_size(0.01)
+problem.set_final_time(0.15)
 
 # 4. Prepare reduction with a POD-Galerkin method
-pod_galerkin_method = PODGalerkin(stokes_unsteady_problem)
-pod_galerkin_method.set_Nmax(15, nested_POD=3)
-pod_galerkin_method.set_tolerance(0.0, nested_POD=1e-3)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(15, nested_POD=3)
+reduction_method.set_tolerance(0.0, nested_POD=1e-3)
 
 # 5. Perform the offline phase
 lifting_mu = (1.0, )
-stokes_unsteady_problem.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(30)
-reduced_stokes_unsteady_problem = pod_galerkin_method.offline()
+problem.set_mu(lifting_mu)
+reduction_method.initialize_training_set(30)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (1.0, )
-reduced_stokes_unsteady_problem.set_mu(online_mu)
-reduced_stokes_unsteady_problem.solve()
-reduced_stokes_unsteady_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(30)
-pod_galerkin_method.error_analysis()
+reduction_method.initialize_testing_set(30)
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+reduction_method.speedup_analysis()

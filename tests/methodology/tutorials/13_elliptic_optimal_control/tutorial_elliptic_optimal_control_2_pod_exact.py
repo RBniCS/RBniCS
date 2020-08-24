@@ -155,30 +155,30 @@ element = MixedElement(scalar_element, scalar_element, scalar_element)
 V = FunctionSpace(mesh, element, components=["y", "u", "p"])
 
 # 3. Allocate an object of the EllipticOptimalControl class
-elliptic_optimal_control = EllipticOptimalControl(V, subdomains=subdomains, boundaries=boundaries)
+problem = EllipticOptimalControl(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(3.0, 20.0), (0.5, 1.5), (1.5, 2.5)]
-elliptic_optimal_control.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-pod_galerkin_method = PODGalerkin(elliptic_optimal_control)
-pod_galerkin_method.set_Nmax(20)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(20)
 
 # 5. Perform the offline phase
 lifting_mu = (3.0, 1.0, 2.0)
-elliptic_optimal_control.set_mu(lifting_mu)
-pod_galerkin_method.initialize_training_set(100)
-reduced_elliptic_optimal_control = pod_galerkin_method.offline()
+problem.set_mu(lifting_mu)
+reduction_method.initialize_training_set(100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (15.0, 0.6, 1.8)
-reduced_elliptic_optimal_control.set_mu(online_mu)
-reduced_elliptic_optimal_control.solve()
-reduced_elliptic_optimal_control.export_solution(filename="online_solution")
-print("Reduced output for mu =", online_mu, "is", reduced_elliptic_optimal_control.compute_output())
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
+print("Reduced output for mu =", online_mu, "is", reduced_problem.compute_output())
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100)
-pod_galerkin_method.error_analysis()
+reduction_method.initialize_testing_set(100)
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis()
+reduction_method.speedup_analysis()

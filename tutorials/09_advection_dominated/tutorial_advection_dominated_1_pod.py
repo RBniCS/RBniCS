@@ -110,33 +110,33 @@ boundaries = MeshFunction("size_t", mesh, "data/square_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 2)
 
 # 3. Allocate an object of the AdvectionDominated class
-advection_dominated_problem = AdvectionDominated(V, subdomains=subdomains, boundaries=boundaries)
+problem = AdvectionDominated(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.0, 6.0)]
-advection_dominated_problem.set_mu_range(mu_range)
+problem.set_mu_range(mu_range)
 
 # 4. Prepare reduction with a reduced basis method
-pod_galerkin_method = PODGalerkin(advection_dominated_problem)
-pod_galerkin_method.set_Nmax(15)
+reduction_method = PODGalerkin(problem)
+reduction_method.set_Nmax(15)
 
 # 5. Perform the offline phase
-pod_galerkin_method.initialize_training_set(100)
-reduced_advection_dominated_problem = pod_galerkin_method.offline()
+reduction_method.initialize_training_set(100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (6.0, )
-reduced_advection_dominated_problem.set_mu(online_mu)
-reduced_advection_dominated_problem.solve(online_stabilization=True)
-reduced_advection_dominated_problem.export_solution(filename="online_solution_with_stabilization")
-reduced_advection_dominated_problem.export_error(filename="online_error_with_stabilization")
-reduced_advection_dominated_problem.solve(online_stabilization=False)
-reduced_advection_dominated_problem.export_solution(filename="online_solution_without_stabilization")
-reduced_advection_dominated_problem.export_error(filename="online_error_without_stabilization")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve(online_stabilization=True)
+reduced_problem.export_solution(filename="online_solution_with_stabilization")
+reduced_problem.export_error(filename="online_error_with_stabilization")
+reduced_problem.solve(online_stabilization=False)
+reduced_problem.export_solution(filename="online_solution_without_stabilization")
+reduced_problem.export_error(filename="online_error_without_stabilization")
 
 # 7. Perform an error analysis
-pod_galerkin_method.initialize_testing_set(100)
-pod_galerkin_method.error_analysis(online_stabilization=True, filename="error_analysis_with_stabilization")
-pod_galerkin_method.error_analysis(online_stabilization=False, filename="error_analysis_without_stabilization")
+reduction_method.initialize_testing_set(100)
+reduction_method.error_analysis(online_stabilization=True, filename="error_analysis_with_stabilization")
+reduction_method.error_analysis(online_stabilization=False, filename="error_analysis_without_stabilization")
 
 # 8. Perform a speedup analysis
-pod_galerkin_method.speedup_analysis(online_stabilization=True, filename="speedup_analysis_with_stabilization")
-pod_galerkin_method.speedup_analysis(online_stabilization=False, filename="speedup_analysis_without_stabilization")
+reduction_method.speedup_analysis(online_stabilization=True, filename="speedup_analysis_with_stabilization")
+reduction_method.speedup_analysis(online_stabilization=False, filename="speedup_analysis_without_stabilization")

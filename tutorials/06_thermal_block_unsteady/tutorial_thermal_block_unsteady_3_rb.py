@@ -101,32 +101,32 @@ boundaries = MeshFunction("size_t", mesh, "data/thermal_block_facet_region.xml")
 V = FunctionSpace(mesh, "Lagrange", 1)
 
 # 3. Allocate an object of the UnsteadyThermalBlock class
-unsteady_thermal_block_problem = UnsteadyThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
+problem = UnsteadyThermalBlock(V, subdomains=subdomains, boundaries=boundaries)
 mu_range = [(0.1, 10.0), (-1.0, 1.0)]
-unsteady_thermal_block_problem.set_mu_range(mu_range)
-unsteady_thermal_block_problem.set_time_step_size(0.05)
-unsteady_thermal_block_problem.set_final_time(3)
+problem.set_mu_range(mu_range)
+problem.set_time_step_size(0.05)
+problem.set_final_time(3)
 
 # 4. Prepare reduction with a reduced basis method
-reduced_basis_method = ReducedBasis(unsteady_thermal_block_problem)
-reduced_basis_method.set_Nmax(20, POD_Greedy=4)
-reduced_basis_method.set_tolerance(1e-5, POD_Greedy=1e-2)
+reduction_method = ReducedBasis(problem)
+reduction_method.set_Nmax(20, POD_Greedy=4)
+reduction_method.set_tolerance(1e-5, POD_Greedy=1e-2)
 
 # 5. Perform the offline phase
 lifting_mu = (0.5, 1.0)
-unsteady_thermal_block_problem.set_mu(lifting_mu)
-reduced_basis_method.initialize_training_set(100)
-reduced_unsteady_thermal_block_problem = reduced_basis_method.offline()
+problem.set_mu(lifting_mu)
+reduction_method.initialize_training_set(100)
+reduced_problem = reduction_method.offline()
 
 # 6. Perform an online solve
 online_mu = (8.0, -1.0)
-reduced_unsteady_thermal_block_problem.set_mu(online_mu)
-reduced_unsteady_thermal_block_problem.solve()
-reduced_unsteady_thermal_block_problem.export_solution(filename="online_solution")
+reduced_problem.set_mu(online_mu)
+reduced_problem.solve()
+reduced_problem.export_solution(filename="online_solution")
 
 # 7. Perform an error analysis
-reduced_basis_method.initialize_testing_set(10)
-reduced_basis_method.error_analysis()
+reduction_method.initialize_testing_set(10)
+reduction_method.error_analysis()
 
 # 8. Perform a speedup analysis
-reduced_basis_method.speedup_analysis()
+reduction_method.speedup_analysis()
