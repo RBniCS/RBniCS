@@ -57,6 +57,14 @@ def plot(obj, *args, **kwargs):
     else:
         truth_problem = None
 
+    if "component" in kwargs:
+        component = kwargs["component"]
+        del kwargs["component"]
+        if not is_time_series:
+            obj = obj.sub(component)
+        else:
+            obj = [obj_.sub(component) for obj_ in obj]
+
     if truth_problem is not None and hasattr(truth_problem, "mesh_motion"):
         truth_problem.mesh_motion.move_mesh()
 
