@@ -14,6 +14,6 @@ jobs:
       - name: Install RBniCS
         uses: ./.github/actions/install
       - name: Run pull back to reference domain tests
-        run: pytest -n auto tests/unit/test_pull_back_to_reference_domain.py
+        run: pytest -n auto tests/unit/backends/dolfin/wrapping/test_pull_back_to_reference_domain.py
       - name: Run performance tests
         run: pytest -n auto tests/performance

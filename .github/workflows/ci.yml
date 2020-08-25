@@ -32,25 +32,25 @@ jobs:
         run: mpirun -n 2 pytest --gc-disable --gc-scope function -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" tests/unit
       - name: Run separated parametrized form tests
         run: |
-          pytest tests/unit/test_separated_parametrized_form_scalar.py
-          pytest tests/unit/test_separated_parametrized_form_vector.py
-          pytest tests/unit/test_separated_parametrized_form_mixed.py
+          pytest tests/unit/backends/dolfin/test_separated_parametrized_form_scalar.py
+          pytest tests/unit/backends/dolfin/test_separated_parametrized_form_vector.py
+          pytest tests/unit/backends/dolfin/test_separated_parametrized_form_mixed.py
       - name: Run reduced mesh tests
         run: |
-          pytest -k test_reduced_mesh_save tests/unit/test_reduced_mesh.py
-          pytest -k test_reduced_mesh_load tests/unit/test_reduced_mesh.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/test_reduced_mesh.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_save tests/unit/test_reduced_mesh.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/test_reduced_mesh.py
-          pytest -k test_reduced_mesh_load tests/unit/test_reduced_mesh.py
+          pytest -k test_reduced_mesh_save tests/unit/backends/dolfin/test_reduced_mesh.py
+          pytest -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_save tests/unit/backends/dolfin/test_reduced_mesh.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
+          pytest -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
       - name: Run tensor I/O tests
         run: |
-          pytest -k test_tensor_save tests/unit/test_tensor_io.py
-          pytest -k test_tensor_load tests/unit/test_tensor_io.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/test_tensor_io.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_save tests/unit/test_tensor_io.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/test_tensor_io.py
-          pytest -k test_tensor_load tests/unit/test_tensor_io.py
+          pytest -k test_tensor_save tests/unit/backends/dolfin/test_tensor_io.py
+          pytest -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_save tests/unit/backends/dolfin/test_tensor_io.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
+          pytest -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
       - name: Run performance tests (with benchmark disabled)
         run: pytest --benchmark-disable -n auto tests/performance
 
