@@ -15,42 +15,69 @@ jobs:
   test:
     if: "!(contains(github.event.head_commit.message, '[ci skip]') || contains(github.event.head_commit.message, '[skip ci]'))"
     runs-on: ubuntu-latest
-    container: quay.io/fenicsproject/dev
+    strategy:
+      matrix:
+        include:
+          - backend: none
+            container: ubuntu
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt-get -qq update
+              apt-get install -qq python3-matplotlib python3-mpi4py python3-scipy python3-pip
+              echo "::set-env name=OMPI_ALLOW_RUN_AS_ROOT::1"
+              echo "::set-env name=OMPI_ALLOW_RUN_AS_ROOT_CONFIRM::1"
+            setup_backend_code: |
+              find tests -type l -exec bash -c 'cp --remove-destination "$(readlink -e ""$@"")" "$@"' _ {} \;
+              rm -rf rbnics/backends/dolfin tests/unit/backends/dolfin tests/performance/backends/dolfin
+              rm -rf tests/methodology/tutorials tests/methodology/eim tutorials
+          - backend: dolfin
+            container: quay.io/fenicsproject/dev
+            setup_container:
+            setup_backend_code:
+      fail-fast: false
+    container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2
+      - name: Setup container
+        run: ${{ matrix.setup_container }}
+      - name: Setup backends code by removing files not associated with this backend
+        run: ${{ matrix.setup_backend_code }}
       - name: Install RBniCS
         uses: ./.github/actions/install
       - name: Run flake8 checks
         run: |
           pytest --flake8 -m flake8 rbnics
           pytest --flake8 -m flake8 tests
-          pytest --flake8 -m flake8 tutorials
+          [ -d tutorials ] && pytest --flake8 -m flake8 tutorials
           pytest --flake8 -m flake8 .github
       - name: Run unit tests (serial)
         run: pytest -n auto -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" tests/unit
       - name: Run unit tests (parallel)
         run: mpirun -n 2 pytest --gc-disable --gc-scope function -k "not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor" tests/unit
       - name: Run separated parametrized form tests
+        if: matrix.backend != 'none'
         run: |
-          pytest tests/unit/backends/dolfin/test_separated_parametrized_form_scalar.py
-          pytest tests/unit/backends/dolfin/test_separated_parametrized_form_vector.py
-          pytest tests/unit/backends/dolfin/test_separated_parametrized_form_mixed.py
+          pytest tests/unit/backends/${{ matrix.backend }}/test_separated_parametrized_form_scalar.py
+          pytest tests/unit/backends/${{ matrix.backend }}/test_separated_parametrized_form_vector.py
+          pytest tests/unit/backends/${{ matrix.backend }}/test_separated_parametrized_form_mixed.py
       - name: Run reduced mesh tests
+        if: matrix.backend != 'none'
         run: |
-          pytest -k test_reduced_mesh_save tests/unit/backends/dolfin/test_reduced_mesh.py
-          pytest -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_save tests/unit/backends/dolfin/test_reduced_mesh.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
-          pytest -k test_reduced_mesh_load tests/unit/backends/dolfin/test_reduced_mesh.py
+          pytest -k test_reduced_mesh_save tests/unit/backends/${{ matrix.backend }}/test_reduced_mesh.py
+          pytest -k test_reduced_mesh_load tests/unit/backends/${{ matrix.backend }}/test_reduced_mesh.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/backends/${{ matrix.backend }}/test_reduced_mesh.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_save tests/unit/backends/${{ matrix.backend }}/test_reduced_mesh.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_reduced_mesh_load tests/unit/backends/${{ matrix.backend }}/test_reduced_mesh.py
+          pytest -k test_reduced_mesh_load tests/unit/backends/${{ matrix.backend }}/test_reduced_mesh.py
       - name: Run tensor I/O tests
+        if: matrix.backend != 'none'
         run: |
-          pytest -k test_tensor_save tests/unit/backends/dolfin/test_tensor_io.py
-          pytest -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_save tests/unit/backends/dolfin/test_tensor_io.py
-          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
-          pytest -k test_tensor_load tests/unit/backends/dolfin/test_tensor_io.py
+          pytest -k test_tensor_save tests/unit/backends/${{ matrix.backend }}/test_tensor_io.py
+          pytest -k test_tensor_load tests/unit/backends/${{ matrix.backend }}/test_tensor_io.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/backends/${{ matrix.backend }}/test_tensor_io.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_save tests/unit/backends/${{ matrix.backend }}/test_tensor_io.py
+          mpirun -n 2 pytest --gc-disable --gc-scope function -k test_tensor_load tests/unit/backends/${{ matrix.backend }}/test_tensor_io.py
+          pytest -k test_tensor_load tests/unit/backends/${{ matrix.backend }}/test_tensor_io.py
       - name: Run performance tests (with benchmark disabled)
         run: pytest --benchmark-disable -n auto tests/performance
 
@@ -58,14 +85,20 @@ jobs:
     if: github.repository == 'RBniCS/RBniCS' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     needs: [test]
+    strategy:
+      matrix:
+        include:
+          - backend: dolfin
+            tag: latest
+      fail-fast: false
     env:
-      RELEASE_IMAGE: rbnics/rbnics:latest
+      RELEASE_IMAGE: rbnics/rbnics:${{ matrix.tag }}
     steps:
       - uses: actions/checkout@v2
       - name: Build the docker release image
-        run: docker build --pull -t ${RELEASE_IMAGE} -f docker/Dockerfile .
+        run: docker build --pull -t ${RELEASE_IMAGE} -f docker/Dockerfile.${{ matrix.backend }} .
       - name: Try importing the library inside the docker image
-        run: docker run -i --rm ${RELEASE_IMAGE} "python3 -c 'import dolfin; import rbnics'"
+        run: docker run -i --rm ${RELEASE_IMAGE} "python3 -c 'import ${{ matrix.backend }}; import rbnics'"
       - name: Run unit tests (serial) to verify that the docker image is working
         run: docker run -i --rm ${RELEASE_IMAGE} "cd RBniCS && pytest -k 'not test_pull_back_to_reference_domain and not test_reduced_mesh and not test_tensor' tests/unit"
       - name: Log into the docker registry

@@ -10,5 +10,4 @@ runs:
     - name: Install RBniCS
       run: |
         python3 setup.py -q install
-        python3 -c "import dolfin; import rbnics"
       shell: bash

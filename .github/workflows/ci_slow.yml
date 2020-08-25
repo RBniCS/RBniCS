@@ -8,12 +8,35 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: quay.io/fenicsproject/dev
+    strategy:
+      matrix:
+        include:
+          - backend: none
+            container: ubuntu
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt-get -qq update
+              apt-get install -qq python3-matplotlib python3-mpi4py python3-scipy python3-pip
+            setup_backend_code: |
+              find tests -type l -exec bash -c 'cp --remove-destination "$(readlink -e ""$@"")" "$@"' _ {} \;
+              rm -rf rbnics/backends/dolfin tests/unit/backends/dolfin tests/performance/backends/dolfin
+              rm -rf tests/methodology/tutorials tests/methodology/eim tutorials
+          - backend: dolfin
+            container: quay.io/fenicsproject/dev
+            setup_container:
+            setup_backend_code:
+      fail-fast: false
+    container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2
+      - name: Setup container
+        run: ${{ matrix.setup_container }}
+      - name: Setup backends code by removing files not associated with this backend
+        run: ${{ matrix.setup_backend_code }}
       - name: Install RBniCS
         uses: ./.github/actions/install
       - name: Run pull back to reference domain tests
-        run: pytest -n auto tests/unit/backends/dolfin/wrapping/test_pull_back_to_reference_domain.py
+        if: matrix.backend != 'none'
+        run: pytest -n auto tests/unit/backends/${{ matrix.backend }}/wrapping/test_pull_back_to_reference_domain.py
       - name: Run performance tests
         run: pytest -n auto tests/performance
