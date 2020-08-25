@@ -9,7 +9,7 @@ from numpy import isclose
 from dolfin import FunctionSpace, UnitSquareMesh
 from rbnics.backends import transpose as factory_transpose
 from rbnics.backends.dolfin import transpose as dolfin_transpose
-from test_utils import RandomDolfinFunction
+from test_dolfin_utils import RandomDolfinFunction
 
 transpose = None
 all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}

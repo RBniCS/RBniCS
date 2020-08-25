@@ -8,7 +8,7 @@ import pytest
 from numpy import isclose
 from dolfin import FunctionSpace, UnitSquareMesh
 from rbnics.backends import FunctionsList
-from test_utils import RandomDolfinFunction, RandomNumpyVector
+from test_dolfin_utils import RandomDolfinFunction, RandomNumpyVector
 
 
 class Data(object):

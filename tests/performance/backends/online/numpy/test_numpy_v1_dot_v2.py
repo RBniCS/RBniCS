@@ -9,7 +9,7 @@ from numpy import dot, isclose
 from rbnics.backends import transpose as factory_transpose
 from rbnics.backends.online import online_transpose
 from rbnics.backends.online.numpy import transpose as numpy_transpose
-from test_utils import RandomNumpyVector
+from test_numpy_utils import RandomNumpyVector
 
 transpose = None
 all_transpose = {"numpy": numpy_transpose, "online": online_transpose, "factory": factory_transpose}

@@ -10,7 +10,7 @@ from dolfin import (assemble, dx, Function, FunctionSpace, grad, inner, solve, T
                     UnitSquareMesh)
 from rbnics.backends import LinearSolver as FactoryLinearSolver
 from rbnics.backends.dolfin import LinearSolver as DolfinLinearSolver
-from test_utils import RandomDolfinFunction
+from test_dolfin_utils import RandomDolfinFunction
 
 LinearSolver = None
 AllLinearSolver = {"dolfin": DolfinLinearSolver, "factory": FactoryLinearSolver}

@@ -10,7 +10,7 @@ from numpy import einsum, isclose, zeros as legacy_tensor
 from rbnics.backends import product as factory_product, sum as factory_sum, transpose as factory_transpose
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum, online_transpose
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum, transpose as numpy_transpose
-from test_utils import RandomNumber, RandomNumpyMatrix, RandomNumpyVector, RandomTuple
+from test_numpy_utils import RandomNumber, RandomNumpyMatrix, RandomNumpyVector, RandomTuple
 
 product = None
 sum = None

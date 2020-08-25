@@ -5,16 +5,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from mpi4py.MPI import COMM_WORLD
-from dolfin import Function
 from numpy.random import random, randint
 from rbnics.backends.online.numpy import Matrix as NumpyMatrix, Vector as NumpyVector
-
-
-def RandomDolfinFunction(V):
-    f = Function(V)
-    f.vector().set_local(_rand(f.vector().get_local().size))
-    f.vector().apply("insert")
-    return f
 
 
 def RandomNumber():

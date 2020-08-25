@@ -6,11 +6,11 @@
 
 import pytest
 from numpy import isclose
-from dolfin import dx, FunctionSpace, TestFunction, UnitSquareMesh
+from dolfin import dx, FunctionSpace, grad, inner, TestFunction, TrialFunction, UnitSquareMesh
 from rbnics.backends import AffineExpansionStorage
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.dolfin import product as dolfin_product, sum as dolfin_sum
-from test_utils import RandomDolfinFunction, RandomTuple
+from test_dolfin_utils import RandomDolfinFunction, RandomTuple
 
 product = None
 sum = None
@@ -23,45 +23,44 @@ class Data(object):
         self.Q = Q
         mesh = UnitSquareMesh(Th, Th)
         self.V = FunctionSpace(mesh, "Lagrange", 1)
+        u = TrialFunction(self.V)
         v = TestFunction(self.V)
-        self.f = lambda g: g * v * dx
+        self.a = lambda k: k * inner(grad(u), grad(v)) * dx
 
     def generate_random(self):
-        f = ()
+        a = ()
         for i in range(self.Q):
             # Generate random vector
-            g = RandomDolfinFunction(self.V)
+            k = RandomDolfinFunction(self.V)
             # Generate random form
-            f += (self.f(g),)
-        F = AffineExpansionStorage(f)
+            a += (self.a(k),)
+        A = AffineExpansionStorage(a)
         # Genereate random theta
         theta = RandomTuple(self.Q)
         # Return
-        return (theta, F)
+        return (theta, A)
 
-    def evaluate_builtin(self, theta, F):
-        result_builtin = F[0].copy()
-        result_builtin.zero()
-        for i in range(self.Q):
-            result_builtin.add_local(theta[i] * F[i].get_local())
-        result_builtin.apply("insert")
+    def evaluate_builtin(self, theta, A):
+        result_builtin = theta[0] * A[0]
+        for i in range(1, self.Q):
+            result_builtin += theta[i] * A[i]
         return result_builtin
 
-    def evaluate_backend(self, theta, F):
-        return sum(product(theta, F))
+    def evaluate_backend(self, theta, A):
+        return sum(product(theta, A))
 
-    def assert_backend(self, theta, F, result_backend):
-        result_builtin = self.evaluate_builtin(theta, F)
-        relative_error = (result_builtin - result_backend).norm("l2") / result_builtin.norm("l2")
+    def assert_backend(self, theta, A, result_backend):
+        result_builtin = self.evaluate_builtin(theta, A)
+        relative_error = (result_builtin - result_backend).norm("frobenius") / result_builtin.norm("frobenius")
         assert isclose(relative_error, 0., atol=1e-12)
 
 
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
-@pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])
+@pytest.mark.parametrize("Q", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_product.keys()))
-def test_dolfin_vector_assembly(Th, N, test_type, benchmark):
-    data = Data(Th, N)
-    print("Th = " + str(Th) + ", Nh = " + str(data.V.dim()) + ", N = " + str(N))
+def test_dolfin_matrix_assembly(Th, Q, test_type, benchmark):
+    data = Data(Th, Q)
+    print("Th = " + str(Th) + ", Nh = " + str(data.V.dim()) + ", Q = " + str(Q))
     if test_type == "builtin":
         print("Testing", test_type)
         benchmark(data.evaluate_builtin, setup=data.generate_random)

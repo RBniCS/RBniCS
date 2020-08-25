@@ -11,7 +11,7 @@ from dolfin import (assemble, derivative, dx, Expression, Function, FunctionSpac
 from rbnics.backends import NonlinearSolver as FactoryNonlinearSolver
 from rbnics.backends.abstract import NonlinearProblemWrapper
 from rbnics.backends.dolfin import NonlinearSolver as DolfinNonlinearSolver
-from test_utils import RandomDolfinFunction
+from test_dolfin_utils import RandomDolfinFunction
 
 NonlinearSolver = None
 AllNonlinearSolver = {"dolfin": DolfinNonlinearSolver, "factory": FactoryNonlinearSolver}

@@ -7,12 +7,12 @@
 import pytest
 from numpy import isclose
 from numpy.linalg import norm
-from dolfin import assemble, dx, FunctionSpace, grad, inner, TestFunction, TrialFunction, UnitSquareMesh
+from dolfin import assemble, dx, grad, FunctionSpace, inner, TestFunction, TrialFunction, UnitSquareMesh
 from rbnics.backends import BasisFunctionsMatrix
 from rbnics.backends import transpose as factory_transpose
 from rbnics.backends.dolfin import transpose as dolfin_transpose
-from rbnics.backends.online.numpy import Vector as NumpyVector
-from test_utils import RandomDolfinFunction
+from rbnics.backends.online.numpy import Matrix as NumpyMatrix
+from test_dolfin_utils import RandomDolfinFunction
 
 transpose = None
 all_transpose = {"dolfin": dolfin_transpose, "factory": factory_transpose}
@@ -31,29 +31,28 @@ class Data(object):
         # Generate random vectors
         Z = BasisFunctionsMatrix(self.V)
         Z.init("u")
-        for i in range(self.N):
+        for _ in range(self.N):
             b = RandomDolfinFunction(self.V)
             Z.enrich(b)
-        # Generate random matrix
         k = RandomDolfinFunction(self.V)
+        # Generate random matrix
         A = assemble(self.a(k))
-        # Generate random function
-        z = RandomDolfinFunction(self.V)
         # Return
-        return (Z, A, z.vector())
+        return (Z, A)
 
-    def evaluate_builtin(self, Z, A, z):
-        A_z = A * z
-        result_builtin = NumpyVector({"u": self.N})
-        for i in range(self.N):
-            result_builtin[i] = Z[i].vector().inner(A_z)
+    def evaluate_builtin(self, Z, A):
+        result_builtin = NumpyMatrix({"u": self.N}, {"u": self.N})
+        for j in range(self.N):
+            A_Z_j = A * Z[j].vector()
+            for i in range(self.N):
+                result_builtin[i, j] = Z[i].vector().inner(A_Z_j)
         return result_builtin
 
-    def evaluate_backend(self, Z, A, z):
-        return transpose(Z) * A * z
+    def evaluate_backend(self, Z, A):
+        return transpose(Z) * A * Z
 
-    def assert_backend(self, Z, A, z, result_backend):
-        result_builtin = self.evaluate_builtin(Z, A, z)
+    def assert_backend(self, Z, A, result_backend):
+        result_builtin = self.evaluate_builtin(Z, A)
         relative_error = norm(result_builtin - result_backend) / norm(result_builtin)
         assert isclose(relative_error, 0., atol=1e-12)
 
@@ -61,7 +60,7 @@ class Data(object):
 @pytest.mark.parametrize("Th", [2**i for i in range(3, 7)])
 @pytest.mark.parametrize("N", [10 + 4 * j for j in range(1, 4)])
 @pytest.mark.parametrize("test_type", ["builtin"] + list(all_transpose.keys()))
-def test_dolfin_error_estimation_af_construction(Th, N, test_type, benchmark):
+def test_dolfin_Z_T_dot_A_Z(Th, N, test_type, benchmark):
     data = Data(Th, N)
     print("Th = " + str(Th) + ", Nh = " + str(data.V.dim()) + ", N = " + str(N))
     if test_type == "builtin":

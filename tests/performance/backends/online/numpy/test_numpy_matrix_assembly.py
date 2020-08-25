@@ -10,7 +10,7 @@ from numpy.linalg import norm
 from rbnics.backends import product as factory_product, sum as factory_sum
 from rbnics.backends.online import OnlineAffineExpansionStorage, online_product, online_sum
 from rbnics.backends.online.numpy import product as numpy_product, sum as numpy_sum
-from test_utils import RandomNumpyMatrix, RandomTuple
+from test_numpy_utils import RandomNumpyMatrix, RandomTuple
 
 product = None
 sum = None
