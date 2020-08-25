@@ -5,6 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from mpi4py import MPI
+try:
+    import dolfin  # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa: F401
+except ImportError:
+    pass
 from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa: F401
 
 

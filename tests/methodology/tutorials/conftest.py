@@ -8,7 +8,10 @@ import os
 import sys
 import importlib
 import pytest
-import dolfin  # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa: F401
+try:
+    import dolfin  # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa: F401
+except ImportError:
+    pass
 from rbnics.utils.test import (
     add_gold_options, disable_matplotlib, enable_matplotlib, process_gold_options, run_and_compare_to_gold)
 
