@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from dolfin import MPI
+from mpi4py import MPI
 from rbnics.utils.test import disable_matplotlib, enable_matplotlib, load_tempdir, save_tempdir, tempdir  # noqa: F401
 
 
@@ -91,4 +91,4 @@ def pytest_runtest_teardown(item, nextitem):
     # Do the normal teardown
     item.teardown()
     # Add a MPI barrier in parallel
-    MPI.barrier(MPI.comm_world)
+    MPI.COMM_WORLD.Barrier()

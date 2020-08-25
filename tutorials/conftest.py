@@ -12,7 +12,7 @@ import pytest
 import pytest_flake8
 from nbconvert.exporters import PythonExporter
 import nbconvert.filters
-from dolfin import MPI
+from mpi4py import MPI
 from rbnics.utils.test import (
     add_gold_options, disable_matplotlib, enable_matplotlib, process_gold_options, run_and_compare_to_gold)
 
@@ -56,10 +56,10 @@ def pytest_collect_file(path, parent):
         exporter.exclude_input_prompt = True
         code, _ = exporter.from_filename(path)
         code = code.rstrip("\n") + "\n"
-        if MPI.rank(MPI.comm_world) == 0:
+        if MPI.COMM_WORLD.Get_rank() == 0:
             with open(path.new(ext=".py"), "w", encoding="utf-8") as f:
                 f.write(code)
-        MPI.barrier(MPI.comm_world)
+        MPI.COMM_WORLD.Barrier()
         # Collect the corresponding .py file
         config = parent.config
         if config.getoption("--flake8"):
@@ -93,7 +93,7 @@ def pytest_runtest_teardown(item, nextitem):
     # Do the normal teardown
     item.teardown()
     # Add a MPI barrier in parallel
-    MPI.barrier(MPI.comm_world)
+    MPI.COMM_WORLD.Barrier()
 
 
 class TutorialFile(pytest.File):
