@@ -87,9 +87,18 @@ class Config(object):
         # Update dict
         self._parser_to_dict()
 
-    def write(self, file_):
-        def write_config_parser():
-            self._config_as_parser.write(file_)
+    def write(self, file_or_file_object):
+        assert isinstance(file_or_file_object, str) or file_or_file_object is sys.stdout, (
+            "Please provide a file name and not a file object (except for sys.stdout)")
+        if isinstance(file_or_file_object, str):
+            def write_config_parser():
+                with open(file_or_file_object, "w") as file_:
+                    self._config_as_parser.write(file_)
+        else:
+            assert file_or_file_object is sys.stdout
+
+            def write_config_parser():
+                self._config_as_parser.write(file_or_file_object)
         parallel_io(write_config_parser)
 
     def get(self, section, option):

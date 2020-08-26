@@ -28,8 +28,7 @@ def test_config(tempdir):
     print("===============")
 
     # Write config to file
-    with open(os.path.join(tempdir, ".rbnicsrc"), "w") as configfile:
-        config.write(configfile)
+    config.write(os.path.join(tempdir, ".rbnicsrc"))
 
     # Check that file has been written
     assert os.path.isfile(os.path.join(tempdir, ".rbnicsrc"))
