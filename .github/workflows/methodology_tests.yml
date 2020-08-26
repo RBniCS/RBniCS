@@ -16,6 +16,9 @@ on:
 
 jobs:
   test:
+    if: >-
+      (github.event_name == 'schedule' && github.repository == 'RBniCS/RBniCS')
+      || (github.event_name != 'schedule')
     runs-on: ubuntu-latest
     container: quay.io/fenicsproject/dev
     strategy:
