@@ -13,6 +13,10 @@ import pytest_flake8
 from nbconvert.exporters import PythonExporter
 import nbconvert.filters
 from mpi4py import MPI
+try:
+    import dolfin  # otherwise the next import from rbnics would disable dolfin as a required backend  # noqa: F401
+except ImportError:
+    pass
 from rbnics.utils.test import (
     add_gold_options, disable_matplotlib, enable_matplotlib, process_gold_options, run_and_compare_to_gold)
 
