@@ -52,8 +52,8 @@ runs:
             REQUIRED_ACTION="skip"
           fi
         fi
-        echo "::set-env name=REQUIRED_ACTION::${REQUIRED_ACTION}"
-        echo "::set-env name=REQUIRED_PARALLELISM::${REQUIRED_PARALLELISM}"
+        echo "REQUIRED_ACTION=${REQUIRED_ACTION}" >> $GITHUB_ENV
+        echo "REQUIRED_PARALLELISM=${REQUIRED_PARALLELISM}" >> $GITHUB_ENV
       env:
         REQUIRED_ACTION_IN: ${{ inputs.required_action }}
         REQUIRED_PARALLELISM_IN: ${{ inputs.required_parallelism }}

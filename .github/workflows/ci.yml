@@ -36,8 +36,8 @@ jobs:
               export DEBIAN_FRONTEND="noninteractive"
               apt-get -qq update
               apt-get install -qq python3-matplotlib python3-mpi4py python3-scipy python3-pip
-              echo "::set-env name=OMPI_ALLOW_RUN_AS_ROOT::1"
-              echo "::set-env name=OMPI_ALLOW_RUN_AS_ROOT_CONFIRM::1"
+              echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
+              echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
             setup_backend_code: |
               find tests -type l -exec bash -c 'cp --remove-destination "$(readlink -e ""$@"")" "$@"' _ {} \;
               rm -rf rbnics/backends/dolfin tests/unit/backends/dolfin tests/performance/backends/dolfin
