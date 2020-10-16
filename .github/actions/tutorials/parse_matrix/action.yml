@@ -17,6 +17,6 @@ runs:
   steps:
     - name: Parse matrix for tutorials runs
       run: |
-        echo "::set-env name=${{ inputs.folder_name_variable }}::$(echo ${{ inputs.matrix_which }} | cut -d'/' -f1)"
-        echo "::set-env name=${{ inputs.file_name_variable }}::$(echo ${{ inputs.matrix_which }} | cut -d'/' -f2)"
+        echo "${{ inputs.folder_name_variable }}=$(echo ${{ inputs.matrix_which }} | cut -d'/' -f1)" >> $GITHUB_ENV
+        echo "${{ inputs.file_name_variable }}=$(echo ${{ inputs.matrix_which }} | cut -d'/' -f2)" >> $GITHUB_ENV
       shell: bash
