@@ -48,6 +48,7 @@ except ImportError as e:
     !apt install -y --no-install-recommends fenics
     !sed -i "s|#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1|#if 1|" /usr/include/dolfin/la/PETScLUSolver.h
     !pip3 -q install --upgrade sympy
+    exec(open("/usr/lib/python3/dist-packages/dolfin.pth").read())
     import dolfin"""  # noqa: E501
 nb.cells.insert(insert_base, nbformat.v4.new_code_cell(fenics_installation_cell))
 
