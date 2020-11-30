@@ -422,7 +422,11 @@ def TimeDependentReducedProblem(ParametrizedReducedDifferentialProblem_DerivedCl
         # Internal method for relative error computation
         def _compute_relative_error(self, absolute_error_over_time, **kwargs):
             relative_error_over_time = TimeSeries(self._solution_over_time)
-            assert len(self._solution_over_time) == len(absolute_error_over_time)
+            if isinstance(absolute_error_over_time, dict):
+                for (_, absolute_error_over_time_for_component) in absolute_error_over_time.items():
+                    assert len(self._solution_over_time) == len(absolute_error_over_time_for_component)
+            else:
+                assert len(self._solution_over_time) == len(absolute_error_over_time)
             for (k, t) in enumerate(self.truth_problem._solution_over_time.stored_times()):
                 self.set_time(t)
                 assign(self.truth_problem._solution, self.truth_problem._solution_over_time[k])
