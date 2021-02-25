@@ -47,8 +47,22 @@ except ImportError as e:
     !apt-get update -qq
     !apt install -y --no-install-recommends fenics
     !sed -i "s|#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1|#if 1|" /usr/include/dolfin/la/PETScLUSolver.h
+    !rm -rf /usr/lib/python3/dist-packages/mpi4py*
+    !rm -rf /usr/lib/python3/dist-packages/petsc4py*
+    !rm -rf /usr/lib/python3/dist-packages/slepc4py*
+    !rm -rf /usr/lib/petsc/lib/python3/dist-packages/dolfin*
+    !rm -rf /usr/lib/petsc/lib/python3/dist-packages/mshr*
+    !wget "https://drive.google.com/uc?export=download&id=1cT_QBJCOW_eL3BThnval3bcpb8o0w-Ad" -O /tmp/mpi4py-2.0.0-cp37-cp37m-linux_x86_64.whl
+    !wget "https://drive.google.com/uc?export=download&id=119i49bxlGn1mrnhTNmOvM4BqmjrT9Ppr" -O /tmp/petsc4py-3.7.0-cp37-cp37m-linux_x86_64.whl
+    !wget "https://drive.google.com/uc?export=download&id=1-1tVfu8qz3bRC2zvR8n3RESpesWqNnn6" -O /tmp/slepc4py-3.7.0-cp37-cp37m-linux_x86_64.whl
+    !wget "https://drive.google.com/uc?export=download&id=1-3qY4VIJQaXVO1HfGQIzTIURIeJbvX-9" -O /tmp/fenics_dolfin-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl
+    !wget "https://drive.google.com/uc?export=download&id=1-5SMjgjMuee_9WLeYtGe8N_lvipWEN7W" -O /tmp/mshr-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl
+    !pip3 install /tmp/mpi4py-2.0.0-cp37-cp37m-linux_x86_64.whl --upgrade
+    !pip3 install /tmp/petsc4py-3.7.0-cp37-cp37m-linux_x86_64.whl --upgrade
+    !pip3 install /tmp/slepc4py-3.7.0-cp37-cp37m-linux_x86_64.whl --upgrade
+    !pip3 install /tmp/fenics_dolfin-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl --upgrade
+    !pip3 install /tmp/mshr-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl --upgrade
     !pip3 -q install --upgrade sympy
-    exec(open("/usr/lib/python3/dist-packages/dolfin.pth").read())
     import dolfin"""  # noqa: E501
 nb.cells.insert(insert_base, nbformat.v4.new_code_cell(fenics_installation_cell))
 
@@ -60,7 +74,7 @@ except ImportError as e:
     !pip3 -q install --upgrade cvxopt multipledispatch pylru toposort
     ![ -d "/tmp/RBniCS" ] || git clone https://github.com/RBniCS/RBniCS /tmp/RBniCS
     !cd /tmp/RBniCS && python3 setup.py install && cd -
-    !ln -s /usr/local/lib/python3.6/dist-packages/RBniCS*egg/rbnics /usr/local/lib/python3.6/dist-packages/
+    !ln -s /usr/local/lib/python3.7/dist-packages/RBniCS*egg/rbnics /usr/local/lib/python3.7/dist-packages/
     import rbnics
 import rbnics.utils.config
 assert "dolfin" in rbnics.utils.config.config.get("backends", "required backends")"""
