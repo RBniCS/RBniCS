@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 FROM quay.io/fenicsproject/dev
-MAINTAINER Francesco Ballarin <francesco.ballarin@sissa.it>
+MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
 USER root
 RUN apt-get -qq update && \
