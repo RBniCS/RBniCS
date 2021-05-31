@@ -100,7 +100,8 @@ class SolutionFileXDMF(SolutionFile_Base):
         SolutionFile_Base.__init__(self, directory, filename)
         self._visualization_file = XDMFFile(self._full_filename + ".xdmf")
         self._visualization_file.parameters["flush_output"] = True
-        self._restart_file = XDMFFile(self._full_filename + "_checkpoint.xdmf")
+        self._restart_filename = self._full_filename + "_checkpoint.xdmf"
+        self._restart_file = XDMFFile(self._restart_filename)
         self._restart_file.parameters["flush_output"] = True
 
     @staticmethod
@@ -129,7 +130,10 @@ class SolutionFileXDMF(SolutionFile_Base):
         # For now the inelegant way is to try to read: if that works, assume that we are in the corner case;
         # otherwise, we are in the standard case and we should write to file.
         try:
-            self._restart_file.read_checkpoint(self._function_container, name, index)
+            if os.path.exists(self._restart_filename):
+                self._restart_file.read_checkpoint(self._function_container, name, index)
+            else:
+                raise RuntimeError
         except RuntimeError:
             from dolfin.cpp.log import get_log_level, LogLevel, set_log_level
             self._update_function_container(function)
@@ -146,6 +150,7 @@ class SolutionFileXDMF(SolutionFile_Base):
     def read(self, function, name, index):
         if index <= self._last_index:
             time = float(index)
+            assert os.path.exists(self._restart_filename)
             self._restart_file.read_checkpoint(function, name, index)
             self._update_function_container(function)
             self._visualization_file.write(self._function_container, time)  # because no append option is available
