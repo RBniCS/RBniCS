@@ -77,7 +77,6 @@ class ParameterSpaceSubset(ExportableList):  # equivalent to a list of tuples
         return (global_value_max, global_i_max)
 
     def serialize_maximum_computations(self):
-        assert self.distributed_max is True
         self.distributed_max = False
 
     def diff(self, other_set):
