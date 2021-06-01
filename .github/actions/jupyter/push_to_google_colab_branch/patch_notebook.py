@@ -41,44 +41,25 @@ with io.open(filename, "r", encoding="utf8") as f:
 fenics_installation_cell = """# Install FEniCS
 try:
     import dolfin
-except ImportError as e:
-    !apt-get install -y -qq software-properties-common
-    !add-apt-repository -y ppa:fenics-packages/fenics
-    !apt-get update -qq
-    !apt install -y --no-install-recommends fenics
-    !sed -i "s|#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR <= 8 && PETSC_VERSION_RELEASE == 1|#if 1|" /usr/include/dolfin/la/PETScLUSolver.h
-    !rm -rf /usr/lib/python3/dist-packages/mpi4py*
-    !rm -rf /usr/lib/python3/dist-packages/petsc4py*
-    !rm -rf /usr/lib/python3/dist-packages/slepc4py*
-    !rm -rf /usr/lib/petsc/lib/python3/dist-packages/dolfin*
-    !rm -rf /usr/lib/petsc/lib/python3/dist-packages/mshr*
-    !wget "https://drive.google.com/uc?export=download&id=1cT_QBJCOW_eL3BThnval3bcpb8o0w-Ad" -O /tmp/mpi4py-2.0.0-cp37-cp37m-linux_x86_64.whl
-    !wget "https://drive.google.com/uc?export=download&id=119i49bxlGn1mrnhTNmOvM4BqmjrT9Ppr" -O /tmp/petsc4py-3.7.0-cp37-cp37m-linux_x86_64.whl
-    !wget "https://drive.google.com/uc?export=download&id=1-1tVfu8qz3bRC2zvR8n3RESpesWqNnn6" -O /tmp/slepc4py-3.7.0-cp37-cp37m-linux_x86_64.whl
-    !wget "https://drive.google.com/uc?export=download&id=1-3qY4VIJQaXVO1HfGQIzTIURIeJbvX-9" -O /tmp/fenics_dolfin-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl
-    !wget "https://drive.google.com/uc?export=download&id=1-5SMjgjMuee_9WLeYtGe8N_lvipWEN7W" -O /tmp/mshr-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl
-    !pip3 install /tmp/mpi4py-2.0.0-cp37-cp37m-linux_x86_64.whl --upgrade
-    !pip3 install /tmp/petsc4py-3.7.0-cp37-cp37m-linux_x86_64.whl --upgrade
-    !pip3 install /tmp/slepc4py-3.7.0-cp37-cp37m-linux_x86_64.whl --upgrade
-    !pip3 install /tmp/fenics_dolfin-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl --upgrade
-    !pip3 install /tmp/mshr-2019.2.0.dev0-cp37-cp37m-linux_x86_64.whl --upgrade
-    !pip3 -q install --upgrade sympy
+except ImportError:
+    !wget "https://fem-on-colab.github.io/releases/fenics-install.sh" -O "/tmp/fenics-install.sh" && bash "/tmp/fenics-install.sh"
     import dolfin"""  # noqa: E501
-nb.cells.insert(insert_base, nbformat.v4.new_code_cell(fenics_installation_cell))
+fenics_installation_cell = nbformat.v4.new_code_cell(fenics_installation_cell)
+fenics_installation_cell.id = "fenics_installation"
+nb.cells.insert(insert_base, fenics_installation_cell)
 
 # 2. Add RBniCS installation cell
 rbnics_installation_cell = """# Install RBniCS
 try:
     import rbnics
-except ImportError as e:
-    !pip3 -q install --upgrade cvxopt multipledispatch pylru toposort
-    ![ -d "/tmp/RBniCS" ] || git clone https://github.com/RBniCS/RBniCS /tmp/RBniCS
-    !cd /tmp/RBniCS && python3 setup.py install && cd -
-    !ln -s /usr/local/lib/python3.7/dist-packages/RBniCS*egg/rbnics /usr/local/lib/python3.7/dist-packages/
+except ImportError:
+    !pip3 install git+https://github.com/RBniCS/RBniCS.git
     import rbnics
 import rbnics.utils.config
 assert "dolfin" in rbnics.utils.config.config.get("backends", "required backends")"""
-nb.cells.insert(insert_base + 1, nbformat.v4.new_code_cell(rbnics_installation_cell))
+rbnics_installation_cell = nbformat.v4.new_code_cell(rbnics_installation_cell)
+rbnics_installation_cell.id = "rbnics_installation"
+nb.cells.insert(insert_base + 1, rbnics_installation_cell)
 
 # 3. Add cell to download auxiliary files (e.g. meshes)
 aux_urls = dict()
@@ -99,7 +80,9 @@ if basename.startswith("tutorial"):
                 + f"exists: {os.path.exists(aux_real_file)}, "
                 + f"islink: {os.path.islink(aux_real_file)}, "
                 + f"isdir: {os.path.isdir(aux_real_file)})")
-            aux_url = f"https://github.com/RBniCS/RBniCS/raw/{os.getenv('BRANCH', 'master')}/{aux_real_file}"
+            aux_url = (
+                f"https://github.com/RBniCS/RBniCS/raw/{os.getenv('BRANCH', 'master')}"
+                + f"/{aux_real_file.replace('patched_', '')}")
         _, aux_file_ext = os.path.splitext(aux_file)
         if aux_file_ext not in (".ipynb", ".link"):
             aux_urls[os.path.relpath(aux_file, top_dir)] = aux_url
@@ -112,12 +95,14 @@ if basename.startswith("tutorial"):
                 f"![ -f {os.path.relpath(aux_file, dirname)} ] || "
                 + f"wget {aux_url} -O {os.path.relpath(aux_file, dirname)}")
     if len(aux_create_dirs) + len(aux_download_files) > 0:
-        aux_create_dirs = "\n".join(aux_create_dirs)
-        aux_download_files = "\n".join(aux_download_files)
+        aux_create_dirs = "\n".join(sorted(aux_create_dirs))
+        aux_download_files = "\n".join(sorted(aux_download_files))
         auxiliary_files_cell = f"""# Download data files
 {aux_create_dirs}
 {aux_download_files}"""
-        nb.cells.insert(insert_base + 2, nbformat.v4.new_code_cell(auxiliary_files_cell))
+        auxiliary_files_cell = nbformat.v4.new_code_cell(auxiliary_files_cell)
+        auxiliary_files_cell.id = "auxiliary_files"
+        nb.cells.insert(insert_base + 2, auxiliary_files_cell)
 
 # Add the links of all other notebooks to auxiliary urls
 for link_file in glob.glob(os.path.join(top_dir, "**", "*.ipynb.link"), recursive=True):

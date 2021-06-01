@@ -1,0 +1,46 @@
+name: Push to Google Colab branch
+description: Push jupyter notebooks to the open in Google Colab branch
+
+inputs:
+  folder_path:
+    description: "Relative folder path"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Patch jupyter notebooks for the open in Google Colab branch
+      run: |
+        export SHA_SHORT=$(git rev-parse --short HEAD)
+        export BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        cp -rf ${FOLDER_PATH} patched_${FOLDER_PATH}
+        find patched_${FOLDER_PATH} -type l -name "*.ipynb" -exec bash -c 'mkdir -p "$(dirname "patched_$0")" && cp "$(readlink -e ""$0"")" "patched_$0"' {} \;
+        readarray -d '' PATCHED_SRCS < <(find patched_${FOLDER_PATH} -type f -name "*.ipynb" -print0)
+        # Create link files
+        for PATCHED_SRC in "${PATCHED_SRCS[@]}"; do
+          SRC=${PATCHED_SRC/patched_/}
+          echo "https://colab.research.google.com/github/RBniCS/RBniCS/blob/open-in-colab/${SRC}" > "${PATCHED_SRC}.link"
+        done
+        # Patch notebooks
+        for PATCHED_SRC in "${PATCHED_SRCS[@]}"; do
+          python3 ${PATCH_SCRIPT} "${PATCHED_SRC}"
+        done
+        # Push to custom branch
+        git fetch origin open-in-colab
+        git checkout open-in-colab
+        for PATCHED_SRC in "${PATCHED_SRCS[@]}"; do
+          SRC=${PATCHED_SRC/patched_/}
+          mkdir -p $(dirname "${SRC}")
+          mv "${PATCHED_SRC}" "${SRC}"
+          git add "${SRC}"
+        done
+        if [[ "$(git diff --name-only --cached | wc -l)" -gt 0 ]]; then
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Release notebooks for Google Colab, commit ${SHA_SHORT}"
+          git push origin open-in-colab
+        fi
+      env:
+        FOLDER_PATH: ${{ inputs.folder_path }}
+        PATCH_SCRIPT: .github/actions/jupyter/push_to_google_colab_branch/patch_notebook.py
+      shell: bash
