@@ -48,7 +48,7 @@ def DecoratedReducedProblemWithStabilityFactorEvaluation(ParametrizedReducedDiff
             pass
 
         def _init_stability_factor_calculator(self, current_stage="online"):
-            self.stability_factor_calculator.init()
+            self.stability_factor_calculator.init(current_stage)
 
         # Return the lower bound for the stability factor.
         def get_stability_factor_lower_bound(self, N=None, **kwargs):

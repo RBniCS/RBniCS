@@ -57,13 +57,17 @@ class ParametrizedStabilityFactorReducedEigenProblem(ParametrizedProblem):
         # Store the left and right hand side operators
         if self.operator["stability_factor_left_hand_matrix"] is None:
             # init was not called already
-            self.operator["stability_factor_left_hand_matrix"] = self.reduced_problem.operator[
-                "stability_factor_left_hand_matrix"]
+            if "stability_factor_left_hand_matrix" in self.reduced_problem.operator:
+                # reduced operator assembly was already called
+                self.operator["stability_factor_left_hand_matrix"] = self.reduced_problem.operator[
+                    "stability_factor_left_hand_matrix"]
         if self.operator["stability_factor_right_hand_matrix"] is None:
             # init was not called already
-            self.operator["stability_factor_right_hand_matrix"] = self.reduced_problem.operator[
-                "stability_factor_right_hand_matrix"]
-            assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
+            if "stability_factor_right_hand_matrix" in self.reduced_problem.operator:
+                # reduced operator assembly was already called
+                self.operator["stability_factor_right_hand_matrix"] = self.reduced_problem.operator[
+                    "stability_factor_right_hand_matrix"]
+                assert len(self.operator["stability_factor_right_hand_matrix"]) == 1
 
     def solve(self, N=None, **kwargs):
         N, kwargs = self.reduced_problem._online_size_from_kwargs(N, **kwargs)
