@@ -6,7 +6,7 @@
 
 import cvxopt
 from numbers import Number
-from numpy import eye, hstack, matrix as numpy_matrix, ndarray as numpy_vector, vstack, zeros
+from numpy import eye, hstack, isclose, matrix as numpy_matrix, ndarray as numpy_vector, vstack, zeros
 from rbnics.backends.abstract import LinearProgramSolver as AbstractLinearProgramSolver
 from rbnics.utils.decorators import BackendFor, list_of, tuple_of
 
@@ -39,9 +39,13 @@ class LinearProgramSolver(AbstractLinearProgramSolver):
         bounds_lower = zeros(self.Q)
         bounds_upper = zeros(self.Q)
         for (q, bounds_q) in enumerate(bounds):
-            assert bounds_q[0] <= bounds_q[1]
-            bounds_lower[q] = bounds_q[0]
-            bounds_upper[q] = bounds_q[1]
+            assert bounds_q[0] <= bounds_q[1] or isclose(bounds_q[0], bounds_q[1])
+            if bounds_q[0] <= bounds_q[1]:
+                bounds_lower[q] = bounds_q[0]
+                bounds_upper[q] = bounds_q[1]
+            else:
+                bounds_lower[q] = bounds_q[1]
+                bounds_upper[q] = bounds_q[0]
         self.inequality_constraints_vector = cvxopt.matrix(hstack((- inequality_constraints_vector,
                                                                    bounds_lower, bounds_upper)))
 

@@ -6,6 +6,7 @@
 
 import os
 import hashlib
+from numpy import isclose
 from rbnics.backends import export, import_, LinearProgramSolver
 from rbnics.backends.common.linear_program_solver import Error as LinearProgramSolverError, Matrix, Vector
 from rbnics.problems.base import ParametrizedProblem
@@ -149,7 +150,9 @@ class SCMApproximation(ParametrizedProblem):
         # 1. Constrain the Q variables to be in the bounding box
         bounds = list()  # of Q pairs
         for q in range(Q):
-            assert self.bounding_box_min[q] <= self.bounding_box_max[q]
+            assert (
+                self.bounding_box_min[q] <= self.bounding_box_max[q]
+                or isclose(self.bounding_box_min[q], self.bounding_box_max[q]))
             bounds.append((self.bounding_box_min[q], self.bounding_box_max[q]))
 
         # 2. Add three different sets of constraints.
