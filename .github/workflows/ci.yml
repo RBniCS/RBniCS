@@ -129,9 +129,9 @@ jobs:
           pip3 -q install --upgrade pip
           pip3 -q install --upgrade jupyter nbformat
       - name: Check for stray outputs, counts and metadata in ipynb files
-        uses: ./.github/actions/jupyter/check_metadata
+        uses: RBniCS/check-jupyter-metadata-action@main
         with:
-          folder_path: tutorials
+          pattern: "tutorials/**/*.ipynb"
       - name: Push jupyter notebooks to the open in Google Colab branch
         if: >-
           github.repository == 'RBniCS/RBniCS' &&
