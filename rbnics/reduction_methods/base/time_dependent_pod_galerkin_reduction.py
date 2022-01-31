@@ -163,7 +163,7 @@ def TimeDependentPODGalerkinReduction(DifferentialProblemReductionMethod_Derived
                 time_quadrature = TimeQuadrature((0., self.truth_problem.T), list_over_time)
                 return time_quadrature.integrate()
             for column in ("error_output", "relative_error_output"):
-                ErrorAnalysisTable.preprocess_setitem(column, solution_preprocess_setitem)
+                ErrorAnalysisTable.preprocess_setitem(column, output_preprocess_setitem)
 
             DifferentialProblemReductionMethod_DerivedClass.error_analysis(self, N_generator, filename, **kwargs)
 
