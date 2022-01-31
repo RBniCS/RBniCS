@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from rbnics.backends import product, sum
+from rbnics.backends import product, sum, transpose
 from rbnics.problems.base import LinearTimeDependentProblem
 
 
@@ -40,5 +40,14 @@ def AbstractParabolicProblem(EllipticProblem_DerivedClass):
                 assembled_operator["a"] = sum(product(problem.compute_theta("a"), problem.operator["a"]))
                 return (assembled_operator["m"] * solution_dot_coefficient
                         + assembled_operator["a"])
+
+        # Perform a truth evaluation of the output
+        def _compute_output(self):
+            self._output_over_time.clear()
+            for sol in self._solution_over_time:
+                self._output_over_time.extend(
+                    [transpose(sol) * sum(product(self.compute_theta("s"), self.operator["s"]))])
+            self._output = self._output_over_time[-1]
+
     # return value (a class) for the decorator
     return AbstractParabolicProblem_Class
