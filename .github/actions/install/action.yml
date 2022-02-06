@@ -6,7 +6,7 @@ runs:
   steps:
     - name: Install RBniCS dependencies
       run: |
-        pip3 -q install --upgrade cvxopt "flake8<4" gitpython multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-xdist sympy toposort
+        pip3 -q install --upgrade cvxopt "flake8<4" gitpython multipledispatch pylru "pytest<7" pytest-benchmark pytest-dependency pytest-flake8 pytest-gc pytest-xdist sympy toposort
         # Patch unmaintained pytest-gc plugin
         PYTEST_GC_PLUGIN=$(python3 -c 'import os, pytest; print(os.path.join(os.path.dirname(pytest.__file__) + "_gc", "plugin.py"))')
         sed -i "s/fixture(scope,/fixture(scope=scope,/g" ${PYTEST_GC_PLUGIN}
