@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from rbnics.problems.base import NonlinearTimeDependentReducedProblem
-from rbnics.backends import product, sum
+from rbnics.backends import product, sum, transpose
 
 
 def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClass):
@@ -39,6 +39,14 @@ def NonlinearParabolicReducedProblem(NonlinearEllipticReducedProblem_DerivedClas
                 return (assembled_operator["m"] * solution_dot_coefficient
                         + assembled_operator["a"]
                         + assembled_operator["dc"])
+
+        # Perform an online evaluation of the output
+        def _compute_output(self, N):
+            self._output_over_time.clear()
+            for sol in self._solution_over_time:
+                self._output_over_time.extend(
+                    [transpose(sol) * sum(product(self.compute_theta("s"), self.operator["s"][:N]))])
+            self._output = self._output_over_time[-1]
 
     # return value (a class) for the decorator
     return NonlinearParabolicReducedProblem_Class

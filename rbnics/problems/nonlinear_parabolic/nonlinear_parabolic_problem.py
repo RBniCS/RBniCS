@@ -6,7 +6,7 @@
 
 from rbnics.problems.base import NonlinearTimeDependentProblem
 from rbnics.problems.nonlinear_elliptic import NonlinearEllipticProblem
-from rbnics.backends import product, sum
+from rbnics.backends import product, sum, transpose
 
 NonlinearParabolicProblem_Base = NonlinearTimeDependentProblem(NonlinearEllipticProblem)
 
@@ -44,3 +44,11 @@ class NonlinearParabolicProblem(NonlinearParabolicProblem_Base):
             return (assembled_operator["m"] * solution_dot_coefficient
                     + assembled_operator["a"]
                     + assembled_operator["dc"])
+
+    # Perform a truth evaluation of the output
+    def _compute_output(self):
+        self._output_over_time.clear()
+        for sol in self._solution_over_time:
+            self._output_over_time.extend(
+                [transpose(sol) * sum(product(self.compute_theta("s"), self.operator["s"]))])
+        self._output = self._output_over_time[-1]
