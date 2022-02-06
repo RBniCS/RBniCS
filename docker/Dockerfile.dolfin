@@ -12,7 +12,7 @@ RUN apt-get -qq update && \
     apt-get -qq remove python3-pytest && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    pip3 -q install --upgrade cvxopt "flake8<4" multipledispatch pylru pytest pytest-benchmark pytest-dependency pytest-flake8 sympy toposort && \
+    pip3 -q install --upgrade cvxopt "flake8<4" multipledispatch pylru "pytest<7" pytest-benchmark pytest-dependency pytest-flake8 sympy toposort && \
     cat /dev/null > $FENICS_HOME/WELCOME
 
 USER fenics
