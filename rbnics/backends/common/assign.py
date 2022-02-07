@@ -26,3 +26,10 @@ def _assign(object_to: list_of(Number), object_from: list_of(Number)):
     if object_from is not object_to:
         del object_to[:]
         object_to.extend(object_from)
+
+
+@overload
+def _assign(object_to: TimeSeries, object_from: list_of(Number)):
+    if object_from is not object_to:
+        from rbnics.backends import assign
+        assign(object_to._list, object_from)
