@@ -81,8 +81,6 @@ def pytest_collection_modifyitems(session, config, items):
 
 
 def pytest_runtest_setup(item):
-    # Do the normal setup
-    item.setup()
     # Carry out additional setup
     if hasattr(item, "_runtest_setup_function"):
         item._runtest_setup_function()
@@ -92,7 +90,5 @@ def pytest_runtest_teardown(item, nextitem):
     # Carry out additional teardown
     if hasattr(item, "_runtest_teardown_function"):
         item._runtest_teardown_function()
-    # Do the normal teardown
-    item.teardown()
     # Add a MPI barrier in parallel
     MPI.COMM_WORLD.Barrier()

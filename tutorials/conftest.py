@@ -94,8 +94,6 @@ def pytest_pycollect_makemodule(path, parent):
 
 
 def pytest_runtest_teardown(item, nextitem):
-    # Do the normal teardown
-    item.teardown()
     # Add a MPI barrier in parallel
     MPI.COMM_WORLD.Barrier()
 
