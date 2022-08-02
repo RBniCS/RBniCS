@@ -92,10 +92,13 @@ def BasicPETScTSIntegrator(backend, wrapping):
                             ksp = snes.getKSP()
                             ksp.setType("preonly")
                             ksp.getPC().setType("lu")
-                            if value == "default":
-                                value = wrapping.get_default_linear_solver()
+                            if value_snes == "default":
+                                value_snes = wrapping.get_default_linear_solver()
                             if hasattr(ksp.getPC(), "setFactorSolverType"):  # PETSc >= 3.9
-                                ksp.getPC().setFactorSolverType(value_snes)
+                                try:
+                                    ksp.getPC().setFactorSolverType(value_snes)
+                                except:
+                                    pass
                             else:
                                 ksp.getPC().setFactorSolverPackage(value_snes)
                         elif key_snes == "line_search":
