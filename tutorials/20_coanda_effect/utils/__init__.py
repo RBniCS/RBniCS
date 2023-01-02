@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2020 by the RBniCS authors
+# Copyright (C) 2015-2023 by the RBniCS authors
 #
 # This file is part of RBniCS.
 #
