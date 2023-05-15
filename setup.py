@@ -30,7 +30,7 @@ setup(name="RBniCS",
       packages=find_packages(),
       include_package_data=True,
       install_requires=[
-          "cvxopt==1.3.0",
+          "cvxopt>=1.3.1",
           "mpi4py",
           "multipledispatch>=0.5.0",
           "pylru",
