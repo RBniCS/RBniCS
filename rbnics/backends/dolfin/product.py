@@ -5,8 +5,12 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from numbers import Number
-from ufl import Form
-from ufl.core.operator import Operator
+try:
+    from ufl_legacy import Form
+    from ufl_legacy.core.operator import Operator
+except ImportError:
+    from ufl import Form
+    from ufl.core.operator import Operator
 from dolfin import Constant, Expression
 from rbnics.backends.dolfin.affine_expansion_storage import (AffineExpansionStorage_Base,
                                                              AffineExpansionStorage_DirichletBC,

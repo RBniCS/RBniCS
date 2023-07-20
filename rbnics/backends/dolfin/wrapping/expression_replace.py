@@ -7,16 +7,28 @@
 # This file contains a copy of UFL replace with a customized Replacer,
 # which also handles Indexed and ListTensor cases
 
-from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.algorithms.analysis import has_exact_type
-from ufl.classes import CoefficientDerivative
-from ufl.constantvalue import as_ufl
-from ufl.core.multiindex import MultiIndex
-from ufl.corealg.multifunction import MultiFunction
-from ufl.domain import extract_domains
-from ufl.indexed import Indexed
-from ufl.log import error
-from ufl.tensors import ComponentTensor, ListTensor
+try:
+    from ufl_legacy.algorithms.map_integrands import map_integrand_dags
+    from ufl_legacy.algorithms.analysis import has_exact_type
+    from ufl_legacy.classes import CoefficientDerivative
+    from ufl_legacy.constantvalue import as_ufl
+    from ufl_legacy.core.multiindex import MultiIndex
+    from ufl_legacy.corealg.multifunction import MultiFunction
+    from ufl_legacy.domain import extract_domains
+    from ufl_legacy.indexed import Indexed
+    from ufl_legacy.log import error
+    from ufl_legacy.tensors import ComponentTensor, ListTensor
+except ImportError:
+    from ufl.algorithms.map_integrands import map_integrand_dags
+    from ufl.algorithms.analysis import has_exact_type
+    from ufl.classes import CoefficientDerivative
+    from ufl.constantvalue import as_ufl
+    from ufl.core.multiindex import MultiIndex
+    from ufl.corealg.multifunction import MultiFunction
+    from ufl.domain import extract_domains
+    from ufl.indexed import Indexed
+    from ufl.log import error
+    from ufl.tensors import ComponentTensor, ListTensor
 from dolfin import split
 
 

@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from petsc4py import PETSc
-from ufl import Form
+try:
+    from ufl_legacy import Form
+except ImportError:
+    from ufl import Form
 from dolfin import assemble, DirichletBC, PETScMatrix, PETScVector
 from dolfin.cpp.la import GenericMatrix, GenericVector
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper

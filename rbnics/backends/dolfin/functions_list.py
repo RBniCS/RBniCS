@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from numbers import Number
-from ufl.core.operator import Operator
+try:
+    from ufl_legacy.core.operator import Operator
+except ImportError:
+    from ufl.core.operator import Operator
 from dolfin import FunctionSpace
 from rbnics.backends.basic import FunctionsList as BasicFunctionsList
 from rbnics.backends.dolfin.function import Function

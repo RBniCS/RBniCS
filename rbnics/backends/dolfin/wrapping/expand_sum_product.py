@@ -5,14 +5,24 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from sympy import expand_mul, IndexedBase, Mul, Pow, symbols
-from ufl import Form
-from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.classes import IndexSum, Product, Sum
-from ufl.core.expr import Expr
-from ufl.core.multiindex import MultiIndex
-from ufl.corealg.multifunction import MultiFunction
-from ufl.indexed import Indexed
-from ufl.tensors import ComponentTensor
+try:
+    from ufl_legacy import Form
+    from ufl_legacy.algorithms.map_integrands import map_integrand_dags
+    from ufl_legacy.classes import IndexSum, Product, Sum
+    from ufl_legacy.core.expr import Expr
+    from ufl_legacy.core.multiindex import MultiIndex
+    from ufl_legacy.corealg.multifunction import MultiFunction
+    from ufl_legacy.indexed import Indexed
+    from ufl_legacy.tensors import ComponentTensor
+except ImportError:
+    from ufl import Form
+    from ufl.algorithms.map_integrands import map_integrand_dags
+    from ufl.classes import IndexSum, Product, Sum
+    from ufl.core.expr import Expr
+    from ufl.core.multiindex import MultiIndex
+    from ufl.corealg.multifunction import MultiFunction
+    from ufl.indexed import Indexed
+    from ufl.tensors import ComponentTensor
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 
 

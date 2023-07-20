@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl.core.operator import Operator
+try:
+    from ufl_legacy.core.operator import Operator
+except ImportError:
+    from ufl.core.operator import Operator
 from dolfin import assign, Function, LagrangeInterpolator, project
 from dolfin.function.expression import BaseExpression
 

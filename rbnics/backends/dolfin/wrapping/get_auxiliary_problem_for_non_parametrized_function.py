@@ -5,9 +5,14 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from abc import ABCMeta, abstractmethod
-from ufl.core.multiindex import MultiIndex
-from ufl.indexed import Indexed
-from ufl.tensors import ListTensor
+try:
+    from ufl_legacy.core.multiindex import MultiIndex
+    from ufl_legacy.indexed import Indexed
+    from ufl_legacy.tensors import ListTensor
+except ImportError:
+    from ufl.core.multiindex import MultiIndex
+    from ufl.indexed import Indexed
+    from ufl.tensors import ListTensor
 from dolfin import Function
 from rbnics.backends.dolfin.wrapping.get_function_space import get_function_space
 from rbnics.backends.dolfin.wrapping.is_problem_solution import _split_function

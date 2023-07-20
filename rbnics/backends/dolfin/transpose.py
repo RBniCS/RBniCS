@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl.core.operator import Operator
+try:
+    from ufl_legacy.core.operator import Operator
+except ImportError:
+    from ufl.core.operator import Operator
 from rbnics.backends.basic import transpose as basic_transpose
 from rbnics.backends.dolfin.basis_functions_matrix import BasisFunctionsMatrix
 from rbnics.backends.dolfin.evaluate import evaluate

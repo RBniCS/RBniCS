@@ -4,8 +4,12 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.corealg.multifunction import MultiFunction
+try:
+    from ufl_legacy.algorithms.map_integrands import map_integrand_dags
+    from ufl_legacy.corealg.multifunction import MultiFunction
+except ImportError:
+    from ufl.algorithms.map_integrands import map_integrand_dags
+    from ufl.corealg.multifunction import MultiFunction
 from rbnics.backends.dolfin.wrapping.remove_complex_nodes import remove_complex_nodes
 
 

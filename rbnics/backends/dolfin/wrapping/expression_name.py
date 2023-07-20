@@ -5,8 +5,12 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import hashlib
-from ufl.core.multiindex import Index as MuteIndex, MultiIndex
-from ufl.corealg.traversal import traverse_unique_terminals
+try:
+    from ufl_legacy.core.multiindex import Index as MuteIndex, MultiIndex
+    from ufl_legacy.corealg.traversal import traverse_unique_terminals
+except ImportError:
+    from ufl.core.multiindex import Index as MuteIndex, MultiIndex
+    from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import CompiledExpression, Constant, Expression
 from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.expression_iterator import expression_iterator

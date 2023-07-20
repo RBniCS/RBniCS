@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from math import fabs
-from ufl.core.operator import Operator
+try:
+    from ufl_legacy.core.operator import Operator
+except ImportError:
+    from ufl.core.operator import Operator
 from rbnics.backends.dolfin.matrix import Matrix
 from rbnics.backends.dolfin.vector import Vector
 from rbnics.backends.dolfin.function import Function

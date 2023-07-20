@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl.corealg.traversal import pre_traversal
+try:
+    from ufl_legacy.corealg.traversal import pre_traversal
+except ImportError:
+    from ufl.corealg.traversal import pre_traversal
 
 
 def solution_iterator(solution):

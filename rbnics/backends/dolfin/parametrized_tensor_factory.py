@@ -4,8 +4,12 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl import Form
-from ufl.algorithms import expand_derivatives
+try:
+    from ufl_legacy import Form
+    from ufl_legacy.algorithms import expand_derivatives
+except ImportError:
+    from ufl import Form
+    from ufl.algorithms import expand_derivatives
 from dolfin import assemble
 from rbnics.backends.basic import ParametrizedTensorFactory as BasicParametrizedTensorFactory
 from rbnics.backends.dolfin.copy import copy

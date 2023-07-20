@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from collections import OrderedDict
-import ufl
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 from dolfin import FunctionSpace
 from rbnics.utils.test import AttachInstanceMethod, PatchInstanceMethod
 

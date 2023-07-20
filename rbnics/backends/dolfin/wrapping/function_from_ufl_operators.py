@@ -5,11 +5,18 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from numbers import Number
-from ufl.algebra import Division, Product, Sum
-from ufl.constantvalue import ScalarValue
-from ufl.core.multiindex import IndexBase
-from ufl.core.operator import Operator
-from ufl.tensors import as_tensor, ComponentTensor
+try:
+    from ufl_legacy.algebra import Division, Product, Sum
+    from ufl_legacy.constantvalue import ScalarValue
+    from ufl_legacy.core.multiindex import IndexBase
+    from ufl_legacy.core.operator import Operator
+    from ufl_legacy.tensors import as_tensor, ComponentTensor
+except ImportError:
+    from ufl.algebra import Division, Product, Sum
+    from ufl.constantvalue import ScalarValue
+    from ufl.core.multiindex import IndexBase
+    from ufl.core.operator import Operator
+    from ufl.tensors import as_tensor, ComponentTensor
 from dolfin import Function
 from rbnics.backends.dolfin.wrapping.parametrized_constant import (
     is_parametrized_constant, parametrized_constant_to_float)

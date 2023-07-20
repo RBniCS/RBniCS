@@ -13,18 +13,34 @@ from numpy import allclose, isclose, ones as numpy_ones
 from mpi4py.MPI import Op
 from sympy import (Basic as SympyBase, ccode, collect, Float, ImmutableMatrix, Integer, Matrix as SympyMatrix,
                    Number, preorder_traversal, simplify, symbols, sympify)
-from ufl import as_tensor, FiniteElement, Form, Measure, sqrt, TensorElement, VectorElement
-from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
-from ufl.algorithms.apply_derivatives import apply_derivatives
-from ufl.algorithms.expand_indices import expand_indices
-from ufl.algorithms.map_integrands import map_integrand_dags
-from ufl.classes import (CellDiameter, CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal,
-                         Grad, Jacobian, JacobianDeterminant, JacobianInverse)
-from ufl.core.multiindex import FixedIndex, Index, indices, MultiIndex
-from ufl.corealg.multifunction import memoized_handler, MultiFunction
-from ufl.corealg.map_dag import map_expr_dag
-from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
-from ufl.indexed import Indexed
+try:
+    from ufl_legacy import as_tensor, FiniteElement, Form, Measure, sqrt, TensorElement, VectorElement
+    from ufl_legacy.algorithms import apply_transformer, expand_derivatives, Transformer
+    from ufl_legacy.algorithms.apply_derivatives import apply_derivatives
+    from ufl_legacy.algorithms.expand_indices import expand_indices
+    from ufl_legacy.algorithms.map_integrands import map_integrand_dags
+    from ufl_legacy.classes import (
+        CellDiameter, CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal,
+        Grad, Jacobian, JacobianDeterminant, JacobianInverse)
+    from ufl_legacy.core.multiindex import FixedIndex, Index, indices, MultiIndex
+    from ufl_legacy.corealg.multifunction import memoized_handler, MultiFunction
+    from ufl_legacy.corealg.map_dag import map_expr_dag
+    from ufl_legacy.corealg.traversal import pre_traversal, traverse_unique_terminals
+    from ufl_legacy.indexed import Indexed
+except ImportError:
+    from ufl import as_tensor, FiniteElement, Form, Measure, sqrt, TensorElement, VectorElement
+    from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
+    from ufl.algorithms.apply_derivatives import apply_derivatives
+    from ufl.algorithms.expand_indices import expand_indices
+    from ufl.algorithms.map_integrands import map_integrand_dags
+    from ufl.classes import (
+        CellDiameter, CellVolume, Circumradius, FacetArea, FacetJacobianDeterminant, FacetNormal,
+        Grad, Jacobian, JacobianDeterminant, JacobianInverse)
+    from ufl.core.multiindex import FixedIndex, Index, indices, MultiIndex
+    from ufl.corealg.multifunction import memoized_handler, MultiFunction
+    from ufl.corealg.map_dag import map_expr_dag
+    from ufl.corealg.traversal import pre_traversal, traverse_unique_terminals
+    from ufl.indexed import Indexed
 from dolfin import assemble, cells, compile_cpp_code, CompiledExpression, Constant, Expression, facets
 from dolfin.cpp.la import GenericMatrix, GenericVector
 from dolfin.function.expression import BaseExpression

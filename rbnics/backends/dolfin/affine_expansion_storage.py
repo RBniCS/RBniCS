@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl import Form
+try:
+    from ufl_legacy import Form
+except ImportError:
+    from ufl import Form
 from dolfin import assemble, DirichletBC
 from rbnics.backends.abstract import AffineExpansionStorage as AbstractAffineExpansionStorage
 from rbnics.backends.dolfin.matrix import Matrix

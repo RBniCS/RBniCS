@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl import MixedElement, TensorElement, VectorElement
+try:
+    from ufl_legacy import MixedElement, TensorElement, VectorElement
+except ImportError:
+    from ufl import MixedElement, TensorElement, VectorElement
 from dolfin import assign, Function, has_hdf5, has_hdf5_parallel
 from rbnics.backends.dolfin.wrapping.function_save import _all_solution_files, SolutionFileXDMF, SolutionFileXML
 from rbnics.backends.dolfin.wrapping.get_function_subspace import get_function_subspace

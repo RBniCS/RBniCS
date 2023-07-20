@@ -4,13 +4,22 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl import Argument
-from ufl.constantvalue import ConstantValue
-from ufl.core.operator import Operator
-from ufl.core.multiindex import FixedIndex, Index as MuteIndex, IndexBase, MultiIndex
-from ufl.geometry import GeometricQuantity
-from ufl.indexed import Indexed
-from ufl.tensors import ListTensor
+try:
+    from ufl_legacy import Argument
+    from ufl_legacy.constantvalue import ConstantValue
+    from ufl_legacy.core.operator import Operator
+    from ufl_legacy.core.multiindex import FixedIndex, Index as MuteIndex, IndexBase, MultiIndex
+    from ufl_legacy.geometry import GeometricQuantity
+    from ufl_legacy.indexed import Indexed
+    from ufl_legacy.tensors import ListTensor
+except ImportError:
+    from ufl import Argument
+    from ufl.constantvalue import ConstantValue
+    from ufl.core.operator import Operator
+    from ufl.core.multiindex import FixedIndex, Index as MuteIndex, IndexBase, MultiIndex
+    from ufl.geometry import GeometricQuantity
+    from ufl.indexed import Indexed
+    from ufl.tensors import ListTensor
 from dolfin import Constant, Function
 from dolfin.function.expression import BaseExpression
 from rbnics.backends.dolfin.wrapping.is_problem_solution import (

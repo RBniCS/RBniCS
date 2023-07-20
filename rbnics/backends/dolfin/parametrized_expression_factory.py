@@ -4,9 +4,14 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl.core.operator import Operator
-from ufl.domain import extract_domains
-from ufl.corealg.traversal import traverse_unique_terminals
+try:
+    from ufl_legacy.core.operator import Operator
+    from ufl_legacy.domain import extract_domains
+    from ufl_legacy.corealg.traversal import traverse_unique_terminals
+except ImportError:
+    from ufl.core.operator import Operator
+    from ufl.domain import extract_domains
+    from ufl.corealg.traversal import traverse_unique_terminals
 from dolfin import (assemble, dx, FunctionSpace, inner, TensorFunctionSpace, TestFunction, TrialFunction,
                     VectorFunctionSpace)
 from dolfin.function.expression import BaseExpression

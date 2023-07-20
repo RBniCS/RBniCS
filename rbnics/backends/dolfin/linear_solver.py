@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl import Form
+try:
+    from ufl_legacy import Form
+except ImportError:
+    from ufl import Form
 from dolfin import assemble, DirichletBC, PETScLUSolver
 from rbnics.backends.abstract import LinearSolver as AbstractLinearSolver, LinearProblemWrapper
 from rbnics.backends.dolfin.evaluate import evaluate

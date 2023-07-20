@@ -6,8 +6,12 @@
 
 from numbers import Number
 from logging import DEBUG, getLogger
-from ufl import Measure
-from ufl.geometry import GeometricQuantity
+try:
+    from ufl_legacy import Measure
+    from ufl_legacy.geometry import GeometricQuantity
+except ImportError:
+    from ufl import Measure
+    from ufl.geometry import GeometricQuantity
 from dolfin.function.argument import Argument
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_operator
 from rbnics.utils.cache import Cache

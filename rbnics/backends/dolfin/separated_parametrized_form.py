@@ -6,16 +6,28 @@
 
 from logging import DEBUG, getLogger
 from numpy import ones
-from ufl import Argument, Form, Measure, replace
-from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
-from ufl.algorithms.traversal import iter_expressions
-from ufl.classes import FacetNormal
-from ufl.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
-from ufl.corealg.traversal import pre_traversal, traverse_terminals
-from ufl.geometry import GeometricQuantity
-from ufl.indexed import Indexed
-from ufl.indexsum import IndexSum
-from ufl.tensors import ComponentTensor, ListTensor
+try:
+    from ufl_legacy import Argument, Form, Measure, replace
+    from ufl_legacy.algorithms import apply_transformer, expand_derivatives, Transformer
+    from ufl_legacy.algorithms.traversal import iter_expressions
+    from ufl_legacy.classes import FacetNormal
+    from ufl_legacy.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
+    from ufl_legacy.corealg.traversal import pre_traversal, traverse_terminals
+    from ufl_legacy.geometry import GeometricQuantity
+    from ufl_legacy.indexed import Indexed
+    from ufl_legacy.indexsum import IndexSum
+    from ufl_legacy.tensors import ComponentTensor, ListTensor
+except ImportError:
+    from ufl import Argument, Form, Measure, replace
+    from ufl.algorithms import apply_transformer, expand_derivatives, Transformer
+    from ufl.algorithms.traversal import iter_expressions
+    from ufl.classes import FacetNormal
+    from ufl.core.multiindex import FixedIndex, Index as MuteIndex, MultiIndex
+    from ufl.corealg.traversal import pre_traversal, traverse_terminals
+    from ufl.geometry import GeometricQuantity
+    from ufl.indexed import Indexed
+    from ufl.indexsum import IndexSum
+    from ufl.tensors import ComponentTensor, ListTensor
 from dolfin import Constant
 from dolfin.function.expression import BaseExpression
 from rbnics.backends.abstract import SeparatedParametrizedForm as AbstractSeparatedParametrizedForm

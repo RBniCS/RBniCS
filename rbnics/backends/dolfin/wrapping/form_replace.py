@@ -4,7 +4,10 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from ufl.domain import extract_domains
+try:
+    from ufl_legacy.domain import extract_domains
+except ImportError:
+    from ufl.domain import extract_domains
 from rbnics.backends.dolfin.wrapping.expression_replace import replace
 
 

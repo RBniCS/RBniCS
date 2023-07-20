@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from logging import DEBUG, getLogger
-from ufl.geometry import GeometricQuantity
+try:
+    from ufl_legacy.geometry import GeometricQuantity
+except ImportError:
+    from ufl.geometry import GeometricQuantity
 from rbnics.eim.utils.decorators import get_problem_from_parametrized_expression
 from rbnics.utils.cache import Cache
 from rbnics.utils.decorators import (exact_problem, get_problem_from_solution, get_problem_from_solution_dot,

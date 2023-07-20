@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import os
-from ufl import MixedElement, TensorElement, VectorElement
+try:
+    from ufl_legacy import MixedElement, TensorElement, VectorElement
+except ImportError:
+    from ufl import MixedElement, TensorElement, VectorElement
 from dolfin import assign, File as PVDFile, File as XMLFile, has_hdf5, has_hdf5_parallel, XDMFFile
 from rbnics.utils.cache import Cache
 from rbnics.utils.io import TextIO as IndexIO
