@@ -38,11 +38,13 @@ setup(name="RBniCS",
           "sympy>=1.0",
           "toposort"
       ],
-      tests_require=[
-          "pytest",
-          "pytest-benchmark",
-          "pytest-dependency",
-          "pytest-flake8"
-      ],
+      extras_require={
+          "tests": [
+              "pytest",
+              "pytest-benchmark",
+              "pytest-dependency",
+              "pytest-flake8"
+          ]
+      },
       zip_safe=False
       )
