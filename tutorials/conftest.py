@@ -9,7 +9,6 @@ import re
 import sys
 import importlib
 import pytest
-import pytest_flake8
 from nbconvert.exporters import PythonExporter
 import nbconvert.filters
 from mpi4py import MPI
@@ -67,14 +66,11 @@ def pytest_collect_file(file_path, path, parent):
         MPI.COMM_WORLD.Barrier()
         # Collect the corresponding .py file
         config = parent.config
-        if config.getoption("--flake8"):
-            return pytest_flake8.pytest_collect_file(file_path.with_suffix(".py"), None, parent)
-        else:
-            if "data" not in str(file_path.parent):  # skip running mesh generation notebooks
-                if not file_path.name.startswith("x"):
-                    return TutorialFile.from_parent(parent=parent, path=file_path.with_suffix(".py"))
-                else:
-                    return DoNothingFile.from_parent(parent=parent, path=file_path.with_suffix(".py"))
+        if "data" not in str(file_path.parent):  # skip running mesh generation notebooks
+            if not file_path.name.startswith("x"):
+                return TutorialFile.from_parent(parent=parent, path=file_path.with_suffix(".py"))
+            else:
+                return DoNothingFile.from_parent(parent=parent, path=file_path.with_suffix(".py"))
     elif file_path.suffix == ".py":  # TODO remove after transition to ipynb is complete? assert never py files?
         if (file_path.name not in "conftest.py"  # do not run pytest configuration file
                 or "data" not in str(file_path.parent)):  # skip running mesh generation notebooks
