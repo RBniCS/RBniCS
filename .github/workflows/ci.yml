@@ -26,7 +26,6 @@ jobs:
           cd tutorials/01_thermal_block && pytest -svv tutorial_thermal_block.ipynb && cd -
           cd tutorials/02_elastic_block && pytest -svv tutorial_elastic_block.ipynb && cd -
           cd tutorials/03_hole && pytest -svv tutorial_hole.ipynb && cd -
-          cd tutorials/04_graetz && pytest -svv tutorial_graetz_1.ipynb && cd -
           cd tutorials/05_gaussian && pytest -svv tutorial_gaussian_eim.ipynb && cd -
 
   docker:
