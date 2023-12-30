@@ -6,7 +6,7 @@
 
 from logging import DEBUG, getLogger
 from numpy import array, uintp, unique, where
-from scipy.spatial.ckdtree import cKDTree as KDTree
+from scipy.spatial import cKDTree as KDTree
 from mpi4py.MPI import SUM
 from dolfin import (Cell, cells, compile_cpp_code, Facet, facets, FunctionSpace, Mesh, MeshEditor, MeshFunction,
                     Vertex, vertices)

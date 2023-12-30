@@ -7,7 +7,7 @@
 from mpi4py.MPI import COMM_WORLD
 from numpy import dot
 from numpy.linalg import solve
-from scipy.optimize.nonlin import Jacobian, nonlin_solve
+from scipy.optimize._nonlin import Jacobian, nonlin_solve
 from rbnics.backends.abstract import NonlinearSolver as AbstractNonlinearSolver, NonlinearProblemWrapper
 from rbnics.backends.online.basic.nonlinear_solver import _NonlinearProblem as _BasicNonlinearProblem
 from rbnics.backends.online.numpy.function import Function
