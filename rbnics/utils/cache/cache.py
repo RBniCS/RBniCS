@@ -7,7 +7,6 @@
 from collections.abc import MutableMapping
 from functools import wraps
 from logging import DEBUG, getLogger
-from pylru import lrucache
 
 logger = getLogger("rbnics/utils/cache/cache.py")
 
@@ -26,15 +25,7 @@ class Cache(object):
             cache_options = config.get(self._config_section, "cache")
             assert isinstance(cache_options, set)
             if "RAM" in cache_options:
-                cache_size = config.get(self._config_section, "RAM cache limit")
-                assert isinstance(cache_size, str)
-                if cache_size == "unlimited":
-                    self._storage = dict()
-                else:
-                    assert cache_size.isdigit()
-                    cache_size = int(cache_size)
-                    assert cache_size > 0
-                    self._storage = lrucache(cache_size)
+                self._storage = dict()
                 assert key_generator is not None
                 self._key_generator = key_generator
             else:

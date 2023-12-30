@@ -33,7 +33,6 @@ setup(name="RBniCS",
           "cvxopt>=1.3.1",
           "mpi4py",
           "multipledispatch>=0.5.0",
-          "pylru",
           "sympy>=1.0",
           "toposort"
       ],
