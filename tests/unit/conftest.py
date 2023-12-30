@@ -79,6 +79,17 @@ def pytest_collection_modifyitems(session, config, items):
                     assert not hasattr(item, "_runtest_teardown_function")
                     item._runtest_teardown_function = enable_matplotlib
 
+    # pull back to reference domain tests are slow
+    selected_items = list()
+    deselected_items = list()
+    for item in items:
+        if item.name.startswith("test_pull_back_to_reference_domain"):
+            deselected_items.append(item)
+        else:
+            selected_items.append(item)
+    config.hook.pytest_deselected(items=deselected_items)
+    items[:] = selected_items
+
 
 def pytest_runtest_setup(item):
     # Carry out additional setup

@@ -18,7 +18,9 @@ jobs:
     if: github.repository == 'RBniCS/RBniCS'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: spyoungtech/mirror-action@master
         with:
           REMOTE: https://gitlab.com/RBniCS/RBniCS.git

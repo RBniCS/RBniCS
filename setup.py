@@ -34,7 +34,6 @@ setup(name="RBniCS",
           "mpi4py",
           "multipledispatch>=0.5.0",
           "pylru",
-          "pytest-runner",
           "sympy>=1.0",
           "toposort"
       ],
@@ -42,8 +41,7 @@ setup(name="RBniCS",
           "tests": [
               "pytest",
               "pytest-benchmark",
-              "pytest-dependency",
-              "pytest-flake8"
+              "pytest-dependency"
           ]
       },
       zip_safe=False
