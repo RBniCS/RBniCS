@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-FROM numericalpdes/base_images:fenics
+FROM numericalpdes/base_images:fenics-real
 MAINTAINER Francesco Ballarin <francesco.ballarin@unicatt.it>
 
 COPY . /tmp/RBniCS
