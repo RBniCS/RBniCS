@@ -24,6 +24,16 @@ backend = ModuleWrapper()
 wrapping_for_wrapping = ModuleWrapper(function_copy, get_default_linear_solver, get_mpi_comm, to_petsc4py)
 PETScSNESSolver = BasicPETScSNESSolver(backend, wrapping_for_wrapping)
 
+petsc_version = PETSc.Sys().getVersionInfo()
+if petsc_version["major"] == 3 and petsc_version["minor"] >= 21:
+    def getArray(petsc_vec):
+        # Temporary workaround for petsc4py.PETSc.Vec_AcquireArray() failing with error code 73,
+        # possibly because of new PETSc and/or Cython 3+
+        return petsc_vec.localForm().__enter__()[:petsc_vec.getLocalSize()]
+else:
+    def getArray(petsc_vec):
+        return petsc_vec.getArray()
+
 
 @BackendFor("dolfin", inputs=(NonlinearProblemWrapper, Function.Type()))
 class NonlinearSolver(AbstractNonlinearSolver):
@@ -160,7 +170,7 @@ class _NonlinearProblem(object):
     def update_solution(self, petsc_solution):
         petsc_solution.ghostUpdate()
         self.solution.vector().zero()
-        self.solution.vector().add_local(petsc_solution.getArray())
+        self.solution.vector().add_local(getArray(petsc_solution))
         self.solution.vector().apply("add")
 
     @overload

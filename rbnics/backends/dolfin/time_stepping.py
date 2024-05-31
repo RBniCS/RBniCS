@@ -20,6 +20,7 @@ from rbnics.backends.dolfin.parametrized_tensor_factory import ParametrizedTenso
 from rbnics.backends.dolfin.wrapping import function_copy, get_default_linear_solver, get_mpi_comm, to_petsc4py
 from rbnics.backends.dolfin.wrapping.dirichlet_bc import ProductOutputDirichletBC
 from rbnics.utils.decorators import BackendFor, dict_of, list_of, ModuleWrapper, overload
+from rbnics.backends.dolfin.nonlinear_solver import getArray
 
 backend = ModuleWrapper()
 wrapping_for_wrapping = ModuleWrapper(function_copy, get_default_linear_solver, get_mpi_comm, to_petsc4py)
@@ -240,11 +241,11 @@ class _TimeDependentProblem(object):
     def update_solution(self, petsc_solution):
         petsc_solution.ghostUpdate()
         self.solution.vector().zero()
-        self.solution.vector().add_local(petsc_solution.getArray())
+        self.solution.vector().add_local(getArray(petsc_solution))
         self.solution.vector().apply("add")
 
     def update_solution_dot(self, petsc_solution_dot):
         petsc_solution_dot.ghostUpdate()
         self.solution_dot.vector().zero()
-        self.solution_dot.vector().add_local(petsc_solution_dot.getArray())
+        self.solution_dot.vector().add_local(getArray(petsc_solution_dot))
         self.solution_dot.vector().apply("add")
