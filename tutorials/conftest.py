@@ -28,7 +28,7 @@ def pytest_configure(config):
     process_gold_options(config)
 
 
-def pytest_ignore_collect(collection_path, path, config):
+def pytest_ignore_collect(collection_path, config):
     if collection_path.suffix == ".py" and collection_path.with_suffix(".ipynb").exists():
         # ignore .py files obtained from previous runs
         return True
@@ -36,7 +36,7 @@ def pytest_ignore_collect(collection_path, path, config):
         return False
 
 
-def pytest_collect_file(file_path, path, parent):
+def pytest_collect_file(file_path, parent):
     """
     Collect tutorial files.
     """
@@ -80,7 +80,7 @@ def pytest_collect_file(file_path, path, parent):
                 return DoNothingFile.from_parent(parent=parent, path=file_path)
 
 
-def pytest_pycollect_makemodule(module_path, path, parent):
+def pytest_pycollect_makemodule(module_path, parent):
     """
     Disable running .py files produced by previous runs, as they may get out of sync with the corresponding .ipynb file.
     """
