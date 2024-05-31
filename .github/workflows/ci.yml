@@ -23,10 +23,12 @@ jobs:
         run: pytest --benchmark-disable -svv tests/performance
       - name: Run tutorials
         run: |
-          cd tutorials/01_thermal_block && pytest -svv tutorial_thermal_block.ipynb && cd -
-          cd tutorials/02_elastic_block && pytest -svv tutorial_elastic_block.ipynb && cd -
-          cd tutorials/03_hole && pytest -svv tutorial_hole.ipynb && cd -
-          cd tutorials/05_gaussian && pytest -svv tutorial_gaussian_eim.ipynb && cd -
+          cd tutorials
+          mkdir to_run
+          cp -rf 01_thermal_block/tutorial_thermal_block.ipynb 02_elastic_block/tutorial_elastic_block.ipynb 03_hole/tutorial_hole.ipynb 05_gaussian/tutorial_gaussian_eim.ipynb to_run
+          mkdir to_run/data
+          cp -rf 01_thermal_block/data/*.xml 02_elastic_block/data/*.xml 03_hole/data/*.xml 03_hole/data/*.vmp 05_gaussian/data/*.xml to_run/data
+          pytest -svv to_run
 
   docker:
     if: github.repository == 'RBniCS/RBniCS' && github.ref == 'refs/heads/master'
