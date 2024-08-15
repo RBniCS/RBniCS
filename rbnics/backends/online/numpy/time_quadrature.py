@@ -5,7 +5,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from numbers import Number
-from scipy.integrate import simps
+try:
+    from scipy.integrate import simpson as simps
+except ImportError:
+    from scipy.integrate import simps
 from rbnics.backends.abstract import TimeQuadrature as AbstractTimeQuadrature
 from rbnics.backends.online.numpy.function import Function
 from rbnics.utils.decorators import BackendFor, list_of, tuple_of
