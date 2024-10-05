@@ -3,7 +3,7 @@
 
 The **RBniCS** Project contains an implementation in **FEniCS** of several reduced order modelling techniques for parametrized problems.
 
-**RBniCS** was developed by [Dr. Francesco Ballarin](https://www.francescoballarin.it), currently at [Università Cattolica del Sacro Cuore](https://www.unicatt.it/), in collaboration with [Prof. Gianluigi Rozza](https://people.sissa.it/~grozza/)'s group at [SISSA mathLab](http://mathlab.sissa.it/). The financial support of the [AROMA-CFD ERC CoG project](https://people.sissa.it/~grozza/aroma-cfd/) is gratefully acknowledged.
+**RBniCS** was developed by Dr. Alberto Sartori and [Dr. Francesco Ballarin](https://www.francescoballarin.it), currently at [Università Cattolica del Sacro Cuore](https://www.unicatt.it/), in collaboration with [Prof. Gianluigi Rozza](https://people.sissa.it/~grozza/)'s group at [SISSA mathLab](http://mathlab.sissa.it/). The financial support of the [AROMA-CFD ERC CoG project](https://people.sissa.it/~grozza/aroma-cfd/) is gratefully acknowledged.
 
 Like all core **FEniCS** components, **RBniCS** is freely available under the GNU LGPL, version 3.
 
