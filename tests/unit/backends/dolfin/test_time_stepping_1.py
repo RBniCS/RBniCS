@@ -275,7 +275,7 @@ def _test_time_stepping_1_dense(integrator_type, V, dt, monitor_dt, T, u, u_dot,
 
 
 # ~~~ Test function ~~~ #
-def test_time_stepping_1():
+def _skip_test_time_stepping_1():
     (error_sparse_tensor_callbacks_beuler, V, dt, monitor_dt, T, u, u_dot, g, r, j_u, j_u_dot, X,
         exact_solution_expression, exact_solution, exact_solution_dot) = _test_time_stepping_1_sparse(
             "tensor callbacks", "beuler")

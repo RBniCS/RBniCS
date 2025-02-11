@@ -12,9 +12,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: numericalpdes/base_images:fenics-real
+    container: debian:12
     steps:
       - uses: actions/checkout@v4
+      - name: Install FEniCS
+        run: |
+          apt update -y -q
+          apt install -y -q fenics python3-nbconvert python3-pip
+          rm /usr/lib/python3.*/EXTERNALLY-MANAGED
       - name: Install RBniCS
         run: pip install .[tests]
       - name: Run unit tests
@@ -29,22 +34,3 @@ jobs:
           mkdir to_run/data
           cp -rf 01_thermal_block/data/*.xml 02_elastic_block/data/*.xml 03_hole/data/*.xml 03_hole/data/*.vmp 05_gaussian/data/*.xml to_run/data
           pytest -svv to_run
-
-  docker:
-    if: github.repository == 'RBniCS/RBniCS' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    needs: [test]
-    env:
-      RELEASE_IMAGE: rbnics/rbnics:latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build the docker release image
-        run: docker build --pull -t ${RELEASE_IMAGE} -f docker/Dockerfile.dolfin .
-      - name: Try importing the library inside the docker image
-        run: docker run -i --rm ${RELEASE_IMAGE} python3 -c 'import dolfin; import rbnics'
-      - name: Run unit tests to verify that the docker image is working
-        run: docker run -i --rm ${RELEASE_IMAGE} bash -c "cd RBniCS && pytest -svv tests/unit"
-      - name: Log into the docker registry
-        run: docker login -u ${{ secrets.CI_REGISTRY_USER }} -p ${{ secrets.CI_REGISTRY_PASSWORD }}
-      - name: Push to the docker registry
-        run: docker push ${RELEASE_IMAGE}
